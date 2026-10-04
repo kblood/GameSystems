@@ -122,7 +122,15 @@ The volume ledger is exact: 44.99 ml emitted = in sim + out. Water at 4 mm needs
 It runs at about 25 ms per frame for its 570 resident particles, because water leaves the 16 cm volume within
 about 0.3 s.
 
-FINE_PLACEHOLDER
+**2 mm honey run (`node bench.mjs fine`): unstable in this prototype.**
+- At 0.5 s it was fine: 7.5 k particles, 55 substeps, 214 ms per frame.
+- From about 1 s on, the substep count jumped to 110-150 and particles were ejected (5-9 ml left the volume).
+  Frames took 5-24 s, and the run was stopped at 2 s (19 k particles).
+- Cause, not yet fixed: an impact velocity spike. The weakly compressible pressure (c = 1.5 m/s) is too soft for a
+  0.6 m/s jet onto a no-slip rim at 2 mm, and the adaptive dt follows vmax. Likely fixes:
+  - c ≈ 3 m/s plus a velocity clamp at inflow, or
+  - better, an incompressible projection (APIC + Poisson), which is the risk named in section 7.
+- So the 2 mm column of the scaling table (a settling block, stable) is valid for cost. The 2 mm *pour* is not yet.
 
 What it shows (screenshots `tests/wasm_fluid_research/out/honey_t*.png`):
 - **Right:** honey coats the jar and lid and collects as a mound around the jar foot. It goes over the table edge as a
@@ -242,7 +250,7 @@ What we would learn from A + B:
 | stage | content | size | done when |
 |---|---|---|---|
 | E0 (done) | JS MLS-MPM test bed, honey/water scene, bench, viewer, native reference | — | numbers in section 3 |
-| E1 | test-bed physics: surface tension (pairwise cohesion or CSF on the grid), contact-angle adhesion, a sparse 2 mm run, a second scene "bottle tilted, honey down the outside"; metric outputs fitted to spill core constants | S-M (≈ 300 lines JS) | the fitted `h_pin`, `q'`, sheet speed are written into a table next to spill §2 |
+| E1 | test-bed physics: fix the 2 mm impact instability (stiffer c + inflow clamp, or APIC + Poisson projection), surface tension (pairwise cohesion or CSF on the grid), contact-angle adhesion, a sparse 2 mm run, a second scene "bottle tilted, honey down the outside"; metric outputs fitted to spill core constants | S-M (≈ 300 lines JS) | the fitted `h_pin`, `q'`, sheet speed are written into a table next to spill §2 |
 | E2 | WebGPU port (WGSL: clear, P2G fixed-point atomics, grid + Jacobi viscosity + SDF BC, G2P), instanced and screen-space render, same scene and HUD; read back only stats | M (≈ 600 lines) | 50 k honey particles at 2 mm in realtime on the dev PC; side-by-side screenshots vs the analytic look |
 | E3 | DVT viscous-thread rod (CPU JS, 50-200 vertices, implicit) for the strand under the edge and the floor coil; coupling: MPM outflow → rod inflow | M (≈ 400 lines) | coiling appears for honey at 20-40 cm fall heights; record coil radius/frequency tables |
 | E4 (decision gate) | judge: is MPM bulk + rods visibly better than the analytic system + recorded coils? | — | go / no-go |
