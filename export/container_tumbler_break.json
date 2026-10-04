@@ -1,0 +1,67 @@
+{
+  "name": "tumbler",
+  "family": "container",
+  "material": "glass",
+  "shatters": true,
+  "source": "scripts/fracture_glb.py",
+  "frame": "bottle-local, glTF Y-up, metres, base centre at origin (same frame as the shipped GLB)",
+  "wall_thickness_m": 0.006809599419580383,
+  "density_kg_m3": 2500.0,
+  "glass_volume_m3": 0.00014501121794273256,
+  "glass_mass_kg": 0.3625280448568314,
+  "liquid_mass_kg_per_ml": 0.001,
+  "capacity_ml": 232.5,
+  "height_m": 0.09679999947547913,
+  "max_radius_m": 0.038500001635972454,
+  "base_z": 0.012,
+  "shoulder_z": 0.09679999947547913,
+  "neck_z": 0.09679999947547913,
+  "has_neck": false,
+  "weak_zones": [
+    {
+      "name": "base",
+      "z0": 0.0,
+      "z1": 0.012,
+      "thinness": 1.0
+    },
+    {
+      "name": "body",
+      "z0": 0.012,
+      "z1": 0.09679999947547913,
+      "thinness": 1.0
+    }
+  ],
+  "zone_factor": {
+    "base": 1.15,
+    "body": 1.0,
+    "shoulder": 0.85,
+    "neck": 0.55
+  },
+  "calibration": {
+    "surface": "concrete",
+    "fill": 1.0,
+    "v_n": 4.3,
+    "y": "mid_body",
+    "note": "f_crit_ref solved at load so this hit is exactly the break threshold"
+  },
+  "mesh": {
+    "area_m2": 0.04259023446394394,
+    "non_manifold_edges": 0
+  },
+  "shards": {
+    "count": 14,
+    "tris": 4558,
+    "classes": {
+      "chunk": 4,
+      "shard": 10
+    }
+  },
+  "impact_point": [
+    0.033137623220682144,
+    0.0020521783735603094,
+    0.05999999865889549
+  ],
+  "files": {
+    "shards": "export/container_tumbler_shards.glb"
+  }
+}

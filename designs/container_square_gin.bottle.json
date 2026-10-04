@@ -1,0 +1,43 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "container_square",
+  "liquid": {
+    "color": [
+      0.82,
+      0.92,
+      0.95,
+      1
+    ],
+    "fill": 0.7
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "gin",
+        "seed": 101,
+        "wear": 0.1
+      }
+    },
+    {
+      "slot": "neck",
+      "generate": {
+        "template": "wine_neck",
+        "seed": 102,
+        "fields": {
+          "year": "No. 3",
+          "product": "Gin"
+        }
+      }
+    }
+  ],
+  "meta": {
+    "description": "Square gin flask: botanical front label (replaces the plain placeholder plate) and neck collar.",
+    "tags": [
+      "spirit",
+      "container"
+    ],
+    "name": "container_square_gin",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

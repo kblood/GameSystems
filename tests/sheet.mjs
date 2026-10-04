@@ -1,0 +1,10 @@
+import fs from 'node:fs'; import { createRequire } from 'node:module';
+const require = createRequire('C:/Devstuff/GameDev/NightfallContracts/package.json');
+const puppeteer = require('puppeteer-core');
+const bottles = ['wine','beer','soda','whiskey','jar','flask'], poses = ['t0_f60','t45_f60','t90_f60','t135_f60','t180_f60'];
+const rows = bottles.map(b => `<tr>${poses.map(p => `<td><img src="file:///C:/Tools/BlenderShared/tests/out/${b}_${p}.png"></td>`).join('')}</tr>`).join('');
+fs.writeFileSync('out/sheet.html', `<style>body{margin:0;background:#111}td{padding:0}img{width:230px;height:307px;object-fit:cover;object-position:center 40%;display:block}</style><table cellspacing=0>${rows}</table>`);
+const chrome = ['C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find(fs.existsSync);
+const b = await puppeteer.launch({ executablePath: chrome, headless: 'new', args:['--allow-file-access-from-files'], defaultViewport: { width: 1150, height: 1842 } });
+const p = await b.newPage(); await p.goto('file:///C:/Tools/BlenderShared/tests/out/sheet.html'); await new Promise(r=>setTimeout(r,800));
+await p.screenshot({ path: 'out/sheet.png' }); await b.close(); console.log('ok');

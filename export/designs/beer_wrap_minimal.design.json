@@ -1,0 +1,95 @@
+{
+ "name": "beer_wrap",
+ "tier": "minimal",
+ "bottle": "beer",
+ "glb": "beer_wrap_minimal.glb",
+ "liquid_sidecar": "beer_wrap_minimal.liquid.json",
+ "meta": {
+  "description": "Full 360 degree wrap label, seam at the back.",
+  "tags": [
+   "beer",
+   "wrap"
+  ],
+  "name": "beer_wrap",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 529
+ },
+ "glass": {
+  "tint": [
+   0.22,
+   0.12,
+   0.02,
+   1.0
+  ],
+  "roughness": 0.03,
+  "thickness_mm": 2.5,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "crown",
+  "r": 0.0155,
+  "z0": 0.25,
+  "z1": 0.2615,
+  "top_r": 0.012450000000000001
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 494.3,
+  "z0": 0.0029,
+  "z1": 0.252,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.7,
+   0.32,
+   0.04,
+   1.0
+  ],
+  "carbonation": 0.5,
+  "foam": 0.9,
+  "foam_height": 0.026,
+  "bubble_size": 1.0,
+  "opacity": 0.7,
+  "viscosity": 0.1,
+  "density": 1.01,
+  "fill_default": 0.8,
+  "tint_strength": 1.0,
+  "mass_full_kg": 0.4992
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "wrap",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.4018088583713989,
+    0.25866083648966676,
+    0.14950997896150894,
+    1.0
+   ],
+   "width_m": 0.2042,
+   "height_m": 0.11,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck",
+  "wrap",
+  "cap"
+ ]
+}

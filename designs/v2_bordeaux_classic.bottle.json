@@ -1,0 +1,63 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_bordeaux",
+  "liquid": {
+    "color": [
+      0.35,
+      0.02,
+      0.06,
+      1
+    ],
+    "fill": 0.7,
+    "carbonation": 0.0,
+    "foam": 0.1
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "wine_classic",
+        "seed": 11,
+        "fields": {
+          "brand": "Château Lunelle"
+        },
+        "wear": 0.25
+      }
+    },
+    {
+      "slot": "back",
+      "generate": {
+        "template": "wine_back",
+        "seed": 3,
+        "wear": 0.2
+      }
+    },
+    {
+      "slot": "neck",
+      "generate": {
+        "template": "wine_neck",
+        "seed": 4,
+        "wear": 0.15
+      }
+    },
+    {
+      "slot": "capsule",
+      "generate": {
+        "template": "foil_capsule",
+        "seed": 5
+      },
+      "finish": "satin"
+    }
+  ],
+  "meta": {
+    "description": "Bordeaux bottle with the classic cream front label, back label, neck collar and a printed foil capsule (same art family as wine_classic).",
+    "tags": [
+      "wine",
+      "multi-label",
+      "foil",
+      "v2"
+    ],
+    "name": "v2_bordeaux_classic",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

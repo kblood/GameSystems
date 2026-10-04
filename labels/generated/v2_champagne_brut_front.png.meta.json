@@ -1,0 +1,21 @@
+{
+ "template": "champagne",
+ "bottle": "v2_champagne",
+ "slot": "front",
+ "size_px": [
+  788,
+  720
+ ],
+ "px_per_cm": 80.0,
+ "alpha": false,
+ "wear": 0.1,
+ "seed": 21,
+ "fields": {
+  "tagline": "CUVEE DE PRESTIGE",
+  "brand": "Maison Aur\u00e8le",
+  "product": "Brut R\u00e9serve",
+  "year": "2016",
+  "abv": "12% vol",
+  "volume": "750 ml"
+ }
+}

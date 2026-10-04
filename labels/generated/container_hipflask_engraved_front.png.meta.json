@@ -1,0 +1,21 @@
+{
+ "template": "whiskey_classic",
+ "bottle": "container_hipflask",
+ "slot": "front",
+ "size_px": [
+  512,
+  528
+ ],
+ "px_per_cm": 80.0,
+ "alpha": false,
+ "wear": 0.25,
+ "seed": 111,
+ "fields": {
+  "tagline": "DISTILLED & CASK AGED",
+  "brand": "Glenvorrow",
+  "product": "Pocket Malt",
+  "age": "AGED 12 YEARS",
+  "abv": "43% vol",
+  "volume": "200 ml"
+ }
+}

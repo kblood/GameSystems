@@ -1,0 +1,17 @@
+{
+ "template": "wine_neck",
+ "bottle": "v2_burgundy",
+ "slot": "neck",
+ "size_px": [
+  630,
+  286
+ ],
+ "px_per_cm": 100.1,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 23,
+ "fields": {
+  "year": "2021",
+  "product": "Minuit"
+ }
+}

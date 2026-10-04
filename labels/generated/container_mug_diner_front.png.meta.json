@@ -1,0 +1,20 @@
+{
+ "template": "mug_logo",
+ "bottle": "container_mug",
+ "slot": "front",
+ "size_px": [
+  688,
+  464
+ ],
+ "px_per_cm": 80.0,
+ "alpha": true,
+ "wear": 0.0,
+ "seed": 141,
+ "fields": {
+  "color": "#c4342b",
+  "ink": "#2a2a2a",
+  "brand": "Rosie's",
+  "since": "EST. 1958",
+  "tagline": "BOTTOMLESS COFFEE"
+ }
+}

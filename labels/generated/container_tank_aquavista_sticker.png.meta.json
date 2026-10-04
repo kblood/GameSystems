@@ -1,0 +1,20 @@
+{
+ "template": "tank_sticker",
+ "bottle": "container_tank",
+ "slot": "sticker",
+ "size_px": [
+  600,
+  360
+ ],
+ "px_per_cm": 60.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 151,
+ "fields": {
+  "bg": "#11698e",
+  "accent": "#19a7ce",
+  "brand": "AQUAVISTA",
+  "product": "Glass Aquarium",
+  "volume": "60 L"
+ }
+}

@@ -1,0 +1,23 @@
+{
+ "template": "tag_hand",
+ "bottle": "flask",
+ "slot": "tag_hand",
+ "size_px": [
+  440,
+  376
+ ],
+ "px_per_cm": 100.0,
+ "alpha": true,
+ "wear": 0.35,
+ "seed": 4,
+ "fields": {
+  "paper": "#d2b27a",
+  "ink": "#27323f",
+  "lines": [
+   "Sample 4",
+   "12/10 - K.S."
+  ],
+  "font": "hand",
+  "angle": 2.0
+ }
+}

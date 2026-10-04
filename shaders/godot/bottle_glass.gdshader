@@ -1,0 +1,59 @@
+// Cheap see-through glass for bottle_*.glb in Godot (the importer drops KHR_materials_transmission,
+// so the Glass mesh would otherwise come in as opaque white).
+// Nearly invisible face-on; the wall darkens + tints toward the silhouette (longer path through the glass),
+// fresnel reflection of a fake sky/ground gradient + one soft "window" reflection, and sharp real light
+// highlights from light() that raise alpha so they are not washed out by the blend.
+shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, specular_schlick_ggx;
+
+uniform vec4 tint : source_color = vec4(0.85, 0.95, 0.95, 1.0);
+uniform float base_alpha : hint_range(0.0, 1.0) = 0.03;
+uniform float edge_alpha : hint_range(0.0, 1.0) = 0.55;
+uniform float reflection : hint_range(0.0, 2.0) = 1.0;
+uniform float highlight : hint_range(0.0, 8.0) = 3.0;
+uniform int quality : hint_range(0, 3) = 3;           // set by BottleLiquid; < 3 drops the far-wall highlight
+uniform vec3 window_dir = vec3(-0.45, 0.5, 0.75);   // world direction of the fake window/softbox
+
+void fragment() {
+	vec3 n = normalize(NORMAL);
+	vec3 v = normalize(VIEW);
+	float ndv = clamp(dot(n, v), 0.0, 1.0);
+	float fres = 0.04 + 0.96 * pow(1.0 - ndv, 5.0);
+	vec3 rw = (INV_VIEW_MATRIX * vec4(reflect(-v, n), 0.0)).xyz;
+	vec3 env = mix(vec3(0.05, 0.05, 0.055), vec3(0.8, 0.85, 0.9), smoothstep(-0.25, 0.85, rw.y));
+	vec3 wd = normalize(window_dir);
+	float wdot = dot(rw, wd);
+	float win = smoothstep(0.93, 0.97, wdot) + 0.12 * smoothstep(0.7, 0.95, wdot);   // crisp softbox + faint halo
+	// the inner face of the far wall reflects the same window: mirror the normal's sideways part about the view axis
+	float win2 = 0.0;
+	if (quality >= 3) {
+		vec3 n2 = 2.0 * ndv * v - n;
+		vec3 rw2 = (INV_VIEW_MATRIX * vec4(reflect(-v, n2), 0.0)).xyz;
+		win2 = smoothstep(0.95, 0.98, dot(rw2, wd)) * 0.12;
+	}
+	vec3 refl = (env * fres + win * (0.25 + 0.75 * fres) + win2) * reflection;
+	// absorption: coloured glass is darker overall, every glass darkens toward the edge
+	float tl = dot(tint.rgb, vec3(0.299, 0.587, 0.114));
+	float sat = max(max(tint.r, tint.g), tint.b) - min(min(tint.r, tint.g), tint.b);
+	// thickness: near the silhouette the eye looks along the wall -> long path, dark tinted band with a crisp inner edge
+	float edge = pow(1.0 - ndv, 2.5) + 0.35 * smoothstep(0.42, 0.22, ndv);
+	float a_abs = clamp(base_alpha + (1.0 - tl) * 0.5 + sat * 0.15 + edge * edge_alpha, 0.0, 0.95);
+	vec3 abs_col = tint.rgb * mix(0.03, 0.35, 1.0 - tl);
+	float a_ref = clamp(dot(refl, vec3(0.333)), 0.0, 1.0);
+	float A = clamp(a_abs + a_ref * (1.0 - a_abs), 0.0, 1.0);
+	ALBEDO = vec3(0.0);
+	EMISSION = (abs_col * a_abs + refl) / max(A, 0.001);
+	ALPHA = A;
+	ROUGHNESS = 0.03;
+	METALLIC = 0.0;
+	SPECULAR = 0.0;
+}
+
+void light() {
+	vec3 hv = normalize(LIGHT + VIEW);
+	float nh = max(dot(NORMAL, hv), 0.0);
+	float s = pow(nh, 900.0) * highlight + pow(nh, 120.0) * 0.12;
+	vec3 sp = s * LIGHT_COLOR * ATTENUATION;
+	SPECULAR_LIGHT += sp;
+	ALPHA = max(ALPHA, clamp(s, 0.0, 1.0));
+}

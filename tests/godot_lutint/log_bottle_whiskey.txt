@@ -1,0 +1,5 @@
+LUTINT asset=bottle_whiskey lut_version=2 open=false sleeping=false
+LUTINT_JSON {"asset":"bottle_whiskey","poses":[{"d":0.0494139902293682,"fill":0.25,"lost":0.0,"sleeping":true,"spilled":false,"tilt":0,"up":[0.0,1.0,0.0]},{"d":0.107140131294727,"fill":0.6,"lost":0.0,"sleeping":true,"spilled":false,"tilt":0,"up":[0.0,1.0,0.0]},{"d":0.158770442008972,"fill":0.9,"lost":0.0,"sleeping":true,"spilled":false,"tilt":0,"up":[0.0,1.0,0.0]},{"d":0.00465670647099614,"fill":0.6,"lost":0.0,"sleeping":true,"spilled":false,"tilt":90,"up":[1.0,-0.0000000437113882867379,0.0]},{"d":-0.0741344392299652,"fill":0.6,"lost":0.0,"sleeping":true,"spilled":false,"tilt":180,"up":[-0.000
+LUTINT sleep: asleep_at_rest=true woke_on_move=false asleep_again=true
+LUTINT fill_wake=true
+SHOTS done

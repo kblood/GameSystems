@@ -1,0 +1,49 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_apothecary",
+  "liquid": {
+    "color": [
+      0.15,
+      0.25,
+      0.1,
+      1
+    ],
+    "fill": 0.6,
+    "carbonation": 0.0,
+    "foam": 0.0
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "apothecary",
+        "seed": 71,
+        "wear": 0.25
+      }
+    },
+    {
+      "slot": "tag",
+      "generate": {
+        "template": "tag_hand",
+        "seed": 72,
+        "fields": {
+          "lines": [
+            "Take 10",
+            "drops"
+          ]
+        },
+        "wear": 0.4
+      }
+    }
+  ],
+  "meta": {
+    "description": "Small apothecary bottle: front label and a hand-written hang tag.",
+    "tags": [
+      "apothecary",
+      "tag",
+      "v2"
+    ],
+    "name": "v2_apothecary_tonic",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

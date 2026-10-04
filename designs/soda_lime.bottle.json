@@ -1,0 +1,46 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "bottle": "soda",
+  "glass": {
+    "tint": [
+      0.75,
+      0.95,
+      0.8,
+      1.0
+    ]
+  },
+  "cap": {
+    "type": "screw",
+    "colour": "#2f9e44"
+  },
+  "liquid": {
+    "color": [
+      0.55,
+      0.85,
+      0.2,
+      1.0
+    ],
+    "fill": 0.9,
+    "carbonation": 0.9,
+    "foam": 0.8,
+    "opacity": 0.5,
+    "viscosity": 0.1,
+    "density": 1.03,
+    "bubble_size": 0.7
+  },
+  "labels": [
+    {
+      "slot": "sleeve",
+      "image": "labels/soda_lime_sleeve.png"
+    }
+  ],
+  "meta": {
+    "description": "Second sleeve style on a greenish bottle.",
+    "tags": [
+      "soda",
+      "sleeve"
+    ],
+    "name": "soda_lime",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

@@ -1,0 +1,30 @@
+{
+ "template": "wine_back",
+ "bottle": "v2_burgundy",
+ "slot": "back",
+ "size_px": [
+  566,
+  480
+ ],
+ "px_per_cm": 80.1,
+ "alpha": false,
+ "wear": 0.1,
+ "seed": 22,
+ "fields": {
+  "brand": "Nocturne",
+  "blurb": [
+   "Ripened on the south slopes of the",
+   "fictional Vallon Valley, this red",
+   "shows dark cherry, cedar and a",
+   "long, gently spiced finish.",
+   "",
+   "Serve at 16-18 C with roast",
+   "meats and hard cheeses."
+  ],
+  "small": [
+   "Estate bottled by Lunelle Cellars,",
+   "Vallon Valley. Contains sulphites.",
+   "Please recycle this bottle."
+  ]
+ }
+}

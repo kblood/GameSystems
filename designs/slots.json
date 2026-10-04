@@ -1,0 +1,4690 @@
+{
+ "version": 2,
+ "angle_convention": "centre angle 0 = front (+Z in glTF), 90 = +X (bottle's right as seen from the front), 180 = back",
+ "uv_convention": "u 0..1 along +angle (left->right seen from outside), v 0..1 bottom->top; cap_top: u=+X, v=back",
+ "texture": "sRGB PNG/JPG, alpha straight (not premultiplied); size = round(width_cm*px_per_cm) x round(height_cm*px_per_cm)",
+ "bottles": {
+  "wine": {
+   "provider": "lathe_v1",
+   "height_m": 0.34,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.05,
+     "z1": 0.155,
+     "arc": 130,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "main label",
+     "width_m": 0.08508,
+     "height_m": 0.105,
+     "aspect": 0.8103,
+     "tex_w": 680,
+     "tex_h": 840
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.06,
+     "z1": 0.14,
+     "arc": 100,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "back label (centre 180 deg)",
+     "width_m": 0.06545,
+     "height_m": 0.08,
+     "aspect": 0.8181,
+     "tex_w": 524,
+     "tex_h": 640
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.245,
+     "z1": 0.282,
+     "arc": 200,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "small collar on the tapered neck, follows the taper",
+     "width_m": 0.06946,
+     "height_m": 0.03927,
+     "aspect": 1.7689,
+     "tex_w": 694,
+     "tex_h": 392
+    },
+    {
+     "name": "foil",
+     "kind": "band",
+     "z0": 0.29,
+     "z1": 0.339,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "foil_metal",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "capsule band around the neck, seam at the back",
+     "width_m": 0.08175,
+     "height_m": 0.0492,
+     "aspect": 1.6618,
+     "tex_w": 818,
+     "tex_h": 492
+    },
+    {
+     "name": "cap",
+     "kind": "cap_top",
+     "z0": 0.35,
+     "z1": 0.35,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "flat disc on top of the cork/capsule",
+     "width_m": 0.02283,
+     "height_m": 0.02283,
+     "aspect": 1.0,
+     "tex_w": 228,
+     "tex_h": 228,
+     "radius_m": 0.01142
+    }
+   ]
+  },
+  "beer": {
+   "provider": "lathe_v1",
+   "height_m": 0.256,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.035,
+     "z1": 0.125,
+     "arc": 150,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.08508,
+     "height_m": 0.09,
+     "aspect": 0.9454,
+     "tex_w": 680,
+     "tex_h": 720
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.045,
+     "z1": 0.115,
+     "arc": 120,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.06807,
+     "height_m": 0.07,
+     "aspect": 0.9724,
+     "tex_w": 544,
+     "tex_h": 560
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.212,
+     "z1": 0.238,
+     "arc": 200,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "neck label",
+     "width_m": 0.04298,
+     "height_m": 0.02606,
+     "aspect": 1.6494,
+     "tex_w": 430,
+     "tex_h": 260
+    },
+    {
+     "name": "wrap",
+     "kind": "wrap",
+     "z0": 0.02,
+     "z1": 0.13,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [
+      "front",
+      "back"
+     ],
+     "notes": "optional full wrap, seam at the back",
+     "width_m": 0.2042,
+     "height_m": 0.11,
+     "aspect": 1.8564,
+     "tex_w": 1226,
+     "tex_h": 660
+    },
+    {
+     "name": "cap",
+     "kind": "cap_top",
+     "z0": 0.2615,
+     "z1": 0.2615,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 120,
+     "overlaps": [],
+     "notes": "flat disc on top of the crown cap",
+     "width_m": 0.0249,
+     "height_m": 0.0249,
+     "aspect": 1.0,
+     "tex_w": 298,
+     "tex_h": 298,
+     "radius_m": 0.01245
+    }
+   ]
+  },
+  "soda": {
+   "provider": "lathe_v1",
+   "height_m": 0.262,
+   "slots": [
+    {
+     "name": "sleeve",
+     "kind": "wrap",
+     "z0": 0.022,
+     "z1": 0.205,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "plastic_sleeve",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [],
+     "notes": "shrink sleeve, follows the shoulder, seam at the back",
+     "width_m": 0.20418,
+     "height_m": 0.18329,
+     "aspect": 1.114,
+     "tex_w": 1226,
+     "tex_h": 1100
+    },
+    {
+     "name": "neck_seal",
+     "kind": "band",
+     "z0": 0.246,
+     "z1": 0.258,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "plastic_sleeve",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "tamper band round the neck",
+     "width_m": 0.08796,
+     "height_m": 0.012,
+     "aspect": 7.3303,
+     "tex_w": 880,
+     "tex_h": 120
+    },
+    {
+     "name": "cap",
+     "kind": "cap_top",
+     "z0": 0.267,
+     "z1": 0.267,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 120,
+     "overlaps": [],
+     "notes": "flat disc on top of the cap",
+     "width_m": 0.022,
+     "height_m": 0.022,
+     "aspect": 1.0,
+     "tex_w": 264,
+     "tex_h": 264,
+     "radius_m": 0.011
+    }
+   ]
+  },
+  "whiskey": {
+   "provider": "lathe_v1",
+   "height_m": 0.226,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.03,
+     "z1": 0.12,
+     "arc": 120,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "main label",
+     "width_m": 0.07645,
+     "height_m": 0.09,
+     "aspect": 0.8494,
+     "tex_w": 612,
+     "tex_h": 720
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.045,
+     "z1": 0.105,
+     "arc": 100,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.0637,
+     "height_m": 0.06,
+     "aspect": 1.0617,
+     "tex_w": 510,
+     "tex_h": 480
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.192,
+     "z1": 0.214,
+     "arc": 160,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "handwritten_tag",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "neck tag / collar",
+     "width_m": 0.03976,
+     "height_m": 0.02209,
+     "aspect": 1.7998,
+     "tex_w": 398,
+     "tex_h": 220
+    },
+    {
+     "name": "shoulder",
+     "kind": "shoulder",
+     "z0": 0.15,
+     "z1": 0.185,
+     "arc": 140,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "strip over the shoulder curve",
+     "width_m": 0.06886,
+     "height_m": 0.03938,
+     "aspect": 1.7483,
+     "tex_w": 688,
+     "tex_h": 394
+    },
+    {
+     "name": "cap",
+     "kind": "cap_top",
+     "z0": 0.236,
+     "z1": 0.236,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "flat disc on top of the cork/stopper",
+     "width_m": 0.02477,
+     "height_m": 0.02477,
+     "aspect": 1.0,
+     "tex_w": 248,
+     "tex_h": 248,
+     "radius_m": 0.01239
+    }
+   ]
+  },
+  "jar": {
+   "provider": "lathe_v1",
+   "height_m": 0.122,
+   "slots": [
+    {
+     "name": "wrap",
+     "kind": "wrap",
+     "z0": 0.022,
+     "z1": 0.09,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [],
+     "notes": "full wrap label, seam at the back",
+     "width_m": 0.27646,
+     "height_m": 0.068,
+     "aspect": 4.0656,
+     "tex_w": 1658,
+     "tex_h": 408
+    },
+    {
+     "name": "lid",
+     "kind": "cap_top",
+     "z0": 0.13,
+     "z1": 0.13,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "flat disc on the lid",
+     "width_m": 0.075,
+     "height_m": 0.075,
+     "aspect": 1.0,
+     "tex_w": 750,
+     "tex_h": 750,
+     "radius_m": 0.0375
+    }
+   ]
+  },
+  "flask": {
+   "provider": "lathe_v1",
+   "height_m": 0.202,
+   "slots": [
+    {
+     "name": "tag",
+     "kind": "tag",
+     "z0": 0.05,
+     "z1": 0.062,
+     "arc": 31,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "tape",
+     "allow_flip": false,
+     "px_per_cm": 150,
+     "overlaps": [],
+     "notes": "label-printer strip ~30x12 mm",
+     "width_m": 0.03068,
+     "height_m": 0.01253,
+     "aspect": 2.4487,
+     "tex_w": 460,
+     "tex_h": 188
+    },
+    {
+     "name": "tag_hand",
+     "kind": "tag",
+     "z0": 0.052,
+     "z1": 0.088,
+     "arc": 48,
+     "centre": 58,
+     "offset_mm": 0.35,
+     "material": "handwritten_tag",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "hand-written tag",
+     "width_m": 0.04398,
+     "height_m": 0.03759,
+     "aspect": 1.1702,
+     "tex_w": 440,
+     "tex_h": 376
+    },
+    {
+     "name": "grad",
+     "kind": "grad",
+     "z0": 0.025,
+     "z1": 0.115,
+     "arc": 36,
+     "centre": -52,
+     "offset_mm": 0.35,
+     "material": "clear_film",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "graduation marks / white marking patch",
+     "width_m": 0.03274,
+     "height_m": 0.09331,
+     "aspect": 0.3509,
+     "tex_w": 328,
+     "tex_h": 934
+    },
+    {
+     "name": "cap",
+     "kind": "cap_top",
+     "z0": 0.215,
+     "z1": 0.215,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "flat disc on top of the stopper",
+     "width_m": 0.02671,
+     "height_m": 0.02671,
+     "aspect": 1.0,
+     "tex_w": 268,
+     "tex_h": 268,
+     "radius_m": 0.01336
+    }
+   ]
+  },
+  "v2_bordeaux": {
+   "provider": "lathe_v2",
+   "height_m": 0.3,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.06,
+     "z1": 0.165,
+     "arc": 130,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "main label, cylinder r~38 mm",
+     "width_m": 0.08608,
+     "height_m": 0.105,
+     "aspect": 0.8198,
+     "tex_w": 688,
+     "tex_h": 840
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.07,
+     "z1": 0.15,
+     "arc": 100,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.06623,
+     "height_m": 0.08,
+     "aspect": 0.8279,
+     "tex_w": 530,
+     "tex_h": 640
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.232,
+     "z1": 0.248,
+     "arc": 200,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "small collar below the capsule",
+     "width_m": 0.05728,
+     "height_m": 0.01662,
+     "aspect": 3.4465,
+     "tex_w": 572,
+     "tex_h": 166
+    },
+    {
+     "name": "capsule",
+     "kind": "band",
+     "z0": 0.258,
+     "z1": 0.299,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "foil_metal",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "printed band on the foil capsule (surface = Cap)",
+     "surface": "cap",
+     "width_m": 0.09569,
+     "height_m": 0.04118,
+     "aspect": 2.3236,
+     "tex_w": 956,
+     "tex_h": 412
+    }
+   ],
+   "outer": [
+    [
+     0.03366,
+     0.00107
+    ],
+    [
+     0.03585,
+     0.00417
+    ],
+    [
+     0.03723,
+     0.00861
+    ],
+    [
+     0.03779,
+     0.01491
+    ],
+    [
+     0.03816,
+     0.0435
+    ],
+    [
+     0.03766,
+     0.20044
+    ],
+    [
+     0.03623,
+     0.20823
+    ],
+    [
+     0.03393,
+     0.21399
+    ],
+    [
+     0.0292,
+     0.22076
+    ],
+    [
+     0.01891,
+     0.232
+    ],
+    [
+     0.01724,
+     0.23519
+    ],
+    [
+     0.01599,
+     0.23949
+    ],
+    [
+     0.0149,
+     0.25198
+    ],
+    [
+     0.01459,
+     0.27715
+    ],
+    [
+     0.01471,
+     0.28526
+    ],
+    [
+     0.01568,
+     0.28798
+    ],
+    [
+     0.01566,
+     0.29903
+    ],
+    [
+     0.01449,
+     0.3
+    ]
+   ],
+   "cap_outer": [
+    [
+     0.01501,
+     0.25
+    ],
+    [
+     0.01488,
+     0.28204
+    ],
+    [
+     0.01505,
+     0.28562
+    ],
+    [
+     0.01595,
+     0.2878
+    ],
+    [
+     0.0158,
+     0.29974
+    ]
+   ],
+   "label_zone": [
+    0.06,
+    0.17
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_bordeaux.profile.json"
+  },
+  "v2_burgundy": {
+   "provider": "lathe_v2",
+   "height_m": 0.296,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.04,
+     "z1": 0.125,
+     "arc": 130,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.09171,
+     "height_m": 0.08501,
+     "aspect": 1.0788,
+     "tex_w": 734,
+     "tex_h": 680
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.05,
+     "z1": 0.11,
+     "arc": 100,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.07066,
+     "height_m": 0.06,
+     "aspect": 1.1776,
+     "tex_w": 566,
+     "tex_h": 480
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.215,
+     "z1": 0.243,
+     "arc": 200,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "collar on the sloping neck",
+     "width_m": 0.06291,
+     "height_m": 0.02851,
+     "aspect": 2.2067,
+     "tex_w": 630,
+     "tex_h": 286
+    }
+   ],
+   "outer": [
+    [
+     0.03632,
+     0.00111
+    ],
+    [
+     0.03852,
+     0.00417
+    ],
+    [
+     0.03992,
+     0.00844
+    ],
+    [
+     0.04051,
+     0.01493
+    ],
+    [
+     0.04048,
+     0.10733
+    ],
+    [
+     0.0397,
+     0.13149
+    ],
+    [
+     0.03769,
+     0.14747
+    ],
+    [
+     0.03459,
+     0.16335
+    ],
+    [
+     0.02971,
+     0.18334
+    ],
+    [
+     0.01972,
+     0.21959
+    ],
+    [
+     0.01679,
+     0.23435
+    ],
+    [
+     0.01558,
+     0.24557
+    ],
+    [
+     0.01494,
+     0.26095
+    ],
+    [
+     0.01477,
+     0.28283
+    ],
+    [
+     0.01498,
+     0.28563
+    ],
+    [
+     0.01578,
+     0.28779
+    ],
+    [
+     0.01578,
+     0.29503
+    ],
+    [
+     0.01461,
+     0.296
+    ]
+   ],
+   "label_zone": [
+    0.04,
+    0.12
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_burgundy.profile.json"
+  },
+  "v2_champagne": {
+   "provider": "lathe_v2",
+   "height_m": 0.29999,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.055,
+     "z1": 0.145,
+     "arc": 130,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.09853,
+     "height_m": 0.09001,
+     "aspect": 1.0946,
+     "tex_w": 788,
+     "tex_h": 720
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.065,
+     "z1": 0.13,
+     "arc": 100,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.07591,
+     "height_m": 0.065,
+     "aspect": 1.1678,
+     "tex_w": 608,
+     "tex_h": 520
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.185,
+     "z1": 0.208,
+     "arc": 120,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "neck label under the foil",
+     "width_m": 0.07258,
+     "height_m": 0.02376,
+     "aspect": 3.0547,
+     "tex_w": 726,
+     "tex_h": 238
+    },
+    {
+     "name": "foil",
+     "kind": "band",
+     "z0": 0.226,
+     "z1": 0.283,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "foil_metal",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "printed foil over the cork (surface = Cap); Cage stays untouched",
+     "surface": "cap",
+     "width_m": 0.12759,
+     "height_m": 0.05819,
+     "aspect": 2.1925,
+     "tex_w": 1276,
+     "tex_h": 582
+    }
+   ],
+   "outer": [
+    [
+     0.03572,
+     0.0
+    ],
+    [
+     0.03759,
+     0.00099
+    ],
+    [
+     0.04067,
+     0.00469
+    ],
+    [
+     0.04249,
+     0.00973
+    ],
+    [
+     0.04323,
+     0.01691
+    ],
+    [
+     0.04367,
+     0.03891
+    ],
+    [
+     0.04341,
+     0.12755
+    ],
+    [
+     0.0425,
+     0.15301
+    ],
+    [
+     0.04021,
+     0.17103
+    ],
+    [
+     0.03626,
+     0.19098
+    ],
+    [
+     0.01785,
+     0.25724
+    ],
+    [
+     0.01666,
+     0.26871
+    ],
+    [
+     0.01628,
+     0.28328
+    ],
+    [
+     0.01646,
+     0.28793
+    ],
+    [
+     0.01802,
+     0.29075
+    ],
+    [
+     0.01713,
+     0.2938
+    ],
+    [
+     0.01726,
+     0.29902
+    ],
+    [
+     0.01631,
+     0.29997
+    ]
+   ],
+   "cap_outer": [
+    [
+     0.03041,
+     0.21199
+    ],
+    [
+     0.01761,
+     0.26101
+    ],
+    [
+     0.01657,
+     0.28497
+    ],
+    [
+     0.01831,
+     0.29075
+    ],
+    [
+     0.01831,
+     0.3135
+    ]
+   ],
+   "label_zone": [
+    0.055,
+    0.14
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_champagne.profile.json"
+  },
+  "v2_longneck": {
+   "provider": "lathe_v2",
+   "height_m": 0.23931,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.035,
+     "z1": 0.108,
+     "arc": 150,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.08194,
+     "height_m": 0.073,
+     "aspect": 1.1225,
+     "tex_w": 656,
+     "tex_h": 584
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.045,
+     "z1": 0.1,
+     "arc": 120,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.06554,
+     "height_m": 0.055,
+     "aspect": 1.1917,
+     "tex_w": 524,
+     "tex_h": 440
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.163,
+     "z1": 0.19,
+     "arc": 200,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.05658,
+     "height_m": 0.02734,
+     "aspect": 2.0698,
+     "tex_w": 566,
+     "tex_h": 274
+    },
+    {
+     "name": "wrap",
+     "kind": "wrap",
+     "z0": 0.03,
+     "z1": 0.112,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [
+      "front",
+      "back"
+     ],
+     "notes": "optional full wrap, seam at the back",
+     "width_m": 0.19666,
+     "height_m": 0.082,
+     "aspect": 2.3983,
+     "tex_w": 1180,
+     "tex_h": 492
+    }
+   ],
+   "outer": [
+    [
+     0.02583,
+     2e-05
+    ],
+    [
+     0.02809,
+     0.00122
+    ],
+    [
+     0.02976,
+     0.00366
+    ],
+    [
+     0.03069,
+     0.00639
+    ],
+    [
+     0.03119,
+     0.01144
+    ],
+    [
+     0.03145,
+     0.03031
+    ],
+    [
+     0.03114,
+     0.11463
+    ],
+    [
+     0.03145,
+     0.11592
+    ],
+    [
+     0.03106,
+     0.11717
+    ],
+    [
+     0.03093,
+     0.11967
+    ],
+    [
+     0.02987,
+     0.12809
+    ],
+    [
+     0.02842,
+     0.13467
+    ],
+    [
+     0.02528,
+     0.1446
+    ],
+    [
+     0.01836,
+     0.16363
+    ],
+    [
+     0.01602,
+     0.17419
+    ],
+    [
+     0.01516,
+     0.18381
+    ],
+    [
+     0.01482,
+     0.20751
+    ],
+    [
+     0.01228,
+     0.2266
+    ],
+    [
+     0.01308,
+     0.23002
+    ],
+    [
+     0.01249,
+     0.23284
+    ],
+    [
+     0.01355,
+     0.23541
+    ],
+    [
+     0.0136,
+     0.23781
+    ],
+    [
+     0.01358,
+     0.2381
+    ],
+    [
+     0.01294,
+     0.23906
+    ],
+    [
+     0.0121,
+     0.23931
+    ]
+   ],
+   "label_zone": [
+    0.0349,
+    0.1049
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_longneck.profile.json"
+  },
+  "v2_stubby": {
+   "provider": "lathe_v2",
+   "height_m": 0.18382,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.025,
+     "z1": 0.088,
+     "arc": 150,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.0885,
+     "height_m": 0.063,
+     "aspect": 1.4047,
+     "tex_w": 708,
+     "tex_h": 504
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.032,
+     "z1": 0.08,
+     "arc": 120,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.07082,
+     "height_m": 0.048,
+     "aspect": 1.4753,
+     "tex_w": 566,
+     "tex_h": 384
+    },
+    {
+     "name": "wrap",
+     "kind": "wrap",
+     "z0": 0.022,
+     "z1": 0.09,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [
+      "front",
+      "back"
+     ],
+     "notes": "",
+     "width_m": 0.21236,
+     "height_m": 0.068,
+     "aspect": 3.1228,
+     "tex_w": 1274,
+     "tex_h": 408
+    }
+   ],
+   "outer": [
+    [
+     0.02815,
+     0.0
+    ],
+    [
+     0.03047,
+     0.00121
+    ],
+    [
+     0.03199,
+     0.00338
+    ],
+    [
+     0.03311,
+     0.00651
+    ],
+    [
+     0.03361,
+     0.01105
+    ],
+    [
+     0.03372,
+     0.01264
+    ],
+    [
+     0.03416,
+     0.0138
+    ],
+    [
+     0.0338,
+     0.0153
+    ],
+    [
+     0.03382,
+     0.08145
+    ],
+    [
+     0.03358,
+     0.09361
+    ],
+    [
+     0.03389,
+     0.09495
+    ],
+    [
+     0.0334,
+     0.09624
+    ],
+    [
+     0.03324,
+     0.09766
+    ],
+    [
+     0.03163,
+     0.10715
+    ],
+    [
+     0.02904,
+     0.11626
+    ],
+    [
+     0.02634,
+     0.12355
+    ],
+    [
+     0.01845,
+     0.14129
+    ],
+    [
+     0.01584,
+     0.14976
+    ],
+    [
+     0.0124,
+     0.17132
+    ],
+    [
+     0.01306,
+     0.17477
+    ],
+    [
+     0.01242,
+     0.17761
+    ],
+    [
+     0.01343,
+     0.18002
+    ],
+    [
+     0.01349,
+     0.18232
+    ],
+    [
+     0.01346,
+     0.18261
+    ],
+    [
+     0.01282,
+     0.18357
+    ],
+    [
+     0.01199,
+     0.18382
+    ]
+   ],
+   "label_zone": [
+    0.0219,
+    0.0879
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_stubby.profile.json"
+  },
+  "v2_growler": {
+   "provider": "lathe_v2",
+   "height_m": 0.21503,
+   "slots": [
+    {
+     "name": "wrap",
+     "kind": "wrap",
+     "z0": 0.03,
+     "z1": 0.108,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 45,
+     "overlaps": [
+      "front",
+      "back"
+     ],
+     "notes": "full wrap, 314 mm round the belly, seam at the back",
+     "width_m": 0.31721,
+     "height_m": 0.078,
+     "aspect": 4.0667,
+     "tex_w": 1428,
+     "tex_h": 352
+    },
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.035,
+     "z1": 0.105,
+     "arc": 110,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 70,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.09694,
+     "height_m": 0.07,
+     "aspect": 1.3848,
+     "tex_w": 678,
+     "tex_h": 490
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.045,
+     "z1": 0.095,
+     "arc": 90,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 70,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.07932,
+     "height_m": 0.05,
+     "aspect": 1.5864,
+     "tex_w": 556,
+     "tex_h": 350
+    }
+   ],
+   "outer": [
+    [
+     0.04296,
+     0.0
+    ],
+    [
+     0.04536,
+     0.00094
+    ],
+    [
+     0.04726,
+     0.00297
+    ],
+    [
+     0.0498,
+     0.01087
+    ],
+    [
+     0.05056,
+     0.02948
+    ],
+    [
+     0.05045,
+     0.10044
+    ],
+    [
+     0.05001,
+     0.1176
+    ],
+    [
+     0.04906,
+     0.12682
+    ],
+    [
+     0.04574,
+     0.14245
+    ],
+    [
+     0.03926,
+     0.1589
+    ],
+    [
+     0.03516,
+     0.16645
+    ],
+    [
+     0.02493,
+     0.17923
+    ],
+    [
+     0.02232,
+     0.18419
+    ],
+    [
+     0.02127,
+     0.18825
+    ],
+    [
+     0.02077,
+     0.19545
+    ],
+    [
+     0.02291,
+     0.19753
+    ],
+    [
+     0.02292,
+     0.19903
+    ],
+    [
+     0.02071,
+     0.19953
+    ],
+    [
+     0.01969,
+     0.20215
+    ],
+    [
+     0.02002,
+     0.21406
+    ],
+    [
+     0.01908,
+     0.21501
+    ]
+   ],
+   "label_zone": [
+    0.03,
+    0.105
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_growler.profile.json"
+  },
+  "v2_swingtop": {
+   "provider": "lathe_v2",
+   "height_m": 0.23213,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.03,
+     "z1": 0.115,
+     "arc": 130,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.07831,
+     "height_m": 0.085,
+     "aspect": 0.9213,
+     "tex_w": 626,
+     "tex_h": 680
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.04,
+     "z1": 0.105,
+     "arc": 100,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.06025,
+     "height_m": 0.065,
+     "aspect": 0.927,
+     "tex_w": 482,
+     "tex_h": 520
+    },
+    {
+     "name": "wrap",
+     "kind": "wrap",
+     "z0": 0.028,
+     "z1": 0.12,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [
+      "front",
+      "back"
+     ],
+     "notes": "",
+     "width_m": 0.21678,
+     "height_m": 0.092,
+     "aspect": 2.3563,
+     "tex_w": 1300,
+     "tex_h": 552
+    }
+   ],
+   "outer": [
+    [
+     0.02865,
+     1e-05
+    ],
+    [
+     0.03101,
+     0.00122
+    ],
+    [
+     0.03268,
+     0.00363
+    ],
+    [
+     0.03374,
+     0.00671
+    ],
+    [
+     0.03423,
+     0.0113
+    ],
+    [
+     0.03461,
+     0.02834
+    ],
+    [
+     0.03445,
+     0.10878
+    ],
+    [
+     0.03393,
+     0.13514
+    ],
+    [
+     0.03261,
+     0.1459
+    ],
+    [
+     0.03073,
+     0.15502
+    ],
+    [
+     0.02702,
+     0.16741
+    ],
+    [
+     0.02013,
+     0.18763
+    ],
+    [
+     0.01717,
+     0.19987
+    ],
+    [
+     0.01568,
+     0.21358
+    ],
+    [
+     0.01589,
+     0.21493
+    ],
+    [
+     0.01718,
+     0.21604
+    ],
+    [
+     0.01749,
+     0.21716
+    ],
+    [
+     0.0173,
+     0.21833
+    ],
+    [
+     0.01603,
+     0.21935
+    ],
+    [
+     0.01565,
+     0.22066
+    ],
+    [
+     0.0166,
+     0.22504
+    ],
+    [
+     0.01673,
+     0.23053
+    ],
+    [
+     0.0167,
+     0.23085
+    ],
+    [
+     0.01627,
+     0.23166
+    ],
+    [
+     0.01513,
+     0.23213
+    ]
+   ],
+   "label_zone": [
+    0.0279,
+    0.1199
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_swingtop.profile.json"
+  },
+  "v2_pet500": {
+   "provider": "lathe_v2",
+   "height_m": 0.20367,
+   "slots": [
+    {
+     "name": "sleeve",
+     "kind": "wrap",
+     "z0": 0.04,
+     "z1": 0.132,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.9,
+     "material": "plastic_sleeve",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [
+      "front"
+     ],
+     "notes": "shrink sleeve over the panel zone, seam at the back",
+     "width_m": 0.20702,
+     "height_m": 0.09421,
+     "aspect": 2.1974,
+     "tex_w": 1242,
+     "tex_h": 566
+    },
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.0487,
+     "z1": 0.0917,
+     "arc": 140,
+     "centre": 0,
+     "offset_mm": 0.9,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "sleeve"
+     ],
+     "notes": "label inside the recessed panel only",
+     "width_m": 0.08094,
+     "height_m": 0.043,
+     "aspect": 1.8822,
+     "tex_w": 648,
+     "tex_h": 344
+    },
+    {
+     "name": "neck_seal",
+     "kind": "band",
+     "z0": 0.176,
+     "z1": 0.187,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "plastic_sleeve",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "tamper band under the screw cap",
+     "width_m": 0.0987,
+     "height_m": 0.01268,
+     "aspect": 7.7834,
+     "tex_w": 986,
+     "tex_h": 126
+    }
+   ],
+   "outer": [
+    [
+     0.02644,
+     0.00457
+    ],
+    [
+     0.0272,
+     0.00495
+    ],
+    [
+     0.02612,
+     0.00556
+    ],
+    [
+     0.0266,
+     0.00578
+    ],
+    [
+     0.02648,
+     0.00595
+    ],
+    [
+     0.03425,
+     0.00954
+    ],
+    [
+     0.02922,
+     0.01089
+    ],
+    [
+     0.03635,
+     0.01679
+    ],
+    [
+     0.03566,
+     0.01699
+    ],
+    [
+     0.03173,
+     0.01731
+    ],
+    [
+     0.03068,
+     0.01743
+    ],
+    [
+     0.03646,
+     0.01783
+    ],
+    [
+     0.03565,
+     0.01799
+    ],
+    [
+     0.03185,
+     0.01831
+    ],
+    [
+     0.03399,
+     0.0243
+    ],
+    [
+     0.03322,
+     0.02747
+    ],
+    [
+     0.03312,
+     0.04229
+    ],
+    [
+     0.03175,
+     0.04411
+    ],
+    [
+     0.03314,
+     0.046
+    ],
+    [
+     0.0331,
+     0.10382
+    ],
+    [
+     0.03216,
+     0.10573
+    ],
+    [
+     0.03313,
+     0.10761
+    ],
+    [
+     0.03282,
+     0.12634
+    ],
+    [
+     0.03141,
+     0.12797
+    ],
+    [
+     0.03243,
+     0.12974
+    ],
+    [
+     0.03263,
+     0.12996
+    ],
+    [
+     0.03254,
+     0.13192
+    ],
+    [
+     0.02724,
+     0.15786
+    ],
+    [
+     0.01377,
+     0.18446
+    ],
+    [
+     0.01672,
+     0.18827
+    ],
+    [
+     0.01352,
+     0.18987
+    ],
+    [
+     0.01273,
+     0.19487
+    ],
+    [
+     0.01275,
+     0.20331
+    ]
+   ],
+   "label_zone": [
+    0.0487,
+    0.0917
+   ],
+   "label_panel": true,
+   "profile_json": "export/v2/bottle_pet500.profile.json"
+  },
+  "v2_pet2l": {
+   "provider": "lathe_v2",
+   "height_m": 0.33469,
+   "slots": [
+    {
+     "name": "sleeve",
+     "kind": "wrap",
+     "z0": 0.06,
+     "z1": 0.23,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.9,
+     "material": "plastic_sleeve",
+     "allow_flip": false,
+     "px_per_cm": 40,
+     "overlaps": [
+      "front"
+     ],
+     "notes": "shrink sleeve (327 x 170 mm), seam at the back",
+     "width_m": 0.32502,
+     "height_m": 0.17213,
+     "aspect": 1.8882,
+     "tex_w": 1300,
+     "tex_h": 688
+    },
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.0795,
+     "z1": 0.1975,
+     "arc": 120,
+     "centre": 0,
+     "offset_mm": 0.9,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [
+      "sleeve"
+     ],
+     "notes": "",
+     "width_m": 0.108,
+     "height_m": 0.118,
+     "aspect": 0.9152,
+     "tex_w": 648,
+     "tex_h": 708
+    }
+   ],
+   "outer": [
+    [
+     0.04182,
+     0.00687
+    ],
+    [
+     0.04215,
+     0.00698
+    ],
+    [
+     0.04138,
+     0.00836
+    ],
+    [
+     0.0416,
+     0.00844
+    ],
+    [
+     0.04886,
+     0.00943
+    ],
+    [
+     0.04632,
+     0.01088
+    ],
+    [
+     0.04498,
+     0.01169
+    ],
+    [
+     0.05033,
+     0.01269
+    ],
+    [
+     0.04759,
+     0.0137
+    ],
+    [
+     0.04613,
+     0.01426
+    ],
+    [
+     0.05153,
+     0.01659
+    ],
+    [
+     0.04871,
+     0.01734
+    ],
+    [
+     0.04721,
+     0.01776
+    ],
+    [
+     0.05297,
+     0.02369
+    ],
+    [
+     0.05008,
+     0.02406
+    ],
+    [
+     0.04854,
+     0.02427
+    ],
+    [
+     0.05532,
+     0.031
+    ],
+    [
+     0.05518,
+     0.03121
+    ],
+    [
+     0.05128,
+     0.03141
+    ],
+    [
+     0.05241,
+     0.03819
+    ],
+    [
+     0.05238,
+     0.03944
+    ],
+    [
+     0.0523,
+     0.06902
+    ],
+    [
+     0.05073,
+     0.07121
+    ],
+    [
+     0.05171,
+     0.07332
+    ],
+    [
+     0.05229,
+     0.07392
+    ],
+    [
+     0.05234,
+     0.07554
+    ],
+    [
+     0.05154,
+     0.07805
+    ],
+    [
+     0.05159,
+     0.19766
+    ],
+    [
+     0.05174,
+     0.20005
+    ],
+    [
+     0.05238,
+     0.20139
+    ],
+    [
+     0.05235,
+     0.20305
+    ],
+    [
+     0.05078,
+     0.20515
+    ],
+    [
+     0.05191,
+     0.20745
+    ],
+    [
+     0.05238,
+     0.20809
+    ],
+    [
+     0.05185,
+     0.2475
+    ],
+    [
+     0.0516,
+     0.24972
+    ],
+    [
+     0.05111,
+     0.25208
+    ],
+    [
+     0.05127,
+     0.25214
+    ],
+    [
+     0.04918,
+     0.25509
+    ],
+    [
+     0.05075,
+     0.25534
+    ],
+    [
+     0.04093,
+     0.28106
+    ],
+    [
+     0.04237,
+     0.28172
+    ],
+    [
+     0.03646,
+     0.2887
+    ],
+    [
+     0.0378,
+     0.28952
+    ],
+    [
+     0.03449,
+     0.29275
+    ],
+    [
+     0.0352,
+     0.29322
+    ],
+    [
+     0.03234,
+     0.29689
+    ],
+    [
+     0.03184,
+     0.29748
+    ],
+    [
+     0.01498,
+     0.31456
+    ],
+    [
+     0.01704,
+     0.31909
+    ],
+    [
+     0.01363,
+     0.32089
+    ],
+    [
+     0.01283,
+     0.32589
+    ],
+    [
+     0.01284,
+     0.33433
+    ]
+   ],
+   "label_zone": [
+    0.0795,
+    0.1975
+   ],
+   "label_panel": true,
+   "profile_json": "export/v2/bottle_pet2l.profile.json"
+  },
+  "v2_contour": {
+   "provider": "lathe_v2",
+   "height_m": 0.23203,
+   "slots": [
+    {
+     "name": "sleeve",
+     "kind": "wrap",
+     "z0": 0.058,
+     "z1": 0.128,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.9,
+     "material": "plastic_sleeve",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [
+      "front"
+     ],
+     "notes": "sleeve follows the waist, seam at the back",
+     "width_m": 0.17492,
+     "height_m": 0.07256,
+     "aspect": 2.4109,
+     "tex_w": 1050,
+     "tex_h": 436
+    },
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.0711,
+     "z1": 0.1031,
+     "arc": 100,
+     "centre": 0,
+     "offset_mm": 0.9,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "sleeve"
+     ],
+     "notes": "small panel label on the waist",
+     "width_m": 0.04635,
+     "height_m": 0.03207,
+     "aspect": 1.4455,
+     "tex_w": 370,
+     "tex_h": 256
+    }
+   ],
+   "outer": [
+    [
+     0.02471,
+     0.0
+    ],
+    [
+     0.02726,
+     0.00315
+    ],
+    [
+     0.02818,
+     0.00529
+    ],
+    [
+     0.02891,
+     0.00761
+    ],
+    [
+     0.02838,
+     0.00767
+    ],
+    [
+     0.02968,
+     0.01101
+    ],
+    [
+     0.03066,
+     0.02236
+    ],
+    [
+     0.02791,
+     0.06332
+    ],
+    [
+     0.02879,
+     0.06341
+    ],
+    [
+     0.0276,
+     0.06866
+    ],
+    [
+     0.02685,
+     0.07089
+    ],
+    [
+     0.02666,
+     0.07341
+    ],
+    [
+     0.02615,
+     0.08713
+    ],
+    [
+     0.02694,
+     0.10122
+    ],
+    [
+     0.02737,
+     0.10368
+    ],
+    [
+     0.02818,
+     0.10561
+    ],
+    [
+     0.02851,
+     0.10685
+    ],
+    [
+     0.02796,
+     0.10688
+    ],
+    [
+     0.02948,
+     0.11083
+    ],
+    [
+     0.02861,
+     0.11098
+    ],
+    [
+     0.03187,
+     0.1387
+    ],
+    [
+     0.0291,
+     0.14924
+    ],
+    [
+     0.02995,
+     0.14947
+    ],
+    [
+     0.02784,
+     0.15475
+    ],
+    [
+     0.02592,
+     0.15908
+    ],
+    [
+     0.01572,
+     0.19066
+    ],
+    [
+     0.01248,
+     0.21973
+    ],
+    [
+     0.01356,
+     0.23053
+    ],
+    [
+     0.01353,
+     0.23082
+    ]
+   ],
+   "label_zone": [
+    0.0711,
+    0.1031
+   ],
+   "label_panel": true,
+   "profile_json": "export/v2/bottle_contour.profile.json"
+  },
+  "v2_milk": {
+   "provider": "lathe_v2",
+   "height_m": 0.2222,
+   "slots": [
+    {
+     "name": "wrap",
+     "kind": "wrap",
+     "z0": 0.03,
+     "z1": 0.098,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 50,
+     "overlaps": [
+      "front",
+      "back"
+     ],
+     "notes": "front wrap, seam at the back",
+     "width_m": 0.23168,
+     "height_m": 0.068,
+     "aspect": 3.407,
+     "tex_w": 1158,
+     "tex_h": 340
+    },
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.03,
+     "z1": 0.1,
+     "arc": 150,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.09657,
+     "height_m": 0.07006,
+     "aspect": 1.3784,
+     "tex_w": 772,
+     "tex_h": 560
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.04,
+     "z1": 0.09,
+     "arc": 100,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.06434,
+     "height_m": 0.05,
+     "aspect": 1.2869,
+     "tex_w": 514,
+     "tex_h": 400
+    }
+   ],
+   "outer": [
+    [
+     0.02913,
+     0.00017
+    ],
+    [
+     0.0318,
+     0.00134
+    ],
+    [
+     0.03373,
+     0.00339
+    ],
+    [
+     0.03555,
+     0.00699
+    ],
+    [
+     0.03639,
+     0.01081
+    ],
+    [
+     0.03707,
+     0.02245
+    ],
+    [
+     0.03757,
+     0.02407
+    ],
+    [
+     0.03711,
+     0.02551
+    ],
+    [
+     0.03666,
+     0.09849
+    ],
+    [
+     0.03711,
+     0.10003
+    ],
+    [
+     0.03663,
+     0.1015
+    ],
+    [
+     0.03631,
+     0.11205
+    ],
+    [
+     0.03427,
+     0.13472
+    ],
+    [
+     0.02756,
+     0.17582
+    ],
+    [
+     0.02484,
+     0.19666
+    ],
+    [
+     0.02439,
+     0.20545
+    ],
+    [
+     0.02497,
+     0.20808
+    ],
+    [
+     0.02689,
+     0.21128
+    ],
+    [
+     0.02678,
+     0.213
+    ],
+    [
+     0.02539,
+     0.21589
+    ],
+    [
+     0.02568,
+     0.218
+    ],
+    [
+     0.02659,
+     0.2194
+    ],
+    [
+     0.02656,
+     0.22091
+    ],
+    [
+     0.02613,
+     0.22173
+    ],
+    [
+     0.02499,
+     0.2222
+    ]
+   ],
+   "label_zone": [
+    0.03,
+    0.095
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_milk.profile.json"
+  },
+  "v2_whisky": {
+   "provider": "lathe_v2",
+   "height_m": 0.26353,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.05,
+     "z1": 0.15,
+     "arc": 120,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.08056,
+     "height_m": 0.1,
+     "aspect": 0.8056,
+     "tex_w": 644,
+     "tex_h": 800
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.06,
+     "z1": 0.14,
+     "arc": 100,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.06713,
+     "height_m": 0.08,
+     "aspect": 0.8392,
+     "tex_w": 538,
+     "tex_h": 640
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.222,
+     "z1": 0.238,
+     "arc": 160,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "handwritten_tag",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "tag / collar on the neck under the T-cork",
+     "width_m": 0.05372,
+     "height_m": 0.01793,
+     "aspect": 2.9955,
+     "tex_w": 538,
+     "tex_h": 180
+    }
+   ],
+   "outer": [
+    [
+     0.03217,
+     0.0
+    ],
+    [
+     0.03463,
+     0.0011
+    ],
+    [
+     0.0365,
+     0.0035
+    ],
+    [
+     0.03757,
+     0.00637
+    ],
+    [
+     0.03806,
+     0.01087
+    ],
+    [
+     0.03848,
+     0.03313
+    ],
+    [
+     0.03845,
+     0.15977
+    ],
+    [
+     0.03793,
+     0.18824
+    ],
+    [
+     0.03601,
+     0.20004
+    ],
+    [
+     0.03254,
+     0.21013
+    ],
+    [
+     0.02927,
+     0.21563
+    ],
+    [
+     0.02024,
+     0.22635
+    ],
+    [
+     0.01765,
+     0.23218
+    ],
+    [
+     0.01701,
+     0.23642
+    ],
+    [
+     0.01671,
+     0.24886
+    ],
+    [
+     0.01703,
+     0.25147
+    ],
+    [
+     0.01864,
+     0.25459
+    ],
+    [
+     0.01858,
+     0.26224
+    ],
+    [
+     0.0179,
+     0.26326
+    ],
+    [
+     0.01701,
+     0.26353
+    ]
+   ],
+   "label_zone": [
+    0.0449,
+    0.1649
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_whisky.profile.json"
+  },
+  "v2_spirit": {
+   "provider": "lathe_v2",
+   "height_m": 0.31939,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.05,
+     "z1": 0.185,
+     "arc": 120,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.07606,
+     "height_m": 0.135,
+     "aspect": 0.5634,
+     "tex_w": 608,
+     "tex_h": 1080
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.07,
+     "z1": 0.17,
+     "arc": 100,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.06331,
+     "height_m": 0.1,
+     "aspect": 0.6331,
+     "tex_w": 506,
+     "tex_h": 800
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.262,
+     "z1": 0.284,
+     "arc": 200,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.04999,
+     "height_m": 0.022,
+     "aspect": 2.272,
+     "tex_w": 500,
+     "tex_h": 220
+    }
+   ],
+   "outer": [
+    [
+     0.03087,
+     0.0
+    ],
+    [
+     0.03324,
+     0.0011
+    ],
+    [
+     0.03502,
+     0.00343
+    ],
+    [
+     0.03574,
+     0.00554
+    ],
+    [
+     0.03624,
+     0.01063
+    ],
+    [
+     0.03663,
+     0.0355
+    ],
+    [
+     0.03617,
+     0.11672
+    ],
+    [
+     0.03637,
+     0.19164
+    ],
+    [
+     0.03587,
+     0.21853
+    ],
+    [
+     0.0344,
+     0.22563
+    ],
+    [
+     0.03169,
+     0.23172
+    ],
+    [
+     0.02567,
+     0.23889
+    ],
+    [
+     0.01866,
+     0.24549
+    ],
+    [
+     0.01649,
+     0.24842
+    ],
+    [
+     0.0154,
+     0.25098
+    ],
+    [
+     0.0146,
+     0.25874
+    ],
+    [
+     0.01409,
+     0.28492
+    ],
+    [
+     0.01445,
+     0.28778
+    ],
+    [
+     0.0158,
+     0.28889
+    ],
+    [
+     0.0158,
+     0.29089
+    ],
+    [
+     0.0144,
+     0.29149
+    ],
+    [
+     0.01425,
+     0.31849
+    ],
+    [
+     0.01325,
+     0.31939
+    ]
+   ],
+   "label_zone": [
+    0.0399,
+    0.1999
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_spirit.profile.json"
+  },
+  "v2_apothecary": {
+   "provider": "lathe_v2",
+   "height_m": 0.11171,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.016,
+     "z1": 0.06,
+     "arc": 120,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "small front label",
+     "width_m": 0.05028,
+     "height_m": 0.044,
+     "aspect": 1.1426,
+     "tex_w": 502,
+     "tex_h": 440
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.02,
+     "z1": 0.055,
+     "arc": 90,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.03771,
+     "height_m": 0.035,
+     "aspect": 1.0774,
+     "tex_w": 378,
+     "tex_h": 350
+    },
+    {
+     "name": "tag",
+     "kind": "tag",
+     "z0": 0.082,
+     "z1": 0.096,
+     "arc": 100,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "handwritten_tag",
+     "allow_flip": false,
+     "px_per_cm": 120,
+     "overlaps": [],
+     "notes": "hang tag on the shoulder/neck",
+     "width_m": 0.02717,
+     "height_m": 0.0168,
+     "aspect": 1.6168,
+     "tex_w": 326,
+     "tex_h": 202
+    }
+   ],
+   "outer": [
+    [
+     0.01884,
+     0.0
+    ],
+    [
+     0.02199,
+     0.00211
+    ],
+    [
+     0.02314,
+     0.00591
+    ],
+    [
+     0.02319,
+     0.00627
+    ],
+    [
+     0.02376,
+     0.00825
+    ],
+    [
+     0.02407,
+     0.00976
+    ],
+    [
+     0.02395,
+     0.06194
+    ],
+    [
+     0.02315,
+     0.06591
+    ],
+    [
+     0.0228,
+     0.07164
+    ],
+    [
+     0.02155,
+     0.07797
+    ],
+    [
+     0.01966,
+     0.08303
+    ],
+    [
+     0.01052,
+     0.09642
+    ],
+    [
+     0.01011,
+     0.10355
+    ],
+    [
+     0.01133,
+     0.10563
+    ],
+    [
+     0.0112,
+     0.11074
+    ],
+    [
+     0.01002,
+     0.11171
+    ]
+   ],
+   "label_zone": [
+    0.0149,
+    0.0599
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_apothecary.profile.json"
+  },
+  "v2_perfume": {
+   "provider": "lathe_v2",
+   "height_m": 0.07797,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.02,
+     "z1": 0.048,
+     "arc": 90,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 120,
+     "overlaps": [],
+     "notes": "small front label",
+     "width_m": 0.04465,
+     "height_m": 0.028,
+     "aspect": 1.5943,
+     "tex_w": 536,
+     "tex_h": 336
+    }
+   ],
+   "outer": [
+    [
+     0.0243,
+     0.0
+    ],
+    [
+     0.0257,
+     0.00034
+    ],
+    [
+     0.02701,
+     0.0013
+    ],
+    [
+     0.02771,
+     0.0024
+    ],
+    [
+     0.02806,
+     0.00416
+    ],
+    [
+     0.02848,
+     0.0147
+    ],
+    [
+     0.0285,
+     0.03383
+    ],
+    [
+     0.02819,
+     0.04963
+    ],
+    [
+     0.02761,
+     0.05554
+    ],
+    [
+     0.02668,
+     0.05774
+    ],
+    [
+     0.02557,
+     0.05941
+    ],
+    [
+     0.02421,
+     0.06073
+    ],
+    [
+     0.02216,
+     0.06203
+    ],
+    [
+     0.0187,
+     0.0634
+    ],
+    [
+     0.00996,
+     0.06496
+    ],
+    [
+     0.00865,
+     0.06547
+    ],
+    [
+     0.00814,
+     0.06627
+    ],
+    [
+     0.00779,
+     0.06812
+    ],
+    [
+     0.00785,
+     0.06897
+    ],
+    [
+     0.00845,
+     0.06997
+    ],
+    [
+     0.00845,
+     0.07097
+    ],
+    [
+     0.00785,
+     0.07137
+    ],
+    [
+     0.00785,
+     0.07749
+    ],
+    [
+     0.00738,
+     0.07796
+    ]
+   ],
+   "label_zone": [
+    0.02,
+    0.045
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_perfume.profile.json"
+  },
+  "v2_mason": {
+   "provider": "lathe_v2",
+   "height_m": 0.1298,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.026,
+     "z1": 0.084,
+     "arc": 100,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.06735,
+     "height_m": 0.058,
+     "aspect": 1.1612,
+     "tex_w": 538,
+     "tex_h": 464
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.032,
+     "z1": 0.078,
+     "arc": 90,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [
+      "wrap"
+     ],
+     "notes": "",
+     "width_m": 0.06061,
+     "height_m": 0.046,
+     "aspect": 1.3177,
+     "tex_w": 484,
+     "tex_h": 368
+    },
+    {
+     "name": "wrap",
+     "kind": "wrap",
+     "z0": 0.026,
+     "z1": 0.088,
+     "arc": 360,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 50,
+     "overlaps": [
+      "front",
+      "back"
+     ],
+     "notes": "",
+     "width_m": 0.24259,
+     "height_m": 0.0621,
+     "aspect": 3.9066,
+     "tex_w": 1212,
+     "tex_h": 310
+    }
+   ],
+   "outer": [
+    [
+     0.03118,
+     0.0
+    ],
+    [
+     0.03764,
+     0.00541
+    ],
+    [
+     0.03867,
+     0.0184
+    ],
+    [
+     0.03924,
+     0.01986
+    ],
+    [
+     0.03881,
+     0.02138
+    ],
+    [
+     0.03867,
+     0.02164
+    ],
+    [
+     0.03851,
+     0.08633
+    ],
+    [
+     0.03907,
+     0.08787
+    ],
+    [
+     0.03897,
+     0.0889
+    ],
+    [
+     0.03868,
+     0.0893
+    ],
+    [
+     0.03846,
+     0.08969
+    ],
+    [
+     0.03579,
+     0.1115
+    ],
+    [
+     0.03398,
+     0.1142
+    ],
+    [
+     0.03387,
+     0.11611
+    ],
+    [
+     0.03503,
+     0.11784
+    ],
+    [
+     0.03511,
+     0.1187
+    ],
+    [
+     0.03547,
+     0.11962
+    ],
+    [
+     0.03386,
+     0.11963
+    ],
+    [
+     0.03548,
+     0.12057
+    ],
+    [
+     0.03514,
+     0.12153
+    ],
+    [
+     0.03514,
+     0.12247
+    ],
+    [
+     0.03536,
+     0.12339
+    ],
+    [
+     0.03538,
+     0.12427
+    ],
+    [
+     0.03458,
+     0.12507
+    ],
+    [
+     0.03392,
+     0.12579
+    ],
+    [
+     0.03377,
+     0.12851
+    ]
+   ],
+   "label_zone": [
+    0.026,
+    0.084
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_mason.profile.json"
+  },
+  "v2_cruet": {
+   "provider": "lathe_v2",
+   "height_m": 0.21781,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.02,
+     "z1": 0.062,
+     "arc": 100,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.05632,
+     "height_m": 0.04219,
+     "aspect": 1.335,
+     "tex_w": 564,
+     "tex_h": 422
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.105,
+     "z1": 0.125,
+     "arc": 150,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "handwritten_tag",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.0569,
+     "height_m": 0.02028,
+     "aspect": 2.8055,
+     "tex_w": 570,
+     "tex_h": 202
+    }
+   ],
+   "outer": [
+    [
+     0.02564,
+     0.00029
+    ],
+    [
+     0.02723,
+     0.00106
+    ],
+    [
+     0.02912,
+     0.00316
+    ],
+    [
+     0.03019,
+     0.00569
+    ],
+    [
+     0.03198,
+     0.01748
+    ],
+    [
+     0.03282,
+     0.02576
+    ],
+    [
+     0.03305,
+     0.03224
+    ],
+    [
+     0.03294,
+     0.03908
+    ],
+    [
+     0.03251,
+     0.04606
+    ],
+    [
+     0.03168,
+     0.05349
+    ],
+    [
+     0.02818,
+     0.07675
+    ],
+    [
+     0.01933,
+     0.12927
+    ],
+    [
+     0.01663,
+     0.14864
+    ],
+    [
+     0.0146,
+     0.16624
+    ],
+    [
+     0.01262,
+     0.18903
+    ],
+    [
+     0.01166,
+     0.20651
+    ],
+    [
+     0.0118,
+     0.21001
+    ],
+    [
+     0.01322,
+     0.21361
+    ],
+    [
+     0.0132,
+     0.21668
+    ],
+    [
+     0.0126,
+     0.21757
+    ],
+    [
+     0.01182,
+     0.21781
+    ]
+   ],
+   "label_zone": [
+    0.02,
+    0.06
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_cruet.profile.json"
+  },
+  "v2_decanter": {
+   "provider": "lathe_v2",
+   "height_m": 0.23742,
+   "slots": [
+    {
+     "name": "tag",
+     "kind": "tag",
+     "z0": 0.176,
+     "z1": 0.2,
+     "arc": 100,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "handwritten_tag",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "hang tag on the neck",
+     "width_m": 0.03486,
+     "height_m": 0.02404,
+     "aspect": 1.4502,
+     "tex_w": 348,
+     "tex_h": 240
+    },
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.04,
+     "z1": 0.095,
+     "arc": 60,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "small crest on the conical body",
+     "width_m": 0.05423,
+     "height_m": 0.06083,
+     "aspect": 0.8915,
+     "tex_w": 434,
+     "tex_h": 486
+    }
+   ],
+   "outer": [
+    [
+     0.06613,
+     0.0
+    ],
+    [
+     0.06994,
+     0.00077
+    ],
+    [
+     0.07274,
+     0.0027
+    ],
+    [
+     0.07452,
+     0.00531
+    ],
+    [
+     0.07535,
+     0.00902
+    ],
+    [
+     0.07432,
+     0.01788
+    ],
+    [
+     0.06986,
+     0.03063
+    ],
+    [
+     0.0491,
+     0.07219
+    ],
+    [
+     0.0382,
+     0.09742
+    ],
+    [
+     0.03211,
+     0.1161
+    ],
+    [
+     0.02586,
+     0.14036
+    ],
+    [
+     0.02114,
+     0.16815
+    ],
+    [
+     0.01942,
+     0.19693
+    ],
+    [
+     0.01979,
+     0.22522
+    ],
+    [
+     0.02112,
+     0.2302
+    ],
+    [
+     0.02405,
+     0.23384
+    ],
+    [
+     0.02456,
+     0.23582
+    ],
+    [
+     0.02453,
+     0.23613
+    ],
+    [
+     0.02296,
+     0.23742
+    ]
+   ],
+   "label_zone": null,
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_decanter.profile.json"
+  },
+  "v2_erlenmeyer": {
+   "provider": "lathe_v2",
+   "height_m": 0.17843,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.03,
+     "z1": 0.08,
+     "arc": 80,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.06147,
+     "height_m": 0.05122,
+     "aspect": 1.2003,
+     "tex_w": 492,
+     "tex_h": 410
+    },
+    {
+     "name": "grad",
+     "kind": "grad",
+     "z0": 0.035,
+     "z1": 0.13,
+     "arc": 30,
+     "centre": -50,
+     "offset_mm": 0.35,
+     "material": "clear_film",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "graduation patch",
+     "width_m": 0.01981,
+     "height_m": 0.09744,
+     "aspect": 0.2033,
+     "tex_w": 198,
+     "tex_h": 974
+    },
+    {
+     "name": "tag",
+     "kind": "tag",
+     "z0": 0.09,
+     "z1": 0.102,
+     "arc": 40,
+     "centre": 38,
+     "offset_mm": 0.35,
+     "material": "tape",
+     "allow_flip": false,
+     "px_per_cm": 150,
+     "overlaps": [],
+     "notes": "label-printer strip",
+     "width_m": 0.02435,
+     "height_m": 0.0123,
+     "aspect": 1.9804,
+     "tex_w": 366,
+     "tex_h": 184
+    }
+   ],
+   "outer": [
+    [
+     0.04536,
+     0.0
+    ],
+    [
+     0.04809,
+     0.00089
+    ],
+    [
+     0.05063,
+     0.00308
+    ],
+    [
+     0.0519,
+     0.00538
+    ],
+    [
+     0.05266,
+     0.00928
+    ],
+    [
+     0.05222,
+     0.01593
+    ],
+    [
+     0.04915,
+     0.03207
+    ],
+    [
+     0.03211,
+     0.1084
+    ],
+    [
+     0.0252,
+     0.13669
+    ],
+    [
+     0.01864,
+     0.15712
+    ],
+    [
+     0.01781,
+     0.17091
+    ],
+    [
+     0.01787,
+     0.17149
+    ],
+    [
+     0.01821,
+     0.17276
+    ],
+    [
+     0.0183,
+     0.17294
+    ],
+    [
+     0.01958,
+     0.17423
+    ],
+    [
+     0.02023,
+     0.17483
+    ],
+    [
+     0.02089,
+     0.17574
+    ],
+    [
+     0.02182,
+     0.17723
+    ],
+    [
+     0.02192,
+     0.17747
+    ],
+    [
+     0.02098,
+     0.17843
+    ]
+   ],
+   "label_zone": [
+    0.0298,
+    0.0798
+   ],
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_erlenmeyer.profile.json"
+  },
+  "v2_roundflask": {
+   "provider": "lathe_v2",
+   "height_m": 0.147,
+   "slots": [
+    {
+     "name": "tag",
+     "kind": "tag",
+     "z0": 0.033,
+     "z1": 0.045,
+     "arc": 36,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "tape",
+     "allow_flip": false,
+     "px_per_cm": 150,
+     "overlaps": [],
+     "notes": "label-printer strip on the sphere",
+     "width_m": 0.0269,
+     "height_m": 0.012,
+     "aspect": 2.2411,
+     "tex_w": 404,
+     "tex_h": 180
+    },
+    {
+     "name": "grad",
+     "kind": "grad",
+     "z0": 0.032,
+     "z1": 0.07,
+     "arc": 30,
+     "centre": -50,
+     "offset_mm": 0.35,
+     "material": "clear_film",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.02036,
+     "height_m": 0.04427,
+     "aspect": 0.46,
+     "tex_w": 204,
+     "tex_h": 442
+    },
+    {
+     "name": "tag_hand",
+     "kind": "tag",
+     "z0": 0.04,
+     "z1": 0.066,
+     "arc": 40,
+     "centre": 50,
+     "offset_mm": 0.35,
+     "material": "handwritten_tag",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.02751,
+     "height_m": 0.02934,
+     "aspect": 0.9378,
+     "tex_w": 276,
+     "tex_h": 294
+    }
+   ],
+   "outer": [
+    [
+     0.00869,
+     0.00059
+    ],
+    [
+     0.0167,
+     0.00231
+    ],
+    [
+     0.02404,
+     0.005
+    ],
+    [
+     0.02997,
+     0.00854
+    ],
+    [
+     0.03516,
+     0.01318
+    ],
+    [
+     0.03889,
+     0.01832
+    ],
+    [
+     0.0417,
+     0.025
+    ],
+    [
+     0.04299,
+     0.03173
+    ],
+    [
+     0.04262,
+     0.047
+    ],
+    [
+     0.03862,
+     0.05811
+    ],
+    [
+     0.03099,
+     0.06675
+    ],
+    [
+     0.01706,
+     0.07587
+    ],
+    [
+     0.01402,
+     0.08135
+    ],
+    [
+     0.01322,
+     0.08834
+    ],
+    [
+     0.01297,
+     0.13485
+    ],
+    [
+     0.01339,
+     0.14135
+    ],
+    [
+     0.01513,
+     0.144
+    ],
+    [
+     0.01521,
+     0.1462
+    ],
+    [
+     0.01423,
+     0.147
+    ]
+   ],
+   "label_zone": null,
+   "label_panel": false,
+   "profile_json": "export/v2/bottle_roundflask.profile.json"
+  },
+  "container_square": {
+   "provider": "container",
+   "height_m": 0.2225,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.028,
+     "z1": 0.116,
+     "arc": 0.0,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "front face (flat 55 mm between the 8.5 mm corners); replaces the base GLB's plain Label plate",
+     "width_mm": 50,
+     "width_m": 0.05,
+     "height_m": 0.088,
+     "aspect": 0.5682,
+     "tex_w": 400,
+     "tex_h": 704
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.04,
+     "z1": 0.104,
+     "arc": 0.0,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_mm": 46,
+     "width_m": 0.046,
+     "height_m": 0.064,
+     "aspect": 0.7187,
+     "tex_w": 368,
+     "tex_h": 512
+    },
+    {
+     "name": "neck",
+     "kind": "neck",
+     "z0": 0.1895,
+     "z1": 0.2035,
+     "arc": 200,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 100,
+     "overlaps": [],
+     "notes": "collar on the round neck under the T-cork",
+     "width_m": 0.04712,
+     "height_m": 0.014,
+     "aspect": 3.366,
+     "tex_w": 472,
+     "tex_h": 140
+    }
+   ],
+   "surface": "rings",
+   "rings": [
+    [
+     0.0,
+     0.029,
+     0.029,
+     0.006,
+     0.0,
+     0.0
+    ],
+    [
+     0.0025,
+     0.0335,
+     0.0335,
+     0.0075,
+     0.0,
+     0.0
+    ],
+    [
+     0.007,
+     0.0358,
+     0.0358,
+     0.008,
+     0.0,
+     0.0
+    ],
+    [
+     0.13,
+     0.036,
+     0.036,
+     0.0085,
+     0.0,
+     0.0
+    ],
+    [
+     0.140072,
+     0.035658,
+     0.035658,
+     0.008576,
+     0.0,
+     0.0
+    ],
+    [
+     0.149837,
+     0.034643,
+     0.034643,
+     0.008802,
+     0.0,
+     0.0
+    ],
+    [
+     0.159,
+     0.032986,
+     0.032986,
+     0.00917,
+     0.0,
+     0.0
+    ],
+    [
+     0.167282,
+     0.030736,
+     0.030736,
+     0.00967,
+     0.0,
+     0.0
+    ],
+    [
+     0.174431,
+     0.027963,
+     0.027963,
+     0.010286,
+     0.0,
+     0.0
+    ],
+    [
+     0.180229,
+     0.02475,
+     0.02475,
+     0.011,
+     0.0,
+     0.0
+    ],
+    [
+     0.184502,
+     0.021195,
+     0.021195,
+     0.01179,
+     0.0,
+     0.0
+    ],
+    [
+     0.187119,
+     0.017407,
+     0.017407,
+     0.012632,
+     0.0,
+     0.0
+    ],
+    [
+     0.188,
+     0.0135,
+     0.0135,
+     0.0135,
+     0.0,
+     0.0
+    ],
+    [
+     0.205,
+     0.0135,
+     0.0135,
+     0.0135,
+     0.0,
+     0.0
+    ],
+    [
+     0.2125,
+     0.0137,
+     0.0137,
+     0.0137,
+     0.0,
+     0.0
+    ],
+    [
+     0.2155,
+     0.015,
+     0.015,
+     0.015,
+     0.0,
+     0.0
+    ],
+    [
+     0.2205,
+     0.0152,
+     0.0152,
+     0.0152,
+     0.0,
+     0.0
+    ],
+    [
+     0.2225,
+     0.0146,
+     0.0146,
+     0.0146,
+     0.0,
+     0.0
+    ]
+   ],
+   "deform": null,
+   "shell": "Glass",
+   "source": "scripts/containers.py spec_square"
+  },
+  "container_hipflask": {
+   "provider": "container",
+   "height_m": 0.1555,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.02,
+     "z1": 0.086,
+     "arc": 0.0,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "front face, follows the 140 mm bend",
+     "width_mm": 64,
+     "width_m": 0.064,
+     "height_m": 0.066,
+     "aspect": 0.9697,
+     "tex_w": 512,
+     "tex_h": 528
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.03,
+     "z1": 0.076,
+     "arc": 0.0,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_matte",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_mm": 52,
+     "width_m": 0.052,
+     "height_m": 0.046,
+     "aspect": 1.1304,
+     "tex_w": 416,
+     "tex_h": 368
+    }
+   ],
+   "surface": "rings",
+   "rings": [
+    [
+     0.0,
+     0.04,
+     0.01,
+     0.008,
+     0.0,
+     0.0
+    ],
+    [
+     0.003,
+     0.0465,
+     0.0155,
+     0.0105,
+     0.0,
+     0.0
+    ],
+    [
+     0.008,
+     0.0485,
+     0.0165,
+     0.0115,
+     0.0,
+     0.0
+    ],
+    [
+     0.095,
+     0.0485,
+     0.0165,
+     0.0115,
+     0.0,
+     0.0
+    ],
+    [
+     0.101425,
+     0.047923,
+     0.016409,
+     0.011485,
+     0.0,
+     0.0
+    ],
+    [
+     0.107655,
+     0.046208,
+     0.016138,
+     0.01144,
+     0.0,
+     0.0
+    ],
+    [
+     0.1135,
+     0.043409,
+     0.015696,
+     0.011366,
+     0.0,
+     0.0
+    ],
+    [
+     0.118783,
+     0.03961,
+     0.015096,
+     0.011266,
+     0.0,
+     0.0
+    ],
+    [
+     0.123344,
+     0.034926,
+     0.014357,
+     0.011143,
+     0.0,
+     0.0
+    ],
+    [
+     0.127043,
+     0.0295,
+     0.0135,
+     0.011,
+     0.0,
+     0.0
+    ],
+    [
+     0.129769,
+     0.023497,
+     0.012552,
+     0.010842,
+     0.0,
+     0.0
+    ],
+    [
+     0.131438,
+     0.017099,
+     0.011542,
+     0.010674,
+     0.0,
+     0.0
+    ],
+    [
+     0.132,
+     0.0105,
+     0.0105,
+     0.0105,
+     0.0,
+     0.0
+    ],
+    [
+     0.146,
+     0.0105,
+     0.0105,
+     0.0105,
+     0.0,
+     0.0
+    ],
+    [
+     0.1505,
+     0.0108,
+     0.0108,
+     0.0108,
+     0.0,
+     0.0
+    ],
+    [
+     0.1535,
+     0.0113,
+     0.0113,
+     0.0113,
+     0.0,
+     0.0
+    ],
+    [
+     0.1555,
+     0.011,
+     0.011,
+     0.011,
+     0.0,
+     0.0
+    ]
+   ],
+   "deform": {
+    "bend_x": 0.14
+   },
+   "shell": "Glass",
+   "source": "scripts/containers.py spec_hipflask"
+  },
+  "container_jerrycan": {
+   "provider": "container",
+   "height_m": 0.34,
+   "slots": [
+    {
+     "name": "panel",
+     "kind": "body",
+     "z0": 0.115,
+     "z1": 0.225,
+     "arc": 0.0,
+     "centre": 56.9,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 50,
+     "overlaps": [],
+     "notes": "front face, between the arms of the embossed X (x 92..138 mm)",
+     "width_mm": 46,
+     "width_m": 0.046,
+     "height_m": 0.11,
+     "aspect": 0.4182,
+     "tex_w": 230,
+     "tex_h": 550
+    },
+    {
+     "name": "end",
+     "kind": "body",
+     "z0": 0.1,
+     "z1": 0.24,
+     "arc": 0.0,
+     "centre": 90,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 50,
+     "overlaps": [],
+     "notes": "hazard / contents sticker on the +X end face (spout side)",
+     "width_mm": 90,
+     "width_m": 0.09,
+     "height_m": 0.14,
+     "aspect": 0.6429,
+     "tex_w": 450,
+     "tex_h": 700
+    },
+    {
+     "name": "end_back",
+     "kind": "body",
+     "z0": 0.1,
+     "z1": 0.24,
+     "arc": 0.0,
+     "centre": 270,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 50,
+     "overlaps": [],
+     "notes": "-X end face (handle side)",
+     "width_mm": 90,
+     "width_m": 0.09,
+     "height_m": 0.14,
+     "aspect": 0.6429,
+     "tex_w": 450,
+     "tex_h": 700
+    }
+   ],
+   "surface": "rings",
+   "rings": [
+    [
+     0.0,
+     0.158,
+     0.063,
+     0.01,
+     0.0,
+     0.0
+    ],
+    [
+     0.004,
+     0.166,
+     0.071,
+     0.016,
+     0.0,
+     0.0
+    ],
+    [
+     0.01,
+     0.17,
+     0.075,
+     0.018,
+     0.0,
+     0.0
+    ],
+    [
+     0.33,
+     0.17,
+     0.075,
+     0.018,
+     0.0,
+     0.0
+    ],
+    [
+     0.336,
+     0.166,
+     0.071,
+     0.016,
+     0.0,
+     0.0
+    ],
+    [
+     0.34,
+     0.158,
+     0.063,
+     0.01,
+     0.0,
+     0.0
+    ]
+   ],
+   "deform": null,
+   "shell": "Body",
+   "source": "scripts/containers.py spec_jerrycan"
+  },
+  "container_tumbler": {
+   "provider": "container",
+   "height_m": 0.0968,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.022,
+     "z1": 0.078,
+     "arc": 100,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "clear_film",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "printed / etched decal on the tapered wall",
+     "width_m": 0.06294,
+     "height_m": 0.05608,
+     "aspect": 1.1223,
+     "tex_w": 504,
+     "tex_h": 448
+    }
+   ],
+   "surface": "rings",
+   "rings": [
+    [
+     0.0,
+     0.029,
+     0.029,
+     0.029,
+     0.0,
+     0.0
+    ],
+    [
+     0.003,
+     0.0325,
+     0.0325,
+     0.0325,
+     0.0,
+     0.0
+    ],
+    [
+     0.008,
+     0.0338,
+     0.0338,
+     0.0338,
+     0.0,
+     0.0
+    ],
+    [
+     0.06,
+     0.0366,
+     0.0366,
+     0.0366,
+     0.0,
+     0.0
+    ],
+    [
+     0.095,
+     0.0385,
+     0.0385,
+     0.0385,
+     0.0,
+     0.0
+    ],
+    [
+     0.0962,
+     0.0381,
+     0.0381,
+     0.0381,
+     0.0,
+     0.0
+    ],
+    [
+     0.0968,
+     0.0373,
+     0.0373,
+     0.0373,
+     0.0,
+     0.0
+    ]
+   ],
+   "deform": null,
+   "shell": "Glass",
+   "source": "scripts/containers.py spec_tumbler"
+  },
+  "container_mug": {
+   "provider": "container",
+   "height_m": 0.0952,
+   "slots": [
+    {
+     "name": "front",
+     "kind": "body",
+     "z0": 0.024,
+     "z1": 0.082,
+     "arc": 120,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "ceramic decal, handle is at +X (90 deg), keep arc <= ~140",
+     "width_m": 0.086,
+     "height_m": 0.05801,
+     "aspect": 1.4824,
+     "tex_w": 688,
+     "tex_h": 464
+    },
+    {
+     "name": "back",
+     "kind": "body",
+     "z0": 0.024,
+     "z1": 0.082,
+     "arc": 120,
+     "centre": 180,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 80,
+     "overlaps": [],
+     "notes": "",
+     "width_m": 0.086,
+     "height_m": 0.05801,
+     "aspect": 1.4824,
+     "tex_w": 688,
+     "tex_h": 464
+    }
+   ],
+   "surface": "rings",
+   "rings": [
+    [
+     0.0,
+     0.034,
+     0.034,
+     0.034,
+     0.0,
+     0.0
+    ],
+    [
+     0.003,
+     0.0385,
+     0.0385,
+     0.0385,
+     0.0,
+     0.0
+    ],
+    [
+     0.01,
+     0.0402,
+     0.0402,
+     0.0402,
+     0.0,
+     0.0
+    ],
+    [
+     0.06,
+     0.0412,
+     0.0412,
+     0.0412,
+     0.0,
+     0.0
+    ],
+    [
+     0.09,
+     0.042,
+     0.042,
+     0.042,
+     0.0,
+     0.0
+    ],
+    [
+     0.094,
+     0.0416,
+     0.0416,
+     0.0416,
+     0.0,
+     0.0
+    ],
+    [
+     0.0952,
+     0.0406,
+     0.0406,
+     0.0406,
+     0.0,
+     0.0
+    ]
+   ],
+   "deform": null,
+   "shell": "Body",
+   "source": "scripts/containers.py spec_mug"
+  },
+  "container_tank": {
+   "provider": "container",
+   "height_m": 0.35,
+   "slots": [
+    {
+     "name": "sticker",
+     "kind": "body",
+     "z0": 0.03,
+     "z1": 0.09,
+     "arc": 0.0,
+     "centre": 55.7,
+     "offset_mm": 0.35,
+     "material": "paper_gloss",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [],
+     "notes": "maker / price sticker, lower right of the front pane",
+     "width_mm": 100,
+     "width_m": 0.1,
+     "height_m": 0.06,
+     "aspect": 1.6667,
+     "tex_w": 600,
+     "tex_h": 360
+    },
+    {
+     "name": "plate",
+     "kind": "tag",
+     "z0": 0.302,
+     "z1": 0.322,
+     "arc": 0.0,
+     "centre": 0,
+     "offset_mm": 0.35,
+     "material": "tape",
+     "allow_flip": false,
+     "px_per_cm": 60,
+     "overlaps": [],
+     "notes": "name strip under the top frame",
+     "width_mm": 140,
+     "width_m": 0.14,
+     "height_m": 0.02,
+     "aspect": 7.0,
+     "tex_w": 840,
+     "tex_h": 120
+    }
+   ],
+   "surface": "rings",
+   "rings": [
+    [
+     0.0,
+     0.298,
+     0.148,
+     0.0015,
+     0.0,
+     0.0
+    ],
+    [
+     0.002,
+     0.3,
+     0.15,
+     0.0025,
+     0.0,
+     0.0
+    ],
+    [
+     0.348,
+     0.3,
+     0.15,
+     0.0025,
+     0.0,
+     0.0
+    ],
+    [
+     0.35,
+     0.2988,
+     0.1488,
+     0.0015,
+     0.0,
+     0.0
+    ]
+   ],
+   "deform": null,
+   "shell": "Glass",
+   "source": "scripts/containers.py spec_tank"
+  }
+ }
+}

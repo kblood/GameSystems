@@ -1,0 +1,10 @@
+config_version=5
+
+[application]
+config/name="spill_research"
+run/main_scene="res://spill_test.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[physics]
+
+3d/physics_engine="Jolt Physics"

@@ -1,0 +1,91 @@
+{
+  "name": "beer",
+  "material": "glass",
+  "shatters": true,
+  "frame": "bottle-local, Blender Z-up (glTF Y-up after export), metres, base centre at origin",
+  "wall_thickness_m": 0.0025,
+  "density_kg_m3": 2500.0,
+  "glass_volume_m3": 0.00010718160035724673,
+  "glass_mass_kg": 0.26795400089311683,
+  "liquid_mass_kg_per_ml": 0.00101,
+  "capacity_ml": 494.3,
+  "height_m": 0.256,
+  "open_z": 0.08068928410673952,
+  "neck_z": 0.20986232790988738,
+  "base_z": 0.012,
+  "shoulder_z": 0.158918648310388,
+  "weak_zones": [
+    {
+      "name": "base",
+      "z0": 0.0,
+      "z1": 0.012,
+      "thinness": 0.6
+    },
+    {
+      "name": "body",
+      "z0": 0.012,
+      "z1": 0.158918648310388,
+      "thinness": 1.0
+    },
+    {
+      "name": "shoulder",
+      "z0": 0.158918648310388,
+      "z1": 0.20986232790988738,
+      "thinness": 1.3
+    },
+    {
+      "name": "neck",
+      "z0": 0.20986232790988738,
+      "z1": 0.256,
+      "thinness": 0.8
+    }
+  ],
+  "thinness_note": "relative fragility factor, >1 breaks more easily; neck-snap variant cuts at ~open_z",
+  "files": {
+    "shards": "export/bottle_beer_shards.glb",
+    "broken": "export/bottle_beer_broken.glb"
+  },
+  "impact_point": [
+    0.03125,
+    0.0,
+    0.07945932447910309
+  ],
+  "shards": {
+    "count": 23,
+    "tris": 5300,
+    "classes": {
+      "chunk": 5,
+      "shard": 18,
+      "sliver": 0
+    },
+    "gap_m": 0.0002,
+    "volume_ratio_vs_intact": 0.991981495536222,
+    "node_pattern": "Shard_00..Shard_NN (sorted by mass, biggest first)",
+    "extras": [
+      "mass_fraction",
+      "radius",
+      "class",
+      "volume_m3",
+      "mass_kg",
+      "dist_impact"
+    ]
+  },
+  "broken_variant": {
+    "nodes": [
+      "Glass",
+      "Neck",
+      "Liquid",
+      "Cap(child of Neck)",
+      "Label"
+    ],
+    "open_z": 0.08068928410673952,
+    "jag_z_range": [
+      0.08068928410673952,
+      0.10395646521172286
+    ],
+    "extras": [
+      "open_z",
+      "neck_z"
+    ]
+  }
+}

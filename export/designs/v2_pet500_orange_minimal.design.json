@@ -1,0 +1,94 @@
+{
+ "name": "v2_pet500_orange",
+ "tier": "minimal",
+ "bottle": "v2_pet500",
+ "asset": "v2_pet500",
+ "provider": "lathe_v2",
+ "glb": "v2_pet500_orange_minimal.glb",
+ "liquid_sidecar": "v2_pet500_orange_minimal.liquid.json",
+ "meta": {
+  "description": "PET 500 ml with a printed shrink sleeve and a neck tamper band.",
+  "tags": [
+   "soda",
+   "sleeve",
+   "v2"
+  ],
+  "name": "v2_pet500_orange",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 507,
+  "base_glb": "export/v2/bottle_pet500_lod2.glb",
+  "base_tex_mem_kb_rgba8_mips": 0,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 0,
+  "label_tex_mem_kb_compressed_mips": 0
+ },
+ "glass": {
+  "bottle": "pet500",
+  "tier": "low",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.0487,
+   0.0917
+  ],
+  "label_panel": true,
+  "z_top": 0.2037,
+  "r_bore": 0.01085,
+  "glass": "pet_clear",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "screw"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 509.2,
+  "z0": 0.00114,
+  "z1": 0.20067,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.95,
+   0.45,
+   0.05,
+   1
+  ],
+  "carbonation": 0.9,
+  "foam": 0.4,
+  "foam_height": 0.014,
+  "bubble_size": 0.8,
+  "fill_default": 0.9
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "sleeve",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.7885366878886032,
+    0.38793592923091297,
+    0.11317812490128167,
+    1.0
+   ],
+   "width_m": 0.20702,
+   "height_m": 0.09421,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "sleeve",
+  "front",
+  "neck_seal"
+ ]
+}

@@ -1,0 +1,28 @@
+{
+ "template": "pet_sleeve",
+ "bottle": "v2_pet500",
+ "slot": "sleeve",
+ "size_px": [
+  1242,
+  566
+ ],
+ "px_per_cm": 60.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 1,
+ "fields": {
+  "brand": "ZESTA",
+  "product": "Orange Spark",
+  "bg": "#f08a1c",
+  "bg2": "#8a3b00",
+  "accent": "#ffd24a",
+  "accent2": "#fff3b0",
+  "volume": "500 ml",
+  "small": [
+   "Carbonated water, sugar,",
+   "orange juice (3%), acid.",
+   "Please recycle.",
+   "Best before: see cap"
+  ]
+ }
+}

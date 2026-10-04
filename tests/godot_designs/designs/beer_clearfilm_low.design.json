@@ -1,0 +1,111 @@
+{
+ "name": "beer_clearfilm",
+ "tier": "low",
+ "bottle": "beer",
+ "glb": "beer_clearfilm_low.glb",
+ "liquid_sidecar": "beer_clearfilm_low.liquid.json",
+ "meta": {
+  "description": "Only a transparent printed sticker (clear_film) on the glass.",
+  "tags": [
+   "beer",
+   "clear-film"
+  ],
+  "name": "beer_clearfilm",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 1,
+  "texture_sizes": [
+   [
+    512,
+    512
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 1365,
+  "tex_mem_kb_compressed_mips": 341,
+  "glb_kb": 285
+ },
+ "glass": {
+  "tint": [
+   0.18,
+   0.1,
+   0.02,
+   1.0
+  ],
+  "roughness": 0.03,
+  "thickness_mm": 2.5,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "crown",
+  "r": 0.0155,
+  "z0": 0.25,
+  "z1": 0.2615,
+  "top_r": 0.012450000000000001
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 494.3,
+  "z0": 0.0029,
+  "z1": 0.252,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.12,
+   0.05,
+   0.02,
+   1.0
+  ],
+  "carbonation": 0.35,
+  "foam": 0.9,
+  "foam_height": 0.026,
+  "bubble_size": 1.0,
+  "opacity": 0.97,
+  "viscosity": 0.2,
+  "density": 1.02,
+  "fill_default": 0.8,
+  "tint_strength": 1.0,
+  "mass_full_kg": 0.5042
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/beer_clearfilm_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "clear_film",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.08508,
+   "height_m": 0.09,
+   "aspect": 0.9454,
+   "arc_deg": 150.0,
+   "alpha_mode": "BLEND",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.00391,
+    0.00391,
+    0.66797,
+    0.70703
+   ]
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck",
+  "wrap",
+  "cap"
+ ]
+}

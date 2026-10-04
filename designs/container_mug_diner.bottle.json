@@ -1,0 +1,43 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "container_mug",
+  "liquid": {
+    "color": [
+      0.28,
+      0.14,
+      0.07,
+      1
+    ],
+    "fill": 0.8
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "mug_logo",
+        "seed": 141
+      }
+    },
+    {
+      "slot": "back",
+      "generate": {
+        "template": "mug_logo",
+        "seed": 142,
+        "fields": {
+          "color": "#2a5c8a",
+          "brand": "Rosie's",
+          "tagline": "OPEN 24 HOURS"
+        }
+      }
+    }
+  ],
+  "meta": {
+    "description": "Ceramic diner mug with decals front and back (handle at +X).",
+    "tags": [
+      "mug",
+      "container"
+    ],
+    "name": "container_mug_diner",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

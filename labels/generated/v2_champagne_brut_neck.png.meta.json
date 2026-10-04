@@ -1,0 +1,17 @@
+{
+ "template": "wine_neck",
+ "bottle": "v2_champagne",
+ "slot": "neck",
+ "size_px": [
+  726,
+  238
+ ],
+ "px_per_cm": 100.0,
+ "alpha": false,
+ "wear": 0.05,
+ "seed": 23,
+ "fields": {
+  "year": "2016",
+  "product": "Brut"
+ }
+}

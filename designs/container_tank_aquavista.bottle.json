@@ -1,0 +1,44 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "container_tank",
+  "liquid": {
+    "color": [
+      0.18,
+      0.5,
+      0.55,
+      1
+    ],
+    "fill": 0.85
+  },
+  "labels": [
+    {
+      "slot": "sticker",
+      "generate": {
+        "template": "tank_sticker",
+        "seed": 151
+      }
+    },
+    {
+      "slot": "plate",
+      "generate": {
+        "template": "labelwriter",
+        "seed": 152,
+        "fields": {
+          "lines": [
+            "TANK 3 - REEF"
+          ]
+        }
+      },
+      "material_kind": "tape"
+    }
+  ],
+  "meta": {
+    "description": "Glass tank with a maker sticker on the front pane and a label-printer name strip.",
+    "tags": [
+      "tank",
+      "container"
+    ],
+    "name": "container_tank_aquavista",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

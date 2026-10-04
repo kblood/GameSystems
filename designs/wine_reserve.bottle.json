@@ -1,0 +1,56 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "bottle": "wine",
+  "glass": {
+    "tint": [
+      0.02,
+      0.07,
+      0.03,
+      1.0
+    ],
+    "roughness": 0.04
+  },
+  "cap": {
+    "type": "wax",
+    "colour": "#6b0f1a"
+  },
+  "liquid": {
+    "color": [
+      0.2,
+      0.01,
+      0.04,
+      1.0
+    ],
+    "fill": 0.85,
+    "opacity": 0.95,
+    "viscosity": 0.2,
+    "density": 0.99,
+    "tint_strength": 1.2
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "image": "labels/wine_modern_front.png"
+    },
+    {
+      "slot": "back",
+      "generate": {
+        "template": "wine_back",
+        "fields": {
+          "brand": "NOCTURNE"
+        },
+        "seed": 4
+      }
+    }
+  ],
+  "meta": {
+    "description": "Black modern label, wax-dipped cap, very dark glass.",
+    "tags": [
+      "wine",
+      "wax",
+      "dark"
+    ],
+    "name": "wine_reserve",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

@@ -1,0 +1,17 @@
+{
+ "template": "flask_grad",
+ "bottle": "v2_roundflask",
+ "slot": "grad",
+ "size_px": [
+  204,
+  442
+ ],
+ "px_per_cm": 100.2,
+ "alpha": true,
+ "wear": 0.0,
+ "seed": 92,
+ "fields": {
+  "patch": "RB 250",
+  "max": 250
+ }
+}

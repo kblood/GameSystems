@@ -1,0 +1,17 @@
+{
+ "template": "wine_neck",
+ "bottle": "container_square",
+ "slot": "neck",
+ "size_px": [
+  472,
+  140
+ ],
+ "px_per_cm": 100.2,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 102,
+ "fields": {
+  "year": "No. 3",
+  "product": "Gin"
+ }
+}

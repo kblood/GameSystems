@@ -1,0 +1,44 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_pet500",
+  "liquid": {
+    "color": [
+      0.95,
+      0.45,
+      0.05,
+      1
+    ],
+    "fill": 0.9,
+    "carbonation": 0.9,
+    "foam": 0.4
+  },
+  "labels": [
+    {
+      "slot": "sleeve",
+      "generate": {
+        "template": "pet_sleeve",
+        "seed": 1
+      }
+    },
+    {
+      "slot": "neck_seal",
+      "generate": {
+        "template": "neck_seal",
+        "seed": 1,
+        "fields": {
+          "bg": "#f08a1c"
+        }
+      }
+    }
+  ],
+  "meta": {
+    "description": "PET 500 ml with a printed shrink sleeve and a neck tamper band.",
+    "tags": [
+      "soda",
+      "sleeve",
+      "v2"
+    ],
+    "name": "v2_pet500_orange",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

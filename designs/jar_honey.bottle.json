@@ -1,0 +1,49 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "bottle": "jar",
+  "glass": {
+    "tint": [
+      0.85,
+      0.95,
+      0.92,
+      1.0
+    ]
+  },
+  "cap": {
+    "type": "screw",
+    "colour": "#e8a317"
+  },
+  "liquid": {
+    "color": [
+      0.9,
+      0.6,
+      0.1,
+      1.0
+    ],
+    "fill": 0.9,
+    "opacity": 0.7,
+    "viscosity": 0.92,
+    "density": 1.42,
+    "tint_strength": 1.5
+  },
+  "labels": [
+    {
+      "slot": "wrap",
+      "image": "labels/jar_honey_wrap.png"
+    },
+    {
+      "slot": "lid",
+      "image": "labels/jar_lid_honey.png"
+    }
+  ],
+  "meta": {
+    "description": "Full wrap label and a flat lid label.",
+    "tags": [
+      "jar",
+      "wrap",
+      "lid"
+    ],
+    "name": "jar_honey",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

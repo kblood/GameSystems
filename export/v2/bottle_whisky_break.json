@@ -1,0 +1,96 @@
+{
+  "name": "whisky",
+  "family": "v2",
+  "material": "glass",
+  "shatters": true,
+  "source": "scripts/fracture_glb.py",
+  "frame": "bottle-local, glTF Y-up, metres, base centre at origin (same frame as the shipped GLB)",
+  "wall_thickness_m": 0.0036000000000000003,
+  "density_kg_m3": 2500.0,
+  "glass_volume_m3": 0.00024975713785441986,
+  "glass_mass_kg": 0.6243928446360496,
+  "liquid_mass_kg_per_ml": 0.001,
+  "capacity_ml": 731.4,
+  "height_m": 0.26353025436401367,
+  "max_radius_m": 0.03848453105430686,
+  "base_z": 0.012,
+  "shoulder_z": 0.20548103688207825,
+  "neck_z": 0.23120739462975418,
+  "has_neck": true,
+  "weak_zones": [
+    {
+      "name": "base",
+      "z0": 0.0,
+      "z1": 0.012,
+      "thinness": 1.0
+    },
+    {
+      "name": "body",
+      "z0": 0.012,
+      "z1": 0.20548103688207825,
+      "thinness": 1.0
+    },
+    {
+      "name": "shoulder",
+      "z0": 0.20548103688207825,
+      "z1": 0.23120739462975418,
+      "thinness": 1.3
+    },
+    {
+      "name": "neck",
+      "z0": 0.23120739462975418,
+      "z1": 0.26353025436401367,
+      "thinness": 0.8
+    }
+  ],
+  "zone_factor": {
+    "base": 1.15,
+    "body": 1.0,
+    "shoulder": 0.85,
+    "neck": 0.55
+  },
+  "calibration": {
+    "surface": "concrete",
+    "fill": 1.0,
+    "v_n": 4.3,
+    "y": "mid_body",
+    "note": "f_crit_ref solved at load so this hit is exactly the break threshold"
+  },
+  "mesh": {
+    "area_m2": 0.11622272554475188,
+    "non_manifold_edges": 0
+  },
+  "shards": {
+    "count": 21,
+    "tris": 9152,
+    "classes": {
+      "chunk": 5,
+      "shard": 15,
+      "sliver": 1
+    }
+  },
+  "impact_point": [
+    0.03668453171849251,
+    0.0,
+    0.10874051600694656
+  ],
+  "files": {
+    "shards": "export/v2/bottle_whisky_shards.glb",
+    "broken": "export/v2/bottle_whisky_broken.glb"
+  },
+  "open_z": 0.21572731483441013,
+  "broken_variant": {
+    "nodes": [
+      "Glass",
+      "Neck",
+      "Liquid",
+      "Cap(child of Neck)",
+      "Label"
+    ],
+    "open_z": 0.21572731483441013,
+    "jag_z_range": [
+      0.21572731483441013,
+      0.23276477614416077
+    ]
+  }
+}

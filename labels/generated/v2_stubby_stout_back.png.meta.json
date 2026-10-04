@@ -1,0 +1,16 @@
+{
+ "template": "beer_neck",
+ "bottle": "v2_stubby",
+ "slot": "back",
+ "size_px": [
+  566,
+  384
+ ],
+ "px_per_cm": 79.9,
+ "alpha": false,
+ "wear": 0.1,
+ "seed": 32,
+ "fields": {
+  "batch": "No. 12"
+ }
+}

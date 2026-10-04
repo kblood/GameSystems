@@ -1,0 +1,12 @@
+config_version=5
+
+[application]
+config/name="bottle_designs_test"
+run/main_scene="res://main.tscn"
+
+[rendering]
+renderer/rendering_method="forward_plus"
+
+[physics]
+
+jolt_physics_3d/simulation/penetration_slop=0.002

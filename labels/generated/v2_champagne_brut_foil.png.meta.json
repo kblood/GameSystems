@@ -1,0 +1,17 @@
+{
+ "template": "foil_capsule",
+ "bottle": "v2_champagne",
+ "slot": "foil",
+ "size_px": [
+  1276,
+  582
+ ],
+ "px_per_cm": 100.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 24,
+ "fields": {
+  "foil": "#c9a13a",
+  "brand": "AUR\u00c8LE"
+ }
+}

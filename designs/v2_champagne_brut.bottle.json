@@ -1,0 +1,70 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_champagne",
+  "liquid": {
+    "color": [
+      0.85,
+      0.68,
+      0.28,
+      1
+    ],
+    "fill": 0.85,
+    "carbonation": 0.8,
+    "foam": 0.3
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "champagne",
+        "seed": 21,
+        "wear": 0.1
+      }
+    },
+    {
+      "slot": "back",
+      "generate": {
+        "template": "wine_back",
+        "seed": 22,
+        "fields": {
+          "brand": "Maison Aurèle"
+        },
+        "wear": 0.1
+      }
+    },
+    {
+      "slot": "neck",
+      "generate": {
+        "template": "wine_neck",
+        "seed": 23,
+        "fields": {
+          "year": "2016",
+          "product": "Brut"
+        },
+        "wear": 0.05
+      }
+    },
+    {
+      "slot": "foil",
+      "generate": {
+        "template": "foil_capsule",
+        "seed": 24,
+        "fields": {
+          "foil": "#c9a13a",
+          "brand": "AURÈLE"
+        }
+      },
+      "finish": "mirror"
+    }
+  ],
+  "meta": {
+    "description": "Champagne: navy and gold front label, back label, neck label and printed gold foil (the wire cage is untouched).",
+    "tags": [
+      "sparkling",
+      "foil",
+      "v2"
+    ],
+    "name": "v2_champagne_brut",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

@@ -1,0 +1,23 @@
+{
+ "template": "jar_jam",
+ "bottle": "jar",
+ "slot": "wrap",
+ "size_px": [
+  1658,
+  408
+ ],
+ "px_per_cm": 60.0,
+ "alpha": false,
+ "wear": 0.1,
+ "seed": 2,
+ "fields": {
+  "product": "Strawberry",
+  "brand": "Granny Pim's Preserves",
+  "small": [
+   "Strawberries, sugar,",
+   "lemon juice, pectin.",
+   "Made in small batches.",
+   "Best before see lid."
+  ]
+ }
+}

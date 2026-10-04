@@ -1,0 +1,108 @@
+{
+ "name": "v2_swingtop_lemonade",
+ "tier": "high",
+ "bottle": "v2_swingtop",
+ "asset": "v2_swingtop",
+ "provider": "lathe_v2",
+ "glb": "v2_swingtop_lemonade.glb",
+ "liquid_sidecar": "v2_swingtop_lemonade.liquid.json",
+ "meta": {
+  "description": "Swing-top with a clear no-label-look sticker (clear_film) on the front.",
+  "tags": [
+   "soda",
+   "clear-film",
+   "v2"
+  ],
+  "name": "v2_swingtop_lemonade",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 6,
+  "label_draw_calls": 1,
+  "textures": 2,
+  "texture_sizes": [
+   [
+    1024,
+    1024
+   ],
+   [
+    626,
+    680
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 7676,
+  "tex_mem_kb_compressed_mips": 1919,
+  "glb_kb": 414,
+  "base_glb": "export/v2/bottle_swingtop.glb",
+  "base_tex_mem_kb_rgba8_mips": 5460,
+  "base_draw_calls": 5,
+  "label_tex_mem_kb_rgba8_mips": 2216,
+  "label_tex_mem_kb_compressed_mips": 554
+ },
+ "glass": {
+  "bottle": "swingtop",
+  "tier": "high",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.0279,
+   0.1199
+  ],
+  "label_panel": false,
+  "z_top": 0.2321,
+  "r_bore": 0.0102,
+  "glass": "green",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "swing"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 498.8,
+  "z0": 0.00485,
+  "z1": 0.22113,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.95,
+   0.88,
+   0.45,
+   1
+  ],
+  "carbonation": 0.6,
+  "foam": 1.0,
+  "foam_height": 0.024,
+  "bubble_size": 1.0,
+  "fill_default": 0.8
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/v2_swingtop_lemonade_front.png",
+   "wear_mask": null,
+   "material_kind": "clear_film",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.07831,
+   "height_m": 0.085,
+   "aspect": 0.9213,
+   "arc_deg": 130.0,
+   "alpha_mode": "BLEND",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "wrap"
+ ]
+}

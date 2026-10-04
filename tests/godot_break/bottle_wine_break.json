@@ -1,0 +1,91 @@
+{
+  "name": "wine",
+  "material": "glass",
+  "shatters": true,
+  "frame": "bottle-local, Blender Z-up (glTF Y-up after export), metres, base centre at origin",
+  "wall_thickness_m": 0.003,
+  "density_kg_m3": 2500.0,
+  "glass_volume_m3": 0.00019523387298844312,
+  "glass_mass_kg": 0.4880846824711078,
+  "liquid_mass_kg_per_ml": 0.00099,
+  "capacity_ml": 868.0,
+  "height_m": 0.34,
+  "open_z": 0.10325450652381678,
+  "neck_z": 0.28297872340425534,
+  "base_z": 0.012,
+  "shoulder_z": 0.22085106382978725,
+  "weak_zones": [
+    {
+      "name": "base",
+      "z0": 0.0,
+      "z1": 0.012,
+      "thinness": 0.6
+    },
+    {
+      "name": "body",
+      "z0": 0.012,
+      "z1": 0.22085106382978725,
+      "thinness": 1.0
+    },
+    {
+      "name": "shoulder",
+      "z0": 0.22085106382978725,
+      "z1": 0.28297872340425534,
+      "thinness": 1.3
+    },
+    {
+      "name": "neck",
+      "z0": 0.28297872340425534,
+      "z1": 0.34,
+      "thinness": 0.8
+    }
+  ],
+  "thinness_note": "relative fragility factor, >1 breaks more easily; neck-snap variant cuts at ~open_z",
+  "files": {
+    "shards": "export/bottle_wine_shards.glb",
+    "broken": "export/bottle_wine_broken.glb"
+  },
+  "impact_point": [
+    0.035999998450279236,
+    0.0,
+    0.11042553186416626
+  ],
+  "shards": {
+    "count": 24,
+    "tris": 5742,
+    "classes": {
+      "chunk": 6,
+      "shard": 17,
+      "sliver": 1
+    },
+    "gap_m": 0.0002,
+    "volume_ratio_vs_intact": 0.9934464362293128,
+    "node_pattern": "Shard_00..Shard_NN (sorted by mass, biggest first)",
+    "extras": [
+      "mass_fraction",
+      "radius",
+      "class",
+      "volume_m3",
+      "mass_kg",
+      "dist_impact"
+    ]
+  },
+  "broken_variant": {
+    "nodes": [
+      "Glass",
+      "Neck",
+      "Liquid",
+      "Cap(child of Neck)",
+      "Label"
+    ],
+    "open_z": 0.10325450652381678,
+    "jag_z_range": [
+      0.10325450652381678,
+      0.13537371566682102
+    ],
+    "extras": [
+      "open_z",
+      "neck_z"
+    ]
+  }
+}

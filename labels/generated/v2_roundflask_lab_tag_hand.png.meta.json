@@ -1,0 +1,23 @@
+{
+ "template": "tag_hand",
+ "bottle": "v2_roundflask",
+ "slot": "tag_hand",
+ "size_px": [
+  276,
+  294
+ ],
+ "px_per_cm": 100.3,
+ "alpha": true,
+ "wear": 0.3,
+ "seed": 93,
+ "fields": {
+  "paper": "#d2b27a",
+  "ink": "#27323f",
+  "lines": [
+   "Run 3",
+   "K.S."
+  ],
+  "font": "hand",
+  "angle": 2.0
+ }
+}

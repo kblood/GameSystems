@@ -1,0 +1,107 @@
+{
+ "name": "v2_perfume_atelier",
+ "tier": "low",
+ "bottle": "v2_perfume",
+ "asset": "v2_perfume",
+ "provider": "lathe_v2",
+ "glb": "v2_perfume_atelier_low.glb",
+ "liquid_sidecar": "v2_perfume_atelier_low.liquid.json",
+ "meta": {
+  "description": "Perfume bottle with a small gold-bordered front label.",
+  "tags": [
+   "perfume",
+   "v2"
+  ],
+  "name": "v2_perfume_atelier",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 1,
+  "texture_sizes": [
+   [
+    512,
+    512
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 1365,
+  "tex_mem_kb_compressed_mips": 341,
+  "glb_kb": 176,
+  "base_glb": "export/v2/bottle_perfume_lod2.glb",
+  "base_tex_mem_kb_rgba8_mips": 0,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 1365,
+  "label_tex_mem_kb_compressed_mips": 341
+ },
+ "glass": {
+  "bottle": "perfume",
+  "tier": "low",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.02,
+   0.045
+  ],
+  "label_panel": false,
+  "z_top": 0.078,
+  "r_bore": 0.0036,
+  "glass": "flint_hi",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "perfume"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 61.1,
+  "z0": 0.01637,
+  "z1": 0.07397,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.95,
+   0.8,
+   0.78,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.0,
+  "foam_height": 0.002,
+  "bubble_size": 1.0,
+  "fill_default": 0.7
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/v2_perfume_atelier_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "paper_gloss",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.04465,
+   "height_m": 0.028,
+   "aspect": 1.5943,
+   "arc_deg": 90.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false,
+   "atlas_rect": [
+    0.00391,
+    0.00391,
+    0.78906,
+    0.49609
+   ]
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front"
+ ]
+}

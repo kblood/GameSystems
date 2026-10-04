@@ -1,0 +1,17 @@
+{
+ "template": "soda_cap",
+ "bottle": "soda",
+ "slot": "cap",
+ "size_px": [
+  264,
+  264
+ ],
+ "px_per_cm": 120.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 3,
+ "fields": {
+  "bg": "#c41f2e",
+  "brand": "FIZZ-O"
+ }
+}

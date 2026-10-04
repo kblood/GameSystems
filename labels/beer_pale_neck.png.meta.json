@@ -1,0 +1,16 @@
+{
+ "template": "beer_neck",
+ "bottle": "beer",
+ "slot": "neck",
+ "size_px": [
+  430,
+  260
+ ],
+ "px_per_cm": 100.0,
+ "alpha": false,
+ "wear": 0.2,
+ "seed": 3,
+ "fields": {
+  "batch": "No. 7"
+ }
+}

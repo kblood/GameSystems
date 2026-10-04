@@ -1,0 +1,19 @@
+{
+ "template": "labelwriter",
+ "bottle": "container_tank",
+ "slot": "plate",
+ "size_px": [
+  840,
+  120
+ ],
+ "px_per_cm": 60.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 152,
+ "fields": {
+  "tape": "white",
+  "lines": [
+   "TANK 3 - REEF"
+  ]
+ }
+}

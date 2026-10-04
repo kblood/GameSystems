@@ -1,0 +1,35 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_mason",
+  "liquid": {
+    "color": [
+      0.2,
+      0.02,
+      0.15,
+      1
+    ],
+    "fill": 0.9,
+    "carbonation": 0.0,
+    "foam": 0.0,
+    "opacity": 1.0
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "preserve",
+        "seed": 81,
+        "wear": 0.15
+      }
+    }
+  ],
+  "meta": {
+    "description": "Mason jar with a small front label (blackberry preserves).",
+    "tags": [
+      "jar",
+      "v2"
+    ],
+    "name": "v2_mason_preserves",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

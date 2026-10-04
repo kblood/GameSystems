@@ -1,0 +1,1849 @@
+{
+  "assets": [
+    {
+      "id": "bottle_beer",
+      "family": "bottle",
+      "file": "export/bottle_beer.glb",
+      "capacity_ml": 494,
+      "height_m": 0.256,
+      "license": "MIT",
+      "shards": "export/bottle_beer_shards.glb",
+      "broken": "export/bottle_beer_broken.glb",
+      "break_info": "export/bottle_beer_break.json"
+    },
+    {
+      "id": "bottle_flask",
+      "family": "bottle",
+      "file": "export/bottle_flask.glb",
+      "capacity_ml": 1100,
+      "height_m": 0.202,
+      "license": "MIT",
+      "shards": "export/bottle_flask_shards.glb",
+      "broken": "export/bottle_flask_broken.glb",
+      "break_info": "export/bottle_flask_break.json"
+    },
+    {
+      "id": "bottle_jar",
+      "family": "bottle",
+      "file": "export/bottle_jar.glb",
+      "capacity_ml": 568,
+      "height_m": 0.122,
+      "license": "MIT",
+      "shards": "export/bottle_jar_shards.glb",
+      "broken": "export/bottle_jar_broken.glb",
+      "break_info": "export/bottle_jar_break.json"
+    },
+    {
+      "id": "bottle_soda",
+      "family": "bottle",
+      "file": "export/bottle_soda.glb",
+      "capacity_ml": 669,
+      "height_m": 0.262,
+      "license": "MIT",
+      "broken": "export/bottle_soda_broken.glb",
+      "break_info": "export/bottle_soda_break.json"
+    },
+    {
+      "id": "bottle_v2_apothecary",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_apothecary.glb",
+      "lod1": "export/v2/bottle_apothecary_lod1.glb",
+      "lod2": "export/v2/bottle_apothecary_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_apothecary.liquid.json",
+      "profile": "export/v2/bottle_apothecary.profile.json",
+      "capacity_ml": 106,
+      "height_m": 0.1117,
+      "glass": "cobalt",
+      "desc": "Ribbed apothecary/poison bottle 100 ml, cobalt: Boston-round body, ribs on the sides, smooth front/back",
+      "tiers": {
+        "high": {
+          "tris": 5472,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 2376,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 1004,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_apothecary_break.json",
+      "shards": "export/v2/bottle_apothecary_shards.glb",
+      "broken": "export/v2/bottle_apothecary_broken.glb"
+    },
+    {
+      "id": "bottle_v2_bordeaux",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_bordeaux.glb",
+      "lod1": "export/v2/bottle_bordeaux_lod1.glb",
+      "lod2": "export/v2/bottle_bordeaux_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_bordeaux.liquid.json",
+      "profile": "export/v2/bottle_bordeaux.profile.json",
+      "capacity_ml": 744,
+      "height_m": 0.3,
+      "glass": "green",
+      "desc": "Bordeaux 750 ml: straight body, high rounded shoulder, cork + foil capsule, punt",
+      "tiers": {
+        "high": {
+          "tris": 5696,
+          "draw_calls": 4,
+          "materials": 4
+        },
+        "medium": {
+          "tris": 2464,
+          "draw_calls": 4,
+          "materials": 4
+        },
+        "low": {
+          "tris": 968,
+          "draw_calls": 4,
+          "materials": 4
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_bordeaux_break.json",
+      "shards": "export/v2/bottle_bordeaux_shards.glb",
+      "broken": "export/v2/bottle_bordeaux_broken.glb"
+    },
+    {
+      "id": "bottle_v2_burgundy",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_burgundy.glb",
+      "lod1": "export/v2/bottle_burgundy_lod1.glb",
+      "lod2": "export/v2/bottle_burgundy_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_burgundy.liquid.json",
+      "profile": "export/v2/bottle_burgundy.profile.json",
+      "capacity_ml": 721,
+      "height_m": 0.296,
+      "glass": "deadleaf",
+      "desc": "Burgundy 750 ml: wider body, long sloping S-shoulder, wax-dipped top",
+      "tiers": {
+        "high": {
+          "tris": 5472,
+          "draw_calls": 4,
+          "materials": 4
+        },
+        "medium": {
+          "tris": 2296,
+          "draw_calls": 4,
+          "materials": 4
+        },
+        "low": {
+          "tris": 1024,
+          "draw_calls": 4,
+          "materials": 4
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_burgundy_break.json",
+      "shards": "export/v2/bottle_burgundy_shards.glb",
+      "broken": "export/v2/bottle_burgundy_broken.glb"
+    },
+    {
+      "id": "bottle_v2_champagne",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_champagne.glb",
+      "lod1": "export/v2/bottle_champagne_lod1.glb",
+      "lod2": "export/v2/bottle_champagne_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_champagne.liquid.json",
+      "profile": "export/v2/bottle_champagne.profile.json",
+      "capacity_ml": 815,
+      "height_m": 0.3,
+      "glass": "champagne",
+      "desc": "Champagne/sparkling 750 ml: thick glass, deep punt, bague lip, foil over mushroom cork + wire cage",
+      "tiers": {
+        "high": {
+          "tris": 6528,
+          "draw_calls": 6,
+          "materials": 6
+        },
+        "medium": {
+          "tris": 2896,
+          "draw_calls": 6,
+          "materials": 6
+        },
+        "low": {
+          "tris": 1328,
+          "draw_calls": 6,
+          "materials": 6
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_champagne_break.json",
+      "shards": "export/v2/bottle_champagne_shards.glb",
+      "broken": "export/v2/bottle_champagne_broken.glb"
+    },
+    {
+      "id": "bottle_v2_contour",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_contour.glb",
+      "lod1": "export/v2/bottle_contour_lod1.glb",
+      "lod2": "export/v2/bottle_contour_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_contour.liquid.json",
+      "profile": "export/v2/bottle_contour.profile.json",
+      "capacity_ml": 355,
+      "height_m": 0.232,
+      "glass": "aqua",
+      "desc": "Generic contour-style soda glass 330 ml (original shape): waisted body, vertical flutes, smooth panel",
+      "tiers": {
+        "high": {
+          "tris": 5743,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 2560,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 976,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_contour_break.json",
+      "shards": "export/v2/bottle_contour_shards.glb",
+      "broken": "export/v2/bottle_contour_broken.glb"
+    },
+    {
+      "id": "bottle_v2_cruet",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_cruet.glb",
+      "lod1": "export/v2/bottle_cruet_lod1.glb",
+      "lod2": "export/v2/bottle_cruet_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_cruet.liquid.json",
+      "profile": "export/v2/bottle_cruet.profile.json",
+      "capacity_ml": 276,
+      "height_m": 0.2178,
+      "glass": "flint",
+      "desc": "Oil/vinegar cruet 250 ml: teardrop body, long tapering neck, cork + stainless pourer",
+      "tiers": {
+        "high": {
+          "tris": 5928,
+          "draw_calls": 5,
+          "materials": 5
+        },
+        "medium": {
+          "tris": 2366,
+          "draw_calls": 5,
+          "materials": 5
+        },
+        "low": {
+          "tris": 1062,
+          "draw_calls": 5,
+          "materials": 5
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_cruet_break.json",
+      "shards": "export/v2/bottle_cruet_shards.glb",
+      "broken": "export/v2/bottle_cruet_broken.glb"
+    },
+    {
+      "id": "bottle_v2_decanter",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_decanter.glb",
+      "lod1": "export/v2/bottle_decanter_lod1.glb",
+      "lod2": "export/v2/bottle_decanter_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_decanter.liquid.json",
+      "profile": "export/v2/bottle_decanter.profile.json",
+      "capacity_ml": 1037,
+      "height_m": 0.2374,
+      "glass": "flint_hi",
+      "desc": "Wine/ship decanter: very wide flat base, concave flaring cone, long neck, glass ball stopper",
+      "tiers": {
+        "high": {
+          "tris": 5656,
+          "draw_calls": 3,
+          "materials": 2
+        },
+        "medium": {
+          "tris": 2448,
+          "draw_calls": 3,
+          "materials": 2
+        },
+        "low": {
+          "tris": 1112,
+          "draw_calls": 2,
+          "materials": 2
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_decanter_break.json",
+      "shards": "export/v2/bottle_decanter_shards.glb",
+      "broken": "export/v2/bottle_decanter_broken.glb"
+    },
+    {
+      "id": "bottle_v2_erlenmeyer",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_erlenmeyer.glb",
+      "lod1": "export/v2/bottle_erlenmeyer_lod1.glb",
+      "lod2": "export/v2/bottle_erlenmeyer_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_erlenmeyer.liquid.json",
+      "profile": "export/v2/bottle_erlenmeyer.profile.json",
+      "capacity_ml": 669,
+      "height_m": 0.1784,
+      "glass": "borosilicate",
+      "desc": "Erlenmeyer flask 500 ml narrow neck, borosilicate: straight cone, beaded rim with pour spout, embossed graduations",
+      "tiers": {
+        "high": {
+          "tris": 5680,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 2520,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 960,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_erlenmeyer_break.json",
+      "shards": "export/v2/bottle_erlenmeyer_shards.glb",
+      "broken": "export/v2/bottle_erlenmeyer_broken.glb"
+    },
+    {
+      "id": "bottle_v2_growler",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_growler.glb",
+      "lod1": "export/v2/bottle_growler_lod1.glb",
+      "lod2": "export/v2/bottle_growler_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_growler.liquid.json",
+      "profile": "export/v2/bottle_growler.profile.json",
+      "capacity_ml": 1045,
+      "height_m": 0.215,
+      "glass": "brown",
+      "desc": "Craft 'grumbler' jug 1 L, brown glass, broad round shoulder, 38 mm screw finish, metal cap",
+      "tiers": {
+        "high": {
+          "tris": 5776,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 2436,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 944,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_growler_break.json",
+      "shards": "export/v2/bottle_growler_shards.glb",
+      "broken": "export/v2/bottle_growler_broken.glb"
+    },
+    {
+      "id": "bottle_v2_longneck",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_longneck.glb",
+      "lod1": "export/v2/bottle_longneck_lod1.glb",
+      "lod2": "export/v2/bottle_longneck_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_longneck.liquid.json",
+      "profile": "export/v2/bottle_longneck.profile.json",
+      "capacity_ml": 387,
+      "height_m": 0.2393,
+      "glass": "amber",
+      "desc": "Longneck beer 355 ml: slim body, slight neck bulge, 26 mm crown finish with transfer bead",
+      "tiers": {
+        "high": {
+          "tris": 5871,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 2368,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 1016,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_longneck_break.json",
+      "shards": "export/v2/bottle_longneck_shards.glb",
+      "broken": "export/v2/bottle_longneck_broken.glb"
+    },
+    {
+      "id": "bottle_v2_mason",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_mason.glb",
+      "lod1": "export/v2/bottle_mason_lod1.glb",
+      "lod2": "export/v2/bottle_mason_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_mason.liquid.json",
+      "profile": "export/v2/bottle_mason.profile.json",
+      "capacity_ml": 433,
+      "height_m": 0.1298,
+      "glass": "flint",
+      "desc": "Mason/canning jar 500 ml regular mouth: real helical thread, two-piece metal lid (disc + band)",
+      "tiers": {
+        "high": {
+          "tris": 5616,
+          "draw_calls": 4,
+          "materials": 4
+        },
+        "medium": {
+          "tris": 2608,
+          "draw_calls": 4,
+          "materials": 4
+        },
+        "low": {
+          "tris": 1056,
+          "draw_calls": 4,
+          "materials": 4
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_mason_break.json",
+      "shards": "export/v2/bottle_mason_shards.glb"
+    },
+    {
+      "id": "bottle_v2_milk",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_milk.glb",
+      "lod1": "export/v2/bottle_milk_lod1.glb",
+      "lod2": "export/v2/bottle_milk_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_milk.liquid.json",
+      "profile": "export/v2/bottle_milk.profile.json",
+      "capacity_ml": 567,
+      "height_m": 0.2222,
+      "glass": "flint",
+      "desc": "Retro milk bottle 1 pint (568 ml): tapered upper body, wide mouth bead, pleated foil cap",
+      "tiers": {
+        "high": {
+          "tris": 5820,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 2624,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 1040,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_milk_break.json",
+      "shards": "export/v2/bottle_milk_shards.glb"
+    },
+    {
+      "id": "bottle_v2_perfume",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_perfume.glb",
+      "lod1": "export/v2/bottle_perfume_lod1.glb",
+      "lod2": "export/v2/bottle_perfume_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_perfume.liquid.json",
+      "profile": "export/v2/bottle_perfume.profile.json",
+      "capacity_ml": 61,
+      "height_m": 0.078,
+      "glass": "flint_hi",
+      "desc": "Perfume 50 ml: very thick base and walls, chamfered shoulder, small screw neck, heavy overcap",
+      "tiers": {
+        "high": {
+          "tris": 5424,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 2560,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 976,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_perfume_break.json",
+      "shards": "export/v2/bottle_perfume_shards.glb",
+      "broken": "export/v2/bottle_perfume_broken.glb"
+    },
+    {
+      "id": "bottle_v2_pet2l",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_pet2l.glb",
+      "lod1": "export/v2/bottle_pet2l_lod1.glb",
+      "lod2": "export/v2/bottle_pet2l_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_pet2l.liquid.json",
+      "profile": "export/v2/bottle_pet2l.profile.json",
+      "capacity_ml": 2234,
+      "height_m": 0.3347,
+      "glass": "pet_green",
+      "desc": "PET soda 2 L: tall petaloid bottle, recessed label panel, fluted shoulder",
+      "tiers": {
+        "high": {
+          "tris": 11230,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 6460,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 1180,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_pet2l_break.json"
+    },
+    {
+      "id": "bottle_v2_pet500",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_pet500.glb",
+      "lod1": "export/v2/bottle_pet500_lod1.glb",
+      "lod2": "export/v2/bottle_pet500_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_pet500.liquid.json",
+      "profile": "export/v2/bottle_pet500.profile.json",
+      "capacity_ml": 509,
+      "height_m": 0.2037,
+      "glass": "pet_clear",
+      "desc": "PET soda 500 ml: petaloid 5-foot base, grip rings, label panel, PCO 28 mm neck with support flange",
+      "tiers": {
+        "high": {
+          "tris": 7550,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 4460,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 1060,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_pet500_break.json"
+    },
+    {
+      "id": "bottle_v2_roundflask",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_roundflask.glb",
+      "lod1": "export/v2/bottle_roundflask_lod1.glb",
+      "lod2": "export/v2/bottle_roundflask_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_roundflask.liquid.json",
+      "profile": "export/v2/bottle_roundflask.profile.json",
+      "capacity_ml": 296,
+      "height_m": 0.147,
+      "glass": "borosilicate",
+      "desc": "Round-bottom boiling flask 250 ml on a cork ring stand, beaded neck",
+      "tiers": {
+        "high": {
+          "tris": 6696,
+          "draw_calls": 4,
+          "materials": 4
+        },
+        "medium": {
+          "tris": 3144,
+          "draw_calls": 4,
+          "materials": 4
+        },
+        "low": {
+          "tris": 1048,
+          "draw_calls": 4,
+          "materials": 4
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_roundflask_break.json",
+      "shards": "export/v2/bottle_roundflask_shards.glb",
+      "broken": "export/v2/bottle_roundflask_broken.glb"
+    },
+    {
+      "id": "bottle_v2_spirit",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_spirit.glb",
+      "lod1": "export/v2/bottle_spirit_lod1.glb",
+      "lod2": "export/v2/bottle_spirit_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_spirit.liquid.json",
+      "profile": "export/v2/bottle_spirit.profile.json",
+      "capacity_ml": 742,
+      "height_m": 0.3194,
+      "glass": "flint_hi",
+      "desc": "Tall vodka/gin 700 ml: clear heavy base, tall straight body, short shoulder, long neck, ROPP cap",
+      "tiers": {
+        "high": {
+          "tris": 5936,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 2520,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 912,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_spirit_break.json",
+      "shards": "export/v2/bottle_spirit_shards.glb",
+      "broken": "export/v2/bottle_spirit_broken.glb"
+    },
+    {
+      "id": "bottle_v2_stubby",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_stubby.glb",
+      "lod1": "export/v2/bottle_stubby_lod1.glb",
+      "lod2": "export/v2/bottle_stubby_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_stubby.liquid.json",
+      "profile": "export/v2/bottle_stubby.profile.json",
+      "capacity_ml": 358,
+      "height_m": 0.1838,
+      "glass": "brown",
+      "desc": "Stubby/steinie beer 330 ml: short wide body, short neck, crown",
+      "tiers": {
+        "high": {
+          "tris": 5871,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "medium": {
+          "tris": 2432,
+          "draw_calls": 3,
+          "materials": 3
+        },
+        "low": {
+          "tris": 976,
+          "draw_calls": 3,
+          "materials": 3
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_stubby_break.json",
+      "shards": "export/v2/bottle_stubby_shards.glb",
+      "broken": "export/v2/bottle_stubby_broken.glb"
+    },
+    {
+      "id": "bottle_v2_swingtop",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_swingtop.glb",
+      "lod1": "export/v2/bottle_swingtop_lod1.glb",
+      "lod2": "export/v2/bottle_swingtop_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_swingtop.liquid.json",
+      "profile": "export/v2/bottle_swingtop.profile.json",
+      "capacity_ml": 499,
+      "height_m": 0.2321,
+      "glass": "green",
+      "desc": "Swing-top beer 450 ml (original design): soft shoulders, wire bail + ceramic stopper",
+      "tiers": {
+        "high": {
+          "tris": 6600,
+          "draw_calls": 5,
+          "materials": 5
+        },
+        "medium": {
+          "tris": 2708,
+          "draw_calls": 5,
+          "materials": 5
+        },
+        "low": {
+          "tris": 1156,
+          "draw_calls": 5,
+          "materials": 5
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_swingtop_break.json",
+      "shards": "export/v2/bottle_swingtop_shards.glb",
+      "broken": "export/v2/bottle_swingtop_broken.glb"
+    },
+    {
+      "id": "bottle_v2_whisky",
+      "family": "bottle_v2",
+      "file": "export/v2/bottle_whisky.glb",
+      "lod1": "export/v2/bottle_whisky_lod1.glb",
+      "lod2": "export/v2/bottle_whisky_lod2.glb",
+      "liquid_sidecar": "export/v2/bottle_whisky.liquid.json",
+      "profile": "export/v2/bottle_whisky.profile.json",
+      "capacity_ml": 731,
+      "height_m": 0.2635,
+      "glass": "flint",
+      "desc": "Round whisky 700 ml: tall straight body, compact round shoulder, short neck, heavy base, bar-top cork",
+      "tiers": {
+        "high": {
+          "tris": 5712,
+          "draw_calls": 4,
+          "materials": 4
+        },
+        "medium": {
+          "tris": 2560,
+          "draw_calls": 4,
+          "materials": 4
+        },
+        "low": {
+          "tris": 976,
+          "draw_calls": 4,
+          "materials": 4
+        }
+      },
+      "license": "MIT",
+      "break_info": "export/v2/bottle_whisky_break.json",
+      "shards": "export/v2/bottle_whisky_shards.glb",
+      "broken": "export/v2/bottle_whisky_broken.glb"
+    },
+    {
+      "id": "bottle_whiskey",
+      "family": "bottle",
+      "file": "export/bottle_whiskey.glb",
+      "capacity_ml": 534,
+      "height_m": 0.226,
+      "license": "MIT",
+      "break_info": "export/bottle_whiskey_break.json",
+      "shards": "export/bottle_whiskey_shards.glb",
+      "broken": "export/bottle_whiskey_broken.glb"
+    },
+    {
+      "id": "bottle_wine",
+      "family": "bottle",
+      "file": "export/bottle_wine.glb",
+      "capacity_ml": 868,
+      "height_m": 0.34,
+      "license": "MIT",
+      "shards": "export/bottle_wine_shards.glb",
+      "broken": "export/bottle_wine_broken.glb",
+      "break_info": "export/bottle_wine_break.json"
+    },
+    {
+      "id": "container_hipflask",
+      "family": "container",
+      "file": "export/container_hipflask.glb",
+      "capacity_ml": 287,
+      "height_m": 0.162,
+      "opaque": false,
+      "license": "MIT",
+      "liquid_lut": "v2",
+      "open_top": false,
+      "liquid_sidecar": "export/container_hipflask.liquid.json",
+      "liquid_tiers": {
+        "mid": "export/container_hipflask.liquid.mid.json",
+        "low": "export/container_hipflask.liquid.low.json"
+      },
+      "lod1": "export/container_hipflask_lod1.glb",
+      "lod1_tris": 2516,
+      "break_info": "export/container_hipflask_break.json",
+      "shards": "export/container_hipflask_shards.glb",
+      "broken": "export/container_hipflask_broken.glb"
+    },
+    {
+      "id": "container_jerrycan",
+      "family": "container",
+      "file": "export/container_jerrycan.glb",
+      "capacity_ml": 15724,
+      "height_m": 0.4089,
+      "opaque": true,
+      "license": "MIT",
+      "liquid_lut": "v2",
+      "open_top": false,
+      "liquid_sidecar": "export/container_jerrycan.liquid.json",
+      "liquid_tiers": {
+        "mid": "export/container_jerrycan.liquid.mid.json",
+        "low": "export/container_jerrycan.liquid.low.json"
+      },
+      "lod1": "export/container_jerrycan_lod1.glb",
+      "lod1_tris": 1904,
+      "break_info": "export/container_jerrycan_break.json"
+    },
+    {
+      "id": "container_mug",
+      "family": "container",
+      "file": "export/container_mug.glb",
+      "capacity_ml": 368,
+      "height_m": 0.0952,
+      "opaque": true,
+      "license": "MIT",
+      "liquid_lut": "v2",
+      "open_top": true,
+      "liquid_sidecar": "export/container_mug.liquid.json",
+      "liquid_tiers": {
+        "mid": "export/container_mug.liquid.mid.json",
+        "low": "export/container_mug.liquid.low.json"
+      },
+      "lod1": "export/container_mug_lod1.glb",
+      "lod1_tris": 2088,
+      "break_info": "export/container_mug_break.json"
+    },
+    {
+      "id": "container_square",
+      "family": "container",
+      "file": "export/container_square.glb",
+      "capacity_ml": 693,
+      "height_m": 0.2415,
+      "opaque": false,
+      "license": "MIT",
+      "liquid_lut": "v2",
+      "open_top": false,
+      "liquid_sidecar": "export/container_square.liquid.json",
+      "liquid_tiers": {
+        "mid": "export/container_square.liquid.mid.json",
+        "low": "export/container_square.liquid.low.json"
+      },
+      "lod1": "export/container_square_lod1.glb",
+      "lod1_tris": 1360,
+      "break_info": "export/container_square_break.json",
+      "shards": "export/container_square_shards.glb",
+      "broken": "export/container_square_broken.glb"
+    },
+    {
+      "id": "container_tank",
+      "family": "container",
+      "file": "export/container_tank.glb",
+      "capacity_ml": 57391,
+      "height_m": 0.352,
+      "opaque": false,
+      "license": "MIT",
+      "liquid_lut": "v2",
+      "open_top": true,
+      "liquid_sidecar": "export/container_tank.liquid.json",
+      "liquid_tiers": {
+        "mid": "export/container_tank.liquid.mid.json",
+        "low": "export/container_tank.liquid.low.json"
+      },
+      "lod1": "export/container_tank_lod1.glb",
+      "lod1_tris": 312,
+      "break_info": "export/container_tank_break.json",
+      "shards": "export/container_tank_shards.glb"
+    },
+    {
+      "id": "container_tumbler",
+      "family": "container",
+      "file": "export/container_tumbler.glb",
+      "capacity_ml": 232,
+      "height_m": 0.0968,
+      "opaque": false,
+      "license": "MIT",
+      "liquid_lut": "v2",
+      "open_top": true,
+      "liquid_sidecar": "export/container_tumbler.liquid.json",
+      "liquid_tiers": {
+        "mid": "export/container_tumbler.liquid.mid.json",
+        "low": "export/container_tumbler.liquid.low.json"
+      },
+      "lod1": "export/container_tumbler_lod1.glb",
+      "lod1_tris": 1056,
+      "break_info": "export/container_tumbler_break.json",
+      "shards": "export/container_tumbler_shards.glb"
+    },
+    {
+      "id": "design_beer_clearfilm",
+      "family": "bottle_design",
+      "file": "export/designs/beer_clearfilm.glb",
+      "design": "export/designs/beer_clearfilm.design.json",
+      "liquid": "export/designs/beer_clearfilm.liquid.json",
+      "base": "bottle_beer",
+      "asset": "beer",
+      "provider": "lathe_v1",
+      "labels": [
+        "front"
+      ],
+      "tiers": {
+        "high": "export/designs/beer_clearfilm.glb",
+        "medium": "export/designs/beer_clearfilm_medium.glb",
+        "low": "export/designs/beer_clearfilm_low.glb",
+        "minimal": "export/designs/beer_clearfilm_minimal.glb"
+      },
+      "capacity_ml": 494,
+      "height_m": 0.256,
+      "license": "MIT"
+    },
+    {
+      "id": "design_beer_pale",
+      "family": "bottle_design",
+      "file": "export/designs/beer_pale.glb",
+      "design": "export/designs/beer_pale.design.json",
+      "liquid": "export/designs/beer_pale.liquid.json",
+      "base": "bottle_beer",
+      "asset": "beer",
+      "provider": "lathe_v1",
+      "labels": [
+        "front",
+        "neck"
+      ],
+      "tiers": {
+        "high": "export/designs/beer_pale.glb",
+        "medium": "export/designs/beer_pale_medium.glb",
+        "low": "export/designs/beer_pale_low.glb",
+        "minimal": "export/designs/beer_pale_minimal.glb"
+      },
+      "capacity_ml": 494,
+      "height_m": 0.256,
+      "license": "MIT"
+    },
+    {
+      "id": "design_beer_userimg",
+      "family": "bottle_design",
+      "file": "export/designs/beer_userimg.glb",
+      "design": "export/designs/beer_userimg.design.json",
+      "liquid": "export/designs/beer_userimg.liquid.json",
+      "base": "bottle_beer",
+      "asset": "beer",
+      "provider": "lathe_v1",
+      "labels": [
+        "front"
+      ],
+      "tiers": {
+        "high": "export/designs/beer_userimg.glb",
+        "medium": "export/designs/beer_userimg_medium.glb",
+        "low": "export/designs/beer_userimg_low.glb",
+        "minimal": "export/designs/beer_userimg_minimal.glb"
+      },
+      "capacity_ml": 494,
+      "height_m": 0.256,
+      "license": "MIT"
+    },
+    {
+      "id": "design_beer_wrap",
+      "family": "bottle_design",
+      "file": "export/designs/beer_wrap.glb",
+      "design": "export/designs/beer_wrap.design.json",
+      "liquid": "export/designs/beer_wrap.liquid.json",
+      "base": "bottle_beer",
+      "asset": "beer",
+      "provider": "lathe_v1",
+      "labels": [
+        "wrap"
+      ],
+      "tiers": {
+        "high": "export/designs/beer_wrap.glb",
+        "medium": "export/designs/beer_wrap_medium.glb",
+        "low": "export/designs/beer_wrap_low.glb",
+        "minimal": "export/designs/beer_wrap_minimal.glb"
+      },
+      "capacity_ml": 494,
+      "height_m": 0.256,
+      "license": "MIT"
+    },
+    {
+      "id": "design_container_hipflask_engraved",
+      "family": "bottle_design",
+      "file": "export/designs/container_hipflask_engraved.glb",
+      "design": "export/designs/container_hipflask_engraved.design.json",
+      "liquid": "export/designs/container_hipflask_engraved.liquid.json",
+      "base": "container_hipflask",
+      "asset": "container_hipflask",
+      "provider": "container",
+      "labels": [
+        "front",
+        "back"
+      ],
+      "tiers": {
+        "high": "export/designs/container_hipflask_engraved.glb",
+        "medium": "export/designs/container_hipflask_engraved_medium.glb",
+        "low": "export/designs/container_hipflask_engraved_low.glb",
+        "minimal": "export/designs/container_hipflask_engraved_minimal.glb"
+      },
+      "capacity_ml": 286,
+      "height_m": 0.1555,
+      "license": "MIT"
+    },
+    {
+      "id": "design_container_jerrycan_fuel",
+      "family": "bottle_design",
+      "file": "export/designs/container_jerrycan_fuel.glb",
+      "design": "export/designs/container_jerrycan_fuel.design.json",
+      "liquid": "export/designs/container_jerrycan_fuel.liquid.json",
+      "base": "container_jerrycan",
+      "asset": "container_jerrycan",
+      "provider": "container",
+      "labels": [
+        "end",
+        "panel",
+        "end_back"
+      ],
+      "tiers": {
+        "high": "export/designs/container_jerrycan_fuel.glb",
+        "medium": "export/designs/container_jerrycan_fuel_medium.glb",
+        "low": "export/designs/container_jerrycan_fuel_low.glb",
+        "minimal": "export/designs/container_jerrycan_fuel_minimal.glb"
+      },
+      "capacity_ml": 15724,
+      "height_m": 0.34,
+      "license": "MIT"
+    },
+    {
+      "id": "design_container_mug_diner",
+      "family": "bottle_design",
+      "file": "export/designs/container_mug_diner.glb",
+      "design": "export/designs/container_mug_diner.design.json",
+      "liquid": "export/designs/container_mug_diner.liquid.json",
+      "base": "container_mug",
+      "asset": "container_mug",
+      "provider": "container",
+      "labels": [
+        "front",
+        "back"
+      ],
+      "tiers": {
+        "high": "export/designs/container_mug_diner.glb",
+        "medium": "export/designs/container_mug_diner_medium.glb",
+        "low": "export/designs/container_mug_diner_low.glb",
+        "minimal": "export/designs/container_mug_diner_minimal.glb"
+      },
+      "capacity_ml": 368,
+      "height_m": 0.0952,
+      "license": "MIT"
+    },
+    {
+      "id": "design_container_square_gin",
+      "family": "bottle_design",
+      "file": "export/designs/container_square_gin.glb",
+      "design": "export/designs/container_square_gin.design.json",
+      "liquid": "export/designs/container_square_gin.liquid.json",
+      "base": "container_square",
+      "asset": "container_square",
+      "provider": "container",
+      "labels": [
+        "front",
+        "neck"
+      ],
+      "tiers": {
+        "high": "export/designs/container_square_gin.glb",
+        "medium": "export/designs/container_square_gin_medium.glb",
+        "low": "export/designs/container_square_gin_low.glb",
+        "minimal": "export/designs/container_square_gin_minimal.glb"
+      },
+      "capacity_ml": 694,
+      "height_m": 0.2225,
+      "license": "MIT"
+    },
+    {
+      "id": "design_container_tank_aquavista",
+      "family": "bottle_design",
+      "file": "export/designs/container_tank_aquavista.glb",
+      "design": "export/designs/container_tank_aquavista.design.json",
+      "liquid": "export/designs/container_tank_aquavista.liquid.json",
+      "base": "container_tank",
+      "asset": "container_tank",
+      "provider": "container",
+      "labels": [
+        "sticker",
+        "plate"
+      ],
+      "tiers": {
+        "high": "export/designs/container_tank_aquavista.glb",
+        "medium": "export/designs/container_tank_aquavista_medium.glb",
+        "low": "export/designs/container_tank_aquavista_low.glb",
+        "minimal": "export/designs/container_tank_aquavista_minimal.glb"
+      },
+      "capacity_ml": 57390,
+      "height_m": 0.35,
+      "license": "MIT"
+    },
+    {
+      "id": "design_container_tumbler_etched",
+      "family": "bottle_design",
+      "file": "export/designs/container_tumbler_etched.glb",
+      "design": "export/designs/container_tumbler_etched.design.json",
+      "liquid": "export/designs/container_tumbler_etched.liquid.json",
+      "base": "container_tumbler",
+      "asset": "container_tumbler",
+      "provider": "container",
+      "labels": [
+        "front"
+      ],
+      "tiers": {
+        "high": "export/designs/container_tumbler_etched.glb",
+        "medium": "export/designs/container_tumbler_etched_medium.glb",
+        "low": "export/designs/container_tumbler_etched_low.glb",
+        "minimal": "export/designs/container_tumbler_etched_minimal.glb"
+      },
+      "capacity_ml": 232,
+      "height_m": 0.0968,
+      "license": "MIT"
+    },
+    {
+      "id": "design_flask_lab",
+      "family": "bottle_design",
+      "file": "export/designs/flask_lab.glb",
+      "design": "export/designs/flask_lab.design.json",
+      "liquid": "export/designs/flask_lab.liquid.json",
+      "base": "bottle_flask",
+      "asset": "flask",
+      "provider": "lathe_v1",
+      "labels": [
+        "tag",
+        "tag_hand",
+        "grad"
+      ],
+      "tiers": {
+        "high": "export/designs/flask_lab.glb",
+        "medium": "export/designs/flask_lab_medium.glb",
+        "low": "export/designs/flask_lab_low.glb",
+        "minimal": "export/designs/flask_lab_minimal.glb"
+      },
+      "capacity_ml": 1100,
+      "height_m": 0.202,
+      "license": "MIT"
+    },
+    {
+      "id": "design_jar_honey",
+      "family": "bottle_design",
+      "file": "export/designs/jar_honey.glb",
+      "design": "export/designs/jar_honey.design.json",
+      "liquid": "export/designs/jar_honey.liquid.json",
+      "base": "bottle_jar",
+      "asset": "jar",
+      "provider": "lathe_v1",
+      "labels": [
+        "wrap",
+        "lid"
+      ],
+      "tiers": {
+        "high": "export/designs/jar_honey.glb",
+        "medium": "export/designs/jar_honey_medium.glb",
+        "low": "export/designs/jar_honey_low.glb",
+        "minimal": "export/designs/jar_honey_minimal.glb"
+      },
+      "capacity_ml": 568,
+      "height_m": 0.122,
+      "license": "MIT"
+    },
+    {
+      "id": "design_soda_cherry",
+      "family": "bottle_design",
+      "file": "export/designs/soda_cherry.glb",
+      "design": "export/designs/soda_cherry.design.json",
+      "liquid": "export/designs/soda_cherry.liquid.json",
+      "base": "bottle_soda",
+      "asset": "soda",
+      "provider": "lathe_v1",
+      "labels": [
+        "sleeve",
+        "neck_seal",
+        "cap"
+      ],
+      "tiers": {
+        "high": "export/designs/soda_cherry.glb",
+        "medium": "export/designs/soda_cherry_medium.glb",
+        "low": "export/designs/soda_cherry_low.glb",
+        "minimal": "export/designs/soda_cherry_minimal.glb"
+      },
+      "capacity_ml": 669,
+      "height_m": 0.262,
+      "license": "MIT"
+    },
+    {
+      "id": "design_soda_lime",
+      "family": "bottle_design",
+      "file": "export/designs/soda_lime.glb",
+      "design": "export/designs/soda_lime.design.json",
+      "liquid": "export/designs/soda_lime.liquid.json",
+      "base": "bottle_soda",
+      "asset": "soda",
+      "provider": "lathe_v1",
+      "labels": [
+        "sleeve"
+      ],
+      "tiers": {
+        "high": "export/designs/soda_lime.glb",
+        "medium": "export/designs/soda_lime_medium.glb",
+        "low": "export/designs/soda_lime_low.glb",
+        "minimal": "export/designs/soda_lime_minimal.glb"
+      },
+      "capacity_ml": 669,
+      "height_m": 0.262,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_apothecary_tonic",
+      "family": "bottle_design",
+      "file": "export/designs/v2_apothecary_tonic.glb",
+      "design": "export/designs/v2_apothecary_tonic.design.json",
+      "liquid": "export/designs/v2_apothecary_tonic.liquid.json",
+      "base": "bottle_v2_apothecary",
+      "asset": "v2_apothecary",
+      "provider": "lathe_v2",
+      "labels": [
+        "front",
+        "tag"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_apothecary_tonic.glb",
+        "medium": "export/designs/v2_apothecary_tonic_medium.glb",
+        "low": "export/designs/v2_apothecary_tonic_low.glb",
+        "minimal": "export/designs/v2_apothecary_tonic_minimal.glb"
+      },
+      "capacity_ml": 106,
+      "height_m": 0.11171,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_bordeaux_classic",
+      "family": "bottle_design",
+      "file": "export/designs/v2_bordeaux_classic.glb",
+      "design": "export/designs/v2_bordeaux_classic.design.json",
+      "liquid": "export/designs/v2_bordeaux_classic.liquid.json",
+      "base": "bottle_v2_bordeaux",
+      "asset": "v2_bordeaux",
+      "provider": "lathe_v2",
+      "labels": [
+        "front",
+        "back",
+        "neck",
+        "capsule"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_bordeaux_classic.glb",
+        "medium": "export/designs/v2_bordeaux_classic_medium.glb",
+        "low": "export/designs/v2_bordeaux_classic_low.glb",
+        "minimal": "export/designs/v2_bordeaux_classic_minimal.glb"
+      },
+      "capacity_ml": 744,
+      "height_m": 0.3,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_burgundy_nocturne",
+      "family": "bottle_design",
+      "file": "export/designs/v2_burgundy_nocturne.glb",
+      "design": "export/designs/v2_burgundy_nocturne.design.json",
+      "liquid": "export/designs/v2_burgundy_nocturne.liquid.json",
+      "base": "bottle_v2_burgundy",
+      "asset": "v2_burgundy",
+      "provider": "lathe_v2",
+      "labels": [
+        "front",
+        "back",
+        "neck"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_burgundy_nocturne.glb",
+        "medium": "export/designs/v2_burgundy_nocturne_medium.glb",
+        "low": "export/designs/v2_burgundy_nocturne_low.glb",
+        "minimal": "export/designs/v2_burgundy_nocturne_minimal.glb"
+      },
+      "capacity_ml": 722,
+      "height_m": 0.296,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_champagne_brut",
+      "family": "bottle_design",
+      "file": "export/designs/v2_champagne_brut.glb",
+      "design": "export/designs/v2_champagne_brut.design.json",
+      "liquid": "export/designs/v2_champagne_brut.liquid.json",
+      "base": "bottle_v2_champagne",
+      "asset": "v2_champagne",
+      "provider": "lathe_v2",
+      "labels": [
+        "front",
+        "back",
+        "neck",
+        "foil"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_champagne_brut.glb",
+        "medium": "export/designs/v2_champagne_brut_medium.glb",
+        "low": "export/designs/v2_champagne_brut_low.glb",
+        "minimal": "export/designs/v2_champagne_brut_minimal.glb"
+      },
+      "capacity_ml": 815,
+      "height_m": 0.29999,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_contour_cola",
+      "family": "bottle_design",
+      "file": "export/designs/v2_contour_cola.glb",
+      "design": "export/designs/v2_contour_cola.design.json",
+      "liquid": "export/designs/v2_contour_cola.liquid.json",
+      "base": "bottle_v2_contour",
+      "asset": "v2_contour",
+      "provider": "lathe_v2",
+      "labels": [
+        "sleeve"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_contour_cola.glb",
+        "medium": "export/designs/v2_contour_cola_medium.glb",
+        "low": "export/designs/v2_contour_cola_low.glb",
+        "minimal": "export/designs/v2_contour_cola_minimal.glb"
+      },
+      "capacity_ml": 355,
+      "height_m": 0.23203,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_cruet_oil",
+      "family": "bottle_design",
+      "file": "export/designs/v2_cruet_oil.glb",
+      "design": "export/designs/v2_cruet_oil.design.json",
+      "liquid": "export/designs/v2_cruet_oil.liquid.json",
+      "base": "bottle_v2_cruet",
+      "asset": "v2_cruet",
+      "provider": "lathe_v2",
+      "labels": [
+        "front",
+        "neck"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_cruet_oil.glb",
+        "medium": "export/designs/v2_cruet_oil_medium.glb",
+        "low": "export/designs/v2_cruet_oil_low.glb",
+        "minimal": "export/designs/v2_cruet_oil_minimal.glb"
+      },
+      "capacity_ml": 276,
+      "height_m": 0.21781,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_decanter_crest",
+      "family": "bottle_design",
+      "file": "export/designs/v2_decanter_crest.glb",
+      "design": "export/designs/v2_decanter_crest.design.json",
+      "liquid": "export/designs/v2_decanter_crest.liquid.json",
+      "base": "bottle_v2_decanter",
+      "asset": "v2_decanter",
+      "provider": "lathe_v2",
+      "labels": [
+        "tag",
+        "front"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_decanter_crest.glb",
+        "medium": "export/designs/v2_decanter_crest_medium.glb",
+        "low": "export/designs/v2_decanter_crest_low.glb",
+        "minimal": "export/designs/v2_decanter_crest_minimal.glb"
+      },
+      "capacity_ml": 1037,
+      "height_m": 0.23742,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_erlenmeyer_lab",
+      "family": "bottle_design",
+      "file": "export/designs/v2_erlenmeyer_lab.glb",
+      "design": "export/designs/v2_erlenmeyer_lab.design.json",
+      "liquid": "export/designs/v2_erlenmeyer_lab.liquid.json",
+      "base": "bottle_v2_erlenmeyer",
+      "asset": "v2_erlenmeyer",
+      "provider": "lathe_v2",
+      "labels": [
+        "front",
+        "grad",
+        "tag"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_erlenmeyer_lab.glb",
+        "medium": "export/designs/v2_erlenmeyer_lab_medium.glb",
+        "low": "export/designs/v2_erlenmeyer_lab_low.glb",
+        "minimal": "export/designs/v2_erlenmeyer_lab_minimal.glb"
+      },
+      "capacity_ml": 669,
+      "height_m": 0.17843,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_growler_wrap",
+      "family": "bottle_design",
+      "file": "export/designs/v2_growler_wrap.glb",
+      "design": "export/designs/v2_growler_wrap.design.json",
+      "liquid": "export/designs/v2_growler_wrap.liquid.json",
+      "base": "bottle_v2_growler",
+      "asset": "v2_growler",
+      "provider": "lathe_v2",
+      "labels": [
+        "wrap"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_growler_wrap.glb",
+        "medium": "export/designs/v2_growler_wrap_medium.glb",
+        "low": "export/designs/v2_growler_wrap_low.glb",
+        "minimal": "export/designs/v2_growler_wrap_minimal.glb"
+      },
+      "capacity_ml": 1045,
+      "height_m": 0.21503,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_longneck_lager",
+      "family": "bottle_design",
+      "file": "export/designs/v2_longneck_lager.glb",
+      "design": "export/designs/v2_longneck_lager.design.json",
+      "liquid": "export/designs/v2_longneck_lager.liquid.json",
+      "base": "bottle_v2_longneck",
+      "asset": "v2_longneck",
+      "provider": "lathe_v2",
+      "labels": [
+        "front",
+        "neck"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_longneck_lager.glb",
+        "medium": "export/designs/v2_longneck_lager_medium.glb",
+        "low": "export/designs/v2_longneck_lager_low.glb",
+        "minimal": "export/designs/v2_longneck_lager_minimal.glb"
+      },
+      "capacity_ml": 387,
+      "height_m": 0.23931,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_mason_preserves",
+      "family": "bottle_design",
+      "file": "export/designs/v2_mason_preserves.glb",
+      "design": "export/designs/v2_mason_preserves.design.json",
+      "liquid": "export/designs/v2_mason_preserves.liquid.json",
+      "base": "bottle_v2_mason",
+      "asset": "v2_mason",
+      "provider": "lathe_v2",
+      "labels": [
+        "front"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_mason_preserves.glb",
+        "medium": "export/designs/v2_mason_preserves_medium.glb",
+        "low": "export/designs/v2_mason_preserves_low.glb",
+        "minimal": "export/designs/v2_mason_preserves_minimal.glb"
+      },
+      "capacity_ml": 433,
+      "height_m": 0.1298,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_milk_dairy",
+      "family": "bottle_design",
+      "file": "export/designs/v2_milk_dairy.glb",
+      "design": "export/designs/v2_milk_dairy.design.json",
+      "liquid": "export/designs/v2_milk_dairy.liquid.json",
+      "base": "bottle_v2_milk",
+      "asset": "v2_milk",
+      "provider": "lathe_v2",
+      "labels": [
+        "wrap"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_milk_dairy.glb",
+        "medium": "export/designs/v2_milk_dairy_medium.glb",
+        "low": "export/designs/v2_milk_dairy_low.glb",
+        "minimal": "export/designs/v2_milk_dairy_minimal.glb"
+      },
+      "capacity_ml": 567,
+      "height_m": 0.2222,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_perfume_atelier",
+      "family": "bottle_design",
+      "file": "export/designs/v2_perfume_atelier.glb",
+      "design": "export/designs/v2_perfume_atelier.design.json",
+      "liquid": "export/designs/v2_perfume_atelier.liquid.json",
+      "base": "bottle_v2_perfume",
+      "asset": "v2_perfume",
+      "provider": "lathe_v2",
+      "labels": [
+        "front"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_perfume_atelier.glb",
+        "medium": "export/designs/v2_perfume_atelier_medium.glb",
+        "low": "export/designs/v2_perfume_atelier_low.glb",
+        "minimal": "export/designs/v2_perfume_atelier_minimal.glb"
+      },
+      "capacity_ml": 61,
+      "height_m": 0.07797,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_pet2l_cola",
+      "family": "bottle_design",
+      "file": "export/designs/v2_pet2l_cola.glb",
+      "design": "export/designs/v2_pet2l_cola.design.json",
+      "liquid": "export/designs/v2_pet2l_cola.liquid.json",
+      "base": "bottle_v2_pet2l",
+      "asset": "v2_pet2l",
+      "provider": "lathe_v2",
+      "labels": [
+        "sleeve"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_pet2l_cola.glb",
+        "medium": "export/designs/v2_pet2l_cola_medium.glb",
+        "low": "export/designs/v2_pet2l_cola_low.glb",
+        "minimal": "export/designs/v2_pet2l_cola_minimal.glb"
+      },
+      "capacity_ml": 2234,
+      "height_m": 0.33469,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_pet500_orange",
+      "family": "bottle_design",
+      "file": "export/designs/v2_pet500_orange.glb",
+      "design": "export/designs/v2_pet500_orange.design.json",
+      "liquid": "export/designs/v2_pet500_orange.liquid.json",
+      "base": "bottle_v2_pet500",
+      "asset": "v2_pet500",
+      "provider": "lathe_v2",
+      "labels": [
+        "sleeve",
+        "neck_seal"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_pet500_orange.glb",
+        "medium": "export/designs/v2_pet500_orange_medium.glb",
+        "low": "export/designs/v2_pet500_orange_low.glb",
+        "minimal": "export/designs/v2_pet500_orange_minimal.glb"
+      },
+      "capacity_ml": 509,
+      "height_m": 0.20367,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_roundflask_lab",
+      "family": "bottle_design",
+      "file": "export/designs/v2_roundflask_lab.glb",
+      "design": "export/designs/v2_roundflask_lab.design.json",
+      "liquid": "export/designs/v2_roundflask_lab.liquid.json",
+      "base": "bottle_v2_roundflask",
+      "asset": "v2_roundflask",
+      "provider": "lathe_v2",
+      "labels": [
+        "tag",
+        "grad",
+        "tag_hand"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_roundflask_lab.glb",
+        "medium": "export/designs/v2_roundflask_lab_medium.glb",
+        "low": "export/designs/v2_roundflask_lab_low.glb",
+        "minimal": "export/designs/v2_roundflask_lab_minimal.glb"
+      },
+      "capacity_ml": 296,
+      "height_m": 0.147,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_spirit_gold",
+      "family": "bottle_design",
+      "file": "export/designs/v2_spirit_gold.glb",
+      "design": "export/designs/v2_spirit_gold.design.json",
+      "liquid": "export/designs/v2_spirit_gold.liquid.json",
+      "base": "bottle_v2_spirit",
+      "asset": "v2_spirit",
+      "provider": "lathe_v2",
+      "labels": [
+        "front",
+        "back",
+        "neck"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_spirit_gold.glb",
+        "medium": "export/designs/v2_spirit_gold_medium.glb",
+        "low": "export/designs/v2_spirit_gold_low.glb",
+        "minimal": "export/designs/v2_spirit_gold_minimal.glb"
+      },
+      "capacity_ml": 742,
+      "height_m": 0.31939,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_stubby_stout",
+      "family": "bottle_design",
+      "file": "export/designs/v2_stubby_stout.glb",
+      "design": "export/designs/v2_stubby_stout.design.json",
+      "liquid": "export/designs/v2_stubby_stout.liquid.json",
+      "base": "bottle_v2_stubby",
+      "asset": "v2_stubby",
+      "provider": "lathe_v2",
+      "labels": [
+        "front",
+        "back"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_stubby_stout.glb",
+        "medium": "export/designs/v2_stubby_stout_medium.glb",
+        "low": "export/designs/v2_stubby_stout_low.glb",
+        "minimal": "export/designs/v2_stubby_stout_minimal.glb"
+      },
+      "capacity_ml": 358,
+      "height_m": 0.18382,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_swingtop_lemonade",
+      "family": "bottle_design",
+      "file": "export/designs/v2_swingtop_lemonade.glb",
+      "design": "export/designs/v2_swingtop_lemonade.design.json",
+      "liquid": "export/designs/v2_swingtop_lemonade.liquid.json",
+      "base": "bottle_v2_swingtop",
+      "asset": "v2_swingtop",
+      "provider": "lathe_v2",
+      "labels": [
+        "front"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_swingtop_lemonade.glb",
+        "medium": "export/designs/v2_swingtop_lemonade_medium.glb",
+        "low": "export/designs/v2_swingtop_lemonade_low.glb",
+        "minimal": "export/designs/v2_swingtop_lemonade_minimal.glb"
+      },
+      "capacity_ml": 499,
+      "height_m": 0.23213,
+      "license": "MIT"
+    },
+    {
+      "id": "design_v2_whisky_cask",
+      "family": "bottle_design",
+      "file": "export/designs/v2_whisky_cask.glb",
+      "design": "export/designs/v2_whisky_cask.design.json",
+      "liquid": "export/designs/v2_whisky_cask.liquid.json",
+      "base": "bottle_v2_whisky",
+      "asset": "v2_whisky",
+      "provider": "lathe_v2",
+      "labels": [
+        "front",
+        "back",
+        "neck"
+      ],
+      "tiers": {
+        "high": "export/designs/v2_whisky_cask.glb",
+        "medium": "export/designs/v2_whisky_cask_medium.glb",
+        "low": "export/designs/v2_whisky_cask_low.glb",
+        "minimal": "export/designs/v2_whisky_cask_minimal.glb"
+      },
+      "capacity_ml": 731,
+      "height_m": 0.26353,
+      "license": "MIT"
+    },
+    {
+      "id": "design_whiskey_tag",
+      "family": "bottle_design",
+      "file": "export/designs/whiskey_tag.glb",
+      "design": "export/designs/whiskey_tag.design.json",
+      "liquid": "export/designs/whiskey_tag.liquid.json",
+      "base": "bottle_whiskey",
+      "asset": "whiskey",
+      "provider": "lathe_v1",
+      "labels": [
+        "front",
+        "back",
+        "neck"
+      ],
+      "tiers": {
+        "high": "export/designs/whiskey_tag.glb",
+        "medium": "export/designs/whiskey_tag_medium.glb",
+        "low": "export/designs/whiskey_tag_low.glb",
+        "minimal": "export/designs/whiskey_tag_minimal.glb"
+      },
+      "capacity_ml": 534,
+      "height_m": 0.226,
+      "license": "MIT"
+    },
+    {
+      "id": "design_wine_bare",
+      "family": "bottle_design",
+      "file": "export/designs/wine_bare.glb",
+      "design": "export/designs/wine_bare.design.json",
+      "liquid": "export/designs/wine_bare.liquid.json",
+      "base": "bottle_wine",
+      "asset": "wine",
+      "provider": "lathe_v1",
+      "labels": [],
+      "tiers": {
+        "high": "export/designs/wine_bare.glb",
+        "medium": "export/designs/wine_bare_medium.glb",
+        "low": "export/designs/wine_bare_low.glb",
+        "minimal": "export/designs/wine_bare_minimal.glb"
+      },
+      "capacity_ml": 868,
+      "height_m": 0.34,
+      "license": "MIT"
+    },
+    {
+      "id": "design_wine_classic",
+      "family": "bottle_design",
+      "file": "export/designs/wine_classic.glb",
+      "design": "export/designs/wine_classic.design.json",
+      "liquid": "export/designs/wine_classic.liquid.json",
+      "base": "bottle_wine",
+      "asset": "wine",
+      "provider": "lathe_v1",
+      "labels": [
+        "front",
+        "back",
+        "neck",
+        "foil"
+      ],
+      "tiers": {
+        "high": "export/designs/wine_classic.glb",
+        "medium": "export/designs/wine_classic_medium.glb",
+        "low": "export/designs/wine_classic_low.glb",
+        "minimal": "export/designs/wine_classic_minimal.glb"
+      },
+      "capacity_ml": 868,
+      "height_m": 0.34,
+      "license": "MIT"
+    },
+    {
+      "id": "design_wine_reserve",
+      "family": "bottle_design",
+      "file": "export/designs/wine_reserve.glb",
+      "design": "export/designs/wine_reserve.design.json",
+      "liquid": "export/designs/wine_reserve.liquid.json",
+      "base": "bottle_wine",
+      "asset": "wine",
+      "provider": "lathe_v1",
+      "labels": [
+        "front",
+        "back"
+      ],
+      "tiers": {
+        "high": "export/designs/wine_reserve.glb",
+        "medium": "export/designs/wine_reserve_medium.glb",
+        "low": "export/designs/wine_reserve_low.glb",
+        "minimal": "export/designs/wine_reserve_minimal.glb"
+      },
+      "capacity_ml": 868,
+      "height_m": 0.34,
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_casement",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"casement\")",
+      "desc": "Casement window, 2 sashes",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_door",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"door\")",
+      "desc": "Glass door 8 mm tempered",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_igu",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"igu\")",
+      "desc": "Double-glazed unit",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_rear",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"rear\")",
+      "desc": "Car rear window with heater lines",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_resistant",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"resistant\")",
+      "desc": "30 mm bullet-resistant teller window",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_sash",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"sash\")",
+      "desc": "Sash window",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_shop",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"shop\")",
+      "desc": "3.0x2.5 m tempered shop front",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_side",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"side\")",
+      "desc": "Curved tempered car side window",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_single",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"single\")",
+      "desc": "House window 1.0x1.2 single pane",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_windscreen",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"windscreen\")",
+      "desc": "Curved laminated windscreen",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_prefab_wired",
+      "family": "glass",
+      "kind": "prefab",
+      "file": "gameplay/glass/godot/glass_prefabs.gd",
+      "usage": "GlassPrefabs.by_name(\"wired\")",
+      "desc": "Wired glass partition",
+      "license": "MIT"
+    },
+    {
+      "id": "glass_system",
+      "family": "glass",
+      "kind": "gameplay_system",
+      "file": "gameplay/glass/godot/glass_system.gd",
+      "files": "gameplay/glass/godot/",
+      "doc": "docs/glass_system.md",
+      "report": "gameplay/glass/docs/glass_calibration_report.json",
+      "test_project": "tests/godot_glass",
+      "engine": "godot 4.7",
+      "desc": "Breakable glass panes: annealed/tempered/laminated/IGU/wired/bullet-resistant, 3-10 mm, true 2D fracture, crack mask shader, predicted bullet/thrown crossings, tiers HIGH/MEDIUM/LOW/MINIMAL",
+      "license": "MIT"
+    }
+  ]
+}

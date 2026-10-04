@@ -1,0 +1,17 @@
+{
+ "template": "soda_cap_lime",
+ "bottle": "soda",
+ "slot": "cap",
+ "size_px": [
+  264,
+  264
+ ],
+ "px_per_cm": 120.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 4,
+ "fields": {
+  "bg": "#2f9e44",
+  "brand": "ZESTA"
+ }
+}

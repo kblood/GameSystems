@@ -1,0 +1,23 @@
+{
+ "template": "tag_whiskey",
+ "bottle": "whiskey",
+ "slot": "neck",
+ "size_px": [
+  398,
+  220
+ ],
+ "px_per_cm": 100.1,
+ "alpha": true,
+ "wear": 0.4,
+ "seed": 5,
+ "fields": {
+  "paper": "#c9a46a",
+  "ink": "#3a2410",
+  "lines": [
+   "Cask 114",
+   "bottled 03.21"
+  ],
+  "font": "hand",
+  "angle": 3.0
+ }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_whisky",
+  "liquid": {
+    "color": [
+      0.65,
+      0.32,
+      0.05,
+      1
+    ],
+    "fill": 0.7,
+    "carbonation": 0.0,
+    "foam": 0.0
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "whiskey_classic",
+        "seed": 101,
+        "wear": 0.15
+      }
+    },
+    {
+      "slot": "back",
+      "generate": {
+        "template": "whiskey_back",
+        "seed": 102,
+        "wear": 0.15
+      }
+    },
+    {
+      "slot": "neck",
+      "generate": {
+        "template": "tag_hand",
+        "seed": 103,
+        "fields": {
+          "lines": [
+            "Cask 114",
+            "bottled 03.21"
+          ],
+          "paper": "#c9a46a",
+          "ink": "#3a2410"
+        },
+        "wear": 0.4
+      },
+      "material_kind": "handwritten_tag"
+    }
+  ],
+  "meta": {
+    "description": "Whisky bottle: front and back labels and a hand-written neck tag.",
+    "tags": [
+      "spirits",
+      "tag",
+      "v2"
+    ],
+    "name": "v2_whisky_cask",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

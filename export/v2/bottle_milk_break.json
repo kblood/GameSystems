@@ -1,0 +1,67 @@
+{
+  "name": "milk",
+  "family": "v2",
+  "material": "glass",
+  "shatters": true,
+  "source": "scripts/fracture_glb.py",
+  "frame": "bottle-local, glTF Y-up, metres, base centre at origin (same frame as the shipped GLB)",
+  "wall_thickness_m": 0.0036000000000000003,
+  "density_kg_m3": 2500.0,
+  "glass_volume_m3": 0.00017815775626185075,
+  "glass_mass_kg": 0.4453943906546269,
+  "liquid_mass_kg_per_ml": 0.001,
+  "capacity_ml": 566.8,
+  "height_m": 0.2222021371126175,
+  "max_radius_m": 0.037566197744503406,
+  "base_z": 0.012,
+  "shoulder_z": 0.2222021371126175,
+  "neck_z": 0.2222021371126175,
+  "has_neck": false,
+  "weak_zones": [
+    {
+      "name": "base",
+      "z0": 0.0,
+      "z1": 0.012,
+      "thinness": 1.0
+    },
+    {
+      "name": "body",
+      "z0": 0.012,
+      "z1": 0.2222021371126175,
+      "thinness": 1.0
+    }
+  ],
+  "zone_factor": {
+    "base": 1.15,
+    "body": 1.0,
+    "shoulder": 0.85,
+    "neck": 0.55
+  },
+  "calibration": {
+    "surface": "concrete",
+    "fill": 1.0,
+    "v_n": 4.3,
+    "y": "mid_body",
+    "note": "f_crit_ref solved at load so this hit is exactly the break threshold"
+  },
+  "mesh": {
+    "area_m2": 0.09249782083253422,
+    "non_manifold_edges": 0
+  },
+  "shards": {
+    "count": 17,
+    "tris": 8916,
+    "classes": {
+      "chunk": 8,
+      "shard": 9
+    }
+  },
+  "impact_point": [
+    0.034361016005277634,
+    -7.053877925500274e-05,
+    0.11204998940229416
+  ],
+  "files": {
+    "shards": "export/v2/bottle_milk_shards.glb"
+  }
+}

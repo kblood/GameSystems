@@ -1,0 +1,17 @@
+{
+ "template": "etched",
+ "bottle": "container_tumbler",
+ "slot": "front",
+ "size_px": [
+  504,
+  448
+ ],
+ "px_per_cm": 80.1,
+ "alpha": true,
+ "wear": 0.0,
+ "seed": 131,
+ "fields": {
+  "mono": "H",
+  "brand": "HALDEN & CO"
+ }
+}

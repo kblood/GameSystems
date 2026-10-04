@@ -1,0 +1,43 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_pet2l",
+  "liquid": {
+    "color": [
+      0.12,
+      0.04,
+      0.02,
+      1
+    ],
+    "fill": 0.92,
+    "carbonation": 0.9,
+    "foam": 0.3
+  },
+  "labels": [
+    {
+      "slot": "sleeve",
+      "generate": {
+        "template": "pet_sleeve",
+        "seed": 51,
+        "fields": {
+          "brand": "COLA-KO",
+          "product": "Original",
+          "bg": "#b3121f",
+          "bg2": "#5a070d",
+          "accent": "#f2c14e",
+          "accent2": "#fff3d0",
+          "volume": "2 L"
+        }
+      }
+    }
+  ],
+  "meta": {
+    "description": "PET 2 L with a full shrink sleeve over the ribbed body.",
+    "tags": [
+      "soda",
+      "sleeve",
+      "v2"
+    ],
+    "name": "v2_pet2l_cola",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

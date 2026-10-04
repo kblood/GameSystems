@@ -1,0 +1,5 @@
+LUTINT asset=bottle_pet2l lut_version=1 open=false sleeping=false
+LUTINT_JSON {"asset":"bottle_pet2l","poses":[{"d":0.0781999975442886,"fill":0.25,"lost":0.0,"sleeping":false,"spilled":false,"tilt":0,"up":[0.000000353073005499027,1.0,-0.00000000664164101493725]},{"d":0.176044002175331,"fill":0.6,"lost":0.0,"sleeping":false,"spilled":false,"tilt":0,"up":[-0.0000000156002322171389,1.0,0.000000000293454788247161]},{"d":0.259905993938446,"fill":0.9,"lost":0.0,"sleeping":false,"spilled":false,"tilt":0,"up":[-0.00000000000735631694448458,1.0,0.000000000000138379623515136]},{"d":0.00786787737160921,"fill":0.6,"lost":0.0,"sleeping":false,"spilled":false,"tilt":90,"u
+LUTINT sleep: asleep_at_rest=false woke_on_move=true asleep_again=false
+LUTINT fill_wake=true
+SHOTS done

@@ -1,0 +1,57 @@
+<!doctype html><meta charset="utf-8"><title>containers test</title>
+<style>html,body{margin:0;background:#20242b;overflow:hidden}</style>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { makeLut } from '/shared/shaders/three/liquid_lut_v2.js';
+const q = new URLSearchParams(location.search);
+const name = q.get('c') || 'mug', xray = q.get('xray') === '1', elev = +(q.get('elev') || 18), tier = q.get('tier') || '', sfx = q.get('lod') ? '_lod1' : '';
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x2b323c);
+const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+const dl = new THREE.DirectionalLight(0xffffff, 2); dl.position.set(1, 2, 2); scene.add(dl);
+const gltf = await new GLTFLoader().loadAsync(`/shared/export/container_${name}${sfx}.glb`);
+const holder = new THREE.Group(); holder.add(gltf.scene); scene.add(holder);
+const box = new THREE.Box3().setFromObject(gltf.scene); const c = box.getCenter(new THREE.Vector3());
+const rad = box.getSize(new THREE.Vector3()).length() / 2;
+gltf.scene.position.sub(c);
+const cam = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.02, 40);
+const dist = rad / Math.sin(THREE.MathUtils.degToRad(16)) * 1.02, e = THREE.MathUtils.degToRad(elev);
+cam.position.set(0, Math.sin(e) * dist, Math.cos(e) * dist); cam.lookAt(0, 0, 0);
+let liquid = null, info = null;
+gltf.scene.traverse((o) => {
+  if (o.name === 'Liquid' && o.isMesh) { liquid = o; info = o.userData.liquid; }
+  else if (xray && o.isMesh && o.name !== 'Liquid') { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.22; o.material.depthWrite = false; }
+});
+if (tier) info = await (await fetch(`/shared/export/container_${name}.liquid.${tier}.json`)).text();
+const lut = makeLut(info); info = lut.info;
+const col = new THREE.Color().setRGB(info.color[0], info.color[1], info.color[2], THREE.LinearSRGBColorSpace);
+const U = { uPlane: { value: new THREE.Vector4(0, 1, 0, 1) }, uUpWorld: { value: new THREE.Vector3(0, 1, 0) }, uSurface: { value: col.clone().multiplyScalar(1.15) } };
+const mat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.08, side: THREE.DoubleSide });
+mat.onBeforeCompile = (sh) => {
+  Object.assign(sh.uniforms, U);
+  sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vObjPos;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvObjPos = position;');
+  sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vObjPos; uniform vec4 uPlane; uniform vec3 uUpWorld; uniform vec3 uSurface;')
+    .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nif (dot(vObjPos, uPlane.xyz) - uPlane.w > 0.0) discard;')
+    .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nif (!gl_FrontFacing) { normal = normalize((viewMatrix * vec4(uUpWorld, 0.0)).xyz); }')
+    .replace('#include <color_fragment>', '#include <color_fragment>\nif (!gl_FrontFacing) diffuseColor.rgb = uSurface;')
+    .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuse * (gl_FrontFacing ? 0.18 : 0.30);');
+};
+liquid.material = mat; liquid.frustumCulled = false;
+const qa = new THREE.Quaternion(), qb = new THREE.Quaternion(), qc = new THREE.Quaternion(), inv = new THREE.Quaternion();
+// orientation = pitch(X) * tilt(Z) * spin(Y, about the container's own axis)
+window.pose = (tilt, fill, spin = 0, pitch = 0) => {
+  const r = THREE.MathUtils.degToRad;
+  qa.setFromAxisAngle(new THREE.Vector3(1, 0, 0), r(pitch)); qb.setFromAxisAngle(new THREE.Vector3(0, 0, 1), r(tilt)); qc.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r(spin));
+  holder.quaternion.copy(qa).multiply(qb).multiply(qc); holder.updateMatrixWorld(true);
+  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(inv.copy(holder.quaternion).invert());
+  const s = info.open ? lut.spill(up, fill) : { d: lut.offset(up, fill), spilled: false, fill, lost: 0 };   // spill only for uncapped openings
+  U.uPlane.value.set(up.x, up.y, up.z, s.d);
+  renderer.render(scene, cam);
+  return { d: s.d, spilled: s.spilled, fill: s.fill, lost: s.lost };
+};
+window.lut = lut; window.__ready = true; window.pose(0, 0.6);
+</script>

@@ -1,0 +1,18 @@
+{
+ "template": "preserve",
+ "bottle": "v2_mason",
+ "slot": "front",
+ "size_px": [
+  538,
+  464
+ ],
+ "px_per_cm": 79.9,
+ "alpha": false,
+ "wear": 0.15,
+ "seed": 81,
+ "fields": {
+  "product": "Blackberry",
+  "brand": "Plumtree Preserves",
+  "volume": "NET 340 g"
+ }
+}

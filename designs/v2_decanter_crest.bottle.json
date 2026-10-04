@@ -1,0 +1,52 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_decanter",
+  "liquid": {
+    "color": [
+      0.42,
+      0.18,
+      0.04,
+      1
+    ],
+    "fill": 0.6
+  },
+  "labels": [
+    {
+      "slot": "tag",
+      "generate": {
+        "template": "tag_whiskey",
+        "seed": 81,
+        "fields": {
+          "lines": [
+            "Port",
+            "1998"
+          ]
+        },
+        "wear": 0.3
+      }
+    },
+    {
+      "slot": "front",
+      "generate": {
+        "template": "perfume",
+        "seed": 82,
+        "fields": {
+          "brand": "HALDEN HOUSE",
+          "no": "H",
+          "product": "Fine Old Tawny",
+          "volume": "75 cl"
+        }
+      }
+    }
+  ],
+  "meta": {
+    "description": "Decanter with a hang tag on the neck and a small crest on the conical body.",
+    "tags": [
+      "spirit",
+      "tag",
+      "v2"
+    ],
+    "name": "v2_decanter_crest",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

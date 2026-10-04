@@ -1,0 +1,16 @@
+{
+ "template": "beer_neck",
+ "bottle": "v2_spirit",
+ "slot": "neck",
+ "size_px": [
+  500,
+  220
+ ],
+ "px_per_cm": 100.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 63,
+ "fields": {
+  "batch": "Batch 24"
+ }
+}

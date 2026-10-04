@@ -1,0 +1,1985 @@
+{
+ "beer_clearfilm": {
+  "high": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     680,
+     720
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 2549,
+   "tex_mem_kb_compressed_mips": 637,
+   "glb_kb": 324
+  },
+  "medium": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     483,
+     512
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1288,
+   "tex_mem_kb_compressed_mips": 322,
+   "glb_kb": 321
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     512,
+     512
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1365,
+   "tex_mem_kb_compressed_mips": 341,
+   "glb_kb": 285
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 452
+  }
+ },
+ "beer_pale": {
+  "high": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 2,
+   "texture_sizes": [
+    [
+     680,
+     720
+    ],
+    [
+     430,
+     260
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 3132,
+   "tex_mem_kb_compressed_mips": 783,
+   "glb_kb": 885
+  },
+  "medium": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 2,
+   "texture_sizes": [
+    [
+     483,
+     512
+    ],
+    [
+     430,
+     260
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1870,
+   "tex_mem_kb_compressed_mips": 467,
+   "glb_kb": 696
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     512,
+     512
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1365,
+   "tex_mem_kb_compressed_mips": 341,
+   "glb_kb": 495
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 452
+  }
+ },
+ "beer_userimg": {
+  "high": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     680,
+     720
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 2549,
+   "tex_mem_kb_compressed_mips": 637,
+   "glb_kb": 263
+  },
+  "medium": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     483,
+     512
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1288,
+   "tex_mem_kb_compressed_mips": 322,
+   "glb_kb": 282
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     512,
+     512
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1365,
+   "tex_mem_kb_compressed_mips": 341,
+   "glb_kb": 266
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 452
+  }
+ },
+ "beer_wrap": {
+  "high": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1226,
+     660
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 4213,
+   "tex_mem_kb_compressed_mips": 1053,
+   "glb_kb": 1190
+  },
+  "medium": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     512,
+     275
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 733,
+   "tex_mem_kb_compressed_mips": 183,
+   "glb_kb": 666
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 992
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 529
+  }
+ },
+ "flask_lab": {
+  "high": {
+   "draw_calls": 6,
+   "label_draw_calls": 3,
+   "textures": 4,
+   "texture_sizes": [
+    [
+     328,
+     934
+    ],
+    [
+     460,
+     188
+    ],
+    [
+     440,
+     376
+    ],
+    [
+     440,
+     376
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 3768,
+   "tex_mem_kb_compressed_mips": 942,
+   "glb_kb": 444
+  },
+  "medium": {
+   "draw_calls": 6,
+   "label_draw_calls": 3,
+   "textures": 3,
+   "texture_sizes": [
+    [
+     179,
+     512
+    ],
+    [
+     460,
+     188
+    ],
+    [
+     440,
+     376
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1789,
+   "tex_mem_kb_compressed_mips": 447,
+   "glb_kb": 467
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 369
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 470
+  }
+ },
+ "jar_honey": {
+  "high": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 2,
+   "texture_sizes": [
+    [
+     750,
+     750
+    ],
+    [
+     1658,
+     408
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 6451,
+   "tex_mem_kb_compressed_mips": 1613,
+   "glb_kb": 904
+  },
+  "medium": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 2,
+   "texture_sizes": [
+    [
+     512,
+     512
+    ],
+    [
+     511,
+     125
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1698,
+   "tex_mem_kb_compressed_mips": 424,
+   "glb_kb": 509
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 583
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 351
+  }
+ },
+ "soda_cherry": {
+  "high": {
+   "draw_calls": 6,
+   "label_draw_calls": 3,
+   "textures": 3,
+   "texture_sizes": [
+    [
+     264,
+     264
+    ],
+    [
+     880,
+     120
+    ],
+    [
+     1226,
+     1100
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 7935,
+   "tex_mem_kb_compressed_mips": 1984,
+   "glb_kb": 1076
+  },
+  "medium": {
+   "draw_calls": 6,
+   "label_draw_calls": 3,
+   "textures": 3,
+   "texture_sizes": [
+    [
+     264,
+     264
+    ],
+    [
+     512,
+     69
+    ],
+    [
+     512,
+     459
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1771,
+   "tex_mem_kb_compressed_mips": 443,
+   "glb_kb": 996
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 986
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 814
+  }
+ },
+ "soda_lime": {
+  "high": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1226,
+     1100
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 7022,
+   "tex_mem_kb_compressed_mips": 1756,
+   "glb_kb": 999
+  },
+  "medium": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     512,
+     459
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1224,
+   "tex_mem_kb_compressed_mips": 306,
+   "glb_kb": 888
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 1006
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 814
+  }
+ },
+ "whiskey_tag": {
+  "high": {
+   "draw_calls": 6,
+   "label_draw_calls": 3,
+   "textures": 4,
+   "texture_sizes": [
+    [
+     510,
+     480
+    ],
+    [
+     612,
+     720
+    ],
+    [
+     398,
+     220
+    ],
+    [
+     398,
+     220
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 4481,
+   "tex_mem_kb_compressed_mips": 1120,
+   "glb_kb": 1087
+  },
+  "medium": {
+   "draw_calls": 6,
+   "label_draw_calls": 3,
+   "textures": 3,
+   "texture_sizes": [
+    [
+     510,
+     480
+    ],
+    [
+     435,
+     512
+    ],
+    [
+     398,
+     220
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 2890,
+   "tex_mem_kb_compressed_mips": 723,
+   "glb_kb": 961
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 828
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 448
+  }
+ },
+ "wine_bare": {
+  "high": {
+   "draw_calls": 6,
+   "label_draw_calls": 3,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     4,
+     4
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 438
+  },
+  "medium": {
+   "draw_calls": 6,
+   "label_draw_calls": 3,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     4,
+     4
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 438
+  },
+  "low": {
+   "draw_calls": 3,
+   "label_draw_calls": 0,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 93
+  },
+  "minimal": {
+   "draw_calls": 3,
+   "label_draw_calls": 0,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 93
+  }
+ },
+ "wine_classic": {
+  "high": {
+   "draw_calls": 7,
+   "label_draw_calls": 4,
+   "textures": 7,
+   "texture_sizes": [
+    [
+     524,
+     640
+    ],
+    [
+     524,
+     640
+    ],
+    [
+     818,
+     492
+    ],
+    [
+     680,
+     840
+    ],
+    [
+     680,
+     840
+    ],
+    [
+     694,
+     392
+    ],
+    [
+     694,
+     392
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 14370,
+   "tex_mem_kb_compressed_mips": 3592,
+   "glb_kb": 2442
+  },
+  "medium": {
+   "draw_calls": 7,
+   "label_draw_calls": 4,
+   "textures": 4,
+   "texture_sizes": [
+    [
+     419,
+     512
+    ],
+    [
+     512,
+     307
+    ],
+    [
+     414,
+     512
+    ],
+    [
+     511,
+     289
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 3808,
+   "tex_mem_kb_compressed_mips": 952,
+   "glb_kb": 1508
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 1194
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 511
+  }
+ },
+ "wine_reserve": {
+  "high": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 2,
+   "texture_sizes": [
+    [
+     524,
+     640
+    ],
+    [
+     680,
+     840
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 4720,
+   "tex_mem_kb_compressed_mips": 1180,
+   "glb_kb": 703
+  },
+  "medium": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 2,
+   "texture_sizes": [
+    [
+     419,
+     512
+    ],
+    [
+     414,
+     512
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 2221,
+   "tex_mem_kb_compressed_mips": 555,
+   "glb_kb": 597
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 609
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 514
+  }
+ },
+ "v2_bordeaux_classic": {
+  "high": {
+   "draw_calls": 8,
+   "label_draw_calls": 4,
+   "textures": 10,
+   "texture_sizes": [
+    [
+     512,
+     128
+    ],
+    [
+     128,
+     128
+    ],
+    [
+     1024,
+     1024
+    ],
+    [
+     530,
+     640
+    ],
+    [
+     530,
+     640
+    ],
+    [
+     956,
+     412
+    ],
+    [
+     688,
+     840
+    ],
+    [
+     688,
+     840
+    ],
+    [
+     572,
+     166
+    ],
+    [
+     572,
+     166
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 18477,
+   "tex_mem_kb_compressed_mips": 4619,
+   "glb_kb": 2383,
+   "base_glb": "export/v2/bottle_bordeaux.glb",
+   "base_tex_mem_kb_rgba8_mips": 5887,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 12590,
+   "label_tex_mem_kb_compressed_mips": 3147
+  },
+  "medium": {
+   "draw_calls": 8,
+   "label_draw_calls": 4,
+   "textures": 7,
+   "texture_sizes": [
+    [
+     256,
+     64
+    ],
+    [
+     128,
+     128
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     424,
+     512
+    ],
+    [
+     511,
+     220
+    ],
+    [
+     419,
+     512
+    ],
+    [
+     512,
+     148
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 4763,
+   "tex_mem_kb_compressed_mips": 1191,
+   "glb_kb": 1353,
+   "base_glb": "export/v2/bottle_bordeaux_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1536,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 3227,
+   "label_tex_mem_kb_compressed_mips": 807
+  },
+  "low": {
+   "draw_calls": 5,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 1028,
+   "base_glb": "export/v2/bottle_bordeaux_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 5460,
+   "label_tex_mem_kb_compressed_mips": 1365
+  },
+  "minimal": {
+   "draw_calls": 5,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 466,
+   "base_glb": "export/v2/bottle_bordeaux_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_apothecary_tonic": {
+  "high": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 6,
+   "texture_sizes": [
+    [
+     128,
+     128
+    ],
+    [
+     1024,
+     1024
+    ],
+    [
+     502,
+     440
+    ],
+    [
+     502,
+     440
+    ],
+    [
+     326,
+     202
+    ],
+    [
+     326,
+     202
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 8531,
+   "tex_mem_kb_compressed_mips": 2133,
+   "glb_kb": 625,
+   "base_glb": "export/v2/bottle_apothecary.glb",
+   "base_tex_mem_kb_rgba8_mips": 5545,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 2986,
+   "label_tex_mem_kb_compressed_mips": 747
+  },
+  "medium": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 4,
+   "texture_sizes": [
+    [
+     128,
+     128
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     502,
+     440
+    ],
+    [
+     326,
+     202
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 2943,
+   "tex_mem_kb_compressed_mips": 736,
+   "glb_kb": 562,
+   "base_glb": "export/v2/bottle_apothecary_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1450,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 1493,
+   "label_tex_mem_kb_compressed_mips": 373
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     512,
+     512
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1365,
+   "tex_mem_kb_compressed_mips": 341,
+   "glb_kb": 338,
+   "base_glb": "export/v2/bottle_apothecary_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 1365,
+   "label_tex_mem_kb_compressed_mips": 341
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 232,
+   "base_glb": "export/v2/bottle_apothecary_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_champagne_brut": {
+  "high": {
+   "draw_calls": 10,
+   "label_draw_calls": 4,
+   "textures": 10,
+   "texture_sizes": [
+    [
+     512,
+     128
+    ],
+    [
+     128,
+     128
+    ],
+    [
+     1024,
+     1024
+    ],
+    [
+     608,
+     520
+    ],
+    [
+     608,
+     520
+    ],
+    [
+     1276,
+     582
+    ],
+    [
+     788,
+     720
+    ],
+    [
+     788,
+     720
+    ],
+    [
+     726,
+     238
+    ],
+    [
+     726,
+     238
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 20754,
+   "tex_mem_kb_compressed_mips": 5188,
+   "glb_kb": 2626,
+   "base_glb": "export/v2/bottle_champagne.glb",
+   "base_tex_mem_kb_rgba8_mips": 5887,
+   "base_draw_calls": 6,
+   "label_tex_mem_kb_rgba8_mips": 14867,
+   "label_tex_mem_kb_compressed_mips": 3716
+  },
+  "medium": {
+   "draw_calls": 10,
+   "label_draw_calls": 4,
+   "textures": 7,
+   "texture_sizes": [
+    [
+     256,
+     64
+    ],
+    [
+     128,
+     128
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     512,
+     437
+    ],
+    [
+     512,
+     233
+    ],
+    [
+     511,
+     467
+    ],
+    [
+     512,
+     167
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5010,
+   "tex_mem_kb_compressed_mips": 1252,
+   "glb_kb": 1333,
+   "base_glb": "export/v2/bottle_champagne_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1536,
+   "base_draw_calls": 6,
+   "label_tex_mem_kb_rgba8_mips": 3474,
+   "label_tex_mem_kb_compressed_mips": 868
+  },
+  "low": {
+   "draw_calls": 7,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 1131,
+   "base_glb": "export/v2/bottle_champagne_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 6,
+   "label_tex_mem_kb_rgba8_mips": 5460,
+   "label_tex_mem_kb_compressed_mips": 1365
+  },
+  "minimal": {
+   "draw_calls": 7,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 430,
+   "base_glb": "export/v2/bottle_champagne_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 6,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_contour_cola": {
+  "high": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 2,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ],
+    [
+     1050,
+     436
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 7844,
+   "tex_mem_kb_compressed_mips": 1961,
+   "glb_kb": 660,
+   "base_glb": "export/v2/bottle_contour.glb",
+   "base_tex_mem_kb_rgba8_mips": 5460,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 2384,
+   "label_tex_mem_kb_compressed_mips": 596
+  },
+  "medium": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 3,
+   "texture_sizes": [
+    [
+     256,
+     64
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     512,
+     212
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 2015,
+   "tex_mem_kb_compressed_mips": 504,
+   "glb_kb": 545,
+   "base_glb": "export/v2/bottle_contour_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1450,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 565,
+   "label_tex_mem_kb_compressed_mips": 141
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 545,
+   "base_glb": "export/v2/bottle_contour_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 5460,
+   "label_tex_mem_kb_compressed_mips": 1365
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 441,
+   "base_glb": "export/v2/bottle_contour_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_erlenmeyer_lab": {
+  "high": {
+   "draw_calls": 6,
+   "label_draw_calls": 3,
+   "textures": 7,
+   "texture_sizes": [
+    [
+     128,
+     128
+    ],
+    [
+     1024,
+     1024
+    ],
+    [
+     492,
+     410
+    ],
+    [
+     492,
+     410
+    ],
+    [
+     198,
+     974
+    ],
+    [
+     366,
+     184
+    ],
+    [
+     366,
+     184
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 9352,
+   "tex_mem_kb_compressed_mips": 2338,
+   "glb_kb": 601,
+   "base_glb": "export/v2/bottle_erlenmeyer.glb",
+   "base_tex_mem_kb_rgba8_mips": 5545,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 3807,
+   "label_tex_mem_kb_compressed_mips": 952
+  },
+  "medium": {
+   "draw_calls": 6,
+   "label_draw_calls": 3,
+   "textures": 5,
+   "texture_sizes": [
+    [
+     128,
+     128
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     492,
+     410
+    ],
+    [
+     104,
+     512
+    ],
+    [
+     366,
+     184
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 3129,
+   "tex_mem_kb_compressed_mips": 782,
+   "glb_kb": 537,
+   "base_glb": "export/v2/bottle_erlenmeyer_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1450,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 1679,
+   "label_tex_mem_kb_compressed_mips": 419
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 364,
+   "base_glb": "export/v2/bottle_erlenmeyer_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 5460,
+   "label_tex_mem_kb_compressed_mips": 1365
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 262,
+   "base_glb": "export/v2/bottle_erlenmeyer_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_growler_wrap": {
+  "high": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 4,
+   "texture_sizes": [
+    [
+     512,
+     128
+    ],
+    [
+     1024,
+     1024
+    ],
+    [
+     1428,
+     352
+    ],
+    [
+     1428,
+     352
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 11036,
+   "tex_mem_kb_compressed_mips": 2759,
+   "glb_kb": 1000,
+   "base_glb": "export/v2/bottle_growler.glb",
+   "base_tex_mem_kb_rgba8_mips": 5801,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 5235,
+   "label_tex_mem_kb_compressed_mips": 1309
+  },
+  "medium": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 3,
+   "texture_sizes": [
+    [
+     256,
+     64
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     512,
+     126
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1786,
+   "tex_mem_kb_compressed_mips": 447,
+   "glb_kb": 486,
+   "base_glb": "export/v2/bottle_growler_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1450,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 336,
+   "label_tex_mem_kb_compressed_mips": 84
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 539,
+   "base_glb": "export/v2/bottle_growler_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 5460,
+   "label_tex_mem_kb_compressed_mips": 1365
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 371,
+   "base_glb": "export/v2/bottle_growler_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_longneck_lager": {
+  "high": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 5,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ],
+    [
+     656,
+     584
+    ],
+    [
+     656,
+     584
+    ],
+    [
+     566,
+     274
+    ],
+    [
+     566,
+     274
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 11065,
+   "tex_mem_kb_compressed_mips": 2766,
+   "glb_kb": 940,
+   "base_glb": "export/v2/bottle_longneck.glb",
+   "base_tex_mem_kb_rgba8_mips": 5460,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 5605,
+   "label_tex_mem_kb_compressed_mips": 1401
+  },
+  "medium": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 4,
+   "texture_sizes": [
+    [
+     256,
+     64
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     512,
+     455
+    ],
+    [
+     512,
+     247
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 3322,
+   "tex_mem_kb_compressed_mips": 830,
+   "glb_kb": 669,
+   "base_glb": "export/v2/bottle_longneck_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1450,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 1872,
+   "label_tex_mem_kb_compressed_mips": 467
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     512,
+     512
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1365,
+   "tex_mem_kb_compressed_mips": 341,
+   "glb_kb": 412,
+   "base_glb": "export/v2/bottle_longneck_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 1365,
+   "label_tex_mem_kb_compressed_mips": 341
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 341,
+   "base_glb": "export/v2/bottle_longneck_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_mason_preserves": {
+  "high": {
+   "draw_calls": 5,
+   "label_draw_calls": 1,
+   "textures": 4,
+   "texture_sizes": [
+    [
+     512,
+     128
+    ],
+    [
+     1024,
+     1024
+    ],
+    [
+     538,
+     464
+    ],
+    [
+     538,
+     464
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 8401,
+   "tex_mem_kb_compressed_mips": 2100,
+   "glb_kb": 481,
+   "base_glb": "export/v2/bottle_mason.glb",
+   "base_tex_mem_kb_rgba8_mips": 5801,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 2600,
+   "label_tex_mem_kb_compressed_mips": 650
+  },
+  "medium": {
+   "draw_calls": 5,
+   "label_draw_calls": 1,
+   "textures": 3,
+   "texture_sizes": [
+    [
+     256,
+     64
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     512,
+     441
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 2626,
+   "tex_mem_kb_compressed_mips": 657,
+   "glb_kb": 421,
+   "base_glb": "export/v2/bottle_mason_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1450,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 1176,
+   "label_tex_mem_kb_compressed_mips": 294
+  },
+  "low": {
+   "draw_calls": 5,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     512,
+     512
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1365,
+   "tex_mem_kb_compressed_mips": 341,
+   "glb_kb": 289,
+   "base_glb": "export/v2/bottle_mason_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 1365,
+   "label_tex_mem_kb_compressed_mips": 341
+  },
+  "minimal": {
+   "draw_calls": 5,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 290,
+   "base_glb": "export/v2/bottle_mason_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_milk_dairy": {
+  "high": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 3,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ],
+    [
+     1158,
+     340
+    ],
+    [
+     1158,
+     340
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 9560,
+   "tex_mem_kb_compressed_mips": 2390,
+   "glb_kb": 763,
+   "base_glb": "export/v2/bottle_milk.glb",
+   "base_tex_mem_kb_rgba8_mips": 5460,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 4100,
+   "label_tex_mem_kb_compressed_mips": 1025
+  },
+  "medium": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 3,
+   "texture_sizes": [
+    [
+     256,
+     64
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     512,
+     150
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1850,
+   "tex_mem_kb_compressed_mips": 463,
+   "glb_kb": 437,
+   "base_glb": "export/v2/bottle_milk_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1450,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 400,
+   "label_tex_mem_kb_compressed_mips": 100
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 552,
+   "base_glb": "export/v2/bottle_milk_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 5460,
+   "label_tex_mem_kb_compressed_mips": 1365
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 326,
+   "base_glb": "export/v2/bottle_milk_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_perfume_atelier": {
+  "high": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 2,
+   "texture_sizes": [
+    [
+     536,
+     336
+    ],
+    [
+     536,
+     336
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1876,
+   "tex_mem_kb_compressed_mips": 469,
+   "glb_kb": 283,
+   "base_glb": "export/v2/bottle_perfume.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 1876,
+   "label_tex_mem_kb_compressed_mips": 469
+  },
+  "medium": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     512,
+     320
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 853,
+   "tex_mem_kb_compressed_mips": 213,
+   "glb_kb": 252,
+   "base_glb": "export/v2/bottle_perfume_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 853,
+   "label_tex_mem_kb_compressed_mips": 213
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     512,
+     512
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 1365,
+   "tex_mem_kb_compressed_mips": 341,
+   "glb_kb": 176,
+   "base_glb": "export/v2/bottle_perfume_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 1365,
+   "label_tex_mem_kb_compressed_mips": 341
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 178,
+   "base_glb": "export/v2/bottle_perfume_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_pet500_orange": {
+  "high": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 4,
+   "texture_sizes": [
+    [
+     512,
+     128
+    ],
+    [
+     1024,
+     1024
+    ],
+    [
+     986,
+     126
+    ],
+    [
+     1242,
+     566
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 10109,
+   "tex_mem_kb_compressed_mips": 2527,
+   "glb_kb": 855,
+   "base_glb": "export/v2/bottle_pet500.glb",
+   "base_tex_mem_kb_rgba8_mips": 5801,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 4308,
+   "label_tex_mem_kb_compressed_mips": 1077
+  },
+  "medium": {
+   "draw_calls": 5,
+   "label_draw_calls": 2,
+   "textures": 4,
+   "texture_sizes": [
+    [
+     256,
+     64
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     512,
+     65
+    ],
+    [
+     512,
+     233
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 2245,
+   "tex_mem_kb_compressed_mips": 561,
+   "glb_kb": 736,
+   "base_glb": "export/v2/bottle_pet500_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1450,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 795,
+   "label_tex_mem_kb_compressed_mips": 198
+  },
+  "low": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 756,
+   "base_glb": "export/v2/bottle_pet500_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 5460,
+   "label_tex_mem_kb_compressed_mips": 1365
+  },
+  "minimal": {
+   "draw_calls": 4,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 507,
+   "base_glb": "export/v2/bottle_pet500_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 3,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ },
+ "v2_whisky_cask": {
+  "high": {
+   "draw_calls": 7,
+   "label_draw_calls": 3,
+   "textures": 8,
+   "texture_sizes": [
+    [
+     128,
+     128
+    ],
+    [
+     1024,
+     1024
+    ],
+    [
+     538,
+     640
+    ],
+    [
+     538,
+     640
+    ],
+    [
+     644,
+     800
+    ],
+    [
+     644,
+     800
+    ],
+    [
+     538,
+     180
+    ],
+    [
+     538,
+     180
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 15505,
+   "tex_mem_kb_compressed_mips": 3876,
+   "glb_kb": 1400,
+   "base_glb": "export/v2/bottle_whisky.glb",
+   "base_tex_mem_kb_rgba8_mips": 5545,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 9960,
+   "label_tex_mem_kb_compressed_mips": 2490
+  },
+  "medium": {
+   "draw_calls": 7,
+   "label_draw_calls": 3,
+   "textures": 5,
+   "texture_sizes": [
+    [
+     128,
+     128
+    ],
+    [
+     512,
+     512
+    ],
+    [
+     430,
+     512
+    ],
+    [
+     412,
+     512
+    ],
+    [
+     512,
+     171
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 4151,
+   "tex_mem_kb_compressed_mips": 1038,
+   "glb_kb": 924,
+   "base_glb": "export/v2/bottle_whisky_lod1.glb",
+   "base_tex_mem_kb_rgba8_mips": 1450,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 2701,
+   "label_tex_mem_kb_compressed_mips": 675
+  },
+  "low": {
+   "draw_calls": 5,
+   "label_draw_calls": 1,
+   "textures": 1,
+   "texture_sizes": [
+    [
+     1024,
+     1024
+    ]
+   ],
+   "tex_mem_kb_rgba8_mips": 5460,
+   "tex_mem_kb_compressed_mips": 1365,
+   "glb_kb": 903,
+   "base_glb": "export/v2/bottle_whisky_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 5460,
+   "label_tex_mem_kb_compressed_mips": 1365
+  },
+  "minimal": {
+   "draw_calls": 5,
+   "label_draw_calls": 1,
+   "textures": 0,
+   "texture_sizes": [],
+   "tex_mem_kb_rgba8_mips": 0,
+   "tex_mem_kb_compressed_mips": 0,
+   "glb_kb": 451,
+   "base_glb": "export/v2/bottle_whisky_lod2.glb",
+   "base_tex_mem_kb_rgba8_mips": 0,
+   "base_draw_calls": 4,
+   "label_tex_mem_kb_rgba8_mips": 0,
+   "label_tex_mem_kb_compressed_mips": 0
+  }
+ }
+}

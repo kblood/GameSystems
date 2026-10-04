@@ -1,0 +1,95 @@
+{
+ "name": "v2_champagne_brut",
+ "tier": "minimal",
+ "bottle": "v2_champagne",
+ "asset": "v2_champagne",
+ "provider": "lathe_v2",
+ "glb": "v2_champagne_brut_minimal.glb",
+ "liquid_sidecar": "v2_champagne_brut_minimal.liquid.json",
+ "meta": {
+  "description": "Champagne: navy and gold front label, back label, neck label and printed gold foil (the wire cage is untouched).",
+  "tags": [
+   "sparkling",
+   "foil",
+   "v2"
+  ],
+  "name": "v2_champagne_brut",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 7,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 430,
+  "base_glb": "export/v2/bottle_champagne_lod2.glb",
+  "base_tex_mem_kb_rgba8_mips": 0,
+  "base_draw_calls": 6,
+  "label_tex_mem_kb_rgba8_mips": 0,
+  "label_tex_mem_kb_compressed_mips": 0
+ },
+ "glass": {
+  "bottle": "champagne",
+  "tier": "low",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.055,
+   0.14
+  ],
+  "label_panel": false,
+  "z_top": 0.3,
+  "r_bore": 0.0089,
+  "glass": "champagne",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "champagne"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 814.8,
+  "z0": 0.01776,
+  "z1": 0.27399,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.85,
+   0.68,
+   0.28,
+   1
+  ],
+  "carbonation": 0.8,
+  "foam": 0.3,
+  "foam_height": 0.012,
+  "bubble_size": 0.6,
+  "fill_default": 0.85
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "front",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.011703975071007712,
+    0.020409397815664306,
+    0.03371289660559813,
+    1.0
+   ],
+   "width_m": 0.27284,
+   "height_m": 0.09001,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck",
+  "foil"
+ ]
+}

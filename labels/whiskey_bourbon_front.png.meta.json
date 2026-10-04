@@ -1,0 +1,20 @@
+{
+ "template": "whiskey_gold",
+ "bottle": "whiskey",
+ "slot": "front",
+ "size_px": [
+  612,
+  720
+ ],
+ "px_per_cm": 80.1,
+ "alpha": false,
+ "wear": 0.2,
+ "seed": 2,
+ "fields": {
+  "brand": "BLACKWATER",
+  "product": "Reserve Bourbon",
+  "age": "BATCH 24",
+  "abv": "45% vol",
+  "volume": "700 ml"
+ }
+}

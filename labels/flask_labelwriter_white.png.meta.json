@@ -1,0 +1,20 @@
+{
+ "template": "labelwriter",
+ "bottle": "flask",
+ "slot": "tag",
+ "size_px": [
+  460,
+  188
+ ],
+ "px_per_cm": 149.9,
+ "alpha": false,
+ "wear": 0.1,
+ "seed": 1,
+ "fields": {
+  "tape": "white",
+  "lines": [
+   "ETHANOL 96%",
+   "LOT 17  2026-03"
+  ]
+ }
+}

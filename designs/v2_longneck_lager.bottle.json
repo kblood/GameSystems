@@ -1,0 +1,45 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_longneck",
+  "liquid": {
+    "color": [
+      0.85,
+      0.55,
+      0.12,
+      1
+    ],
+    "fill": 0.8,
+    "carbonation": 0.7,
+    "foam": 0.5
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "beer_pale",
+        "seed": 31,
+        "wear": 0.25
+      }
+    },
+    {
+      "slot": "neck",
+      "generate": {
+        "template": "beer_neck",
+        "seed": 32,
+        "fields": {
+          "batch": "No. 9"
+        },
+        "wear": 0.2
+      }
+    }
+  ],
+  "meta": {
+    "description": "Longneck beer with a front label and neck label (no wrap).",
+    "tags": [
+      "beer",
+      "v2"
+    ],
+    "name": "v2_longneck_lager",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

@@ -1,0 +1,28 @@
+{
+ "template": "pet_sleeve",
+ "bottle": "v2_pet2l",
+ "slot": "sleeve",
+ "size_px": [
+  1300,
+  688
+ ],
+ "px_per_cm": 40.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 51,
+ "fields": {
+  "brand": "COLA-KO",
+  "product": "Original",
+  "bg": "#b3121f",
+  "bg2": "#5a070d",
+  "accent": "#f2c14e",
+  "accent2": "#fff3d0",
+  "volume": "2 L",
+  "small": [
+   "Carbonated water, sugar,",
+   "orange juice (3%), acid.",
+   "Please recycle.",
+   "Best before: see cap"
+  ]
+ }
+}

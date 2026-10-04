@@ -1,0 +1,23 @@
+{
+ "template": "tag_whiskey",
+ "bottle": "v2_decanter",
+ "slot": "tag",
+ "size_px": [
+  348,
+  240
+ ],
+ "px_per_cm": 99.8,
+ "alpha": true,
+ "wear": 0.3,
+ "seed": 81,
+ "fields": {
+  "paper": "#c9a46a",
+  "ink": "#3a2410",
+  "lines": [
+   "Port",
+   "1998"
+  ],
+  "font": "hand",
+  "angle": 3.0
+ }
+}

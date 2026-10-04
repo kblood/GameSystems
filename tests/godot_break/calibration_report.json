@@ -1,0 +1,817 @@
+{
+	"rows": [
+		{
+			"bottle": "wine",
+			"fill": 0.0,
+			"h_calc": 1.81321497475007,
+			"h_meas": 1.78158865171835,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 5.96450147158976,
+			"v_meas": 5.912255859375,
+			"y": 0.116425529122353
+		},
+		{
+			"bottle": "wine",
+			"fill": 0.0,
+			"h_calc": 5.92310650341484,
+			"h_meas": 5.92835520932434,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 10.7801368078981,
+			"v_meas": 10.784912109375,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "wine",
+			"fill": 0.0,
+			"h_calc": 2.84085360595659,
+			"h_meas": 2.81746402355509,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 7.4657583505541,
+			"v_meas": 7.4349609375,
+			"y": 0.116425529122353
+		},
+		{
+			"bottle": "wine",
+			"fill": 0.0,
+			"h_calc": 9.62287527493769,
+			"h_meas": 9.62683918388612,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 13.7404808101564,
+			"v_meas": 13.743310546875,
+			"y": 0.116425529122353
+		},
+		{
+			"bottle": "wine",
+			"fill": 0.5,
+			"h_calc": 1.26682181257932,
+			"h_meas": 1.22956278127268,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 4.98548332288919,
+			"v_meas": 4.91162109375,
+			"y": 0.116425529122353
+		},
+		{
+			"bottle": "wine",
+			"fill": 0.5,
+			"h_calc": 4.13825412018859,
+			"h_meas": 4.14283254715281,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 9.01069064157127,
+			"v_meas": 9.015673828125,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "wine",
+			"fill": 0.5,
+			"h_calc": 2.10574412137505,
+			"h_meas": 2.07224443527537,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 6.42765117763702,
+			"v_meas": 6.376318359375,
+			"y": 0.116425529122353
+		},
+		{
+			"bottle": "wine",
+			"fill": 0.5,
+			"h_calc": 7.77357206936337,
+			"h_meas": 7.77524161666905,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 12.3497969214441,
+			"v_meas": 12.351123046875,
+			"y": 0.116425529122353
+		},
+		{
+			"bottle": "wine",
+			"fill": 1.0,
+			"h_calc": 0.973475317829667,
+			"h_meas": 0.937169329835734,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 4.37030728162426,
+			"v_meas": 4.288037109375,
+			"y": 0.116425529122353
+		},
+		{
+			"bottle": "wine",
+			"fill": 1.0,
+			"h_calc": 3.18000137987566,
+			"h_meas": 3.18015144068167,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 7.89883707093395,
+			"v_meas": 7.8990234375,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "wine",
+			"fill": 1.0,
+			"h_calc": 1.68394178449476,
+			"h_meas": 1.65290064330495,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 5.74795074890062,
+			"v_meas": 5.6947265625,
+			"y": 0.116425529122353
+		},
+		{
+			"bottle": "wine",
+			"fill": 1.0,
+			"h_calc": 6.65220640617776,
+			"h_meas": 6.65060572777319,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 11.4243726168752,
+			"v_meas": 11.422998046875,
+			"y": 0.116425529122353
+		},
+		{
+			"bottle": "beer",
+			"fill": 0.0,
+			"h_calc": 2.4625223132048,
+			"h_meas": 2.42547228686306,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 6.95087676376716,
+			"v_meas": 6.898388671875,
+			"y": 0.0854593217372894
+		},
+		{
+			"bottle": "beer",
+			"fill": 0.0,
+			"h_calc": 8.04414149849312,
+			"h_meas": 8.07012090004912,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 12.5628840717582,
+			"v_meas": 12.583154296875,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "beer",
+			"fill": 0.0,
+			"h_calc": 3.50739707979453,
+			"h_meas": 3.47877555046607,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 8.29548857545888,
+			"v_meas": 8.261572265625,
+			"y": 0.0854593217372894
+		},
+		{
+			"bottle": "beer",
+			"fill": 0.0,
+			"h_calc": 10.8483651208807,
+			"h_meas": 10.8628253805528,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 14.5892057244964,
+			"v_meas": 14.59892578125,
+			"y": 0.0854593217372894
+		},
+		{
+			"bottle": "beer",
+			"fill": 0.5,
+			"h_calc": 1.69942644825946,
+			"h_meas": 1.66132977796257,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 5.77431787442038,
+			"v_meas": 5.709228515625,
+			"y": 0.0854593217372894
+		},
+		{
+			"bottle": "beer",
+			"fill": 0.5,
+			"h_calc": 5.55141302658779,
+			"h_meas": 5.56733313394249,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 10.4364133485433,
+			"v_meas": 10.4513671875,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "beer",
+			"fill": 0.5,
+			"h_calc": 2.56725641069434,
+			"h_meas": 2.52852187134804,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 7.09715230059373,
+			"v_meas": 7.043408203125,
+			"y": 0.0854593217372894
+		},
+		{
+			"bottle": "beer",
+			"fill": 0.5,
+			"h_calc": 8.65034398902057,
+			"h_meas": 8.65706708453117,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 13.0276532447169,
+			"v_meas": 13.03271484375,
+			"y": 0.0854593217372894
+		},
+		{
+			"bottle": "beer",
+			"fill": 1.0,
+			"h_calc": 1.29738714183881,
+			"h_meas": 1.25877734280508,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 5.04526864724539,
+			"v_meas": 4.96962890625,
+			"y": 0.0854593217372894
+		},
+		{
+			"bottle": "beer",
+			"fill": 1.0,
+			"h_calc": 4.23810410844889,
+			"h_meas": 4.25014027871123,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 9.11875005731417,
+			"v_meas": 9.131689453125,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "beer",
+			"fill": 1.0,
+			"h_calc": 2.04011105062078,
+			"h_meas": 1.9975224427127,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 6.32668782327528,
+			"v_meas": 6.260302734375,
+			"y": 0.0854593217372894
+		},
+		{
+			"bottle": "beer",
+			"fill": 1.0,
+			"h_calc": 7.34930203803393,
+			"h_meas": 7.34321292496602,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 12.0080517148381,
+			"v_meas": 12.003076171875,
+			"y": 0.0854593217372894
+		},
+		{
+			"bottle": "soda",
+			"fill": 0.0,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 0.0,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 0.0,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 0.0,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 0.5,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 0.5,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 0.5,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 0.5,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 1.0,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 1.0,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 1.0,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "soda",
+			"fill": 1.0,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": -1.0,
+			"v_meas": -1.0
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 0.0,
+			"h_calc": 2.94206207733789,
+			"h_meas": 2.91725102805216,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 7.59758237581991,
+			"v_meas": 7.565478515625,
+			"y": 0.0849161446094513
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 0.0,
+			"h_calc": 9.61052617842674,
+			"h_meas": 9.64716640087443,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 13.7316613569055,
+			"v_meas": 13.7578125,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 0.0,
+			"h_calc": 4.50982912242711,
+			"h_meas": 4.49659916348414,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 9.40653216557621,
+			"v_meas": 9.392724609375,
+			"y": 0.0849161446094513
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 0.0,
+			"h_calc": 14.2082059309951,
+			"h_meas": 14.2421869575431,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 16.6962570765463,
+			"v_meas": 16.7162109375,
+			"y": 0.0849161446094513
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 0.5,
+			"h_calc": 2.33157456474954,
+			"h_meas": 2.30464259965704,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 6.76354145107325,
+			"v_meas": 6.724365234375,
+			"y": 0.0849161446094513
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 0.5,
+			"h_calc": 7.61634505041351,
+			"h_meas": 7.62986002165243,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 12.2242664356236,
+			"v_meas": 12.235107421875,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 0.5,
+			"h_calc": 3.75060267887948,
+			"h_meas": 3.72732193207522,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 8.57827631634791,
+			"v_meas": 8.551611328125,
+			"y": 0.0849161446094513
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 0.5,
+			"h_calc": 12.3805594538966,
+			"h_meas": 12.4029709100723,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 15.5854604194246,
+			"v_meas": 15.599560546875,
+			"y": 0.0849161446094513
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 1.0,
+			"h_calc": 1.9309053776623,
+			"h_meas": 1.89701997249498,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 6.15502749869847,
+			"v_meas": 6.10078125,
+			"y": 0.0849161446094513
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 1.0,
+			"h_calc": 6.307533794936,
+			"h_meas": 6.33363330036128,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 11.1244691134743,
+			"v_meas": 11.1474609375,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 1.0,
+			"h_calc": 3.2268955585122,
+			"h_meas": 3.20354829578225,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 7.95686438605117,
+			"v_meas": 7.92802734375,
+			"y": 0.0849161446094513
+		},
+		{
+			"bottle": "whiskey",
+			"fill": 1.0,
+			"h_calc": 11.0823292278621,
+			"h_meas": 11.1015171096959,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 14.7456874865384,
+			"v_meas": 14.758447265625,
+			"y": 0.0849161446094513
+		},
+		{
+			"bottle": "jar",
+			"fill": 0.0,
+			"h_calc": 3.1772007365686,
+			"h_meas": 3.15684033752581,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 7.89535803187391,
+			"v_meas": 7.87001953125,
+			"y": 0.0589073859155178
+		},
+		{
+			"bottle": "jar",
+			"fill": 0.0,
+			"h_calc": 10.3786641286569,
+			"h_meas": 10.4143443337274,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 14.2698770213428,
+			"v_meas": 14.294384765625,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "jar",
+			"fill": 0.0,
+			"h_calc": 4.50360451217898,
+			"h_meas": 4.49659916348414,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 9.40003832592993,
+			"v_meas": 9.392724609375,
+			"y": 0.0589073859155178
+		},
+		{
+			"bottle": "jar",
+			"fill": 0.0,
+			"h_calc": 13.5090596326577,
+			"h_meas": 13.5345743610225,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 16.2802871594067,
+			"v_meas": 16.295654296875,
+			"y": 0.0589073859155178
+		},
+		{
+			"bottle": "jar",
+			"fill": 0.5,
+			"h_calc": 1.98642167743242,
+			"h_meas": 1.96067595809972,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 6.24288341323336,
+			"v_meas": 6.202294921875,
+			"y": 0.0589073859155178
+		},
+		{
+			"bottle": "jar",
+			"fill": 0.5,
+			"h_calc": 6.48890257296147,
+			"h_meas": 6.49949618435781,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 11.2832738370344,
+			"v_meas": 11.29248046875,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "jar",
+			"fill": 0.5,
+			"h_calc": 3.06348389443645,
+			"h_meas": 3.04157110091743,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 7.75277718039433,
+			"v_meas": 7.725,
+			"y": 0.0589073859155178
+		},
+		{
+			"bottle": "jar",
+			"fill": 0.5,
+			"h_calc": 10.1634184288938,
+			"h_meas": 10.1831987757202,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 14.1211284809287,
+			"v_meas": 14.13486328125,
+			"y": 0.0589073859155178
+		},
+		{
+			"bottle": "jar",
+			"fill": 1.0,
+			"h_calc": 1.44489230993808,
+			"h_meas": 1.41778126222278,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 5.32435790692034,
+			"v_meas": 5.274169921875,
+			"y": 0.0589073859155178
+		},
+		{
+			"bottle": "jar",
+			"fill": 1.0,
+			"h_calc": 4.71994191172938,
+			"h_meas": 4.72150485996806,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 9.62316269778967,
+			"v_meas": 9.624755859375,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "jar",
+			"fill": 1.0,
+			"h_calc": 2.35158164666744,
+			"h_meas": 2.32456650099623,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 6.79249820814221,
+			"v_meas": 6.753369140625,
+			"y": 0.0589073859155178
+		},
+		{
+			"bottle": "jar",
+			"fill": 1.0,
+			"h_calc": 8.40463583307816,
+			"h_meas": 8.40842011762321,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 12.8412988067794,
+			"v_meas": 12.844189453125,
+			"y": 0.0589073859155178
+		},
+		{
+			"bottle": "flask",
+			"fill": 0.0,
+			"h_calc": 1.46807455865718,
+			"h_meas": 1.45703280737641,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 5.36690067365271,
+			"v_meas": 5.3466796875,
+			"y": 0.0310287866741419
+		},
+		{
+			"bottle": "flask",
+			"fill": 0.0,
+			"h_calc": 4.79568170765025,
+			"h_meas": 4.80725940323751,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 9.70006572679267,
+			"v_meas": 9.711767578125,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "flask",
+			"fill": 0.0,
+			"h_calc": 2.14045548037541,
+			"h_meas": 2.13875167304223,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 6.48041175581966,
+			"v_meas": 6.47783203125,
+			"y": 0.0310287866741419
+		},
+		{
+			"bottle": "flask",
+			"fill": 0.0,
+			"h_calc": 7.27017439268854,
+			"h_meas": 7.29007757694349,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 11.9432332969154,
+			"v_meas": 11.9595703125,
+			"y": 0.0310287866741419
+		},
+		{
+			"bottle": "flask",
+			"fill": 0.5,
+			"h_calc": 0.804605081253388,
+			"h_meas": 0.832505291755046,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 3.97320420997858,
+			"v_meas": 4.04150390625,
+			"y": 0.0310287866741419
+		},
+		{
+			"bottle": "flask",
+			"fill": 0.5,
+			"h_calc": 2.62836803224818,
+			"h_meas": 2.62309944520303,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 7.18112670774644,
+			"v_meas": 7.17392578125,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "flask",
+			"fill": 0.5,
+			"h_calc": 1.25920030681336,
+			"h_meas": 1.2514415454427,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 4.97046376303842,
+			"v_meas": 4.955126953125,
+			"y": 0.0310287866741419
+		},
+		{
+			"bottle": "flask",
+			"fill": 0.5,
+			"h_calc": 5.03282558247551,
+			"h_meas": 5.0397112708573,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 9.9370034682579,
+			"v_meas": 9.943798828125,
+			"y": 0.0310287866741419
+		},
+		{
+			"bottle": "flask",
+			"fill": 1.0,
+			"h_calc": 0.554161785848227,
+			"h_meas": 0.580360360101822,
+			"orient": "side",
+			"surface": "concrete",
+			"v_calc": 3.29737080692212,
+			"v_meas": 3.3744140625,
+			"y": 0.0310287866741419
+		},
+		{
+			"bottle": "flask",
+			"fill": 1.0,
+			"h_calc": 1.81025776999697,
+			"h_meas": 1.80790507902793,
+			"orient": "base",
+			"surface": "concrete",
+			"v_calc": 5.95963568075604,
+			"v_meas": 5.95576171875,
+			"y": 0.00600000005215406
+		},
+		{
+			"bottle": "flask",
+			"fill": 1.0,
+			"h_calc": 0.898746870291835,
+			"h_meas": 0.887143897354056,
+			"orient": "side",
+			"surface": "wood",
+			"v_calc": 4.19921583097675,
+			"v_meas": 4.172021484375,
+			"y": 0.0310287866741419
+		},
+		{
+			"bottle": "flask",
+			"fill": 1.0,
+			"h_calc": 4.0098624692828,
+			"h_meas": 4.01062730146111,
+			"orient": "side",
+			"surface": "carpet",
+			"v_calc": 8.86980843351921,
+			"v_meas": 8.870654296875,
+			"y": 0.0310287866741419
+		},
+		{
+			"pct_broke": 12.5,
+			"scenario": "wine fill 0.5 concrete drop 1.0 m"
+		},
+		{
+			"pct_broke": 92.5,
+			"scenario": "wine fill 0.5 concrete drop 1.5 m"
+		},
+		{
+			"pct_broke": 100.0,
+			"scenario": "wine fill 0.5 concrete thrown 7 m/s"
+		},
+		{
+			"pct_broke": 100.0,
+			"scenario": "wine fill 1.0 concrete thrown 7 m/s"
+		},
+		{
+			"pct_broke": 100.0,
+			"scenario": "whiskey fill 1.0 concrete thrown 7 m/s"
+		},
+		{
+			"pct_broke": 100.0,
+			"scenario": "flask fill 1.0 concrete thrown 7 m/s"
+		},
+		{
+			"pct_broke": 0.0,
+			"scenario": "wine fill 0.5 carpet drop 0.4 m"
+		},
+		{
+			"pct_broke": 0.0,
+			"scenario": "wine fill 0.5 carpet drop 1.0 m"
+		},
+		{
+			"pct_broke": 0.0,
+			"scenario": "beer fill 0.5 wood drop 1.0 m"
+		},
+		{
+			"pct_broke": 0.0,
+			"scenario": "soda fill 1.0 concrete thrown 9 m/s (plastic)"
+		},
+		{
+			"pct_broke": 0.0,
+			"scenario": "bottle-on-bottle 1.5 m/s"
+		},
+		{
+			"pct_broke": 0.0,
+			"scenario": "bottle-on-bottle 3.0 m/s"
+		},
+		{
+			"pct_broke": 75.0,
+			"scenario": "bottle-on-bottle 6.0 m/s"
+		},
+		{
+			"pct_broke": 85.0,
+			"scenario": "bottle-on-bottle 9.0 m/s"
+		}
+	],
+	"seconds": 29.36
+}

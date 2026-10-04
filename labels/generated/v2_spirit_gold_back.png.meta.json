@@ -1,0 +1,27 @@
+{
+ "template": "whiskey_back",
+ "bottle": "v2_spirit",
+ "slot": "back",
+ "size_px": [
+  506,
+  800
+ ],
+ "px_per_cm": 79.9,
+ "alpha": false,
+ "wear": 0.1,
+ "seed": 62,
+ "fields": {
+  "brand": "Blackwater",
+  "blurb": [
+   "Matured in oak above the loch,",
+   "this fictional single malt offers",
+   "orchard fruit, honey and a",
+   "whisper of peat smoke."
+  ],
+  "small": [
+   "Distilled and bottled at",
+   "Glenvorrow Distillery (fictional).",
+   "Please drink responsibly."
+  ]
+ }
+}

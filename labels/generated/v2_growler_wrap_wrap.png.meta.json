@@ -1,0 +1,26 @@
+{
+ "template": "growler",
+ "bottle": "v2_growler",
+ "slot": "wrap",
+ "size_px": [
+  1428,
+  352
+ ],
+ "px_per_cm": 45.0,
+ "alpha": false,
+ "wear": 0.2,
+ "seed": 41,
+ "fields": {
+  "brand": "HARBOR LANTERN",
+  "product": "Amber Lager",
+  "side": "Fill me up",
+  "abv": "4.8% ABV",
+  "volume": "1.9 L",
+  "small": [
+   "Fresh draught, filled on",
+   "the day of purchase. Keep",
+   "cold and drink within 5",
+   "days. Please return."
+  ]
+ }
+}

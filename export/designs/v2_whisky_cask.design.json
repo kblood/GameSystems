@@ -1,0 +1,174 @@
+{
+ "name": "v2_whisky_cask",
+ "tier": "high",
+ "bottle": "v2_whisky",
+ "asset": "v2_whisky",
+ "provider": "lathe_v2",
+ "glb": "v2_whisky_cask.glb",
+ "liquid_sidecar": "v2_whisky_cask.liquid.json",
+ "meta": {
+  "description": "Whisky bottle: front and back labels and a hand-written neck tag.",
+  "tags": [
+   "spirits",
+   "tag",
+   "v2"
+  ],
+  "name": "v2_whisky_cask",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 7,
+  "label_draw_calls": 3,
+  "textures": 8,
+  "texture_sizes": [
+   [
+    128,
+    128
+   ],
+   [
+    1024,
+    1024
+   ],
+   [
+    538,
+    640
+   ],
+   [
+    538,
+    640
+   ],
+   [
+    644,
+    800
+   ],
+   [
+    644,
+    800
+   ],
+   [
+    538,
+    180
+   ],
+   [
+    538,
+    180
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 15505,
+  "tex_mem_kb_compressed_mips": 3876,
+  "glb_kb": 1400,
+  "base_glb": "export/v2/bottle_whisky.glb",
+  "base_tex_mem_kb_rgba8_mips": 5545,
+  "base_draw_calls": 4,
+  "label_tex_mem_kb_rgba8_mips": 9960,
+  "label_tex_mem_kb_compressed_mips": 2490
+ },
+ "glass": {
+  "bottle": "whisky",
+  "tier": "high",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.0449,
+   0.1649
+  ],
+  "label_panel": false,
+  "z_top": 0.2635,
+  "r_bore": 0.0094,
+  "glass": "flint",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "tcork"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 731.4,
+  "z0": 0.00677,
+  "z1": 0.23953,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.65,
+   0.32,
+   0.05,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.0,
+  "foam_height": 0.005,
+  "bubble_size": 1.0,
+  "fill_default": 0.7
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/v2_whisky_cask_front.png",
+   "wear_mask": "textures/v2_whisky_cask_front_wear.png",
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.08056,
+   "height_m": 0.1,
+   "aspect": 0.8056,
+   "arc_deg": 120.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "back",
+   "texture": "textures/v2_whisky_cask_back.png",
+   "wear_mask": "textures/v2_whisky_cask_back_wear.png",
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.06713,
+   "height_m": 0.08,
+   "aspect": 0.8392,
+   "arc_deg": 100.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "neck",
+   "texture": "textures/v2_whisky_cask_neck.png",
+   "wear_mask": "textures/v2_whisky_cask_neck_wear.png",
+   "material_kind": "handwritten_tag",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.05372,
+   "height_m": 0.01793,
+   "aspect": 2.9955,
+   "arc_deg": 160.0,
+   "alpha_mode": "MASK",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck"
+ ]
+}

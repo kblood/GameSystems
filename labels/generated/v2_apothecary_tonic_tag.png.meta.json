@@ -1,0 +1,23 @@
+{
+ "template": "tag_hand",
+ "bottle": "v2_apothecary",
+ "slot": "tag",
+ "size_px": [
+  326,
+  202
+ ],
+ "px_per_cm": 120.0,
+ "alpha": true,
+ "wear": 0.4,
+ "seed": 72,
+ "fields": {
+  "paper": "#d2b27a",
+  "ink": "#27323f",
+  "lines": [
+   "Take 10",
+   "drops"
+  ],
+  "font": "hand",
+  "angle": 2.0
+ }
+}

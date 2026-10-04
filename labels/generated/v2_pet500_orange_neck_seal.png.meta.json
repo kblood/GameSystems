@@ -1,0 +1,16 @@
+{
+ "template": "neck_seal",
+ "bottle": "v2_pet500",
+ "slot": "neck_seal",
+ "size_px": [
+  986,
+  126
+ ],
+ "px_per_cm": 99.9,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 1,
+ "fields": {
+  "bg": "#f08a1c"
+ }
+}

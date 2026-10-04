@@ -1,0 +1,21 @@
+{
+ "template": "clear_sticker",
+ "bottle": "beer",
+ "slot": "front",
+ "size_px": [
+  680,
+  720
+ ],
+ "px_per_cm": 79.9,
+ "alpha": true,
+ "wear": 0.0,
+ "seed": 5,
+ "fields": {
+  "brand": "FOGHORN",
+  "product": "Session IPA",
+  "ink": "#f4f1e6",
+  "accent": "#e8b53a",
+  "abv": "4.2% ABV",
+  "volume": "440 ml"
+ }
+}

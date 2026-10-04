@@ -1,0 +1,482 @@
+[
+ {
+  "file": "labels/wine_classic_front.png",
+  "bottle": "wine",
+  "slot": "front",
+  "template": "wine_classic",
+  "material_kind": "paper_matte",
+  "size_px": [
+   680,
+   840
+  ],
+  "alpha": false,
+  "wear_mask": "labels/wine_classic_front_wear.png",
+  "seed": 1,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/wine_modern_front.png",
+  "bottle": "wine",
+  "slot": "front",
+  "template": "wine_modern",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   680,
+   840
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 2,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/wine_classic_back.png",
+  "bottle": "wine",
+  "slot": "back",
+  "template": "wine_back",
+  "material_kind": "paper_matte",
+  "size_px": [
+   524,
+   640
+  ],
+  "alpha": false,
+  "wear_mask": "labels/wine_classic_back_wear.png",
+  "seed": 3,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/wine_classic_neck.png",
+  "bottle": "wine",
+  "slot": "neck",
+  "template": "wine_neck",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   694,
+   392
+  ],
+  "alpha": false,
+  "wear_mask": "labels/wine_classic_neck_wear.png",
+  "seed": 4,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/wine_foil_gold.png",
+  "bottle": "wine",
+  "slot": "foil",
+  "template": "foil_capsule",
+  "material_kind": "foil_metal",
+  "size_px": [
+   818,
+   492
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 5,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/wine_foil_red.png",
+  "bottle": "wine",
+  "slot": "foil",
+  "template": "foil_capsule_red",
+  "material_kind": "foil_metal",
+  "size_px": [
+   818,
+   492
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 6,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/wine_cap_disc.png",
+  "bottle": "wine",
+  "slot": "cap",
+  "template": "wine_cap",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   228,
+   228
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 7,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/beer_pale_front.png",
+  "bottle": "beer",
+  "slot": "front",
+  "template": "beer_pale",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   680,
+   720
+  ],
+  "alpha": false,
+  "wear_mask": "labels/beer_pale_front_wear.png",
+  "seed": 1,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/beer_dark_front.png",
+  "bottle": "beer",
+  "slot": "front",
+  "template": "beer_dark",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   680,
+   720
+  ],
+  "alpha": false,
+  "wear_mask": "labels/beer_dark_front_wear.png",
+  "seed": 2,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/beer_pale_neck.png",
+  "bottle": "beer",
+  "slot": "neck",
+  "template": "beer_neck",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   430,
+   260
+  ],
+  "alpha": false,
+  "wear_mask": "labels/beer_pale_neck_wear.png",
+  "seed": 3,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/beer_amber_wrap.png",
+  "bottle": "beer",
+  "slot": "wrap",
+  "template": "beer_wrap",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   1226,
+   660
+  ],
+  "alpha": false,
+  "wear_mask": "labels/beer_amber_wrap_wear.png",
+  "seed": 4,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/beer_clear_film.png",
+  "bottle": "beer",
+  "slot": "front",
+  "template": "clear_sticker",
+  "material_kind": "clear_film",
+  "size_px": [
+   680,
+   720
+  ],
+  "alpha": true,
+  "wear_mask": null,
+  "seed": 5,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/soda_cherry_sleeve.png",
+  "bottle": "soda",
+  "slot": "sleeve",
+  "template": "soda_sleeve",
+  "material_kind": "plastic_sleeve",
+  "size_px": [
+   1226,
+   1100
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 1,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/soda_lime_sleeve.png",
+  "bottle": "soda",
+  "slot": "sleeve",
+  "template": "soda_lime",
+  "material_kind": "plastic_sleeve",
+  "size_px": [
+   1226,
+   1100
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 2,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/soda_cherry_cap.png",
+  "bottle": "soda",
+  "slot": "cap",
+  "template": "soda_cap",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   264,
+   264
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 3,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/soda_lime_cap.png",
+  "bottle": "soda",
+  "slot": "cap",
+  "template": "soda_cap_lime",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   264,
+   264
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 4,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/soda_neck_seal.png",
+  "bottle": "soda",
+  "slot": "neck_seal",
+  "template": "neck_seal",
+  "material_kind": "plastic_sleeve",
+  "size_px": [
+   880,
+   120
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 5,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/whiskey_classic_front.png",
+  "bottle": "whiskey",
+  "slot": "front",
+  "template": "whiskey_classic",
+  "material_kind": "paper_matte",
+  "size_px": [
+   612,
+   720
+  ],
+  "alpha": false,
+  "wear_mask": "labels/whiskey_classic_front_wear.png",
+  "seed": 1,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/whiskey_bourbon_front.png",
+  "bottle": "whiskey",
+  "slot": "front",
+  "template": "whiskey_gold",
+  "material_kind": "paper_matte",
+  "size_px": [
+   612,
+   720
+  ],
+  "alpha": false,
+  "wear_mask": "labels/whiskey_bourbon_front_wear.png",
+  "seed": 2,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/whiskey_classic_back.png",
+  "bottle": "whiskey",
+  "slot": "back",
+  "template": "whiskey_back",
+  "material_kind": "paper_matte",
+  "size_px": [
+   510,
+   480
+  ],
+  "alpha": false,
+  "wear_mask": "labels/whiskey_classic_back_wear.png",
+  "seed": 3,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/whiskey_shoulder_strip.png",
+  "bottle": "whiskey",
+  "slot": "shoulder",
+  "template": "whiskey_shoulder",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   688,
+   394
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 4,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/whiskey_neck_tag.png",
+  "bottle": "whiskey",
+  "slot": "neck",
+  "template": "tag_whiskey",
+  "material_kind": "handwritten_tag",
+  "size_px": [
+   398,
+   220
+  ],
+  "alpha": true,
+  "wear_mask": "labels/whiskey_neck_tag_wear.png",
+  "seed": 5,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/jar_honey_wrap.png",
+  "bottle": "jar",
+  "slot": "wrap",
+  "template": "jar_honey",
+  "material_kind": "paper_matte",
+  "size_px": [
+   1658,
+   408
+  ],
+  "alpha": false,
+  "wear_mask": "labels/jar_honey_wrap_wear.png",
+  "seed": 1,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/jar_jam_wrap.png",
+  "bottle": "jar",
+  "slot": "wrap",
+  "template": "jar_jam",
+  "material_kind": "paper_matte",
+  "size_px": [
+   1658,
+   408
+  ],
+  "alpha": false,
+  "wear_mask": "labels/jar_jam_wrap_wear.png",
+  "seed": 2,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/jar_lid_gingham.png",
+  "bottle": "jar",
+  "slot": "lid",
+  "template": "jar_lid",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   750,
+   750
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 3,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/jar_lid_honey.png",
+  "bottle": "jar",
+  "slot": "lid",
+  "template": "jar_lid_honey",
+  "material_kind": "paper_gloss",
+  "size_px": [
+   750,
+   750
+  ],
+  "alpha": false,
+  "wear_mask": null,
+  "seed": 4,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/flask_labelwriter_white.png",
+  "bottle": "flask",
+  "slot": "tag",
+  "template": "labelwriter",
+  "material_kind": "tape",
+  "size_px": [
+   460,
+   188
+  ],
+  "alpha": false,
+  "wear_mask": "labels/flask_labelwriter_white_wear.png",
+  "seed": 1,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/flask_labelwriter_yellow.png",
+  "bottle": "flask",
+  "slot": "tag",
+  "template": "labelwriter_yellow",
+  "material_kind": "tape",
+  "size_px": [
+   460,
+   188
+  ],
+  "alpha": false,
+  "wear_mask": "labels/flask_labelwriter_yellow_wear.png",
+  "seed": 2,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/flask_labelwriter_clear.png",
+  "bottle": "flask",
+  "slot": "tag",
+  "template": "labelwriter_clear",
+  "material_kind": "clear_film",
+  "size_px": [
+   460,
+   188
+  ],
+  "alpha": true,
+  "wear_mask": null,
+  "seed": 3,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/flask_tag_hand.png",
+  "bottle": "flask",
+  "slot": "tag_hand",
+  "template": "tag_hand",
+  "material_kind": "handwritten_tag",
+  "size_px": [
+   440,
+   376
+  ],
+  "alpha": true,
+  "wear_mask": "labels/flask_tag_hand_wear.png",
+  "seed": 4,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/flask_tag_script.png",
+  "bottle": "flask",
+  "slot": "tag_hand",
+  "template": "tag_hand_script",
+  "material_kind": "handwritten_tag",
+  "size_px": [
+   440,
+   376
+  ],
+  "alpha": true,
+  "wear_mask": "labels/flask_tag_script_wear.png",
+  "seed": 5,
+  "license": "CC0 (original, fictional brand)"
+ },
+ {
+  "file": "labels/flask_graduation.png",
+  "bottle": "flask",
+  "slot": "grad",
+  "template": "flask_grad",
+  "material_kind": "clear_film",
+  "size_px": [
+   328,
+   934
+  ],
+  "alpha": true,
+  "wear_mask": null,
+  "seed": 6,
+  "license": "CC0 (original, fictional brand)"
+ }
+]

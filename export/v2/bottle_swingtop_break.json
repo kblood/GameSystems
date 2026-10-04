@@ -1,0 +1,95 @@
+{
+  "name": "swingtop",
+  "family": "v2",
+  "material": "glass",
+  "shatters": true,
+  "source": "scripts/fracture_glb.py",
+  "frame": "bottle-local, glTF Y-up, metres, base centre at origin (same frame as the shipped GLB)",
+  "wall_thickness_m": 0.003,
+  "density_kg_m3": 2500.0,
+  "glass_volume_m3": 0.0001468398386218349,
+  "glass_mass_kg": 0.3670995965545873,
+  "liquid_mass_kg_per_ml": 0.001,
+  "capacity_ml": 498.8,
+  "height_m": 0.2321331799030304,
+  "max_radius_m": 0.034611059153450155,
+  "base_z": 0.012,
+  "shoulder_z": 0.15427123720714536,
+  "neck_z": 0.19930333093051172,
+  "has_neck": true,
+  "weak_zones": [
+    {
+      "name": "base",
+      "z0": 0.0,
+      "z1": 0.012,
+      "thinness": 1.0
+    },
+    {
+      "name": "body",
+      "z0": 0.012,
+      "z1": 0.15427123720714536,
+      "thinness": 1.0
+    },
+    {
+      "name": "shoulder",
+      "z0": 0.15427123720714536,
+      "z1": 0.19930333093051172,
+      "thinness": 1.3
+    },
+    {
+      "name": "neck",
+      "z0": 0.19930333093051172,
+      "z1": 0.2321331799030304,
+      "thinness": 0.8
+    }
+  ],
+  "zone_factor": {
+    "base": 1.15,
+    "body": 1.0,
+    "shoulder": 0.85,
+    "neck": 0.55
+  },
+  "calibration": {
+    "surface": "concrete",
+    "fill": 1.0,
+    "v_n": 4.3,
+    "y": "mid_body",
+    "note": "f_crit_ref solved at load so this hit is exactly the break threshold"
+  },
+  "mesh": {
+    "area_m2": 0.08701329678069669,
+    "non_manifold_edges": 0
+  },
+  "shards": {
+    "count": 18,
+    "tris": 8642,
+    "classes": {
+      "chunk": 8,
+      "shard": 10
+    }
+  },
+  "impact_point": [
+    0.03311105817556381,
+    0.0,
+    0.08313561975955963
+  ],
+  "files": {
+    "shards": "export/v2/bottle_swingtop_shards.glb",
+    "broken": "export/v2/bottle_swingtop_broken.glb"
+  },
+  "open_z": 0.17737731551155034,
+  "broken_variant": {
+    "nodes": [
+      "Glass",
+      "Neck",
+      "Liquid",
+      "Cap(child of Neck)",
+      "Label"
+    ],
+    "open_z": 0.17737731551155034,
+    "jag_z_range": [
+      0.17737731551155034,
+      0.19392827621529238
+    ]
+  }
+}

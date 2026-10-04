@@ -1,0 +1,20 @@
+{
+ "template": "beer_pale",
+ "bottle": "v2_longneck",
+ "slot": "front",
+ "size_px": [
+  656,
+  584
+ ],
+ "px_per_cm": 80.1,
+ "alpha": false,
+ "wear": 0.25,
+ "seed": 31,
+ "fields": {
+  "brand": "MOORFIELD BREWING",
+  "product": "PALE ALE",
+  "tagline": "Brewed with three fictional hops",
+  "abv": "5.2% ABV",
+  "volume": "500 ml"
+ }
+}

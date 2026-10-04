@@ -1,0 +1,17 @@
+{
+ "template": "foil_capsule",
+ "bottle": "v2_bordeaux",
+ "slot": "capsule",
+ "size_px": [
+  956,
+  412
+ ],
+ "px_per_cm": 99.9,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 5,
+ "fields": {
+  "foil": "#c9a13a",
+  "brand": "LUNELLE"
+ }
+}

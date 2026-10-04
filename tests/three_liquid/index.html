@@ -1,0 +1,61 @@
+<!doctype html><meta charset="utf-8"><title>three liquid test</title>
+<style>html,body{margin:0;background:#20242b;overflow:hidden}#lab{position:fixed;left:8px;top:6px;color:#ddd;font:13px sans-serif}</style>
+<div id="lab"></div>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { setupBottleFromUrl } from '/shared/shaders/three/bottle_liquid.js';
+const q = new URLSearchParams(location.search);
+const assets = (q.get('a') || 'export/bottle_wine,export/bottle_beer,export/bottle_soda,export/bottle_whiskey,export/v2/bottle_champagne,export/container_square,export/container_hipflask,export/container_tumbler').split(',');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x2b323c);
+const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+const dl = new THREE.DirectionalLight(0xffffff, 2); dl.position.set(1, 2, 2); scene.add(dl);
+const loader = new GLTFLoader(), items = [], SP = 0.40, H = 0.30;
+for (let i = 0; i < assets.length; i++) {
+  const url = `/shared/${assets[i]}.glb`, gltf = await loader.loadAsync(url);
+  const box = new THREE.Box3().setFromObject(gltf.scene), c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
+  gltf.scene.position.sub(c);
+  const holder = new THREE.Group(), base = new THREE.Vector3(((i % 4) - 1.5) * SP, (i < 4 ? 1 : -1) * SP * 0.55, 0);
+  holder.add(gltf.scene); holder.position.copy(base); holder.scale.setScalar(H / Math.max(sz.x, sz.y, sz.z)); scene.add(holder);
+  const b = await setupBottleFromUrl(gltf.scene, url, { fill: 0.6 });
+  items.push({ name: assets[i].split('/').pop(), holder, base, b });
+}
+const cam = new THREE.PerspectiveCamera(22, innerWidth / innerHeight, 0.05, 40);
+const W = 4 * SP; cam.position.set(0, 0.12, W / 2 / Math.tan(THREE.MathUtils.degToRad(11)) / (innerWidth / innerHeight) * 1.05); cam.lookAt(0, 0, 0);
+const step = (n, fn) => { for (let k = 0; k < n; k++) { fn && fn(k / 60); for (const it of items) it.b.update(1 / 60); } };
+// orientation = pitch(X) * tilt(Z) * spin(Y); then settle `settle` seconds of 60 Hz updates
+window.pose = (tilt, fill, { spin = 0, pitch = 0, shake = 0, settle = 4, label = '' } = {}) => {
+  const r = THREE.MathUtils.degToRad, e = new THREE.Euler(r(pitch), 0, r(tilt), 'XZY');
+  for (const it of items) { it.b.fill = fill; it.holder.quaternion.setFromEuler(e).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), r(spin))); }
+  step(Math.round(settle * 60));
+  if (shake > 0) {   // shake sideways for `shake` s, then hold still for 0.4 s
+    step(Math.round(shake * 60), (t) => { for (const it of items) it.holder.position.x = it.base.x + 0.035 * Math.sin(t * 2 * Math.PI * 3.2); });
+    for (const it of items) it.holder.position.copy(it.base);
+    step(24);
+  }
+  document.getElementById('lab').textContent = label || `tilt ${tilt}  fill ${fill}  spin ${spin}  pitch ${pitch}${shake ? '  shaken' : ''}`;
+  renderer.render(scene, cam);
+  return items.map((it) => ({ n: it.name, d: +it.b.uniforms.uPlane.value.w.toFixed(5), spilled: it.b.lastSpill.spilled, fill: +it.b.lastSpill.fill.toFixed(3),
+    sleeping: it.b.sleeping, work: it.b.workFrames, foam: +it.b.foam.toFixed(3), flip: it.b.uniforms.uFlipFaces.value, v: it.b.info.version }));
+};
+window.idleProbe = () => {   // 10 s of updates with nothing changing: count frames that did work
+  step(1800); const w0 = items.map((it) => it.b.workFrames); step(600);
+  return items.map((it, i) => ({ n: it.name, sleeping: it.b.sleeping, workIn10s: it.b.workFrames - w0[i] }));
+};
+// close-up on item i (optionally override carbonation / foam capacity first), shake, render
+const camHome = cam.position.clone();
+window.closeup = (i, { carb = -1, foamCap = -1, tilt = 0, fill = 0.7, shake = 1.2 } = {}) => {
+  const it = items[i]; it.b.carbonation = carb; it.b.foamCapacity = foamCap;
+  const r = window.pose(tilt, fill, { shake, settle: 1, label: `${it.name} close-up  tilt ${tilt} fill ${fill} carb ${carb} foamCap ${foamCap}${shake ? ' shaken' : ''}` });
+  const c = it.base.clone(); cam.position.set(c.x, c.y + 0.03, c.z + 0.62); cam.lookAt(c);
+  renderer.render(scene, cam);
+  cam.position.copy(camHome); cam.lookAt(0, 0, 0);
+  return r[i];
+};
+window.__ready = true;
+</script>

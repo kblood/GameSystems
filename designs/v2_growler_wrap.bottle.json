@@ -1,0 +1,35 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_growler",
+  "liquid": {
+    "color": [
+      0.55,
+      0.25,
+      0.05,
+      1
+    ],
+    "fill": 0.75,
+    "carbonation": 0.2,
+    "foam": 0.3
+  },
+  "labels": [
+    {
+      "slot": "wrap",
+      "generate": {
+        "template": "growler",
+        "seed": 41,
+        "wear": 0.2
+      }
+    }
+  ],
+  "meta": {
+    "description": "Growler with a full kraft-paper wrap label.",
+    "tags": [
+      "beer",
+      "wrap",
+      "v2"
+    ],
+    "name": "v2_growler_wrap",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

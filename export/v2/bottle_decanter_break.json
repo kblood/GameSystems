@@ -1,0 +1,96 @@
+{
+  "name": "decanter",
+  "family": "v2",
+  "material": "glass",
+  "shatters": true,
+  "source": "scripts/fracture_glb.py",
+  "frame": "bottle-local, glTF Y-up, metres, base centre at origin (same frame as the shipped GLB)",
+  "wall_thickness_m": 0.0036000000000000003,
+  "density_kg_m3": 2500.0,
+  "glass_volume_m3": 0.0002795716621427355,
+  "glass_mass_kg": 0.6989291553568387,
+  "liquid_mass_kg_per_ml": 0.001,
+  "capacity_ml": 1037.4,
+  "height_m": 0.23741592466831207,
+  "max_radius_m": 0.07535161464283818,
+  "base_z": 0.012,
+  "shoulder_z": 0.036251242565124,
+  "neck_z": 0.16550772220306612,
+  "has_neck": true,
+  "weak_zones": [
+    {
+      "name": "base",
+      "z0": 0.0,
+      "z1": 0.012,
+      "thinness": 1.0
+    },
+    {
+      "name": "body",
+      "z0": 0.012,
+      "z1": 0.036251242565124,
+      "thinness": 1.0
+    },
+    {
+      "name": "shoulder",
+      "z0": 0.036251242565124,
+      "z1": 0.16550772220306612,
+      "thinness": 1.3
+    },
+    {
+      "name": "neck",
+      "z0": 0.16550772220306612,
+      "z1": 0.23741592466831207,
+      "thinness": 0.8
+    }
+  ],
+  "zone_factor": {
+    "base": 1.15,
+    "body": 1.0,
+    "shoulder": 0.85,
+    "neck": 0.55
+  },
+  "calibration": {
+    "surface": "concrete",
+    "fill": 1.0,
+    "v_n": 4.3,
+    "y": "mid_body",
+    "note": "f_crit_ref solved at load so this hit is exactly the break threshold"
+  },
+  "mesh": {
+    "area_m2": 0.1455301314028219,
+    "non_manifold_edges": 0
+  },
+  "shards": {
+    "count": 21,
+    "tris": 9652,
+    "classes": {
+      "chunk": 6,
+      "shard": 14,
+      "sliver": 1
+    }
+  },
+  "impact_point": [
+    0.06426139920949936,
+    -1.3490548553818371e-06,
+    0.029802575707435608
+  ],
+  "files": {
+    "shards": "export/v2/bottle_decanter_shards.glb",
+    "broken": "export/v2/bottle_decanter_broken.glb"
+  },
+  "open_z": 0.11962548320115715,
+  "broken_variant": {
+    "nodes": [
+      "Glass",
+      "Neck",
+      "Liquid",
+      "Cap(child of Neck)",
+      "Label"
+    ],
+    "open_z": 0.11962548320115715,
+    "jag_z_range": [
+      0.11962548320115715,
+      0.13450467205437
+    ]
+  }
+}

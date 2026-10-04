@@ -1,0 +1,54 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "bottle": "soda",
+  "glass": {
+    "tint": [
+      0.85,
+      0.92,
+      0.95,
+      1.0
+    ]
+  },
+  "cap": {
+    "type": "screw",
+    "colour": "#c41f2e",
+    "label": {
+      "image": "labels/soda_cherry_cap.png"
+    }
+  },
+  "liquid": {
+    "color": [
+      0.5,
+      0.02,
+      0.04,
+      1.0
+    ],
+    "fill": 0.85,
+    "carbonation": 0.8,
+    "foam": 0.7,
+    "opacity": 0.85,
+    "viscosity": 0.2,
+    "density": 1.04,
+    "bubble_size": 0.8
+  },
+  "labels": [
+    {
+      "slot": "sleeve",
+      "image": "labels/soda_cherry_sleeve.png"
+    },
+    {
+      "slot": "neck_seal",
+      "image": "labels/soda_neck_seal.png"
+    }
+  ],
+  "meta": {
+    "description": "Full-wrap plastic sleeve (seam at the back), tamper band and a label on the cap top.",
+    "tags": [
+      "soda",
+      "sleeve",
+      "cap-label"
+    ],
+    "name": "soda_cherry",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

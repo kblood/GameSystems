@@ -1,0 +1,133 @@
+{
+ "name": "wine_reserve",
+ "tier": "high",
+ "bottle": "wine",
+ "asset": "wine",
+ "provider": "lathe_v1",
+ "glb": "wine_reserve.glb",
+ "liquid_sidecar": "wine_reserve.liquid.json",
+ "meta": {
+  "description": "Black modern label, wax-dipped cap, very dark glass.",
+  "tags": [
+   "wine",
+   "wax",
+   "dark"
+  ],
+  "name": "wine_reserve",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 5,
+  "label_draw_calls": 2,
+  "textures": 2,
+  "texture_sizes": [
+   [
+    524,
+    640
+   ],
+   [
+    680,
+    840
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 4720,
+  "tex_mem_kb_compressed_mips": 1180,
+  "glb_kb": 703
+ },
+ "glass": {
+  "tint": [
+   0.02,
+   0.07,
+   0.03,
+   1.0
+  ],
+  "roughness": 0.04,
+  "thickness_mm": 3.0,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "wax",
+  "r": 0.0155,
+  "z0": 0.31000000000000005,
+  "z1": 0.34600000000000003,
+  "top_r": 0.01295
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 868.0,
+  "z0": 0.0034,
+  "z1": 0.334,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.2,
+   0.01,
+   0.04,
+   1.0
+  ],
+  "carbonation": 0.0,
+  "foam": 0.1,
+  "foam_height": 0.006,
+  "bubble_size": 1.0,
+  "opacity": 0.95,
+  "viscosity": 0.2,
+  "density": 0.99,
+  "fill_default": 0.85,
+  "tint_strength": 1.2,
+  "mass_full_kg": 0.8593
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/wine_reserve_front.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.08508,
+   "height_m": 0.105,
+   "aspect": 0.8103,
+   "arc_deg": 130.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false
+  },
+  {
+   "slot": "back",
+   "texture": "textures/wine_reserve_back.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.06545,
+   "height_m": 0.08,
+   "aspect": 0.8181,
+   "arc_deg": 100.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck",
+  "foil",
+  "cap"
+ ]
+}

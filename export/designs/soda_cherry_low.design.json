@@ -1,0 +1,164 @@
+{
+ "name": "soda_cherry",
+ "tier": "low",
+ "bottle": "soda",
+ "glb": "soda_cherry_low.glb",
+ "liquid_sidecar": "soda_cherry_low.liquid.json",
+ "meta": {
+  "description": "Full-wrap plastic sleeve (seam at the back), tamper band and a label on the cap top.",
+  "tags": [
+   "soda",
+   "sleeve",
+   "cap-label"
+  ],
+  "name": "soda_cherry",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 1,
+  "texture_sizes": [
+   [
+    1024,
+    1024
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 5460,
+  "tex_mem_kb_compressed_mips": 1365,
+  "glb_kb": 986
+ },
+ "glass": {
+  "tint": [
+   0.85,
+   0.92,
+   0.95,
+   1.0
+  ],
+  "roughness": 0.03,
+  "thickness_mm": 1.2,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "screw",
+  "r": 0.015,
+  "z0": 0.25,
+  "z1": 0.267,
+  "top_r": 0.011
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 668.7,
+  "z0": 0.0016,
+  "z1": 0.258,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.5,
+   0.02,
+   0.04,
+   1.0
+  ],
+  "carbonation": 0.8,
+  "foam": 0.7,
+  "foam_height": 0.014,
+  "bubble_size": 0.8,
+  "opacity": 0.85,
+  "viscosity": 0.2,
+  "density": 1.04,
+  "fill_default": 0.85,
+  "tint_strength": 1.0,
+  "mass_full_kg": 0.6954
+ },
+ "labels": [
+  {
+   "slot": "sleeve",
+   "texture": "textures/soda_cherry_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "plastic_sleeve",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.20418,
+   "height_m": 0.18329,
+   "aspect": 1.114,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.00195,
+    0.00195,
+    0.60059,
+    0.53906
+   ]
+  },
+  {
+   "slot": "neck_seal",
+   "texture": "textures/soda_cherry_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "plastic_sleeve",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.08796,
+   "height_m": 0.012,
+   "aspect": 7.3303,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.00195,
+    0.54297,
+    0.43164,
+    0.60156
+   ]
+  },
+  {
+   "slot": "cap",
+   "texture": "textures/soda_cherry_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "paper_gloss",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.022,
+   "height_m": 0.022,
+   "aspect": 1.0,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.60449,
+    0.00195,
+    0.7334,
+    0.13086
+   ]
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "sleeve",
+  "neck_seal",
+  "cap"
+ ]
+}

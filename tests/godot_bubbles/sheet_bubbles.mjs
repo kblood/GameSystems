@@ -1,0 +1,13 @@
+import fs from 'node:fs'; import { createRequire } from 'node:module';
+const require = createRequire('C:/Devstuff/GameDev/NightfallContracts/package.json');
+const puppeteer = require('puppeteer-core');
+const D='file:///C:/Tools/BlenderShared/tests/godot_bubbles/out7/';
+const rows=[['soda (cola)','soda'],['beer','beer'],['wine','wine'],['whiskey','whiskey'],['flask','flask']];
+const cols=[['upright calm','{b}_t0_f60'],['45°','{b}_t45_f60'],['side calm','{b}_t90_f60'],['upside down','{b}_t180_f60'],['upright shaken','{b}_shaken_t0'],['side shaken','{b}_shaken_t90'],['close calm','{b}_close_calm_t0'],['close shaken','{b}_close_shaken_t0'],['close side shaken','{b}_close_shaken_t90']];
+const head=`<tr><th></th>${cols.map(c=>`<th>${c[0]}</th>`).join('')}</tr>`;
+const body=rows.map(([n,b])=>`<tr><th>${n}</th>${cols.map(c=>`<td><img class="${c[1].includes('close')?'c':''}" src="${D}${c[1].replace('{b}',b)}.png"></td>`).join('')}</tr>`).join('');
+fs.writeFileSync('C:/Tools/BlenderShared/tests/out/bubbles_sheet.html',`<style>body{margin:0;background:#111;color:#ddd;font:13px sans-serif}td,th{padding:1px}img{width:170px;height:227px;object-fit:cover;object-position:center 45%;display:block}img.c{height:227px;object-position:center 40%}</style><table cellspacing=0>${head}${body}</table>`);
+const chrome=['C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find(fs.existsSync);
+const br=await puppeteer.launch({executablePath:chrome,headless:'new',args:['--allow-file-access-from-files'],defaultViewport:{width:1650,height:1200}});
+const p=await br.newPage(); await p.goto('file:///C:/Tools/BlenderShared/tests/out/bubbles_sheet.html'); await new Promise(r=>setTimeout(r,1000));
+await p.screenshot({path:'C:/Tools/BlenderShared/tests/out/bubbles_sheet.png',fullPage:true}); await br.close(); console.log('ok');

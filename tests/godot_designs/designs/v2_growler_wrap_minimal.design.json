@@ -1,0 +1,94 @@
+{
+ "name": "v2_growler_wrap",
+ "tier": "minimal",
+ "bottle": "v2_growler",
+ "asset": "v2_growler",
+ "provider": "lathe_v2",
+ "glb": "v2_growler_wrap_minimal.glb",
+ "liquid_sidecar": "v2_growler_wrap_minimal.liquid.json",
+ "meta": {
+  "description": "Growler with a full kraft-paper wrap label.",
+  "tags": [
+   "beer",
+   "wrap",
+   "v2"
+  ],
+  "name": "v2_growler_wrap",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 371,
+  "base_glb": "export/v2/bottle_growler_lod2.glb",
+  "base_tex_mem_kb_rgba8_mips": 0,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 0,
+  "label_tex_mem_kb_compressed_mips": 0
+ },
+ "glass": {
+  "bottle": "growler",
+  "tier": "low",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.03,
+   0.105
+  ],
+  "label_panel": false,
+  "z_top": 0.215,
+  "r_bore": 0.0152,
+  "glass": "brown",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "ropp"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 1044.8,
+  "z0": 0.00547,
+  "z1": 0.21203,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.55,
+   0.25,
+   0.05,
+   1
+  ],
+  "carbonation": 0.2,
+  "foam": 0.3,
+  "foam_height": 0.02,
+  "bubble_size": 1.0,
+  "fill_default": 0.75
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "wrap",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.40468133680170193,
+    0.266122612733763,
+    0.11478891239763407,
+    1.0
+   ],
+   "width_m": 0.31721,
+   "height_m": 0.078,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "wrap",
+  "front",
+  "back"
+ ]
+}

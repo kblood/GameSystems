@@ -1,0 +1,28 @@
+{
+ "template": "gin",
+ "bottle": "container_square",
+ "slot": "front",
+ "size_px": [
+  400,
+  704
+ ],
+ "px_per_cm": 80.0,
+ "alpha": false,
+ "wear": 0.1,
+ "seed": 101,
+ "fields": {
+  "paper": "#f1ede2",
+  "ink": "#1f3a3a",
+  "accent": "#3b5f8a",
+  "tagline": "SMALL BATCH \u00b7 DISTILLED",
+  "brand": "JUNIPER & HARE",
+  "product": "London Dry Gin",
+  "abv": "41.5% vol",
+  "volume": "500 ml",
+  "small": [
+   "Juniper, coriander, angelica,",
+   "orris and a twist of lemon.",
+   "Distilled by Juniper & Hare (fictional)."
+  ]
+ }
+}

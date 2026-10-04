@@ -1,0 +1,64 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_roundflask",
+  "liquid": {
+    "color": [
+      0.15,
+      0.55,
+      0.25,
+      1
+    ],
+    "fill": 0.45
+  },
+  "labels": [
+    {
+      "slot": "tag",
+      "generate": {
+        "template": "labelwriter",
+        "seed": 91,
+        "fields": {
+          "lines": [
+            "CuSO4 0.1 M",
+            "LOT 22"
+          ]
+        },
+        "wear": 0.05
+      }
+    },
+    {
+      "slot": "grad",
+      "generate": {
+        "template": "flask_grad",
+        "seed": 92,
+        "fields": {
+          "patch": "RB 250",
+          "max": 250
+        }
+      },
+      "material_kind": "clear_film"
+    },
+    {
+      "slot": "tag_hand",
+      "generate": {
+        "template": "tag_hand",
+        "seed": 93,
+        "fields": {
+          "lines": [
+            "Run 3",
+            "K.S."
+          ]
+        },
+        "wear": 0.3
+      }
+    }
+  ],
+  "meta": {
+    "description": "Round-bottom flask with a label-printer strip, graduation patch and hand-written tag.",
+    "tags": [
+      "lab",
+      "v2"
+    ],
+    "name": "v2_roundflask_lab",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

@@ -1,0 +1,20 @@
+{
+ "template": "labelwriter_clear",
+ "bottle": "flask",
+ "slot": "tag",
+ "size_px": [
+  460,
+  188
+ ],
+ "px_per_cm": 149.9,
+ "alpha": true,
+ "wear": 0.0,
+ "seed": 3,
+ "fields": {
+  "tape": "clear",
+  "lines": [
+   "NaCl 0.9 M",
+   "K.S. 12/10"
+  ]
+ }
+}

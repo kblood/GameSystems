@@ -1,0 +1,91 @@
+{
+ "name": "v2_perfume_atelier",
+ "tier": "minimal",
+ "bottle": "v2_perfume",
+ "asset": "v2_perfume",
+ "provider": "lathe_v2",
+ "glb": "v2_perfume_atelier_minimal.glb",
+ "liquid_sidecar": "v2_perfume_atelier_minimal.liquid.json",
+ "meta": {
+  "description": "Perfume bottle with a small gold-bordered front label.",
+  "tags": [
+   "perfume",
+   "v2"
+  ],
+  "name": "v2_perfume_atelier",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 178,
+  "base_glb": "export/v2/bottle_perfume_lod2.glb",
+  "base_tex_mem_kb_rgba8_mips": 0,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 0,
+  "label_tex_mem_kb_compressed_mips": 0
+ },
+ "glass": {
+  "bottle": "perfume",
+  "tier": "low",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.02,
+   0.045
+  ],
+  "label_panel": false,
+  "z_top": 0.078,
+  "r_bore": 0.0036,
+  "glass": "flint_hi",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "perfume"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 61.1,
+  "z0": 0.01637,
+  "z1": 0.07397,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.95,
+   0.8,
+   0.78,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.0,
+  "foam_height": 0.002,
+  "bubble_size": 1.0,
+  "fill_default": 0.7
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "front",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.8481725026713846,
+    0.7585550011580939,
+    0.6584178713549956,
+    1.0
+   ],
+   "width_m": 0.17858,
+   "height_m": 0.028,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front"
+ ]
+}

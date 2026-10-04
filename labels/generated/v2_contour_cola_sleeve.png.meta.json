@@ -1,0 +1,26 @@
+{
+ "template": "pet_sleeve",
+ "bottle": "v2_contour",
+ "slot": "sleeve",
+ "size_px": [
+  1050,
+  436
+ ],
+ "px_per_cm": 60.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 121,
+ "fields": {
+  "brand": "COLA-KO",
+  "product": "Original",
+  "bg": "#b3141f",
+  "bg2": "#3a0508",
+  "accent": "#f3d27a",
+  "accent2": "#ffe9a8",
+  "volume": "355 ml",
+  "small": [
+   "Contains caffeine.",
+   "Please recycle."
+  ]
+ }
+}

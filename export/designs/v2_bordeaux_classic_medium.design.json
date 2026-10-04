@@ -1,0 +1,193 @@
+{
+ "name": "v2_bordeaux_classic",
+ "tier": "medium",
+ "bottle": "v2_bordeaux",
+ "asset": "v2_bordeaux",
+ "provider": "lathe_v2",
+ "glb": "v2_bordeaux_classic_medium.glb",
+ "liquid_sidecar": "v2_bordeaux_classic_medium.liquid.json",
+ "meta": {
+  "description": "Bordeaux bottle with the classic cream front label, back label, neck collar and a printed foil capsule (same art family as wine_classic).",
+  "tags": [
+   "wine",
+   "multi-label",
+   "foil",
+   "v2"
+  ],
+  "name": "v2_bordeaux_classic",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 8,
+  "label_draw_calls": 4,
+  "textures": 7,
+  "texture_sizes": [
+   [
+    256,
+    64
+   ],
+   [
+    128,
+    128
+   ],
+   [
+    512,
+    512
+   ],
+   [
+    424,
+    512
+   ],
+   [
+    511,
+    220
+   ],
+   [
+    419,
+    512
+   ],
+   [
+    512,
+    148
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 4763,
+  "tex_mem_kb_compressed_mips": 1191,
+  "glb_kb": 1353,
+  "base_glb": "export/v2/bottle_bordeaux_lod1.glb",
+  "base_tex_mem_kb_rgba8_mips": 1536,
+  "base_draw_calls": 4,
+  "label_tex_mem_kb_rgba8_mips": 3227,
+  "label_tex_mem_kb_compressed_mips": 807
+ },
+ "glass": {
+  "bottle": "bordeaux",
+  "tier": "medium",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.06,
+   0.17
+  ],
+  "label_panel": false,
+  "z_top": 0.3,
+  "r_bore": 0.0093,
+  "glass": "green",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "foil"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 744.5,
+  "z0": 0.00951,
+  "z1": 0.254,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.35,
+   0.02,
+   0.06,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.1,
+  "foam_height": 0.006,
+  "bubble_size": 1.0,
+  "fill_default": 0.7
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/v2_bordeaux_classic_medium_front.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.08608,
+   "height_m": 0.105,
+   "aspect": 0.8198,
+   "arc_deg": 130.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "back",
+   "texture": "textures/v2_bordeaux_classic_medium_back.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.06623,
+   "height_m": 0.08,
+   "aspect": 0.8279,
+   "arc_deg": 100.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "neck",
+   "texture": "textures/v2_bordeaux_classic_medium_neck.png",
+   "wear_mask": null,
+   "material_kind": "paper_gloss",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.05728,
+   "height_m": 0.01662,
+   "aspect": 3.4465,
+   "arc_deg": 200.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "capsule",
+   "texture": "textures/v2_bordeaux_classic_medium_capsule.png",
+   "wear_mask": null,
+   "material_kind": "foil_metal",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.09569,
+   "height_m": 0.04118,
+   "aspect": 2.3236,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck",
+  "capsule"
+ ]
+}

@@ -1,0 +1,84 @@
+// Bubble field: one candidate bubble per 3D cell (cell x cell_y x cell) in the layer frame (y = up); columns (xz)
+// rise at their own speed. q = sample point (m) on the layer's surface, v = toward the viewer, same frame.
+// Each cell's bubble is a real sphere tested against the eye ray, so it has true parallax / stereo.
+float col_yoff(vec2 cid, float seed, float spd, out float sf, out float colh) {
+	vec2 hc = hash22(cid + seed);
+	colh = hc.y;
+	sf = 0.22 + 0.78 * hc.x * hc.x * hc.x;            // power law: many small, few big
+	return rise * spd * (0.35 + 0.65 * sf);            // bigger rises faster
+}
+
+void bubble_cell(inout vec3 col, inout vec3 em, vec3 q, vec3 v, vec2 cid, float cy, float yoff, float sf,
+		float cell, float cell_y, float rmax, float dens, float seed, vec3 tk, float px, float fade) {
+	vec3 id = vec3(cid.x, cy, cid.y) + seed;
+	vec3 h = hash33(id);
+	if (h.x > dens) {
+		return;
+	}
+	float r = rmax * sf * (0.7 + 0.3 * h.y);
+	// jitter as far as the bubble still fits in its cell (big bubbles stay nearer the centre)
+	vec3 jr = max(vec3(0.0), 1.0 - 2.4 * r / vec3(cell, cell_y, cell));
+	vec3 j = 0.5 + (hash33(id + 17.17) - 0.5) * jr;
+	float yc = (cy + j.y) * cell_y + yoff;
+	vec2 wob = (0.06 * cell * sf) * vec2(sin(yc * 230.0 + h.z * 6.283), cos(yc * 170.0 + h.z * 11.0));   // zig-zag rise
+	vec3 c = vec3((cid.x + j.x) * cell + wob.x, yc, (cid.y + j.z) * cell + wob.y);
+	vec3 d = c - q;
+	vec3 perp = d - v * dot(d, v);
+	float re = max(r, 0.6 * px);
+	float x = length(perp) / re;
+	if (x >= 1.0) {
+		return;
+	}
+	float sub = clamp(r / max(px, 1e-6), 0.0, 1.0);           // sub-pixel bubbles fade instead of aliasing
+	float aa = clamp(px / re, 0.08, 0.6);
+	float a = (1.0 - smoothstep(1.0 - aa, 1.0, x)) * fade * mix(sub * sub, 1.0, 0.25);
+	// gas sphere in liquid: lensing centre (brighter, a little paler), total-internal-reflection band that mirrors the
+	// bright surface above (crescent on top) and the dark liquid below, thin dark outline, sharp glint.
+	vec3 m = -perp / re;
+	vec3 n = m + v * sqrt(max(1.0 - x * x, 0.0));
+	vec3 up = vec3(0.0, 1.0, 0.0);
+	vec3 R = reflect(-v, n);
+	float ring = smoothstep(0.6, 0.9, x);
+	float env = mix(0.1, 1.0, smoothstep(-0.3, 0.8, R.y));
+	float spec = pow(max(dot(n, normalize(v + up * 1.1 + vec3(-0.4, 0.0, 0.0))), 0.0), 60.0);
+	vec3 upp = up - v * dot(up, v);
+	upp *= inversesqrt(max(dot(upp, upp), 1e-4));
+	float caus = 1.0 - smoothstep(0.0, 0.42, length(m + upp * 0.45)); // light focused through the bubble (below centre)
+	float rim = smoothstep(0.86, 1.0, x);
+	float lum = dot(col, vec3(0.3, 0.59, 0.11));
+	vec3 lens = mix(col, vec3(lum), 0.3) * 1.25 + 0.012;
+	vec3 inside = mix(lens, col * 0.4, ring) * (1.0 - rim * 0.7);
+	col = mix(col, inside, a);
+	vec3 tw = mix(tk, vec3(1.0), 0.35);   // reflections are less tinted than transmitted light
+	em += a * (tw * ring * (1.0 - rim * 0.6) * (env * 0.42 + 0.05) + tw * spec * 1.8 + tk * caus * 0.3 * (1.0 - ring));
+}
+
+// One layer = the cell containing q plus its neighbour across the nearest cell face, so a bubble whose disk straddles
+// a cell border (where the sampled surface leaves the cell) is never clipped. 2 lookups, both early-out.
+void bubble_layer(inout vec3 col, inout vec3 em, vec3 q, vec3 v, float cell, float cell_y, float rmax,
+		float spd, float d_small, float d_big, float colfrac, float seed, vec3 tk, float px, float fade) {
+	vec2 g = q.xz / cell;
+	vec2 cid = floor(g);
+	vec2 fg = g - cid;
+	float sf, ch;
+	float yoff = col_yoff(cid, seed, spd, sf, ch);
+	float gy = (q.y - yoff) / cell_y;
+	float cy = floor(gy);
+	float fy = gy - cy;
+	if (ch <= colfrac) {
+		bubble_cell(col, em, q, v, cid, cy, yoff, sf, cell, cell_y, rmax, mix(d_small, d_big, sf), seed, tk, px, fade);
+	}
+	vec3 dist = vec3(min(fg.x, 1.0 - fg.x) * cell, min(fy, 1.0 - fy) * cell_y, min(fg.y, 1.0 - fg.y) * cell);
+	if (dist.y <= min(dist.x, dist.z)) {
+		if (ch <= colfrac) {
+			bubble_cell(col, em, q, v, cid, cy + (fy < 0.5 ? -1.0 : 1.0), yoff, sf, cell, cell_y, rmax, mix(d_small, d_big, sf), seed, tk, px, fade);
+		}
+	} else {
+		vec2 nid = cid + (dist.x < dist.z ? vec2(fg.x < 0.5 ? -1.0 : 1.0, 0.0) : vec2(0.0, fg.y < 0.5 ? -1.0 : 1.0));
+		float sf2, ch2;
+		float yoff2 = col_yoff(nid, seed, spd, sf2, ch2);
+		if (ch2 <= colfrac) {
+			bubble_cell(col, em, q, v, nid, floor((q.y - yoff2) / cell_y), yoff2, sf2, cell, cell_y, rmax, mix(d_small, d_big, sf2), seed, tk, px, fade);
+		}
+	}
+}

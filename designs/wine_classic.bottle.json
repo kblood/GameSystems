@@ -1,0 +1,71 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "bottle": "wine",
+  "glass": {
+    "tint": [
+      0.05,
+      0.22,
+      0.08,
+      1.0
+    ],
+    "roughness": 0.03,
+    "thickness_mm": 3
+  },
+  "cap": {
+    "type": "cork"
+  },
+  "liquid": {
+    "color": [
+      0.35,
+      0.02,
+      0.06,
+      1.0
+    ],
+    "fill": 0.7,
+    "carbonation": 0.0,
+    "foam": 0.1,
+    "opacity": 0.85,
+    "viscosity": 0.15,
+    "density": 0.99,
+    "bubble_size": 1.0,
+    "tint_strength": 1.0
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "wine_classic",
+        "wear": 0.25,
+        "seed": 11,
+        "fields": {
+          "brand": "Château Lunelle"
+        }
+      }
+    },
+    {
+      "slot": "back",
+      "image": "labels/wine_classic_back.png",
+      "wear_mask": "labels/wine_classic_back_wear.png"
+    },
+    {
+      "slot": "neck",
+      "image": "labels/wine_classic_neck.png",
+      "wear_mask": "labels/wine_classic_neck_wear.png"
+    },
+    {
+      "slot": "foil",
+      "image": "labels/wine_foil_gold.png",
+      "finish": "satin"
+    }
+  ],
+  "meta": {
+    "description": "Cream front label (generated from the template at build time), back label, neck collar and gold foil capsule band on a green bottle with a cork.",
+    "tags": [
+      "wine",
+      "multi-label",
+      "foil"
+    ],
+    "name": "wine_classic",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

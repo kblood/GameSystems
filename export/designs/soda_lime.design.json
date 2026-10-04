@@ -1,0 +1,105 @@
+{
+ "name": "soda_lime",
+ "tier": "high",
+ "bottle": "soda",
+ "asset": "soda",
+ "provider": "lathe_v1",
+ "glb": "soda_lime.glb",
+ "liquid_sidecar": "soda_lime.liquid.json",
+ "meta": {
+  "description": "Second sleeve style on a greenish bottle.",
+  "tags": [
+   "soda",
+   "sleeve"
+  ],
+  "name": "soda_lime",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 1,
+  "texture_sizes": [
+   [
+    1226,
+    1100
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 7022,
+  "tex_mem_kb_compressed_mips": 1756,
+  "glb_kb": 999
+ },
+ "glass": {
+  "tint": [
+   0.75,
+   0.95,
+   0.8,
+   1.0
+  ],
+  "roughness": 0.03,
+  "thickness_mm": 1.2,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "screw",
+  "r": 0.015,
+  "z0": 0.25,
+  "z1": 0.267,
+  "top_r": 0.011
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 668.7,
+  "z0": 0.0016,
+  "z1": 0.258,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.55,
+   0.85,
+   0.2,
+   1.0
+  ],
+  "carbonation": 0.9,
+  "foam": 0.8,
+  "foam_height": 0.014,
+  "bubble_size": 0.7,
+  "opacity": 0.5,
+  "viscosity": 0.1,
+  "density": 1.03,
+  "fill_default": 0.9,
+  "tint_strength": 1.0,
+  "mass_full_kg": 0.6888
+ },
+ "labels": [
+  {
+   "slot": "sleeve",
+   "texture": "textures/soda_lime_sleeve.png",
+   "wear_mask": null,
+   "material_kind": "plastic_sleeve",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.20418,
+   "height_m": 0.18329,
+   "aspect": 1.114,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "sleeve",
+  "neck_seal",
+  "cap"
+ ]
+}

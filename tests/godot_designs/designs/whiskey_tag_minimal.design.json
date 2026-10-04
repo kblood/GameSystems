@@ -1,0 +1,96 @@
+{
+ "name": "whiskey_tag",
+ "tier": "minimal",
+ "bottle": "whiskey",
+ "glb": "whiskey_tag_minimal.glb",
+ "liquid_sidecar": "whiskey_tag_minimal.liquid.json",
+ "meta": {
+  "description": "Front, back and a handwritten kraft neck tag.",
+  "tags": [
+   "whiskey",
+   "tag",
+   "handwritten"
+  ],
+  "name": "whiskey_tag",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 448
+ },
+ "glass": {
+  "tint": [
+   0.85,
+   0.92,
+   0.88,
+   1.0
+  ],
+  "roughness": 0.03,
+  "thickness_mm": 4.0,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "cork",
+  "r": 0.0138,
+  "z0": 0.208,
+  "z1": 0.236,
+  "top_r": 0.012385999999999998
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 533.9,
+  "z0": 0.0044,
+  "z1": 0.22,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.62,
+   0.3,
+   0.04,
+   1.0
+  ],
+  "carbonation": 0.0,
+  "foam": 0.08,
+  "foam_height": 0.005,
+  "bubble_size": 1.0,
+  "opacity": 0.9,
+  "viscosity": 0.25,
+  "density": 0.94,
+  "fill_default": 0.7,
+  "tint_strength": 1.3,
+  "mass_full_kg": 0.5019
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "front",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.022235010942050187,
+    0.032364815344357686,
+    0.04480999129912282,
+    1.0
+   ],
+   "width_m": 0.22934,
+   "height_m": 0.09,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck",
+  "shoulder",
+  "cap"
+ ]
+}

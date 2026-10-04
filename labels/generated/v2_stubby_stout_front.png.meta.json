@@ -1,0 +1,20 @@
+{
+ "template": "beer_dark",
+ "bottle": "v2_stubby",
+ "slot": "front",
+ "size_px": [
+  708,
+  504
+ ],
+ "px_per_cm": 80.0,
+ "alpha": false,
+ "wear": 0.15,
+ "seed": 31,
+ "fields": {
+  "brand": "OLD MOOR",
+  "product": "Stout",
+  "tagline": "Roasted malt \u00b7 cocoa \u00b7 coffee",
+  "abv": "6.0% ABV",
+  "volume": "500 ml"
+ }
+}

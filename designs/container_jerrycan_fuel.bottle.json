@@ -1,0 +1,55 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "container_jerrycan",
+  "liquid": {
+    "color": [
+      0.85,
+      0.72,
+      0.18,
+      1
+    ],
+    "fill": 0.7
+  },
+  "labels": [
+    {
+      "slot": "end",
+      "generate": {
+        "template": "hazard",
+        "seed": 121,
+        "wear": 0.3
+      }
+    },
+    {
+      "slot": "panel",
+      "generate": {
+        "template": "labelwriter_yellow",
+        "seed": 122,
+        "fields": {
+          "lines": [
+            "DIESEL",
+            "20 L"
+          ]
+        },
+        "wear": 0.2
+      },
+      "material_kind": "tape"
+    },
+    {
+      "slot": "end_back",
+      "generate": {
+        "template": "hazard",
+        "seed": 123,
+        "wear": 0.3
+      }
+    }
+  ],
+  "meta": {
+    "description": "Jerry can with hazard stickers on both end faces and a tape strip on the front face between the embossed X.",
+    "tags": [
+      "fuel",
+      "container"
+    ],
+    "name": "container_jerrycan_fuel",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

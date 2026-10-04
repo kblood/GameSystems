@@ -1,0 +1,137 @@
+{
+ "name": "v2_pet500_orange",
+ "tier": "medium",
+ "bottle": "v2_pet500",
+ "asset": "v2_pet500",
+ "provider": "lathe_v2",
+ "glb": "v2_pet500_orange_medium.glb",
+ "liquid_sidecar": "v2_pet500_orange_medium.liquid.json",
+ "meta": {
+  "description": "PET 500 ml with a printed shrink sleeve and a neck tamper band.",
+  "tags": [
+   "soda",
+   "sleeve",
+   "v2"
+  ],
+  "name": "v2_pet500_orange",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 5,
+  "label_draw_calls": 2,
+  "textures": 4,
+  "texture_sizes": [
+   [
+    256,
+    64
+   ],
+   [
+    512,
+    512
+   ],
+   [
+    512,
+    65
+   ],
+   [
+    512,
+    233
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 2245,
+  "tex_mem_kb_compressed_mips": 561,
+  "glb_kb": 736,
+  "base_glb": "export/v2/bottle_pet500_lod1.glb",
+  "base_tex_mem_kb_rgba8_mips": 1450,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 795,
+  "label_tex_mem_kb_compressed_mips": 198
+ },
+ "glass": {
+  "bottle": "pet500",
+  "tier": "medium",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.0487,
+   0.0917
+  ],
+  "label_panel": true,
+  "z_top": 0.2037,
+  "r_bore": 0.01085,
+  "glass": "pet_clear",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "screw"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 509.2,
+  "z0": 0.00114,
+  "z1": 0.20067,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.95,
+   0.45,
+   0.05,
+   1
+  ],
+  "carbonation": 0.9,
+  "foam": 0.4,
+  "foam_height": 0.014,
+  "bubble_size": 0.8,
+  "fill_default": 0.9
+ },
+ "labels": [
+  {
+   "slot": "sleeve",
+   "texture": "textures/v2_pet500_orange_medium_sleeve.png",
+   "wear_mask": null,
+   "material_kind": "plastic_sleeve",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.20702,
+   "height_m": 0.09421,
+   "aspect": 2.1974,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "neck_seal",
+   "texture": "textures/v2_pet500_orange_medium_neck_seal.png",
+   "wear_mask": null,
+   "material_kind": "plastic_sleeve",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.0987,
+   "height_m": 0.01268,
+   "aspect": 7.7834,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "sleeve",
+  "front",
+  "neck_seal"
+ ]
+}

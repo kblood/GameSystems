@@ -1,0 +1,19 @@
+{
+ "template": "perfume",
+ "bottle": "v2_perfume",
+ "slot": "front",
+ "size_px": [
+  536,
+  336
+ ],
+ "px_per_cm": 120.0,
+ "alpha": false,
+ "wear": 0.05,
+ "seed": 91,
+ "fields": {
+  "brand": "ATELIER V\u00c9RANE",
+  "no": "N\u00b07",
+  "product": "Eau de Parfum",
+  "volume": "50 ml"
+ }
+}

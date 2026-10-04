@@ -1,0 +1,23 @@
+{
+ "template": "hazard",
+ "bottle": "container_jerrycan",
+ "slot": "end_back",
+ "size_px": [
+  450,
+  700
+ ],
+ "px_per_cm": 50.0,
+ "alpha": false,
+ "wear": 0.3,
+ "seed": 123,
+ "fields": {
+  "band": "#c0201a",
+  "product": "DIESEL",
+  "warn": "FLAMMABLE \u00b7 KEEP AWAY FROM HEAT",
+  "small": [
+   "Contents: diesel fuel, 20 L max.",
+   "Do not fill above the shoulder.",
+   "Store upright, cap closed."
+  ]
+ }
+}

@@ -1,0 +1,901 @@
+{
+ "glass_clink_soft_01": {
+  "dur": 0.555,
+  "peak_db": -9.0,
+  "rms_db": -32.11,
+  "centroid_hz": 2473,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_soft_02": {
+  "dur": 0.453,
+  "peak_db": -9.0,
+  "rms_db": -30.0,
+  "centroid_hz": 2641,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_soft_03": {
+  "dur": 0.547,
+  "peak_db": -9.0,
+  "rms_db": -32.61,
+  "centroid_hz": 1549,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_soft_04": {
+  "dur": 0.489,
+  "peak_db": -9.0,
+  "rms_db": -28.53,
+  "centroid_hz": 1708,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_soft_05": {
+  "dur": 0.465,
+  "peak_db": -9.0,
+  "rms_db": -31.27,
+  "centroid_hz": 1981,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_soft_06": {
+  "dur": 0.59,
+  "peak_db": -9.0,
+  "rms_db": -29.46,
+  "centroid_hz": 2417,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_hard_01": {
+  "dur": 0.943,
+  "peak_db": -4.0,
+  "rms_db": -25.58,
+  "centroid_hz": 2672,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_hard_02": {
+  "dur": 0.926,
+  "peak_db": -4.0,
+  "rms_db": -28.35,
+  "centroid_hz": 2833,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_hard_03": {
+  "dur": 0.878,
+  "peak_db": -4.0,
+  "rms_db": -24.26,
+  "centroid_hz": 2627,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_hard_04": {
+  "dur": 0.981,
+  "peak_db": -4.0,
+  "rms_db": -26.15,
+  "centroid_hz": 3131,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_hard_05": {
+  "dur": 1.049,
+  "peak_db": -4.0,
+  "rms_db": -25.34,
+  "centroid_hz": 2829,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_clink_hard_06": {
+  "dur": 0.821,
+  "peak_db": -4.0,
+  "rms_db": -25.46,
+  "centroid_hz": 3069,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_impact_thud_01": {
+  "dur": 0.572,
+  "peak_db": -3.0,
+  "rms_db": -23.31,
+  "centroid_hz": 234,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_impact_thud_02": {
+  "dur": 0.575,
+  "peak_db": -3.0,
+  "rms_db": -20.65,
+  "centroid_hz": 215,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_impact_thud_03": {
+  "dur": 0.57,
+  "peak_db": -3.0,
+  "rms_db": -23.15,
+  "centroid_hz": 137,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_impact_thud_04": {
+  "dur": 0.574,
+  "peak_db": -3.0,
+  "rms_db": -22.4,
+  "centroid_hz": 149,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_impact_thud_05": {
+  "dur": 0.523,
+  "peak_db": -3.0,
+  "rms_db": -22.23,
+  "centroid_hz": 141,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_impact_thud_06": {
+  "dur": 0.596,
+  "peak_db": -3.0,
+  "rms_db": -24.39,
+  "centroid_hz": 184,
+  "nan": false,
+  "clipped": false
+ },
+ "plastic_bottle_bounce_01": {
+  "dur": 0.898,
+  "peak_db": -4.0,
+  "rms_db": -30.24,
+  "centroid_hz": 576,
+  "nan": false,
+  "clipped": false
+ },
+ "plastic_bottle_bounce_02": {
+  "dur": 0.91,
+  "peak_db": -4.0,
+  "rms_db": -31.92,
+  "centroid_hz": 632,
+  "nan": false,
+  "clipped": false
+ },
+ "plastic_bottle_bounce_03": {
+  "dur": 0.854,
+  "peak_db": -4.0,
+  "rms_db": -30.49,
+  "centroid_hz": 604,
+  "nan": false,
+  "clipped": false
+ },
+ "plastic_bottle_bounce_04": {
+  "dur": 0.836,
+  "peak_db": -4.0,
+  "rms_db": -28.12,
+  "centroid_hz": 640,
+  "nan": false,
+  "clipped": false
+ },
+ "plastic_bottle_bounce_05": {
+  "dur": 0.826,
+  "peak_db": -4.0,
+  "rms_db": -30.41,
+  "centroid_hz": 497,
+  "nan": false,
+  "clipped": false
+ },
+ "plastic_bottle_bounce_06": {
+  "dur": 0.705,
+  "peak_db": -4.0,
+  "rms_db": -28.4,
+  "centroid_hz": 453,
+  "nan": false,
+  "clipped": false
+ },
+ "plastic_bottle_dent_01": {
+  "dur": 0.366,
+  "peak_db": -5.0,
+  "rms_db": -21.92,
+  "centroid_hz": 1373,
+  "nan": false,
+  "clipped": false
+ },
+ "plastic_bottle_dent_02": {
+  "dur": 0.307,
+  "peak_db": -5.0,
+  "rms_db": -20.69,
+  "centroid_hz": 1439,
+  "nan": false,
+  "clipped": false
+ },
+ "plastic_bottle_dent_03": {
+  "dur": 0.311,
+  "peak_db": -5.0,
+  "rms_db": -20.18,
+  "centroid_hz": 1227,
+  "nan": false,
+  "clipped": false
+ },
+ "plastic_bottle_dent_04": {
+  "dur": 0.317,
+  "peak_db": -5.0,
+  "rms_db": -20.93,
+  "centroid_hz": 1116,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_small_01": {
+  "dur": 1.443,
+  "peak_db": -2.0,
+  "rms_db": -26.61,
+  "centroid_hz": 4687,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_small_02": {
+  "dur": 1.577,
+  "peak_db": -2.0,
+  "rms_db": -26.95,
+  "centroid_hz": 4851,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_small_03": {
+  "dur": 1.576,
+  "peak_db": -2.0,
+  "rms_db": -28.56,
+  "centroid_hz": 5081,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_small_04": {
+  "dur": 1.517,
+  "peak_db": -2.0,
+  "rms_db": -30.72,
+  "centroid_hz": 5100,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_small_05": {
+  "dur": 1.522,
+  "peak_db": -2.0,
+  "rms_db": -26.94,
+  "centroid_hz": 4767,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_small_06": {
+  "dur": 1.408,
+  "peak_db": -2.0,
+  "rms_db": -26.08,
+  "centroid_hz": 4540,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_large_01": {
+  "dur": 2.437,
+  "peak_db": -1.5,
+  "rms_db": -28.05,
+  "centroid_hz": 4194,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_large_02": {
+  "dur": 2.431,
+  "peak_db": -1.5,
+  "rms_db": -26.97,
+  "centroid_hz": 4062,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_large_03": {
+  "dur": 2.426,
+  "peak_db": -1.5,
+  "rms_db": -27.37,
+  "centroid_hz": 2519,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_large_04": {
+  "dur": 2.371,
+  "peak_db": -1.5,
+  "rms_db": -27.12,
+  "centroid_hz": 3725,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_large_05": {
+  "dur": 2.587,
+  "peak_db": -1.5,
+  "rms_db": -27.18,
+  "centroid_hz": 4298,
+  "nan": false,
+  "clipped": false
+ },
+ "glass_shatter_large_06": {
+  "dur": 2.459,
+  "peak_db": -1.5,
+  "rms_db": -28.84,
+  "centroid_hz": 3695,
+  "nan": false,
+  "clipped": false
+ },
+ "shard_settle_01": {
+  "dur": 0.3,
+  "peak_db": -8.0,
+  "rms_db": -27.12,
+  "centroid_hz": 6225,
+  "nan": false,
+  "clipped": false
+ },
+ "shard_settle_02": {
+  "dur": 0.3,
+  "peak_db": -8.0,
+  "rms_db": -32.66,
+  "centroid_hz": 5775,
+  "nan": false,
+  "clipped": false
+ },
+ "shard_settle_03": {
+  "dur": 0.3,
+  "peak_db": -8.0,
+  "rms_db": -29.66,
+  "centroid_hz": 8445,
+  "nan": false,
+  "clipped": false
+ },
+ "shard_settle_04": {
+  "dur": 0.3,
+  "peak_db": -8.0,
+  "rms_db": -29.87,
+  "centroid_hz": 7162,
+  "nan": false,
+  "clipped": false
+ },
+ "shard_settle_05": {
+  "dur": 0.3,
+  "peak_db": -8.0,
+  "rms_db": -28.9,
+  "centroid_hz": 6823,
+  "nan": false,
+  "clipped": false
+ },
+ "shard_settle_06": {
+  "dur": 0.3,
+  "peak_db": -8.0,
+  "rms_db": -28.3,
+  "centroid_hz": 6315,
+  "nan": false,
+  "clipped": false
+ },
+ "shard_settle_07": {
+  "dur": 0.3,
+  "peak_db": -8.0,
+  "rms_db": -30.67,
+  "centroid_hz": 4343,
+  "nan": false,
+  "clipped": false
+ },
+ "shard_settle_08": {
+  "dur": 0.3,
+  "peak_db": -8.0,
+  "rms_db": -28.51,
+  "centroid_hz": 7879,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_splash_small_01": {
+  "dur": 0.622,
+  "peak_db": -4.0,
+  "rms_db": -25.81,
+  "centroid_hz": 2139,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_splash_small_02": {
+  "dur": 0.757,
+  "peak_db": -4.0,
+  "rms_db": -25.69,
+  "centroid_hz": 2914,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_splash_small_03": {
+  "dur": 0.724,
+  "peak_db": -4.0,
+  "rms_db": -24.82,
+  "centroid_hz": 2431,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_splash_small_04": {
+  "dur": 0.702,
+  "peak_db": -4.0,
+  "rms_db": -23.4,
+  "centroid_hz": 2820,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_splash_small_05": {
+  "dur": 0.794,
+  "peak_db": -4.0,
+  "rms_db": -24.56,
+  "centroid_hz": 2129,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_splash_large_01": {
+  "dur": 1.59,
+  "peak_db": -3.0,
+  "rms_db": -22.77,
+  "centroid_hz": 520,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_splash_large_02": {
+  "dur": 1.435,
+  "peak_db": -3.0,
+  "rms_db": -21.34,
+  "centroid_hz": 824,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_splash_large_03": {
+  "dur": 1.414,
+  "peak_db": -3.0,
+  "rms_db": -21.01,
+  "centroid_hz": 750,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_splash_large_04": {
+  "dur": 1.662,
+  "peak_db": -3.0,
+  "rms_db": -23.19,
+  "centroid_hz": 543,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_splash_large_05": {
+  "dur": 1.573,
+  "peak_db": -3.0,
+  "rms_db": -21.51,
+  "centroid_hz": 686,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_glug_01": {
+  "dur": 2.2,
+  "peak_db": -5.0,
+  "rms_db": -17.02,
+  "centroid_hz": 485,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.09
+ },
+ "liquid_glug_02": {
+  "dur": 2.2,
+  "peak_db": -5.0,
+  "rms_db": -16.59,
+  "centroid_hz": 534,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.04
+ },
+ "liquid_glug_03": {
+  "dur": 2.2,
+  "peak_db": -5.0,
+  "rms_db": -17.05,
+  "centroid_hz": 622,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.05
+ },
+ "liquid_glug_04": {
+  "dur": 2.2,
+  "peak_db": -5.0,
+  "rms_db": -16.4,
+  "centroid_hz": 714,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.14
+ },
+ "liquid_glug_05": {
+  "dur": 2.2,
+  "peak_db": -5.0,
+  "rms_db": -16.42,
+  "centroid_hz": 776,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.04
+ },
+ "liquid_glug_06": {
+  "dur": 2.2,
+  "peak_db": -5.0,
+  "rms_db": -16.62,
+  "centroid_hz": 850,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.02
+ },
+ "liquid_stream_loop_01": {
+  "dur": 4.0,
+  "peak_db": -8.0,
+  "rms_db": -21.71,
+  "centroid_hz": 2018,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.09
+ },
+ "liquid_stream_loop_02": {
+  "dur": 4.0,
+  "peak_db": -8.0,
+  "rms_db": -22.96,
+  "centroid_hz": 2146,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.23
+ },
+ "liquid_stream_loop_03": {
+  "dur": 4.0,
+  "peak_db": -8.0,
+  "rms_db": -22.09,
+  "centroid_hz": 2235,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.08
+ },
+ "liquid_slosh_01": {
+  "dur": 0.998,
+  "peak_db": -6.0,
+  "rms_db": -23.46,
+  "centroid_hz": 1142,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_slosh_02": {
+  "dur": 0.782,
+  "peak_db": -6.0,
+  "rms_db": -20.08,
+  "centroid_hz": 709,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_slosh_03": {
+  "dur": 0.955,
+  "peak_db": -6.0,
+  "rms_db": -23.5,
+  "centroid_hz": 742,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_slosh_04": {
+  "dur": 0.954,
+  "peak_db": -6.0,
+  "rms_db": -24.99,
+  "centroid_hz": 1195,
+  "nan": false,
+  "clipped": false
+ },
+ "liquid_slosh_05": {
+  "dur": 0.721,
+  "peak_db": -6.0,
+  "rms_db": -22.32,
+  "centroid_hz": 899,
+  "nan": false,
+  "clipped": false
+ },
+ "fizz_loop_01": {
+  "dur": 3.0,
+  "peak_db": -9.0,
+  "rms_db": -23.27,
+  "centroid_hz": 7766,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.25
+ },
+ "fizz_loop_02": {
+  "dur": 3.0,
+  "peak_db": -9.0,
+  "rms_db": -24.18,
+  "centroid_hz": 7670,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.97
+ },
+ "bubble_pop_01": {
+  "dur": 0.18,
+  "peak_db": -8.0,
+  "rms_db": -27.78,
+  "centroid_hz": 2371,
+  "nan": false,
+  "clipped": false
+ },
+ "bubble_pop_02": {
+  "dur": 0.18,
+  "peak_db": -8.0,
+  "rms_db": -28.25,
+  "centroid_hz": 2837,
+  "nan": false,
+  "clipped": false
+ },
+ "bubble_pop_03": {
+  "dur": 0.18,
+  "peak_db": -8.0,
+  "rms_db": -26.81,
+  "centroid_hz": 1789,
+  "nan": false,
+  "clipped": false
+ },
+ "bubble_pop_04": {
+  "dur": 0.18,
+  "peak_db": -8.0,
+  "rms_db": -24.6,
+  "centroid_hz": 923,
+  "nan": false,
+  "clipped": false
+ },
+ "bubble_pop_05": {
+  "dur": 0.18,
+  "peak_db": -8.0,
+  "rms_db": -24.13,
+  "centroid_hz": 811,
+  "nan": false,
+  "clipped": false
+ },
+ "bubble_pop_06": {
+  "dur": 0.18,
+  "peak_db": -8.0,
+  "rms_db": -25.64,
+  "centroid_hz": 1396,
+  "nan": false,
+  "clipped": false
+ },
+ "bubble_pop_07": {
+  "dur": 0.18,
+  "peak_db": -8.0,
+  "rms_db": -25.18,
+  "centroid_hz": 1152,
+  "nan": false,
+  "clipped": false
+ },
+ "bubble_pop_08": {
+  "dur": 0.18,
+  "peak_db": -8.0,
+  "rms_db": -25.81,
+  "centroid_hz": 1408,
+  "nan": false,
+  "clipped": false
+ },
+ "cork_pop_01": {
+  "dur": 0.596,
+  "peak_db": -3.0,
+  "rms_db": -23.83,
+  "centroid_hz": 621,
+  "nan": false,
+  "clipped": false
+ },
+ "cork_pop_02": {
+  "dur": 0.597,
+  "peak_db": -3.0,
+  "rms_db": -22.74,
+  "centroid_hz": 588,
+  "nan": false,
+  "clipped": false
+ },
+ "cork_pop_03": {
+  "dur": 0.52,
+  "peak_db": -3.0,
+  "rms_db": -22.62,
+  "centroid_hz": 580,
+  "nan": false,
+  "clipped": false
+ },
+ "cork_pop_04": {
+  "dur": 0.585,
+  "peak_db": -3.0,
+  "rms_db": -22.64,
+  "centroid_hz": 681,
+  "nan": false,
+  "clipped": false
+ },
+ "cork_pop_05": {
+  "dur": 0.527,
+  "peak_db": -3.0,
+  "rms_db": -21.68,
+  "centroid_hz": 570,
+  "nan": false,
+  "clipped": false
+ },
+ "crown_cap_pop_01": {
+  "dur": 0.587,
+  "peak_db": -3.5,
+  "rms_db": -25.7,
+  "centroid_hz": 6762,
+  "nan": false,
+  "clipped": false
+ },
+ "crown_cap_pop_02": {
+  "dur": 0.697,
+  "peak_db": -3.5,
+  "rms_db": -26.26,
+  "centroid_hz": 6741,
+  "nan": false,
+  "clipped": false
+ },
+ "crown_cap_pop_03": {
+  "dur": 0.674,
+  "peak_db": -3.5,
+  "rms_db": -26.5,
+  "centroid_hz": 6682,
+  "nan": false,
+  "clipped": false
+ },
+ "crown_cap_pop_04": {
+  "dur": 0.594,
+  "peak_db": -3.5,
+  "rms_db": -26.45,
+  "centroid_hz": 6697,
+  "nan": false,
+  "clipped": false
+ },
+ "crown_cap_pop_05": {
+  "dur": 0.599,
+  "peak_db": -3.5,
+  "rms_db": -26.13,
+  "centroid_hz": 6790,
+  "nan": false,
+  "clipped": false
+ },
+ "screw_cap_twist_01": {
+  "dur": 0.832,
+  "peak_db": -6.0,
+  "rms_db": -25.39,
+  "centroid_hz": 2966,
+  "nan": false,
+  "clipped": false
+ },
+ "screw_cap_twist_02": {
+  "dur": 0.917,
+  "peak_db": -6.0,
+  "rms_db": -27.45,
+  "centroid_hz": 2862,
+  "nan": false,
+  "clipped": false
+ },
+ "screw_cap_twist_03": {
+  "dur": 0.942,
+  "peak_db": -6.0,
+  "rms_db": -26.3,
+  "centroid_hz": 2864,
+  "nan": false,
+  "clipped": false
+ },
+ "screw_cap_twist_04": {
+  "dur": 0.809,
+  "peak_db": -6.0,
+  "rms_db": -26.31,
+  "centroid_hz": 2688,
+  "nan": false,
+  "clipped": false
+ },
+ "cap_clink_01": {
+  "dur": 0.526,
+  "peak_db": -7.0,
+  "rms_db": -28.64,
+  "centroid_hz": 4228,
+  "nan": false,
+  "clipped": false
+ },
+ "cap_clink_02": {
+  "dur": 0.613,
+  "peak_db": -7.0,
+  "rms_db": -28.87,
+  "centroid_hz": 4922,
+  "nan": false,
+  "clipped": false
+ },
+ "cap_clink_03": {
+  "dur": 0.547,
+  "peak_db": -7.0,
+  "rms_db": -27.91,
+  "centroid_hz": 5411,
+  "nan": false,
+  "clipped": false
+ },
+ "cap_clink_04": {
+  "dur": 0.634,
+  "peak_db": -7.0,
+  "rms_db": -30.04,
+  "centroid_hz": 4268,
+  "nan": false,
+  "clipped": false
+ },
+ "cap_clink_05": {
+  "dur": 0.605,
+  "peak_db": -7.0,
+  "rms_db": -28.75,
+  "centroid_hz": 5864,
+  "nan": false,
+  "clipped": false
+ },
+ "bullet_hit_glass_01": {
+  "dur": 1.128,
+  "peak_db": -1.5,
+  "rms_db": -30.31,
+  "centroid_hz": 4918,
+  "nan": false,
+  "clipped": false
+ },
+ "bullet_hit_glass_02": {
+  "dur": 1.121,
+  "peak_db": -1.5,
+  "rms_db": -29.25,
+  "centroid_hz": 4842,
+  "nan": false,
+  "clipped": false
+ },
+ "bullet_hit_glass_03": {
+  "dur": 1.029,
+  "peak_db": -1.5,
+  "rms_db": -30.25,
+  "centroid_hz": 4980,
+  "nan": false,
+  "clipped": false
+ },
+ "bullet_hit_glass_04": {
+  "dur": 1.237,
+  "peak_db": -1.5,
+  "rms_db": -29.74,
+  "centroid_hz": 4950,
+  "nan": false,
+  "clipped": false
+ },
+ "bullet_hit_glass_05": {
+  "dur": 1.217,
+  "peak_db": -1.5,
+  "rms_db": -29.78,
+  "centroid_hz": 4836,
+  "nan": false,
+  "clipped": false
+ },
+ "bullet_hit_plastic_01": {
+  "dur": 0.581,
+  "peak_db": -3.0,
+  "rms_db": -25.61,
+  "centroid_hz": 5162,
+  "nan": false,
+  "clipped": false
+ },
+ "bullet_hit_plastic_02": {
+  "dur": 0.624,
+  "peak_db": -3.0,
+  "rms_db": -25.3,
+  "centroid_hz": 5257,
+  "nan": false,
+  "clipped": false
+ },
+ "bullet_hit_plastic_03": {
+  "dur": 0.599,
+  "peak_db": -3.0,
+  "rms_db": -25.27,
+  "centroid_hz": 5149,
+  "nan": false,
+  "clipped": false
+ },
+ "bullet_hit_plastic_04": {
+  "dur": 0.633,
+  "peak_db": -3.0,
+  "rms_db": -25.26,
+  "centroid_hz": 4925,
+  "nan": false,
+  "clipped": false
+ },
+ "bullet_hit_plastic_05": {
+  "dur": 0.547,
+  "peak_db": -3.0,
+  "rms_db": -24.85,
+  "centroid_hz": 5010,
+  "nan": false,
+  "clipped": false
+ }
+}

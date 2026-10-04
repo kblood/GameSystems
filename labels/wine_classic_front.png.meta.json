@@ -1,0 +1,22 @@
+{
+ "template": "wine_classic",
+ "bottle": "wine",
+ "slot": "front",
+ "size_px": [
+  680,
+  840
+ ],
+ "px_per_cm": 79.9,
+ "alpha": false,
+ "wear": 0.2,
+ "seed": 1,
+ "fields": {
+  "tagline": "ESTATE BOTTLED",
+  "brand": "Ch\u00e2teau Lunelle",
+  "product": "R\u00e9serve du Vallon",
+  "year": "2019",
+  "origin": "Product of Vallon Valley",
+  "abv": "13.5% vol",
+  "volume": "750 ml"
+ }
+}

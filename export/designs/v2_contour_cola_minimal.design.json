@@ -1,0 +1,93 @@
+{
+ "name": "v2_contour_cola",
+ "tier": "minimal",
+ "bottle": "v2_contour",
+ "asset": "v2_contour",
+ "provider": "lathe_v2",
+ "glb": "v2_contour_cola_minimal.glb",
+ "liquid_sidecar": "v2_contour_cola_minimal.liquid.json",
+ "meta": {
+  "description": "Contour bottle with a red/black shrink sleeve (small sleeve panel).",
+  "tags": [
+   "soda",
+   "sleeve",
+   "v2"
+  ],
+  "name": "v2_contour_cola",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 441,
+  "base_glb": "export/v2/bottle_contour_lod2.glb",
+  "base_tex_mem_kb_rgba8_mips": 0,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 0,
+  "label_tex_mem_kb_compressed_mips": 0
+ },
+ "glass": {
+  "bottle": "contour",
+  "tier": "low",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.0711,
+   0.1031
+  ],
+  "label_panel": true,
+  "z_top": 0.232,
+  "r_bore": 0.0084,
+  "glass": "aqua",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "crown"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 354.6,
+  "z0": 0.00396,
+  "z1": 0.22803,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.1,
+   0.03,
+   0.02,
+   1
+  ],
+  "carbonation": 0.9,
+  "foam": 0.5,
+  "foam_height": 0.014,
+  "bubble_size": 0.8,
+  "fill_default": 0.9
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "sleeve",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.5222243629764358,
+    0.17162308645552296,
+    0.16253238281083157,
+    1.0
+   ],
+   "width_m": 0.17492,
+   "height_m": 0.07256,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "sleeve",
+  "front"
+ ]
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_swingtop",
+  "liquid": {
+    "color": [
+      0.95,
+      0.88,
+      0.45,
+      1
+    ],
+    "fill": 0.8,
+    "carbonation": 0.6
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "clear_sticker",
+        "seed": 41,
+        "fields": {
+          "brand": "BRIGHTWELL",
+          "product": "Cloudy Lemonade",
+          "ink": "#2a3a1a",
+          "accent": "#e8b53a",
+          "abv": "0.0%",
+          "volume": "500 ml"
+        }
+      },
+      "material_kind": "clear_film"
+    }
+  ],
+  "meta": {
+    "description": "Swing-top with a clear no-label-look sticker (clear_film) on the front.",
+    "tags": [
+      "soda",
+      "clear-film",
+      "v2"
+    ],
+    "name": "v2_swingtop_lemonade",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

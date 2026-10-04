@@ -1,0 +1,62 @@
+{
+	"bullets ballistic 400 m/s grazing": {
+		"broke": 50,
+		"missed": 0,
+		"trials": 50
+	},
+	"bullets hitscan centre": {
+		"broke": 100,
+		"missed": 0,
+		"trials": 100
+	},
+	"bullets hitscan grazing (92% of radius)": {
+		"broke": 100,
+		"missed": 0,
+		"trials": 100
+	},
+	"multi_bottle_ray": {
+		"energies": [
+			500.0,
+			275.0,
+			151.3
+		],
+		"hit_all_three": 30,
+		"trials": 30
+	},
+	"predictor_bouncing": {
+		"bounces": 1,
+		"recomputes": 3,
+		"seconds": 3.0,
+		"steps": 180
+	},
+	"predictor_free flight": {
+		"bounces": 0,
+		"recomputes": 2,
+		"seconds": 3.0,
+		"steps": 180
+	},
+	"thrown_object_predict_off": {
+		"broke": 40,
+		"expected": 62,
+		"unassessed": 12
+	},
+	"thrown_object_predict_on": {
+		"broke": 63,
+		"expected": 63,
+		"unassessed": 0
+	},
+	"thrown_wall_predict_off": {
+		"broke": 106,
+		"expected": 108,
+		"mean_vn_error": 0.106820368687655,
+		"tunnelled": 0,
+		"unassessed": 1
+	},
+	"thrown_wall_predict_on": {
+		"broke": 113,
+		"expected": 114,
+		"mean_vn_error": 0.104195865322304,
+		"tunnelled": 0,
+		"unassessed": 0
+	}
+}

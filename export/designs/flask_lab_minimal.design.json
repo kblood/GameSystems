@@ -1,0 +1,96 @@
+{
+ "name": "flask_lab",
+ "tier": "minimal",
+ "bottle": "flask",
+ "glb": "flask_lab_minimal.glb",
+ "liquid_sidecar": "flask_lab_minimal.liquid.json",
+ "meta": {
+  "description": "Erlenmeyer flask with a label-printer strip, a hand-written tag and graduation marks.",
+  "tags": [
+   "flask",
+   "labelwriter",
+   "handwritten",
+   "graduation"
+  ],
+  "name": "flask_lab",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 470
+ },
+ "glass": {
+  "tint": [
+   0.85,
+   0.95,
+   0.98,
+   1.0
+  ],
+  "roughness": 0.03,
+  "thickness_mm": 2.0,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "cork",
+  "r": 0.0148,
+  "z0": 0.185,
+  "z1": 0.215,
+  "top_r": 0.013356
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 1100.2,
+  "z0": 0.0024,
+  "z1": 0.196,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.1,
+   0.55,
+   0.2,
+   1.0
+  ],
+  "carbonation": 0.0,
+  "foam": 0.35,
+  "foam_height": 0.01,
+  "bubble_size": 1.0,
+  "opacity": 0.6,
+  "viscosity": 0.05,
+  "density": 1.0,
+  "fill_default": 0.5,
+  "tint_strength": 1.0,
+  "mass_full_kg": 1.1002
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "grad",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.5618274687395851,
+    0.5618274687395851,
+    0.5324161750160713,
+    1.0
+   ],
+   "width_m": 0.32742,
+   "height_m": 0.09331,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "tag",
+  "tag_hand",
+  "grad",
+  "cap"
+ ]
+}

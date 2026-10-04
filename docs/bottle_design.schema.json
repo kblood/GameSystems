@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bottle_design.schema.json",
+  "title": "Bottle design (*.bottle.json)",
+  "description": "Input of scripts/bottle_designer.py. Colours in [r,g,b,a] are LINEAR floats; hex strings (#rrggbb) are sRGB and converted. Paths are relative to the BlenderShared root or absolute. Give either `asset` (preferred) or the legacy `bottle`.",
+  "type": "object",
+  "anyOf": [{"required": ["asset"]}, {"required": ["bottle"]}],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "asset": {"type": "string",
+      "pattern": "^(wine|beer|soda|whiskey|jar|flask|v2_[a-z0-9_]+|container_(square|hipflask|jerrycan|tumbler|mug|tank))$",
+      "description": "asset id; the provider is chosen by design_slots.provider_of(asset): lathe_v1 (wine..flask, rebuilt in Blender), lathe_v2 (v2_<name> -> export/v2/bottle_<name>.glb, labels merged into the untouched GLB), container (container_<name> -> export/container_<name>.glb, merged). See docs/bottle_designs.md 'Providers'."},
+    "bottle": {"enum": ["wine", "beer", "soda", "whiskey", "jar", "flask"], "description": "legacy alias of asset for the lathe_v1 bottles"},
+    "lod_paths": {"type": "object", "additionalProperties": false,
+      "description": "override the base GLB per label tier (paths relative to the root). Defaults: lathe_v2 HIGH=bottle_x.glb, MEDIUM=_lod1, LOW/MINIMAL=_lod2; container HIGH=container_x.glb, others=_lod1.",
+      "properties": {"high": {"type": "string"}, "medium": {"type": "string"}, "low": {"type": "string"}, "minimal": {"type": "string"}}},
+    "glass": {"type": "object", "properties": {
+      "tint": {"$ref": "#/$defs/colour"},
+      "roughness": {"type": "number", "minimum": 0, "maximum": 1},
+      "thickness_mm": {"type": "number", "description": "shader hint only; the wall mesh is fixed"}},
+      "description": "written to extras; the runtime helper (designs/godot/bottle_design.gd) applies it as a glass override"},
+    "cap": {"type": "object", "properties": {
+      "type": {"enum": ["cork", "crown", "screw", "foil", "wax"]},
+      "colour": {"$ref": "#/$defs/colour"},
+      "label": {"$ref": "#/$defs/labelSource", "description": "image/generate for the cap_top disc slot"}}},
+    "liquid": {"type": "object",
+      "description": "Written to extras.liquid and the .liquid.json sidecar. viscosity, opacity, tint_strength, density and the bubble_size runtime setter are not honoured by the shaders yet (see TODO(owner) in docs/bottle_designs.md).",
+      "properties": {
+        "color": {"$ref": "#/$defs/colour"},
+        "fill": {"type": "number", "minimum": 0, "maximum": 1},
+        "carbonation": {"type": "number"}, "foam": {"type": "number"}, "foam_height": {"type": "number"},
+        "bubble_size": {"type": "number"}, "viscosity": {"type": "number"}, "opacity": {"type": "number"},
+        "tint_strength": {"type": "number"}, "density": {"type": "number"}}},
+    "labels": {"type": "array", "items": {"$ref": "#/$defs/label"}},
+    "spare_slots": {"type": "array", "items": {"type": "string"},
+      "description": "slots that get an invisible placeholder mesh so a runtime image can be dropped in"},
+    "meta": {"type": "object", "properties": {
+      "name": {"type": "string"}, "description": {"type": "string"},
+      "tags": {"type": "array", "items": {"type": "string"}}, "licence": {"type": "string"}}}
+  },
+  "$defs": {
+    "colour": {"oneOf": [
+      {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+      {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 4}]},
+    "labelSource": {"type": "object", "properties": {
+      "image": {"type": "string", "description": "PNG/JPG, sRGB, straight alpha"},
+      "generate": {"type": "object", "description": "label_gen.py template + parameters"}}},
+    "label": {"type": "object", "required": ["slot"],
+      "properties": {
+        "slot": {"type": "string", "description": "slot name of the asset (designs/slots.json; tables in docs/bottle_designs.md)"},
+        "image": {"type": "string"},
+        "generate": {"type": "object"},
+        "wear_mask": {"type": "string", "description": "greyscale PNG; G channel becomes roughness (HIGH tier only)"},
+        "material_kind": {"enum": ["paper_matte", "paper_gloss", "foil_metal", "clear_film", "plastic_sleeve", "tape", "handwritten_tag"]},
+        "tint": {"$ref": "#/$defs/colour"},
+        "rotation_deg": {"type": "number"},
+        "offset": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2,
+          "description": "[x, y] mm shift of the label centre inside the slot"},
+        "scale": {"oneOf": [{"type": "number"}, {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2}]},
+        "flip": {"type": "boolean"}},
+      "not": {"required": ["image", "generate"]}}
+  }
+}

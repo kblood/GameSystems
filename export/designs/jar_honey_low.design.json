@@ -1,0 +1,136 @@
+{
+ "name": "jar_honey",
+ "tier": "low",
+ "bottle": "jar",
+ "glb": "jar_honey_low.glb",
+ "liquid_sidecar": "jar_honey_low.liquid.json",
+ "meta": {
+  "description": "Full wrap label and a flat lid label.",
+  "tags": [
+   "jar",
+   "wrap",
+   "lid"
+  ],
+  "name": "jar_honey",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 1,
+  "texture_sizes": [
+   [
+    1024,
+    1024
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 5460,
+  "tex_mem_kb_compressed_mips": 1365,
+  "glb_kb": 583
+ },
+ "glass": {
+  "tint": [
+   0.85,
+   0.95,
+   0.92,
+   1.0
+  ],
+  "roughness": 0.03,
+  "thickness_mm": 3.0,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "screw",
+  "r": 0.0415,
+  "z0": 0.112,
+  "z1": 0.13,
+  "top_r": 0.037500000000000006
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 568.0,
+  "z0": 0.0034,
+  "z1": 0.118,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.9,
+   0.6,
+   0.1,
+   1.0
+  ],
+  "carbonation": 0.0,
+  "foam": 0.0,
+  "foam_height": 0.022,
+  "bubble_size": 1.0,
+  "opacity": 0.7,
+  "viscosity": 0.92,
+  "density": 1.42,
+  "fill_default": 0.9,
+  "tint_strength": 1.5,
+  "mass_full_kg": 0.8066
+ },
+ "labels": [
+  {
+   "slot": "wrap",
+   "texture": "textures/jar_honey_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.27646,
+   "height_m": 0.068,
+   "aspect": 4.0656,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.00195,
+    0.37207,
+    0.81152,
+    0.57129
+   ]
+  },
+  {
+   "slot": "lid",
+   "texture": "textures/jar_honey_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "paper_gloss",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.075,
+   "height_m": 0.075,
+   "aspect": 1.0,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.00195,
+    0.00195,
+    0.36816,
+    0.36816
+   ]
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "wrap",
+  "lid"
+ ]
+}

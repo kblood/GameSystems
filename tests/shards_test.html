@@ -1,0 +1,37 @@
+<!doctype html><meta charset="utf-8"><title>shards test</title>
+<style>html,body{margin:0;background:#20242b;overflow:hidden}</style>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const q = new URLSearchParams(location.search);
+const name = q.get('bottle') || 'wine', file = q.get('file') || 'shards';   // shards | broken
+const mode = q.get('mode') || 'glass';     // glass | color
+const explode = +(q.get('explode') || 0), yaw = +(q.get('yaw') || 25), pitch = +(q.get('pitch') || 10);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x2b323c);
+const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+const dl = new THREE.DirectionalLight(0xffffff, 2.5); dl.position.set(1, 2, 2); scene.add(dl);
+const info = await (await fetch(`/shared/export/bottle_${name}_break.json`)).json();
+const gltf = await new GLTFLoader().loadAsync(`/shared/export/bottle_${name}_${file}.glb`);
+const root = gltf.scene;
+const ip = info.impact_point ? new THREE.Vector3(info.impact_point[0], info.impact_point[2], -info.impact_point[1]) : null;
+let n = 0;
+root.children.slice().forEach(o => {
+  if (!o.name.startsWith('Shard_')) return;
+  if (explode && ip) o.position.add(o.position.clone().sub(ip).multiplyScalar(explode));
+  if (mode === 'color') { const m = new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL((n * 0.618) % 1, 0.7, 0.55), roughness: .6, flatShading: true }); o.traverse(c => { if (c.isMesh) c.material = m; }); }
+  n++;
+});
+const neck = root.getObjectByName('Neck'); if (neck && explode) { neck.position.add(new THREE.Vector3(0.05, 0.03, 0.04)); neck.rotation.set(0.9, 0.3, 1.1); }
+scene.add(root);
+const box = new THREE.Box3().setFromObject(root); const c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
+const cam = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.02, 20);
+const dist = Math.max(sz.x, sz.y, sz.z) * 2.4;
+const ya = yaw * Math.PI / 180, pa = pitch * Math.PI / 180;
+cam.position.set(c.x + dist * Math.sin(ya) * Math.cos(pa), c.y + dist * Math.sin(pa), c.z + dist * Math.cos(ya) * Math.cos(pa)); cam.lookAt(c);
+renderer.render(scene, cam);
+window.__ready = true; window.__n = n;
+</script>

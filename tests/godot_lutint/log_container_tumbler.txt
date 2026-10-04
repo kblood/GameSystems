@@ -1,0 +1,5 @@
+LUTINT asset=container_tumbler lut_version=2 open=true sleeping=false
+LUTINT_JSON {"asset":"container_tumbler","poses":[{"d":0.0441908240318298,"fill":0.25,"lost":0.0,"sleeping":true,"spilled":false,"tilt":0,"up":[0.0,1.0,0.0]},{"d":0.0692233741283417,"fill":0.6,"lost":0.0,"sleeping":true,"spilled":false,"tilt":0,"up":[0.0,1.0,0.0]},{"d":0.0887982994318008,"fill":0.9,"lost":0.0,"sleeping":true,"spilled":false,"tilt":0,"up":[0.0,1.0,0.0]},{"d":-0.0347500033676624,"fill":0.6,"lost":0.599998765441256,"sleeping":true,"spilled":true,"tilt":90,"up":[1.0,-0.0000000437113882867379,0.0]},{"d":-0.0967999994754791,"fill":0.6,"lost":0.6,"sleeping":true,"spilled":true,"tilt"
+LUTINT sleep: asleep_at_rest=true woke_on_move=false asleep_again=true
+LUTINT fill_wake=true
+SHOTS done

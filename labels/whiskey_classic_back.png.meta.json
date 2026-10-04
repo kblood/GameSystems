@@ -1,0 +1,27 @@
+{
+ "template": "whiskey_back",
+ "bottle": "whiskey",
+ "slot": "back",
+ "size_px": [
+  510,
+  480
+ ],
+ "px_per_cm": 80.1,
+ "alpha": false,
+ "wear": 0.15,
+ "seed": 3,
+ "fields": {
+  "brand": "Glenvorrow",
+  "blurb": [
+   "Matured in oak above the loch,",
+   "this fictional single malt offers",
+   "orchard fruit, honey and a",
+   "whisper of peat smoke."
+  ],
+  "small": [
+   "Distilled and bottled at",
+   "Glenvorrow Distillery (fictional).",
+   "Please drink responsibly."
+  ]
+ }
+}

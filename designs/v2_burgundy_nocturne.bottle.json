@@ -1,0 +1,53 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_burgundy",
+  "liquid": {
+    "color": [
+      0.3,
+      0.03,
+      0.08,
+      1
+    ],
+    "fill": 0.72
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "wine_modern",
+        "seed": 21
+      }
+    },
+    {
+      "slot": "back",
+      "generate": {
+        "template": "wine_back",
+        "seed": 22,
+        "fields": {
+          "brand": "Nocturne"
+        },
+        "wear": 0.1
+      }
+    },
+    {
+      "slot": "neck",
+      "generate": {
+        "template": "wine_neck",
+        "seed": 23,
+        "fields": {
+          "year": "2021",
+          "product": "Minuit"
+        }
+      }
+    }
+  ],
+  "meta": {
+    "description": "Burgundy bottle, modern black/white front label, back label and neck collar.",
+    "tags": [
+      "wine",
+      "v2"
+    ],
+    "name": "v2_burgundy_nocturne",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

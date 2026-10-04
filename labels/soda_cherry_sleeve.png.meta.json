@@ -1,0 +1,30 @@
+{
+ "template": "soda_sleeve",
+ "bottle": "soda",
+ "slot": "sleeve",
+ "size_px": [
+  1226,
+  1100
+ ],
+ "px_per_cm": 60.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 1,
+ "fields": {
+  "brand": "FIZZ-O",
+  "product": "Cherry Pop",
+  "bg": "#c41f2e",
+  "bg2": "#6b0f1a",
+  "accent": "#f26a6a",
+  "accent2": "#ffe27a",
+  "volume": "660 ml",
+  "tagline": "ICE COLD & BUBBLY",
+  "small": [
+   "Per 100 ml:",
+   "Energy 180 kJ",
+   "Sugars 10 g",
+   "Fat 0 g",
+   "Salt 0 g"
+  ]
+ }
+}

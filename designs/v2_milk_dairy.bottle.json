@@ -1,0 +1,36 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_milk",
+  "liquid": {
+    "color": [
+      0.95,
+      0.95,
+      0.9,
+      1
+    ],
+    "fill": 0.8,
+    "carbonation": 0.0,
+    "foam": 0.0,
+    "opacity": 1.0
+  },
+  "labels": [
+    {
+      "slot": "wrap",
+      "generate": {
+        "template": "milk",
+        "seed": 61,
+        "wear": 0.1
+      }
+    }
+  ],
+  "meta": {
+    "description": "Milk bottle with a full paper wrap (blue bands, milk drop emblem).",
+    "tags": [
+      "milk",
+      "wrap",
+      "v2"
+    ],
+    "name": "v2_milk_dairy",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

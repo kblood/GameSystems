@@ -1,0 +1,193 @@
+{
+ "name": "wine_classic",
+ "tier": "low",
+ "bottle": "wine",
+ "glb": "wine_classic_low.glb",
+ "liquid_sidecar": "wine_classic_low.liquid.json",
+ "meta": {
+  "description": "Cream front label (generated from the template at build time), back label, neck collar and gold foil capsule band on a green bottle with a cork.",
+  "tags": [
+   "wine",
+   "multi-label",
+   "foil"
+  ],
+  "name": "wine_classic",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 1,
+  "texture_sizes": [
+   [
+    1024,
+    1024
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 5460,
+  "tex_mem_kb_compressed_mips": 1365,
+  "glb_kb": 1194
+ },
+ "glass": {
+  "tint": [
+   0.05,
+   0.22,
+   0.08,
+   1.0
+  ],
+  "roughness": 0.03,
+  "thickness_mm": 3,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "cork",
+  "r": 0.0128,
+  "z0": 0.322,
+  "z1": 0.35,
+  "top_r": 0.011415999999999999
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 868.0,
+  "z0": 0.0034,
+  "z1": 0.334,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.35,
+   0.02,
+   0.06,
+   1.0
+  ],
+  "carbonation": 0.0,
+  "foam": 0.1,
+  "foam_height": 0.006,
+  "bubble_size": 1.0,
+  "opacity": 0.85,
+  "viscosity": 0.15,
+  "density": 0.99,
+  "fill_default": 0.7,
+  "tint_strength": 1.0,
+  "mass_full_kg": 0.8593
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/wine_classic_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.08508,
+   "height_m": 0.105,
+   "aspect": 0.8103,
+   "arc_deg": 130.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false,
+   "atlas_rect": [
+    0.00195,
+    0.00195,
+    0.33398,
+    0.41211
+   ]
+  },
+  {
+   "slot": "back",
+   "texture": "textures/wine_classic_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.06545,
+   "height_m": 0.08,
+   "aspect": 0.8181,
+   "arc_deg": 100.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.33789,
+    0.00195,
+    0.59375,
+    0.31445
+   ]
+  },
+  {
+   "slot": "neck",
+   "texture": "textures/wine_classic_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "paper_gloss",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.06946,
+   "height_m": 0.03927,
+   "aspect": 1.7689,
+   "arc_deg": 200.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.00195,
+    0.41602,
+    0.34082,
+    0.60742
+   ]
+  },
+  {
+   "slot": "foil",
+   "texture": "textures/wine_classic_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "foil_metal",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.08175,
+   "height_m": 0.0492,
+   "aspect": 1.6618,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.59766,
+    0.00195,
+    0.99707,
+    0.24219
+   ]
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck",
+  "foil",
+  "cap"
+ ]
+}

@@ -1,0 +1,29 @@
+{
+ "template": "beer_wrap",
+ "bottle": "beer",
+ "slot": "wrap",
+ "size_px": [
+  1226,
+  660
+ ],
+ "px_per_cm": 60.0,
+ "alpha": false,
+ "wear": 0.2,
+ "seed": 4,
+ "fields": {
+  "brand": "HARBOR LANTERN",
+  "product": "Amber Lager",
+  "bg": "#7b3b16",
+  "accent": "#3b2010",
+  "abv": "4.8% ABV",
+  "volume": "500 ml",
+  "batch": "BATCH 0412 \u00b7 BB 03/27",
+  "small": [
+   "Brewed & bottled by",
+   "Harbor Lantern Brewing Co.",
+   "(fictional), Moorfield.",
+   "Contains barley malt.",
+   "Please recycle."
+  ]
+ }
+}

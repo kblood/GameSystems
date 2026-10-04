@@ -1,0 +1,46 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "bottle": "beer",
+  "glass": {
+    "tint": [
+      0.18,
+      0.1,
+      0.02,
+      1.0
+    ]
+  },
+  "cap": {
+    "type": "crown",
+    "colour": "#1d1d1f"
+  },
+  "liquid": {
+    "color": [
+      0.12,
+      0.05,
+      0.02,
+      1.0
+    ],
+    "fill": 0.8,
+    "carbonation": 0.35,
+    "foam": 0.9,
+    "opacity": 0.97,
+    "viscosity": 0.2,
+    "density": 1.02
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "image": "labels/beer_clear_film.png",
+      "material_kind": "clear_film"
+    }
+  ],
+  "meta": {
+    "description": "Only a transparent printed sticker (clear_film) on the glass.",
+    "tags": [
+      "beer",
+      "clear-film"
+    ],
+    "name": "beer_clearfilm",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

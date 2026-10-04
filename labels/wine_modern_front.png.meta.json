@@ -1,0 +1,21 @@
+{
+ "template": "wine_modern",
+ "bottle": "wine",
+ "slot": "front",
+ "size_px": [
+  680,
+  840
+ ],
+ "px_per_cm": 79.9,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 2,
+ "fields": {
+  "brand": "NOCTURNE",
+  "product": "Cuv\u00e9e de Minuit",
+  "year": "2021",
+  "origin": "Vallon Valley",
+  "abv": "14% vol",
+  "volume": "750 ml"
+ }
+}

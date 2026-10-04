@@ -1,0 +1,107 @@
+{
+ "name": "v2_contour_cola",
+ "tier": "high",
+ "bottle": "v2_contour",
+ "asset": "v2_contour",
+ "provider": "lathe_v2",
+ "glb": "v2_contour_cola.glb",
+ "liquid_sidecar": "v2_contour_cola.liquid.json",
+ "meta": {
+  "description": "Contour bottle with a red/black shrink sleeve (small sleeve panel).",
+  "tags": [
+   "soda",
+   "sleeve",
+   "v2"
+  ],
+  "name": "v2_contour_cola",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 2,
+  "texture_sizes": [
+   [
+    1024,
+    1024
+   ],
+   [
+    1050,
+    436
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 7844,
+  "tex_mem_kb_compressed_mips": 1961,
+  "glb_kb": 660,
+  "base_glb": "export/v2/bottle_contour.glb",
+  "base_tex_mem_kb_rgba8_mips": 5460,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 2384,
+  "label_tex_mem_kb_compressed_mips": 596
+ },
+ "glass": {
+  "bottle": "contour",
+  "tier": "high",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.0711,
+   0.1031
+  ],
+  "label_panel": true,
+  "z_top": 0.232,
+  "r_bore": 0.0084,
+  "glass": "aqua",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "crown"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 354.6,
+  "z0": 0.00396,
+  "z1": 0.22803,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.1,
+   0.03,
+   0.02,
+   1
+  ],
+  "carbonation": 0.9,
+  "foam": 0.5,
+  "foam_height": 0.014,
+  "bubble_size": 0.8,
+  "fill_default": 0.9
+ },
+ "labels": [
+  {
+   "slot": "sleeve",
+   "texture": "textures/v2_contour_cola_sleeve.png",
+   "wear_mask": null,
+   "material_kind": "plastic_sleeve",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.17492,
+   "height_m": 0.07256,
+   "aspect": 2.4109,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "sleeve",
+  "front"
+ ]
+}

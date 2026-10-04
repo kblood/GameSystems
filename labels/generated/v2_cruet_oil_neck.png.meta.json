@@ -1,0 +1,23 @@
+{
+ "template": "tag_hand",
+ "bottle": "v2_cruet",
+ "slot": "neck",
+ "size_px": [
+  570,
+  202
+ ],
+ "px_per_cm": 100.2,
+ "alpha": true,
+ "wear": 0.3,
+ "seed": 72,
+ "fields": {
+  "paper": "#d2b27a",
+  "ink": "#27323f",
+  "lines": [
+   "Olive oil",
+   "Oct 2026"
+  ],
+  "font": "hand",
+  "angle": 2.0
+ }
+}

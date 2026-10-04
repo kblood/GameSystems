@@ -1,0 +1,5 @@
+LUTINT asset=bottle_bordeaux lut_version=1 open=false sleeping=false
+LUTINT_JSON {"asset":"bottle_bordeaux","poses":[{"d":0.0718649998307228,"fill":0.25,"lost":0.0,"sleeping":true,"spilled":false,"tilt":0,"up":[0.00000694457321515074,1.0,-0.000000733849731204828]},{"d":0.142645999789238,"fill":0.6,"lost":0.0,"sleeping":true,"spilled":false,"tilt":0,"up":[0.0,1.0,0.0]},{"d":0.203399002552032,"fill":0.9,"lost":0.0,"sleeping":true,"spilled":false,"tilt":0,"up":[0.0,1.0,0.0]},{"d":0.00558599410578609,"fill":0.6,"lost":0.0,"sleeping":true,"spilled":false,"tilt":90,"up":[1.0,-0.0000000437113882867379,0.0]},{"d":-0.102292001247406,"fill":0.6,"lost":0.0,"sleeping":true
+LUTINT sleep: asleep_at_rest=true woke_on_move=false asleep_again=true
+LUTINT fill_wake=true
+SHOTS done

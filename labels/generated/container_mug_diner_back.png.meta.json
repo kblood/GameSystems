@@ -1,0 +1,20 @@
+{
+ "template": "mug_logo",
+ "bottle": "container_mug",
+ "slot": "back",
+ "size_px": [
+  688,
+  464
+ ],
+ "px_per_cm": 80.0,
+ "alpha": true,
+ "wear": 0.0,
+ "seed": 142,
+ "fields": {
+  "color": "#2a5c8a",
+  "ink": "#2a2a2a",
+  "brand": "Rosie's",
+  "since": "EST. 1958",
+  "tagline": "OPEN 24 HOURS"
+ }
+}

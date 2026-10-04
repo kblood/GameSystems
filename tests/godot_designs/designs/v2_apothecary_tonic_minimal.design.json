@@ -1,0 +1,94 @@
+{
+ "name": "v2_apothecary_tonic",
+ "tier": "minimal",
+ "bottle": "v2_apothecary",
+ "asset": "v2_apothecary",
+ "provider": "lathe_v2",
+ "glb": "v2_apothecary_tonic_minimal.glb",
+ "liquid_sidecar": "v2_apothecary_tonic_minimal.liquid.json",
+ "meta": {
+  "description": "Small apothecary bottle: front label and a hand-written hang tag.",
+  "tags": [
+   "apothecary",
+   "tag",
+   "v2"
+  ],
+  "name": "v2_apothecary_tonic",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 232,
+  "base_glb": "export/v2/bottle_apothecary_lod2.glb",
+  "base_tex_mem_kb_rgba8_mips": 0,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 0,
+  "label_tex_mem_kb_compressed_mips": 0
+ },
+ "glass": {
+  "bottle": "apothecary",
+  "tier": "low",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.0149,
+   0.0599
+  ],
+  "label_panel": false,
+  "z_top": 0.1117,
+  "r_bore": 0.0066,
+  "glass": "cobalt",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "cork"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 105.7,
+  "z0": 0.00365,
+  "z1": 0.09771,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.15,
+   0.25,
+   0.1,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.0,
+  "foam_height": 0.003,
+  "bubble_size": 1.0,
+  "fill_default": 0.6
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "front",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.6947523720887191,
+    0.610183391545124,
+    0.4557432537314272,
+    1.0
+   ],
+   "width_m": 0.15083,
+   "height_m": 0.044,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "tag"
+ ]
+}

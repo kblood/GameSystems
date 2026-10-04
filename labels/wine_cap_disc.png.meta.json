@@ -1,0 +1,17 @@
+{
+ "template": "wine_cap",
+ "bottle": "wine",
+ "slot": "cap",
+ "size_px": [
+  228,
+  228
+ ],
+ "px_per_cm": 99.9,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 7,
+ "fields": {
+  "bg": "#6b1424",
+  "brand": "L"
+ }
+}

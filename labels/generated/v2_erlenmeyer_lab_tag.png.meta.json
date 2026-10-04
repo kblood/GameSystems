@@ -1,0 +1,20 @@
+{
+ "template": "labelwriter",
+ "bottle": "v2_erlenmeyer",
+ "slot": "tag",
+ "size_px": [
+  366,
+  184
+ ],
+ "px_per_cm": 150.3,
+ "alpha": false,
+ "wear": 0.1,
+ "seed": 113,
+ "fields": {
+  "tape": "white",
+  "lines": [
+   "HCl 1 M",
+   "LOT 17"
+  ]
+ }
+}

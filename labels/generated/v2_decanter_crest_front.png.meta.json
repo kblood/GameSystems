@@ -1,0 +1,19 @@
+{
+ "template": "perfume",
+ "bottle": "v2_decanter",
+ "slot": "front",
+ "size_px": [
+  434,
+  486
+ ],
+ "px_per_cm": 80.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 82,
+ "fields": {
+  "brand": "HALDEN HOUSE",
+  "no": "H",
+  "product": "Fine Old Tawny",
+  "volume": "75 cl"
+ }
+}

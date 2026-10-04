@@ -1,0 +1,133 @@
+{
+ "name": "v2_decanter_crest",
+ "tier": "high",
+ "bottle": "v2_decanter",
+ "asset": "v2_decanter",
+ "provider": "lathe_v2",
+ "glb": "v2_decanter_crest.glb",
+ "liquid_sidecar": "v2_decanter_crest.liquid.json",
+ "meta": {
+  "description": "Decanter with a hang tag on the neck and a small crest on the conical body.",
+  "tags": [
+   "spirit",
+   "tag",
+   "v2"
+  ],
+  "name": "v2_decanter_crest",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 5,
+  "label_draw_calls": 2,
+  "textures": 4,
+  "texture_sizes": [
+   [
+    1024,
+    1024
+   ],
+   [
+    434,
+    486
+   ],
+   [
+    348,
+    240
+   ],
+   [
+    348,
+    240
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 7428,
+  "tex_mem_kb_compressed_mips": 1857,
+  "glb_kb": 411,
+  "base_glb": "export/v2/bottle_decanter.glb",
+  "base_tex_mem_kb_rgba8_mips": 5460,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 1968,
+  "label_tex_mem_kb_compressed_mips": 492
+ },
+ "glass": {
+  "bottle": "decanter",
+  "tier": "high",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": null,
+  "label_panel": false,
+  "z_top": 0.2374,
+  "r_bore": 0.0152,
+  "glass": "flint_hi",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "stopper"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 1037.4,
+  "z0": 0.00571,
+  "z1": 0.21142,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.42,
+   0.18,
+   0.04,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.05,
+  "foam_height": 0.004,
+  "bubble_size": 1.0,
+  "fill_default": 0.6
+ },
+ "labels": [
+  {
+   "slot": "tag",
+   "texture": "textures/v2_decanter_crest_tag.png",
+   "wear_mask": "textures/v2_decanter_crest_tag_wear.png",
+   "material_kind": "handwritten_tag",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.03486,
+   "height_m": 0.02404,
+   "aspect": 1.4502,
+   "arc_deg": 100.0,
+   "alpha_mode": "MASK",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "front",
+   "texture": "textures/v2_decanter_crest_front.png",
+   "wear_mask": null,
+   "material_kind": "paper_gloss",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.05423,
+   "height_m": 0.06083,
+   "aspect": 0.8915,
+   "arc_deg": 60.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "tag",
+  "front"
+ ]
+}

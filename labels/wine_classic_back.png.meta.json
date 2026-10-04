@@ -1,0 +1,30 @@
+{
+ "template": "wine_back",
+ "bottle": "wine",
+ "slot": "back",
+ "size_px": [
+  524,
+  640
+ ],
+ "px_per_cm": 80.1,
+ "alpha": false,
+ "wear": 0.2,
+ "seed": 3,
+ "fields": {
+  "brand": "Ch\u00e2teau Lunelle",
+  "blurb": [
+   "Ripened on the south slopes of the",
+   "fictional Vallon Valley, this red",
+   "shows dark cherry, cedar and a",
+   "long, gently spiced finish.",
+   "",
+   "Serve at 16-18 C with roast",
+   "meats and hard cheeses."
+  ],
+  "small": [
+   "Estate bottled by Lunelle Cellars,",
+   "Vallon Valley. Contains sulphites.",
+   "Please recycle this bottle."
+  ]
+ }
+}

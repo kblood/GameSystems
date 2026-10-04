@@ -1,0 +1,68 @@
+{
+  "name": "tank",
+  "family": "container",
+  "material": "glass",
+  "shatters": true,
+  "source": "scripts/fracture_glb.py",
+  "frame": "bottle-local, glTF Y-up, metres, base centre at origin (same frame as the shipped GLB)",
+  "wall_thickness_m": 0.006356881025214082,
+  "density_kg_m3": 2500.0,
+  "glass_volume_m3": 0.005024510188179024,
+  "glass_mass_kg": 12.56127547044756,
+  "liquid_mass_kg_per_ml": 0.001,
+  "capacity_ml": 57390.5,
+  "height_m": 0.3499999940395355,
+  "max_radius_m": 0.33455230804888403,
+  "base_z": 0.013999999761581422,
+  "shoulder_z": 0.3499999940395355,
+  "neck_z": 0.3499999940395355,
+  "has_neck": false,
+  "weak_zones": [
+    {
+      "name": "base",
+      "z0": 0.0,
+      "z1": 0.013999999761581422,
+      "thinness": 1.0
+    },
+    {
+      "name": "body",
+      "z0": 0.013999999761581422,
+      "z1": 0.3499999940395355,
+      "thinness": 1.0
+    }
+  ],
+  "zone_factor": {
+    "base": 1.15,
+    "body": 1.0,
+    "shoulder": 0.85,
+    "neck": 0.55
+  },
+  "calibration": {
+    "surface": "concrete",
+    "fill": 1.0,
+    "v_n": 4.3,
+    "y": "mid_body",
+    "note": "f_crit_ref solved at load so this hit is exactly the break threshold"
+  },
+  "mesh": {
+    "area_m2": 1.5808098871914353,
+    "non_manifold_edges": 0
+  },
+  "shards": {
+    "count": 29,
+    "tris": 1468,
+    "classes": {
+      "chunk": 2,
+      "shard": 26,
+      "sliver": 1
+    }
+  },
+  "impact_point": [
+    0.3313738703727722,
+    0.0,
+    0.18199999630451202
+  ],
+  "files": {
+    "shards": "export/container_tank_shards.glb"
+  }
+}

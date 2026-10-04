@@ -1,0 +1,116 @@
+{
+ "name": "v2_mason_preserves",
+ "tier": "high",
+ "bottle": "v2_mason",
+ "asset": "v2_mason",
+ "provider": "lathe_v2",
+ "glb": "v2_mason_preserves.glb",
+ "liquid_sidecar": "v2_mason_preserves.liquid.json",
+ "meta": {
+  "description": "Mason jar with a small front label (blackberry preserves).",
+  "tags": [
+   "jar",
+   "v2"
+  ],
+  "name": "v2_mason_preserves",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 5,
+  "label_draw_calls": 1,
+  "textures": 4,
+  "texture_sizes": [
+   [
+    512,
+    128
+   ],
+   [
+    1024,
+    1024
+   ],
+   [
+    538,
+    464
+   ],
+   [
+    538,
+    464
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 8401,
+  "tex_mem_kb_compressed_mips": 2100,
+  "glb_kb": 481,
+  "base_glb": "export/v2/bottle_mason.glb",
+  "base_tex_mem_kb_rgba8_mips": 5801,
+  "base_draw_calls": 4,
+  "label_tex_mem_kb_rgba8_mips": 2600,
+  "label_tex_mem_kb_compressed_mips": 650
+ },
+ "glass": {
+  "bottle": "mason",
+  "tier": "high",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.026,
+   0.084
+  ],
+  "label_panel": false,
+  "z_top": 0.1298,
+  "r_bore": 0.0302,
+  "glass": "flint",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "mason"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 432.7,
+  "z0": 0.00482,
+  "z1": 0.1268,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.2,
+   0.02,
+   0.15,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.0,
+  "foam_height": 0.003,
+  "bubble_size": 1.0,
+  "fill_default": 0.9,
+  "opacity": 1.0
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/v2_mason_preserves_front.png",
+   "wear_mask": "textures/v2_mason_preserves_front_wear.png",
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.06735,
+   "height_m": 0.058,
+   "aspect": 1.1612,
+   "arc_deg": 100.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "wrap"
+ ]
+}

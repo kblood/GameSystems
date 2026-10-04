@@ -1,0 +1,65 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_erlenmeyer",
+  "liquid": {
+    "color": [
+      0.2,
+      0.45,
+      0.7,
+      0.6
+    ],
+    "fill": 0.55,
+    "carbonation": 0.0,
+    "foam": 0.0
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "tag_hand",
+        "seed": 111,
+        "fields": {
+          "lines": [
+            "Sample 4",
+            "12/10 - K.S."
+          ]
+        },
+        "wear": 0.35
+      }
+    },
+    {
+      "slot": "grad",
+      "generate": {
+        "template": "flask_grad",
+        "seed": 1,
+        "fields": {
+          "patch": "Fiole 500",
+          "max": 500
+        }
+      }
+    },
+    {
+      "slot": "tag",
+      "generate": {
+        "template": "labelwriter",
+        "seed": 113,
+        "fields": {
+          "lines": [
+            "HCl 1 M",
+            "LOT 17"
+          ]
+        },
+        "wear": 0.1
+      }
+    }
+  ],
+  "meta": {
+    "description": "Erlenmeyer flask: hand-written front tag, graduation patch and label-printer strip.",
+    "tags": [
+      "lab",
+      "v2"
+    ],
+    "name": "v2_erlenmeyer_lab",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

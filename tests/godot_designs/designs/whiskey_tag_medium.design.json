@@ -1,0 +1,156 @@
+{
+ "name": "whiskey_tag",
+ "tier": "medium",
+ "bottle": "whiskey",
+ "glb": "whiskey_tag_medium.glb",
+ "liquid_sidecar": "whiskey_tag_medium.liquid.json",
+ "meta": {
+  "description": "Front, back and a handwritten kraft neck tag.",
+  "tags": [
+   "whiskey",
+   "tag",
+   "handwritten"
+  ],
+  "name": "whiskey_tag",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 6,
+  "label_draw_calls": 3,
+  "textures": 3,
+  "texture_sizes": [
+   [
+    510,
+    480
+   ],
+   [
+    435,
+    512
+   ],
+   [
+    398,
+    220
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 2890,
+  "tex_mem_kb_compressed_mips": 723,
+  "glb_kb": 961
+ },
+ "glass": {
+  "tint": [
+   0.85,
+   0.92,
+   0.88,
+   1.0
+  ],
+  "roughness": 0.03,
+  "thickness_mm": 4.0,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "cork",
+  "r": 0.0138,
+  "z0": 0.208,
+  "z1": 0.236,
+  "top_r": 0.012385999999999998
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 533.9,
+  "z0": 0.0044,
+  "z1": 0.22,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.62,
+   0.3,
+   0.04,
+   1.0
+  ],
+  "carbonation": 0.0,
+  "foam": 0.08,
+  "foam_height": 0.005,
+  "bubble_size": 1.0,
+  "opacity": 0.9,
+  "viscosity": 0.25,
+  "density": 0.94,
+  "fill_default": 0.7,
+  "tint_strength": 1.3,
+  "mass_full_kg": 0.5019
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/whiskey_tag_medium_front.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.07645,
+   "height_m": 0.09,
+   "aspect": 0.8494,
+   "arc_deg": 120.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false
+  },
+  {
+   "slot": "back",
+   "texture": "textures/whiskey_tag_medium_back.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.0637,
+   "height_m": 0.06,
+   "aspect": 1.0617,
+   "arc_deg": 100.0,
+   "alpha_mode": "OPAQUE",
+   "source": "image",
+   "empty": false
+  },
+  {
+   "slot": "neck",
+   "texture": "textures/whiskey_tag_medium_neck.png",
+   "wear_mask": null,
+   "material_kind": "handwritten_tag",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.03976,
+   "height_m": 0.02209,
+   "aspect": 1.7998,
+   "arc_deg": 160.0,
+   "alpha_mode": "MASK",
+   "source": "image",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck",
+  "shoulder",
+  "cap"
+ ]
+}

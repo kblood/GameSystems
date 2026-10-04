@@ -1,0 +1,192 @@
+{
+ "name": "v2_champagne_brut",
+ "tier": "medium",
+ "bottle": "v2_champagne",
+ "asset": "v2_champagne",
+ "provider": "lathe_v2",
+ "glb": "v2_champagne_brut_medium.glb",
+ "liquid_sidecar": "v2_champagne_brut_medium.liquid.json",
+ "meta": {
+  "description": "Champagne: navy and gold front label, back label, neck label and printed gold foil (the wire cage is untouched).",
+  "tags": [
+   "sparkling",
+   "foil",
+   "v2"
+  ],
+  "name": "v2_champagne_brut",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 10,
+  "label_draw_calls": 4,
+  "textures": 7,
+  "texture_sizes": [
+   [
+    256,
+    64
+   ],
+   [
+    128,
+    128
+   ],
+   [
+    512,
+    512
+   ],
+   [
+    512,
+    437
+   ],
+   [
+    512,
+    233
+   ],
+   [
+    511,
+    467
+   ],
+   [
+    512,
+    167
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 5010,
+  "tex_mem_kb_compressed_mips": 1252,
+  "glb_kb": 1333,
+  "base_glb": "export/v2/bottle_champagne_lod1.glb",
+  "base_tex_mem_kb_rgba8_mips": 1536,
+  "base_draw_calls": 6,
+  "label_tex_mem_kb_rgba8_mips": 3474,
+  "label_tex_mem_kb_compressed_mips": 868
+ },
+ "glass": {
+  "bottle": "champagne",
+  "tier": "medium",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.055,
+   0.14
+  ],
+  "label_panel": false,
+  "z_top": 0.3,
+  "r_bore": 0.0089,
+  "glass": "champagne",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "champagne"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 814.8,
+  "z0": 0.01776,
+  "z1": 0.27399,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.85,
+   0.68,
+   0.28,
+   1
+  ],
+  "carbonation": 0.8,
+  "foam": 0.3,
+  "foam_height": 0.012,
+  "bubble_size": 0.6,
+  "fill_default": 0.85
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/v2_champagne_brut_medium_front.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.09853,
+   "height_m": 0.09001,
+   "aspect": 1.0946,
+   "arc_deg": 130.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "back",
+   "texture": "textures/v2_champagne_brut_medium_back.png",
+   "wear_mask": null,
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.07591,
+   "height_m": 0.065,
+   "aspect": 1.1678,
+   "arc_deg": 100.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "neck",
+   "texture": "textures/v2_champagne_brut_medium_neck.png",
+   "wear_mask": null,
+   "material_kind": "paper_gloss",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.07258,
+   "height_m": 0.02376,
+   "aspect": 3.0547,
+   "arc_deg": 120.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "foil",
+   "texture": "textures/v2_champagne_brut_medium_foil.png",
+   "wear_mask": null,
+   "material_kind": "foil_metal",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.12759,
+   "height_m": 0.05819,
+   "aspect": 2.1925,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck",
+  "foil"
+ ]
+}

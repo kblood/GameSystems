@@ -1,0 +1,45 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_stubby",
+  "liquid": {
+    "color": [
+      0.06,
+      0.03,
+      0.02,
+      1
+    ],
+    "fill": 0.85,
+    "carbonation": 0.4,
+    "foam": 0.6
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "beer_dark",
+        "seed": 31,
+        "wear": 0.15
+      }
+    },
+    {
+      "slot": "back",
+      "generate": {
+        "template": "beer_neck",
+        "seed": 32,
+        "fields": {
+          "batch": "No. 12"
+        },
+        "wear": 0.1
+      }
+    }
+  ],
+  "meta": {
+    "description": "Stubby with a stout front label and a small batch back label.",
+    "tags": [
+      "beer",
+      "v2"
+    ],
+    "name": "v2_stubby_stout",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

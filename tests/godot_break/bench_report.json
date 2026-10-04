@@ -1,0 +1,45 @@
+{
+	"idle_ms": 0.819845833333333,
+	"rows": [
+		{
+			"ms_frame": 1.96898333333333,
+			"peak_droplets": 192,
+			"peak_ms": 25.479,
+			"peak_puddles": 24,
+			"peak_shards": 150,
+			"tier": "HIGH"
+		},
+		{
+			"ms_frame": 1.60595416666667,
+			"peak_droplets": 97,
+			"peak_ms": 12.709,
+			"peak_puddles": 12,
+			"peak_shards": 80,
+			"tier": "MEDIUM"
+		},
+		{
+			"ms_frame": 0.204483333333333,
+			"peak_droplets": 33,
+			"peak_ms": 8.199,
+			"peak_puddles": 6,
+			"peak_shards": 24,
+			"tier": "LOW"
+		},
+		{
+			"ms_frame": 0.0225083333333335,
+			"peak_droplets": 13,
+			"peak_ms": 2.542,
+			"peak_puddles": 2,
+			"peak_shards": 0,
+			"tier": "MINIMAL"
+		},
+		{
+			"ms_frame": 0.0452208333333334,
+			"peak_droplets": 40,
+			"peak_ms": 2.574,
+			"peak_puddles": 19,
+			"peak_shards": 0,
+			"tier": "HIGH (far)"
+		}
+	]
+}

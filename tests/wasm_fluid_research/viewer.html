@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8"><title>MPM honey test bed</title>
+<style>body{margin:0;background:#1d1f24;color:#ddd;font:12px monospace;overflow:hidden}#hud{position:absolute;left:8px;top:6px;white-space:pre;pointer-events:none}</style></head>
+<body><div id="hud"></div>
+<!-- Serve with: node serve.mjs  (maps /three/ to the vendored three.js), open http://localhost:8087/viewer.html?liquid=honey&dx=4
+     Params: liquid=honey|syrup|oil|water, dx (mm), mlps, pour (s), budget (ms of sim per frame, slow motion if exceeded) -->
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { honeyScene, sceneStats } from './mpm_core.mjs';
+const q = new URLSearchParams(location.search);
+const liquid = q.get('liquid') || 'honey', dx = (+q.get('dx') || 4) / 1000, budget = +q.get('budget') || 30;
+const sim = honeyScene({ dx, liquid, mlps: +q.get('mlps') || 15, pourSeconds: +q.get('pour') || 3, maxParticles: 120000 });
+const col = { honey: 0xd08a12, syrup: 0x8a3d0c, oil: 0xc8b432, water: 0x4c8cd8 }[liquid];
+
+const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1d1f24);
+const cam = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.01, 10); cam.position.set(0.46, 0.42, 0.42);
+const ctl = new OrbitControls(cam, renderer.domElement); ctl.target.set(0.16, 0.22, 0.08); ctl.update();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x404050, 1.2)); const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(0.5, 1, 0.6); scene.add(sun);
+const S = sim.scene, size = sim.size;
+const solid = (geo, c, x, y, z) => { const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 })); m.position.set(x, y, z); scene.add(m); return m; };
+solid(new THREE.BoxGeometry(0.25, S.tableTop - 0.12, size[2]), 0x6b4a2f, S.edgeX - 0.125, (S.tableTop + 0.12) / 2, size[2] / 2);
+solid(new THREE.CylinderGeometry(S.jar.r + 0.004, S.jar.r + 0.004, S.jar.y1 - S.jar.y0 + 0.008, 48), 0x9fb6c0, S.jar.c[0], (S.jar.y0 + S.jar.y1) / 2, S.jar.c[1]);
+solid(new THREE.BoxGeometry(size[0], 0.01, size[2]), 0x3a3d44, size[0] / 2, S.floorY - 0.005, size[2] / 2);
+// particles: instanced spheres (cheapest honest renderer; a screen-space/marching-cubes surface is a later step)
+const MAXI = sim.max, geo = new THREE.IcosahedronGeometry(dx * 0.42, 1);
+const mesh = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ color: col, roughness: 0.15, metalness: 0.0 }), MAXI);
+mesh.frustumCulled = false; scene.add(mesh); const M = new THREE.Matrix4();
+function sync() {
+  for (let p = 0; p < sim.n; p++) { M.makeTranslation(sim.px[p], sim.py[p], sim.pz[p]); mesh.setMatrixAt(p, M); }
+  mesh.count = sim.n; mesh.instanceMatrix.needsUpdate = true;
+}
+const hud = document.getElementById('hud'); let msAvg = 0, subAvg = 0;
+function simFrame() {               // advance up to 1/60 s of sim time, but stop after `budget` ms (slow motion)
+  const t0 = performance.now(); let simT = 0, sub = 0;
+  while (simT < 1 / 60 && performance.now() - t0 < budget) { const s0 = sim.time; sim.advance(Math.min(1 / 60 - simT, 1 / 600), 50); simT += sim.time - s0; sub++; }
+  const ms = performance.now() - t0; msAvg = msAvg * 0.9 + ms * 0.1;
+  const st = sceneStats(sim);
+  hud.textContent = `${liquid}  dx ${dx * 1000} mm  particles ${sim.n}  active nodes ${sim.nActive}\nsim t ${sim.time.toFixed(2)} s   CPU ${msAvg.toFixed(1)} ms per frame   speed ${(simT * 60 * 100).toFixed(0)} % of realtime\n` +
+    `jar ${st.ml_jar}  table ${st.ml_table}  falling ${st.ml_falling}  floor ${st.ml_floor}  out ${st.out_ml} ml   front ${st.frontX_cm} cm (edge 20)`;
+}
+// headless hook: run to a given sim time, then render once
+window.runTo = (t) => { const t0 = performance.now(), s0 = sim.prof.steps; while (sim.time < t) sim.advance(1 / 60); sync(); renderer.render(scene, cam);
+  return { n: sim.n, ms: performance.now() - t0, steps: sim.prof.steps - s0, stats: sceneStats(sim) }; };
+window.__ready = true;
+if (!q.has('headless')) renderer.setAnimationLoop(() => { simFrame(); sync(); ctl.update(); renderer.render(scene, cam); });
+addEventListener('resize', () => { cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+</script></body></html>

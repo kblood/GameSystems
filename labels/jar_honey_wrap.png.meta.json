@@ -1,0 +1,27 @@
+{
+ "template": "jar_honey",
+ "bottle": "jar",
+ "slot": "wrap",
+ "size_px": [
+  1658,
+  408
+ ],
+ "px_per_cm": 60.0,
+ "alpha": false,
+ "wear": 0.1,
+ "seed": 1,
+ "fields": {
+  "bg": "#f0b830",
+  "accent": "#e8a317",
+  "product": "Wildflower Honey",
+  "brand": "Meadowbrook Apiary",
+  "volume": "NET WT 450 g",
+  "small": [
+   "Raw & unfiltered.",
+   "Pure honey from",
+   "meadow blossoms.",
+   "May crystallise;",
+   "warm gently."
+  ]
+ }
+}

@@ -1,0 +1,111 @@
+{
+ "name": "v2_pet2l_cola",
+ "tier": "high",
+ "bottle": "v2_pet2l",
+ "asset": "v2_pet2l",
+ "provider": "lathe_v2",
+ "glb": "v2_pet2l_cola.glb",
+ "liquid_sidecar": "v2_pet2l_cola.liquid.json",
+ "meta": {
+  "description": "PET 2 L with a full shrink sleeve over the ribbed body.",
+  "tags": [
+   "soda",
+   "sleeve",
+   "v2"
+  ],
+  "name": "v2_pet2l_cola",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 3,
+  "texture_sizes": [
+   [
+    512,
+    128
+   ],
+   [
+    1024,
+    1024
+   ],
+   [
+    1300,
+    688
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 10458,
+  "tex_mem_kb_compressed_mips": 2615,
+  "glb_kb": 1185,
+  "base_glb": "export/v2/bottle_pet2l.glb",
+  "base_tex_mem_kb_rgba8_mips": 5801,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 4657,
+  "label_tex_mem_kb_compressed_mips": 1165
+ },
+ "glass": {
+  "bottle": "pet2l",
+  "tier": "high",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.0795,
+   0.1975
+  ],
+  "label_panel": true,
+  "z_top": 0.3347,
+  "r_bore": 0.01085,
+  "glass": "pet_green",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "screw"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 2234.2,
+  "z0": 0.0009,
+  "z1": 0.33169,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.12,
+   0.04,
+   0.02,
+   1
+  ],
+  "carbonation": 0.9,
+  "foam": 0.3,
+  "foam_height": 0.014,
+  "bubble_size": 0.8,
+  "fill_default": 0.92
+ },
+ "labels": [
+  {
+   "slot": "sleeve",
+   "texture": "textures/v2_pet2l_cola_sleeve.png",
+   "wear_mask": null,
+   "material_kind": "plastic_sleeve",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.32502,
+   "height_m": 0.17213,
+   "aspect": 1.8882,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "sleeve",
+  "front"
+ ]
+}

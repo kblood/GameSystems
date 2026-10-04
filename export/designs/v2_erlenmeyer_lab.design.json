@@ -1,0 +1,169 @@
+{
+ "name": "v2_erlenmeyer_lab",
+ "tier": "high",
+ "bottle": "v2_erlenmeyer",
+ "asset": "v2_erlenmeyer",
+ "provider": "lathe_v2",
+ "glb": "v2_erlenmeyer_lab.glb",
+ "liquid_sidecar": "v2_erlenmeyer_lab.liquid.json",
+ "meta": {
+  "description": "Erlenmeyer flask: hand-written front tag, graduation patch and label-printer strip.",
+  "tags": [
+   "lab",
+   "v2"
+  ],
+  "name": "v2_erlenmeyer_lab",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 6,
+  "label_draw_calls": 3,
+  "textures": 7,
+  "texture_sizes": [
+   [
+    128,
+    128
+   ],
+   [
+    1024,
+    1024
+   ],
+   [
+    492,
+    410
+   ],
+   [
+    492,
+    410
+   ],
+   [
+    198,
+    974
+   ],
+   [
+    366,
+    184
+   ],
+   [
+    366,
+    184
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 9352,
+  "tex_mem_kb_compressed_mips": 2338,
+  "glb_kb": 601,
+  "base_glb": "export/v2/bottle_erlenmeyer.glb",
+  "base_tex_mem_kb_rgba8_mips": 5545,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 3807,
+  "label_tex_mem_kb_compressed_mips": 952
+ },
+ "glass": {
+  "bottle": "erlenmeyer",
+  "tier": "high",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.0298,
+   0.0798
+  ],
+  "label_panel": false,
+  "z_top": 0.1784,
+  "r_bore": 0.0152,
+  "glass": "borosilicate",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "cork"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 668.6,
+  "z0": 0.0026,
+  "z1": 0.16443,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.2,
+   0.45,
+   0.7,
+   0.6
+  ],
+  "carbonation": 0.0,
+  "foam": 0.0,
+  "foam_height": 0.01,
+  "bubble_size": 1.0,
+  "fill_default": 0.55
+ },
+ "labels": [
+  {
+   "slot": "front",
+   "texture": "textures/v2_erlenmeyer_lab_front.png",
+   "wear_mask": "textures/v2_erlenmeyer_lab_front_wear.png",
+   "material_kind": "paper_matte",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.06147,
+   "height_m": 0.05122,
+   "aspect": 1.2003,
+   "arc_deg": 80.0,
+   "alpha_mode": "MASK",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "grad",
+   "texture": "textures/v2_erlenmeyer_lab_grad.png",
+   "wear_mask": null,
+   "material_kind": "clear_film",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.01981,
+   "height_m": 0.09744,
+   "aspect": 0.2033,
+   "arc_deg": 30.0,
+   "alpha_mode": "BLEND",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "tag",
+   "texture": "textures/v2_erlenmeyer_lab_tag.png",
+   "wear_mask": "textures/v2_erlenmeyer_lab_tag_wear.png",
+   "material_kind": "tape",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.02435,
+   "height_m": 0.0123,
+   "aspect": 1.9804,
+   "arc_deg": 40.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "grad",
+  "tag"
+ ]
+}

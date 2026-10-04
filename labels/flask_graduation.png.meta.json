@@ -1,0 +1,17 @@
+{
+ "template": "flask_grad",
+ "bottle": "flask",
+ "slot": "grad",
+ "size_px": [
+  328,
+  934
+ ],
+ "px_per_cm": 100.2,
+ "alpha": true,
+ "wear": 0.0,
+ "seed": 6,
+ "fields": {
+  "patch": "Fiole 1000",
+  "max": 1000
+ }
+}

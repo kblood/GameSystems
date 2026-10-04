@@ -1,0 +1,30 @@
+{
+ "template": "soda_lime",
+ "bottle": "soda",
+ "slot": "sleeve",
+ "size_px": [
+  1226,
+  1100
+ ],
+ "px_per_cm": 60.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 2,
+ "fields": {
+  "brand": "ZESTA",
+  "product": "Lime Fizz",
+  "bg": "#2f9e44",
+  "bg2": "#0e4d1c",
+  "accent": "#b6e35a",
+  "accent2": "#fff3a8",
+  "volume": "500 ml",
+  "tagline": "SHAKE UP THE DAY",
+  "small": [
+   "Per 100 ml:",
+   "Energy 150 kJ",
+   "Sugars 8 g",
+   "Fat 0 g",
+   "Salt 0 g"
+  ]
+ }
+}

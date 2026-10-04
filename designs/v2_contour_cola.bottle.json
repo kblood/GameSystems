@@ -1,0 +1,47 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_contour",
+  "liquid": {
+    "color": [
+      0.1,
+      0.03,
+      0.02,
+      1
+    ],
+    "fill": 0.9,
+    "carbonation": 0.9,
+    "foam": 0.5
+  },
+  "labels": [
+    {
+      "slot": "sleeve",
+      "generate": {
+        "template": "pet_sleeve",
+        "seed": 121,
+        "fields": {
+          "brand": "COLA-KO",
+          "product": "Original",
+          "bg": "#b3141f",
+          "bg2": "#3a0508",
+          "accent": "#f3d27a",
+          "accent2": "#ffe9a8",
+          "volume": "355 ml",
+          "small": [
+            "Contains caffeine.",
+            "Please recycle."
+          ]
+        }
+      }
+    }
+  ],
+  "meta": {
+    "description": "Contour bottle with a red/black shrink sleeve (small sleeve panel).",
+    "tags": [
+      "soda",
+      "sleeve",
+      "v2"
+    ],
+    "name": "v2_contour_cola",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

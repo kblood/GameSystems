@@ -1,0 +1,53 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_spirit",
+  "liquid": {
+    "color": [
+      0.55,
+      0.28,
+      0.06,
+      1
+    ],
+    "fill": 0.75
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "whiskey_gold",
+        "seed": 61,
+        "wear": 0.1
+      }
+    },
+    {
+      "slot": "back",
+      "generate": {
+        "template": "whiskey_back",
+        "seed": 62,
+        "fields": {
+          "brand": "Blackwater"
+        },
+        "wear": 0.1
+      }
+    },
+    {
+      "slot": "neck",
+      "generate": {
+        "template": "beer_neck",
+        "seed": 63,
+        "fields": {
+          "batch": "Batch 24"
+        }
+      }
+    }
+  ],
+  "meta": {
+    "description": "Tall spirit bottle, gold bourbon label, back label and neck strip.",
+    "tags": [
+      "spirit",
+      "v2"
+    ],
+    "name": "v2_spirit_gold",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

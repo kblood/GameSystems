@@ -1,0 +1,34 @@
+<!doctype html><meta charset="utf-8"><title>bottle designs test</title>
+<style>html,body{margin:0;background:#20242b;overflow:hidden}</style>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { loadDesign } from '/shared/designs/three/bottle_design.js';
+const q = new URLSearchParams(location.search);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x2b323c);
+const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+const cam = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.05, 20); cam.position.set(0, 0, 0.85);
+const dl = new THREE.DirectionalLight(0xffffff, 2); dl.position.set(1, 2, 2); scene.add(dl);
+const holder = new THREE.Group(); scene.add(holder);
+let d = null;
+async function show(name, tier = 'high') {
+  if (d) { holder.remove(d.root); d.dispose(); }
+  d = await loadDesign(`/shared/export/designs/${name}.glb`, { tier, fill: 0.6, slosh: false });
+  const c = new THREE.Box3().setFromObject(d.root).getCenter(new THREE.Vector3());
+  d.root.position.sub(c); holder.add(d.root);
+}
+window.shot = async (name, tier, spin, close) => {
+  await show(name, tier);
+  holder.rotation.y = THREE.MathUtils.degToRad(spin || 0);
+  cam.position.set(close ? close[0] : 0, close ? close[1] : 0, close ? close[2] : 0.85);
+  cam.lookAt(close ? close[0] : 0, close ? close[1] : 0, 0);
+  for (let i = 0; i < 20; i++) { holder.updateMatrixWorld(true); d.update(1 / 60); }
+  renderer.render(scene, cam);
+  return d.slots().map(s => s.name);
+};
+window.swap = async (slot, url) => { const ok = await d.setLabelImage(slot, url); renderer.render(scene, cam); return ok; };
+window.__ready = true;
+</script>

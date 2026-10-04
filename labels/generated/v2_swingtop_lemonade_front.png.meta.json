@@ -1,0 +1,21 @@
+{
+ "template": "clear_sticker",
+ "bottle": "v2_swingtop",
+ "slot": "front",
+ "size_px": [
+  626,
+  680
+ ],
+ "px_per_cm": 79.9,
+ "alpha": true,
+ "wear": 0.0,
+ "seed": 41,
+ "fields": {
+  "brand": "BRIGHTWELL",
+  "product": "Cloudy Lemonade",
+  "ink": "#2a3a1a",
+  "accent": "#e8b53a",
+  "abv": "0.0%",
+  "volume": "500 ml"
+ }
+}

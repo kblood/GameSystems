@@ -1,0 +1,16 @@
+{
+ "template": "whiskey_shoulder",
+ "bottle": "whiskey",
+ "slot": "shoulder",
+ "size_px": [
+  688,
+  394
+ ],
+ "px_per_cm": 99.9,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 4,
+ "fields": {
+  "tagline": "DISTILLER'S CUT"
+ }
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "bottle": "beer",
+  "glass": {
+    "tint": [
+      0.25,
+      0.14,
+      0.03,
+      1.0
+    ]
+  },
+  "cap": {
+    "type": "crown",
+    "colour": "#2a7fb8"
+  },
+  "liquid": {
+    "color": [
+      0.9,
+      0.62,
+      0.1,
+      1.0
+    ],
+    "fill": 0.8,
+    "carbonation": 0.4,
+    "foam": 0.8,
+    "opacity": 0.5
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "image": "labels/user/my_homebrew.png"
+    }
+  ],
+  "meta": {
+    "description": "User-image flow: the front label is a user supplied PNG (labels/user/my_homebrew.png); absolute paths work too.",
+    "tags": [
+      "beer",
+      "user-image"
+    ],
+    "name": "beer_userimg",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

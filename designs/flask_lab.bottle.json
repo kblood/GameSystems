@@ -1,0 +1,55 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "bottle": "flask",
+  "glass": {
+    "tint": [
+      0.85,
+      0.95,
+      0.98,
+      1.0
+    ]
+  },
+  "cap": {
+    "type": "cork"
+  },
+  "liquid": {
+    "color": [
+      0.1,
+      0.55,
+      0.2,
+      1.0
+    ],
+    "fill": 0.5,
+    "foam": 0.35,
+    "opacity": 0.6,
+    "viscosity": 0.05,
+    "density": 1.0
+  },
+  "labels": [
+    {
+      "slot": "tag",
+      "image": "labels/flask_labelwriter_white.png"
+    },
+    {
+      "slot": "tag_hand",
+      "image": "labels/flask_tag_hand.png",
+      "wear_mask": "labels/flask_tag_hand_wear.png",
+      "rotation_deg": -4
+    },
+    {
+      "slot": "grad",
+      "image": "labels/flask_graduation.png"
+    }
+  ],
+  "meta": {
+    "description": "Erlenmeyer flask with a label-printer strip, a hand-written tag and graduation marks.",
+    "tags": [
+      "flask",
+      "labelwriter",
+      "handwritten",
+      "graduation"
+    ],
+    "name": "flask_lab",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

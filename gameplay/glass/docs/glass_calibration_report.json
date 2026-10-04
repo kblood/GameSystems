@@ -1,0 +1,2407 @@
+{
+  "assert_count": 29,
+  "assert_failures": 0,
+  "asserts": [
+    {
+      "ok": true,
+      "what": "4 mm annealed: 0.2 kg stone at 1 m/s does nothing"
+    },
+    {
+      "ok": true,
+      "what": "4 mm annealed: stone at 8 m/s breaks through"
+    },
+    {
+      "ok": true,
+      "what": "9mm pierces 4 mm annealed: small hole + radial cracks"
+    },
+    {
+      "ok": true,
+      "what": "tempered 4 mm dices fully from 22lr"
+    },
+    {
+      "ok": true,
+      "what": "tempered 4 mm dices fully from 9mm"
+    },
+    {
+      "ok": true,
+      "what": "tempered 4 mm dices fully from 556"
+    },
+    {
+      "ok": true,
+      "what": "tempered 6 mm dices fully from 22lr"
+    },
+    {
+      "ok": true,
+      "what": "tempered 6 mm dices fully from 9mm"
+    },
+    {
+      "ok": true,
+      "what": "tempered 6 mm dices fully from 556"
+    },
+    {
+      "ok": true,
+      "what": "tempered 10 mm dices fully from 22lr"
+    },
+    {
+      "ok": true,
+      "what": "tempered 10 mm dices fully from 9mm"
+    },
+    {
+      "ok": true,
+      "what": "tempered 10 mm dices fully from 556"
+    },
+    {
+      "ok": true,
+      "what": "laminated never drops pieces from one 22lr"
+    },
+    {
+      "ok": true,
+      "what": "laminated never drops pieces from one 9mm"
+    },
+    {
+      "ok": true,
+      "what": "laminated never drops pieces from one 45acp"
+    },
+    {
+      "ok": true,
+      "what": "laminated never drops pieces from one 556"
+    },
+    {
+      "ok": true,
+      "what": "laminated never drops pieces from one 762"
+    },
+    {
+      "ok": true,
+      "what": "30 mm resistant stops 7 rounds of 9mm in one spot (4..8)"
+    },
+    {
+      "ok": true,
+      "what": "7.62 rifle defeats 30 mm pistol-rated glass"
+    },
+    {
+      "ok": true,
+      "what": "windscreen holds a brick at 8 m/s (cobweb)"
+    },
+    {
+      "ok": true,
+      "what": "tempered edge hit needs < 40 % of the centre energy (6.0 vs 24.6 J)"
+    },
+    {
+      "ok": true,
+      "what": "grazing .22 ricochets off 10 mm annealed"
+    },
+    {
+      "ok": true,
+      "what": "3 bullet holes weaken the pane (centre crack threshold 1.78 -> 1.10 J)"
+    },
+    {
+      "ok": true,
+      "what": "repair() resets the pane"
+    },
+    {
+      "ok": true,
+      "what": "save/load (JSON) replays 3 impacts exactly"
+    },
+    {
+      "ok": true,
+      "what": "idle panes run no _process/_physics_process (0 of 80)"
+    },
+    {
+      "ok": true,
+      "what": "free-flying body: exactly 1 path computation in 1 s"
+    },
+    {
+      "ok": true,
+      "what": "bouncing body: 1 recompute per bounce + the throw (7 for 11 bounces, 2 of them fast)"
+    },
+    {
+      "ok": true,
+      "what": "no tunnelling in 6000 randomised crossings (tunnel 0, miss 0)"
+    }
+  ],
+  "bullets": [
+    {
+      "bullet": "bb",
+      "crack_m": 0.0,
+      "energy": 1.0,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 4.0,
+      "outcome": "none",
+      "perf_J": 20.9141964794986,
+      "residual_speed": 20.0,
+      "type": "annealed"
+    },
+    {
+      "bullet": "pellet",
+      "crack_m": 0.116016302033325,
+      "energy": 15.264,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 4.0,
+      "outcome": "cracked",
+      "perf_J": 14.7782365234764,
+      "residual_speed": 0.0,
+      "type": "annealed"
+    },
+    {
+      "bullet": "22lr",
+      "crack_m": 0.17296296799738,
+      "energy": 177.97,
+      "exit_crater_mm": 23.8421073637858,
+      "hole_mm": 6.27,
+      "kind": "bullet",
+      "mm": 4.0,
+      "outcome": "punched",
+      "perf_J": 16.7605798305117,
+      "residual_speed": 349.521697998047,
+      "type": "annealed"
+    },
+    {
+      "bullet": "9mm",
+      "crack_m": 0.232840067046186,
+      "energy": 518.4,
+      "exit_crater_mm": 26.96,
+      "hole_mm": 9.36,
+      "kind": "bullet",
+      "mm": 4.0,
+      "outcome": "punched",
+      "perf_J": 17.3925271309261,
+      "residual_speed": 353.5859375,
+      "type": "annealed"
+    },
+    {
+      "bullet": "9mm_hp",
+      "crack_m": 0.227521390729808,
+      "energy": 518.4,
+      "exit_crater_mm": 28.22,
+      "hole_mm": 10.62,
+      "kind": "bullet",
+      "mm": 4.0,
+      "outcome": "punched",
+      "perf_J": 24.3172392553102,
+      "residual_speed": 348.935150146484,
+      "type": "annealed"
+    },
+    {
+      "bullet": "45acp",
+      "crack_m": 0.238227367615884,
+      "energy": 484.43625,
+      "exit_crater_mm": 29.684,
+      "hole_mm": 12.084,
+      "kind": "bullet",
+      "mm": 4.0,
+      "outcome": "punched",
+      "perf_J": 23.1459890995831,
+      "residual_speed": 248.326904296875,
+      "type": "annealed"
+    },
+    {
+      "bullet": "556",
+      "crack_m": 0.401385305652052,
+      "energy": 1767.2,
+      "exit_crater_mm": 23.424,
+      "hole_mm": 5.824,
+      "kind": "bullet",
+      "mm": 4.0,
+      "outcome": "punched",
+      "perf_J": 10.2645181608958,
+      "residual_speed": 937.122009277344,
+      "type": "annealed"
+    },
+    {
+      "bullet": "762",
+      "crack_m": 0.494205189372767,
+      "energy": 3422.16,
+      "exit_crater_mm": 25.4432,
+      "hole_mm": 7.8432,
+      "kind": "bullet",
+      "mm": 4.0,
+      "outcome": "punched",
+      "perf_J": 13.2657755968059,
+      "residual_speed": 838.302368164063,
+      "type": "annealed"
+    },
+    {
+      "bullet": "bb",
+      "crack_m": 0.0,
+      "energy": 1.0,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 5.0,
+      "outcome": "chip",
+      "perf_J": 7.97013975589618,
+      "residual_speed": 0.0,
+      "type": "tempered"
+    },
+    {
+      "bullet": "pellet",
+      "crack_m": 0.0,
+      "energy": 15.264,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 4.5,
+      "kind": "dice",
+      "mm": 5.0,
+      "outcome": "shattered",
+      "perf_J": 5.63180185063556,
+      "residual_speed": 180.547912597656,
+      "type": "tempered"
+    },
+    {
+      "bullet": "22lr",
+      "crack_m": 0.0,
+      "energy": 177.97,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 5.7,
+      "kind": "dice",
+      "mm": 5.0,
+      "outcome": "shattered",
+      "perf_J": 6.38724819143686,
+      "residual_speed": 362.332489013672,
+      "type": "tempered"
+    },
+    {
+      "bullet": "9mm",
+      "crack_m": 0.0,
+      "energy": 518.4,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 9.0,
+      "kind": "dice",
+      "mm": 5.0,
+      "outcome": "shattered",
+      "perf_J": 6.62807543562966,
+      "residual_speed": 357.569244384766,
+      "type": "tempered"
+    },
+    {
+      "bullet": "9mm_hp",
+      "crack_m": 0.0,
+      "energy": 518.4,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 9.0,
+      "kind": "dice",
+      "mm": 5.0,
+      "outcome": "shattered",
+      "perf_J": 9.26699696698238,
+      "residual_speed": 355.823883056641,
+      "type": "tempered"
+    },
+    {
+      "bullet": "45acp",
+      "crack_m": 0.0,
+      "energy": 484.43625,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 11.4,
+      "kind": "dice",
+      "mm": 5.0,
+      "outcome": "shattered",
+      "perf_J": 8.8206481225785,
+      "residual_speed": 252.477767944336,
+      "type": "tempered"
+    },
+    {
+      "bullet": "556",
+      "crack_m": 0.0,
+      "energy": 1767.2,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 5.6,
+      "kind": "dice",
+      "mm": 5.0,
+      "outcome": "shattered",
+      "perf_J": 3.91168000881452,
+      "residual_speed": 938.904235839844,
+      "type": "tempered"
+    },
+    {
+      "bullet": "762",
+      "crack_m": 0.0,
+      "energy": 3422.16,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 7.6,
+      "kind": "dice",
+      "mm": 5.0,
+      "outcome": "shattered",
+      "perf_J": 5.05542183179466,
+      "residual_speed": 839.353454589844,
+      "type": "tempered"
+    },
+    {
+      "bullet": "bb",
+      "crack_m": 0.0,
+      "energy": 1.0,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 5.0,
+      "outcome": "none",
+      "perf_J": 62.7425894384958,
+      "residual_speed": 20.0,
+      "type": "laminated"
+    },
+    {
+      "bullet": "pellet",
+      "crack_m": 0.0614302255413801,
+      "energy": 15.264,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 5.0,
+      "outcome": "chip",
+      "perf_J": 44.3347095704291,
+      "residual_speed": 0.0,
+      "type": "laminated"
+    },
+    {
+      "bullet": "22lr",
+      "crack_m": 0.176717861915089,
+      "energy": 177.97,
+      "exit_crater_mm": 23.1250447349107,
+      "hole_mm": 6.27,
+      "kind": "bullet",
+      "mm": 5.0,
+      "outcome": "punched",
+      "perf_J": 50.281739491535,
+      "residual_speed": 304.460632324219,
+      "type": "laminated"
+    },
+    {
+      "bullet": "9mm",
+      "crack_m": 0.224237774585503,
+      "energy": 518.4,
+      "exit_crater_mm": 31.36,
+      "hole_mm": 9.36,
+      "kind": "bullet",
+      "mm": 5.0,
+      "outcome": "punched",
+      "perf_J": 52.1775813927783,
+      "residual_speed": 340.395446777344,
+      "type": "laminated"
+    },
+    {
+      "bullet": "9mm_hp",
+      "crack_m": 0.229281945419604,
+      "energy": 518.4,
+      "exit_crater_mm": 28.6817757114441,
+      "hole_mm": 10.62,
+      "kind": "bullet",
+      "mm": 5.0,
+      "outcome": "punched",
+      "perf_J": 72.9517177659306,
+      "residual_speed": 325.679565429688,
+      "type": "laminated"
+    },
+    {
+      "bullet": "45acp",
+      "crack_m": 0.2353361369681,
+      "energy": 484.43625,
+      "exit_crater_mm": 32.0916758212994,
+      "hole_mm": 12.084,
+      "kind": "bullet",
+      "mm": 5.0,
+      "outcome": "punched",
+      "perf_J": 69.4379672987494,
+      "residual_speed": 234.411499023438,
+      "type": "laminated"
+    },
+    {
+      "bullet": "556",
+      "crack_m": 0.331819506876046,
+      "energy": 1767.2,
+      "exit_crater_mm": 27.824,
+      "hole_mm": 5.824,
+      "kind": "bullet",
+      "mm": 5.0,
+      "outcome": "punched",
+      "perf_J": 30.7935544826873,
+      "residual_speed": 931.339294433594,
+      "type": "laminated"
+    },
+    {
+      "bullet": "762",
+      "crack_m": 0.394674594607287,
+      "energy": 3422.16,
+      "exit_crater_mm": 29.8432,
+      "hole_mm": 7.8432,
+      "kind": "bullet",
+      "mm": 5.0,
+      "outcome": "punched",
+      "perf_J": 39.7973267904178,
+      "residual_speed": 834.896667480469,
+      "type": "laminated"
+    },
+    {
+      "bullet": "bb",
+      "crack_m": 0.0,
+      "energy": 1.0,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 6.0,
+      "outcome": "none",
+      "perf_J": 34.8569941324977,
+      "residual_speed": 20.0,
+      "type": "wired"
+    },
+    {
+      "bullet": "pellet",
+      "crack_m": 0.0970223871935792,
+      "energy": 15.264,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 6.0,
+      "outcome": "cracked",
+      "perf_J": 24.630394205794,
+      "residual_speed": 0.0,
+      "type": "wired"
+    },
+    {
+      "bullet": "22lr",
+      "crack_m": 0.184981408127384,
+      "energy": 177.97,
+      "exit_crater_mm": 28.9488966274072,
+      "hole_mm": 6.27,
+      "kind": "bullet",
+      "mm": 6.0,
+      "outcome": "punched",
+      "perf_J": 27.9342997175194,
+      "residual_speed": 335.175140380859,
+      "type": "wired"
+    },
+    {
+      "bullet": "9mm",
+      "crack_m": 0.240966977412468,
+      "energy": 518.4,
+      "exit_crater_mm": 35.76,
+      "hole_mm": 9.36,
+      "kind": "bullet",
+      "mm": 6.0,
+      "outcome": "punched",
+      "perf_J": 28.9875452182101,
+      "residual_speed": 349.244476318359,
+      "type": "wired"
+    },
+    {
+      "bullet": "9mm_hp",
+      "crack_m": 0.241422215556112,
+      "energy": 518.4,
+      "exit_crater_mm": 35.9054355367192,
+      "hole_mm": 10.62,
+      "kind": "bullet",
+      "mm": 6.0,
+      "outcome": "punched",
+      "perf_J": 40.5287320921837,
+      "residual_speed": 341.359375,
+      "type": "wired"
+    },
+    {
+      "bullet": "45acp",
+      "crack_m": 0.249977759648348,
+      "energy": 484.43625,
+      "exit_crater_mm": 38.484,
+      "hole_mm": 12.084,
+      "kind": "bullet",
+      "mm": 6.0,
+      "outcome": "punched",
+      "perf_J": 38.5766484993052,
+      "residual_speed": 243.776702880859,
+      "type": "wired"
+    },
+    {
+      "bullet": "556",
+      "crack_m": 0.386000065276364,
+      "energy": 1767.2,
+      "exit_crater_mm": 32.224,
+      "hole_mm": 5.824,
+      "kind": "bullet",
+      "mm": 6.0,
+      "outcome": "punched",
+      "perf_J": 17.1075302681596,
+      "residual_speed": 935.198364257813,
+      "type": "wired"
+    },
+    {
+      "bullet": "762",
+      "crack_m": 0.468501469928258,
+      "energy": 3422.16,
+      "exit_crater_mm": 34.2432,
+      "hole_mm": 7.8432,
+      "kind": "bullet",
+      "mm": 6.0,
+      "outcome": "punched",
+      "perf_J": 22.1096259946765,
+      "residual_speed": 837.168640136719,
+      "type": "wired"
+    },
+    {
+      "bullet": "bb",
+      "crack_m": 0.0,
+      "energy": 1.0,
+      "exit_crater_mm": 0.0,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 30.0,
+      "outcome": "none",
+      "perf_J": 3346.27143671978,
+      "residual_speed": 20.0,
+      "type": "resistant"
+    },
+    {
+      "bullet": "pellet",
+      "crack_m": 0.026182780270948,
+      "energy": 15.264,
+      "exit_crater_mm": 0.117940865084354,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 30.0,
+      "outcome": "chip",
+      "perf_J": 2364.51784375622,
+      "residual_speed": 0.0,
+      "type": "resistant"
+    },
+    {
+      "bullet": "22lr",
+      "crack_m": 0.0606327261532935,
+      "energy": 177.97,
+      "exit_crater_mm": 1.35881924538435,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 30.0,
+      "outcome": "chip",
+      "perf_J": 2681.69277288186,
+      "residual_speed": 0.0,
+      "type": "resistant"
+    },
+    {
+      "bullet": "9mm",
+      "crack_m": 0.09274833480583,
+      "energy": 518.4,
+      "exit_crater_mm": 5.13034128555928,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 30.0,
+      "outcome": "cracked",
+      "perf_J": 2782.80434094817,
+      "residual_speed": 0.0,
+      "type": "resistant"
+    },
+    {
+      "bullet": "9mm_hp",
+      "crack_m": 0.069423280483012,
+      "energy": 518.4,
+      "exit_crater_mm": 2.24240915786081,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 30.0,
+      "outcome": "cracked",
+      "perf_J": 3890.75828084963,
+      "residual_speed": 0.0,
+      "type": "resistant"
+    },
+    {
+      "bullet": "45acp",
+      "crack_m": 0.0803301118876817,
+      "energy": 484.43625,
+      "exit_crater_mm": 3.66922017083532,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 30.0,
+      "outcome": "cracked",
+      "perf_J": 3703.3582559333,
+      "residual_speed": 0.0,
+      "type": "resistant"
+    },
+    {
+      "bullet": "556",
+      "crack_m": 0.171349093934762,
+      "energy": 1767.2,
+      "exit_crater_mm": 26.3413825921279,
+      "hole_mm": 0.0,
+      "kind": "",
+      "mm": 30.0,
+      "outcome": "cracked",
+      "perf_J": 1642.32290574332,
+      "residual_speed": 0.0,
+      "type": "resistant"
+    },
+    {
+      "bullet": "762",
+      "crack_m": 0.184770486753281,
+      "energy": 3422.16,
+      "exit_crater_mm": 33.5794325311354,
+      "hole_mm": 7.8432,
+      "kind": "bullet",
+      "mm": 30.0,
+      "outcome": "punched",
+      "perf_J": 2122.52409548895,
+      "residual_speed": 499.731353759766,
+      "type": "resistant"
+    }
+  ],
+  "idle_processing_panes": 0,
+  "recompute": {
+    "bounce_recomputes": 7,
+    "bounces": 11,
+    "bounces_above_min_speed": 2,
+    "free_flight_1s_extensions": 0,
+    "free_flight_1s_recomputes": 1,
+    "note": "first recompute = the throw; predictor idles below predict_min_speed (2 m/s)"
+  },
+  "table": [
+    {
+      "e_crack": 0.99,
+      "e_through": 1.78,
+      "mass": 0.2,
+      "mm": 3.0,
+      "striker": "stone",
+      "type": "annealed",
+      "v_crack": 3.15,
+      "v_through": 4.22
+    },
+    {
+      "e_crack": 1.11,
+      "e_through": 2.0,
+      "mass": 2.4,
+      "mm": 3.0,
+      "striker": "brick",
+      "type": "annealed",
+      "v_crack": 0.96,
+      "v_through": 1.29
+    },
+    {
+      "e_crack": 1.65,
+      "e_through": 2.97,
+      "mass": 0.9,
+      "mm": 3.0,
+      "striker": "bottle",
+      "type": "annealed",
+      "v_crack": 1.91,
+      "v_through": 2.57
+    },
+    {
+      "e_crack": 1.49,
+      "e_through": 2.68,
+      "mass": 1.0,
+      "mm": 3.0,
+      "striker": "hammer",
+      "type": "annealed",
+      "v_crack": 1.73,
+      "v_through": 2.32
+    },
+    {
+      "e_crack": 2.51,
+      "e_through": 4.51,
+      "mass": 5.0,
+      "mm": 3.0,
+      "striker": "chair",
+      "type": "annealed",
+      "v_crack": 1.0,
+      "v_through": 1.34
+    },
+    {
+      "e_crack": 13.29,
+      "e_through": 23.92,
+      "mass": 4.0,
+      "mm": 3.0,
+      "striker": "fist",
+      "type": "annealed",
+      "v_crack": 2.58,
+      "v_through": 3.46
+    },
+    {
+      "e_crack": 22.36,
+      "e_through": 40.24,
+      "mass": 70.0,
+      "mm": 3.0,
+      "striker": "body",
+      "type": "annealed",
+      "v_crack": 0.8,
+      "v_through": 1.07
+    },
+    {
+      "e_crack": 0.33,
+      "e_through": 0.59,
+      "mass": 0.03,
+      "mm": 3.0,
+      "striker": "punch_tool",
+      "type": "annealed",
+      "v_crack": 4.69,
+      "v_through": 6.3
+    },
+    {
+      "e_crack": 1.76,
+      "e_through": 3.17,
+      "mass": 0.2,
+      "mm": 4.0,
+      "striker": "stone",
+      "type": "annealed",
+      "v_crack": 4.2,
+      "v_through": 5.63
+    },
+    {
+      "e_crack": 1.97,
+      "e_through": 3.55,
+      "mass": 2.4,
+      "mm": 4.0,
+      "striker": "brick",
+      "type": "annealed",
+      "v_crack": 1.28,
+      "v_through": 1.72
+    },
+    {
+      "e_crack": 2.93,
+      "e_through": 5.27,
+      "mass": 0.9,
+      "mm": 4.0,
+      "striker": "bottle",
+      "type": "annealed",
+      "v_crack": 2.55,
+      "v_through": 3.42
+    },
+    {
+      "e_crack": 2.65,
+      "e_through": 4.77,
+      "mass": 1.0,
+      "mm": 4.0,
+      "striker": "hammer",
+      "type": "annealed",
+      "v_crack": 2.3,
+      "v_through": 3.09
+    },
+    {
+      "e_crack": 4.46,
+      "e_through": 8.02,
+      "mass": 5.0,
+      "mm": 4.0,
+      "striker": "chair",
+      "type": "annealed",
+      "v_crack": 1.34,
+      "v_through": 1.79
+    },
+    {
+      "e_crack": 23.62,
+      "e_through": 42.52,
+      "mass": 4.0,
+      "mm": 4.0,
+      "striker": "fist",
+      "type": "annealed",
+      "v_crack": 3.44,
+      "v_through": 4.61
+    },
+    {
+      "e_crack": 39.74,
+      "e_through": 71.54,
+      "mass": 70.0,
+      "mm": 4.0,
+      "striker": "body",
+      "type": "annealed",
+      "v_crack": 1.07,
+      "v_through": 1.43
+    },
+    {
+      "e_crack": 0.59,
+      "e_through": 1.06,
+      "mass": 0.03,
+      "mm": 4.0,
+      "striker": "punch_tool",
+      "type": "annealed",
+      "v_crack": 6.26,
+      "v_through": 8.39
+    },
+    {
+      "e_crack": 3.96,
+      "e_through": 7.13,
+      "mass": 0.2,
+      "mm": 6.0,
+      "striker": "stone",
+      "type": "annealed",
+      "v_crack": 6.29,
+      "v_through": 8.44
+    },
+    {
+      "e_crack": 4.44,
+      "e_through": 7.99,
+      "mass": 2.4,
+      "mm": 6.0,
+      "striker": "brick",
+      "type": "annealed",
+      "v_crack": 1.92,
+      "v_through": 2.58
+    },
+    {
+      "e_crack": 6.59,
+      "e_through": 11.86,
+      "mass": 0.9,
+      "mm": 6.0,
+      "striker": "bottle",
+      "type": "annealed",
+      "v_crack": 3.83,
+      "v_through": 5.13
+    },
+    {
+      "e_crack": 5.96,
+      "e_through": 10.73,
+      "mass": 1.0,
+      "mm": 6.0,
+      "striker": "hammer",
+      "type": "annealed",
+      "v_crack": 3.45,
+      "v_through": 4.63
+    },
+    {
+      "e_crack": 10.03,
+      "e_through": 18.05,
+      "mass": 5.0,
+      "mm": 6.0,
+      "striker": "chair",
+      "type": "annealed",
+      "v_crack": 2.0,
+      "v_through": 2.69
+    },
+    {
+      "e_crack": 53.15,
+      "e_through": 95.67,
+      "mass": 4.0,
+      "mm": 6.0,
+      "striker": "fist",
+      "type": "annealed",
+      "v_crack": 5.16,
+      "v_through": 6.92
+    },
+    {
+      "e_crack": 89.42,
+      "e_through": 160.96,
+      "mass": 70.0,
+      "mm": 6.0,
+      "striker": "body",
+      "type": "annealed",
+      "v_crack": 1.6,
+      "v_through": 2.14
+    },
+    {
+      "e_crack": 1.32,
+      "e_through": 2.38,
+      "mass": 0.03,
+      "mm": 6.0,
+      "striker": "punch_tool",
+      "type": "annealed",
+      "v_crack": 9.39,
+      "v_through": 12.59
+    },
+    {
+      "e_crack": 11.0,
+      "e_through": 19.8,
+      "mass": 0.2,
+      "mm": 10.0,
+      "striker": "stone",
+      "type": "annealed",
+      "v_crack": 10.49,
+      "v_through": 14.07
+    },
+    {
+      "e_crack": 12.33,
+      "e_through": 22.2,
+      "mass": 2.4,
+      "mm": 10.0,
+      "striker": "brick",
+      "type": "annealed",
+      "v_crack": 3.21,
+      "v_through": 4.3
+    },
+    {
+      "e_crack": 18.31,
+      "e_through": 32.96,
+      "mass": 0.9,
+      "mm": 10.0,
+      "striker": "bottle",
+      "type": "annealed",
+      "v_crack": 6.38,
+      "v_through": 8.56
+    },
+    {
+      "e_crack": 16.55,
+      "e_through": 29.8,
+      "mass": 1.0,
+      "mm": 10.0,
+      "striker": "hammer",
+      "type": "annealed",
+      "v_crack": 5.75,
+      "v_through": 7.72
+    },
+    {
+      "e_crack": 27.85,
+      "e_through": 50.14,
+      "mass": 5.0,
+      "mm": 10.0,
+      "striker": "chair",
+      "type": "annealed",
+      "v_crack": 3.34,
+      "v_through": 4.48
+    },
+    {
+      "e_crack": 147.64,
+      "e_through": 265.74,
+      "mass": 4.0,
+      "mm": 10.0,
+      "striker": "fist",
+      "type": "annealed",
+      "v_crack": 8.59,
+      "v_through": 11.53
+    },
+    {
+      "e_crack": 248.39,
+      "e_through": 447.11,
+      "mass": 70.0,
+      "mm": 10.0,
+      "striker": "body",
+      "type": "annealed",
+      "v_crack": 2.66,
+      "v_through": 3.57
+    },
+    {
+      "e_crack": 3.67,
+      "e_through": 6.61,
+      "mass": 0.03,
+      "mm": 10.0,
+      "striker": "punch_tool",
+      "type": "annealed",
+      "v_crack": 15.64,
+      "v_through": 20.99
+    },
+    {
+      "e_crack": 13.86,
+      "e_through": 13.86,
+      "mass": 0.2,
+      "mm": 3.0,
+      "striker": "stone",
+      "type": "tempered",
+      "v_crack": 11.77,
+      "v_through": 11.77
+    },
+    {
+      "e_crack": 15.54,
+      "e_through": 15.54,
+      "mass": 2.4,
+      "mm": 3.0,
+      "striker": "brick",
+      "type": "tempered",
+      "v_crack": 3.6,
+      "v_through": 3.6
+    },
+    {
+      "e_crack": 23.07,
+      "e_through": 23.07,
+      "mass": 0.9,
+      "mm": 3.0,
+      "striker": "bottle",
+      "type": "tempered",
+      "v_crack": 7.16,
+      "v_through": 7.16
+    },
+    {
+      "e_crack": 20.86,
+      "e_through": 20.86,
+      "mass": 1.0,
+      "mm": 3.0,
+      "striker": "hammer",
+      "type": "tempered",
+      "v_crack": 6.46,
+      "v_through": 6.46
+    },
+    {
+      "e_crack": 35.1,
+      "e_through": 35.1,
+      "mass": 5.0,
+      "mm": 3.0,
+      "striker": "chair",
+      "type": "tempered",
+      "v_crack": 3.75,
+      "v_through": 3.75
+    },
+    {
+      "e_crack": 186.02,
+      "e_through": 186.02,
+      "mass": 4.0,
+      "mm": 3.0,
+      "striker": "fist",
+      "type": "tempered",
+      "v_crack": 9.64,
+      "v_through": 9.64
+    },
+    {
+      "e_crack": 312.98,
+      "e_through": 312.98,
+      "mass": 70.0,
+      "mm": 3.0,
+      "striker": "body",
+      "type": "tempered",
+      "v_crack": 2.99,
+      "v_through": 2.99
+    },
+    {
+      "e_crack": 0.13,
+      "e_through": 0.13,
+      "mass": 0.03,
+      "mm": 3.0,
+      "striker": "punch_tool",
+      "type": "tempered",
+      "v_crack": 3.0,
+      "v_through": 3.0
+    },
+    {
+      "e_crack": 24.64,
+      "e_through": 24.64,
+      "mass": 0.2,
+      "mm": 4.0,
+      "striker": "stone",
+      "type": "tempered",
+      "v_crack": 15.7,
+      "v_through": 15.7
+    },
+    {
+      "e_crack": 27.63,
+      "e_through": 27.63,
+      "mass": 2.4,
+      "mm": 4.0,
+      "striker": "brick",
+      "type": "tempered",
+      "v_crack": 4.8,
+      "v_through": 4.8
+    },
+    {
+      "e_crack": 41.01,
+      "e_through": 41.01,
+      "mass": 0.9,
+      "mm": 4.0,
+      "striker": "bottle",
+      "type": "tempered",
+      "v_crack": 9.55,
+      "v_through": 9.55
+    },
+    {
+      "e_crack": 37.08,
+      "e_through": 37.08,
+      "mass": 1.0,
+      "mm": 4.0,
+      "striker": "hammer",
+      "type": "tempered",
+      "v_crack": 8.61,
+      "v_through": 8.61
+    },
+    {
+      "e_crack": 62.39,
+      "e_through": 62.39,
+      "mass": 5.0,
+      "mm": 4.0,
+      "striker": "chair",
+      "type": "tempered",
+      "v_crack": 5.0,
+      "v_through": 5.0
+    },
+    {
+      "e_crack": 330.7,
+      "e_through": 330.7,
+      "mass": 4.0,
+      "mm": 4.0,
+      "striker": "fist",
+      "type": "tempered",
+      "v_crack": 12.86,
+      "v_through": 12.86
+    },
+    {
+      "e_crack": 556.4,
+      "e_through": 556.4,
+      "mass": 70.0,
+      "mm": 4.0,
+      "striker": "body",
+      "type": "tempered",
+      "v_crack": 3.99,
+      "v_through": 3.99
+    },
+    {
+      "e_crack": 0.18,
+      "e_through": 0.18,
+      "mass": 0.03,
+      "mm": 4.0,
+      "striker": "punch_tool",
+      "type": "tempered",
+      "v_crack": 3.46,
+      "v_through": 3.46
+    },
+    {
+      "e_crack": 55.45,
+      "e_through": 55.45,
+      "mass": 0.2,
+      "mm": 6.0,
+      "striker": "stone",
+      "type": "tempered",
+      "v_crack": 23.55,
+      "v_through": 23.55
+    },
+    {
+      "e_crack": 62.16,
+      "e_through": 62.16,
+      "mass": 2.4,
+      "mm": 6.0,
+      "striker": "brick",
+      "type": "tempered",
+      "v_crack": 7.2,
+      "v_through": 7.2
+    },
+    {
+      "e_crack": 92.28,
+      "e_through": 92.28,
+      "mass": 0.9,
+      "mm": 6.0,
+      "striker": "bottle",
+      "type": "tempered",
+      "v_crack": 14.32,
+      "v_through": 14.32
+    },
+    {
+      "e_crack": 83.44,
+      "e_through": 83.44,
+      "mass": 1.0,
+      "mm": 6.0,
+      "striker": "hammer",
+      "type": "tempered",
+      "v_crack": 12.92,
+      "v_through": 12.92
+    },
+    {
+      "e_crack": 140.39,
+      "e_through": 140.39,
+      "mass": 5.0,
+      "mm": 6.0,
+      "striker": "chair",
+      "type": "tempered",
+      "v_crack": 7.49,
+      "v_through": 7.49
+    },
+    {
+      "e_crack": 744.08,
+      "e_through": 744.08,
+      "mass": 4.0,
+      "mm": 6.0,
+      "striker": "fist",
+      "type": "tempered",
+      "v_crack": 19.29,
+      "v_through": 19.29
+    },
+    {
+      "e_crack": 1251.9,
+      "e_through": 1251.9,
+      "mass": 70.0,
+      "mm": 6.0,
+      "striker": "body",
+      "type": "tempered",
+      "v_crack": 5.98,
+      "v_through": 5.98
+    },
+    {
+      "e_crack": 0.27,
+      "e_through": 0.27,
+      "mass": 0.03,
+      "mm": 6.0,
+      "striker": "punch_tool",
+      "type": "tempered",
+      "v_crack": 4.24,
+      "v_through": 4.24
+    },
+    {
+      "e_crack": 154.02,
+      "e_through": 154.02,
+      "mass": 0.2,
+      "mm": 10.0,
+      "striker": "stone",
+      "type": "tempered",
+      "v_crack": 39.25,
+      "v_through": 39.25
+    },
+    {
+      "e_crack": 172.66,
+      "e_through": 172.66,
+      "mass": 2.4,
+      "mm": 10.0,
+      "striker": "brick",
+      "type": "tempered",
+      "v_crack": 12.0,
+      "v_through": 12.0
+    },
+    {
+      "e_crack": 256.33,
+      "e_through": 256.33,
+      "mass": 0.9,
+      "mm": 10.0,
+      "striker": "bottle",
+      "type": "tempered",
+      "v_crack": 23.87,
+      "v_through": 23.87
+    },
+    {
+      "e_crack": 231.77,
+      "e_through": 231.77,
+      "mass": 1.0,
+      "mm": 10.0,
+      "striker": "hammer",
+      "type": "tempered",
+      "v_crack": 21.53,
+      "v_through": 21.53
+    },
+    {
+      "e_crack": 389.96,
+      "e_through": 389.96,
+      "mass": 5.0,
+      "mm": 10.0,
+      "striker": "chair",
+      "type": "tempered",
+      "v_crack": 12.49,
+      "v_through": 12.49
+    },
+    {
+      "e_crack": 2066.9,
+      "e_through": 2066.9,
+      "mass": 4.0,
+      "mm": 10.0,
+      "striker": "fist",
+      "type": "tempered",
+      "v_crack": 32.15,
+      "v_through": 32.15
+    },
+    {
+      "e_crack": 3477.51,
+      "e_through": 3477.51,
+      "mass": 70.0,
+      "mm": 10.0,
+      "striker": "body",
+      "type": "tempered",
+      "v_crack": 9.97,
+      "v_through": 9.97
+    },
+    {
+      "e_crack": 0.45,
+      "e_through": 0.45,
+      "mass": 0.03,
+      "mm": 10.0,
+      "striker": "punch_tool",
+      "type": "tempered",
+      "v_crack": 5.48,
+      "v_through": 5.48
+    },
+    {
+      "e_crack": 0.79,
+      "e_through": 71.77,
+      "mass": 0.2,
+      "mm": 3.0,
+      "striker": "stone",
+      "type": "laminated",
+      "v_crack": 2.81,
+      "v_through": 26.79
+    },
+    {
+      "e_crack": 0.89,
+      "e_through": 77.36,
+      "mass": 2.4,
+      "mm": 3.0,
+      "striker": "brick",
+      "type": "laminated",
+      "v_crack": 0.86,
+      "v_through": 8.03
+    },
+    {
+      "e_crack": 1.32,
+      "e_through": 118.1,
+      "mass": 0.9,
+      "mm": 3.0,
+      "striker": "bottle",
+      "type": "laminated",
+      "v_crack": 1.71,
+      "v_through": 16.2
+    },
+    {
+      "e_crack": 1.19,
+      "e_through": 97.51,
+      "mass": 1.0,
+      "mm": 3.0,
+      "striker": "hammer",
+      "type": "laminated",
+      "v_crack": 1.54,
+      "v_through": 13.97
+    },
+    {
+      "e_crack": 2.01,
+      "e_through": 137.68,
+      "mass": 5.0,
+      "mm": 3.0,
+      "striker": "chair",
+      "type": "laminated",
+      "v_crack": 0.9,
+      "v_through": 7.42
+    },
+    {
+      "e_crack": 10.63,
+      "e_through": 601.71,
+      "mass": 4.0,
+      "mm": 3.0,
+      "striker": "fist",
+      "type": "laminated",
+      "v_crack": 2.31,
+      "v_through": 17.35
+    },
+    {
+      "e_crack": 17.88,
+      "e_through": 1064.0,
+      "mass": 70.0,
+      "mm": 3.0,
+      "striker": "body",
+      "type": "laminated",
+      "v_crack": 0.71,
+      "v_through": 5.51
+    },
+    {
+      "e_crack": 0.26,
+      "e_through": 28.55,
+      "mass": 0.03,
+      "mm": 3.0,
+      "striker": "punch_tool",
+      "type": "laminated",
+      "v_crack": 4.2,
+      "v_through": 43.63
+    },
+    {
+      "e_crack": 1.41,
+      "e_through": 110.5,
+      "mass": 0.2,
+      "mm": 4.0,
+      "striker": "stone",
+      "type": "laminated",
+      "v_crack": 3.75,
+      "v_through": 33.24
+    },
+    {
+      "e_crack": 1.58,
+      "e_through": 119.11,
+      "mass": 2.4,
+      "mm": 4.0,
+      "striker": "brick",
+      "type": "laminated",
+      "v_crack": 1.15,
+      "v_through": 9.96
+    },
+    {
+      "e_crack": 2.34,
+      "e_through": 181.82,
+      "mass": 0.9,
+      "mm": 4.0,
+      "striker": "bottle",
+      "type": "laminated",
+      "v_crack": 2.28,
+      "v_through": 20.1
+    },
+    {
+      "e_crack": 2.12,
+      "e_through": 150.13,
+      "mass": 1.0,
+      "mm": 4.0,
+      "striker": "hammer",
+      "type": "laminated",
+      "v_crack": 2.06,
+      "v_through": 17.33
+    },
+    {
+      "e_crack": 3.57,
+      "e_through": 211.97,
+      "mass": 5.0,
+      "mm": 4.0,
+      "striker": "chair",
+      "type": "laminated",
+      "v_crack": 1.19,
+      "v_through": 9.21
+    },
+    {
+      "e_crack": 18.9,
+      "e_through": 926.39,
+      "mass": 4.0,
+      "mm": 4.0,
+      "striker": "fist",
+      "type": "laminated",
+      "v_crack": 3.07,
+      "v_through": 21.52
+    },
+    {
+      "e_crack": 31.79,
+      "e_through": 1638.14,
+      "mass": 70.0,
+      "mm": 4.0,
+      "striker": "body",
+      "type": "laminated",
+      "v_crack": 0.95,
+      "v_through": 6.84
+    },
+    {
+      "e_crack": 0.47,
+      "e_through": 43.96,
+      "mass": 0.03,
+      "mm": 4.0,
+      "striker": "punch_tool",
+      "type": "laminated",
+      "v_crack": 5.6,
+      "v_through": 54.13
+    },
+    {
+      "e_crack": 3.17,
+      "e_through": 203.0,
+      "mass": 0.2,
+      "mm": 6.0,
+      "striker": "stone",
+      "type": "laminated",
+      "v_crack": 5.63,
+      "v_through": 45.06
+    },
+    {
+      "e_crack": 3.55,
+      "e_through": 218.81,
+      "mass": 2.4,
+      "mm": 6.0,
+      "striker": "brick",
+      "type": "laminated",
+      "v_crack": 1.72,
+      "v_through": 13.5
+    },
+    {
+      "e_crack": 5.27,
+      "e_through": 334.03,
+      "mass": 0.9,
+      "mm": 6.0,
+      "striker": "bottle",
+      "type": "laminated",
+      "v_crack": 3.42,
+      "v_through": 27.24
+    },
+    {
+      "e_crack": 4.77,
+      "e_through": 275.8,
+      "mass": 1.0,
+      "mm": 6.0,
+      "striker": "hammer",
+      "type": "laminated",
+      "v_crack": 3.09,
+      "v_through": 23.49
+    },
+    {
+      "e_crack": 8.02,
+      "e_through": 389.41,
+      "mass": 5.0,
+      "mm": 6.0,
+      "striker": "chair",
+      "type": "laminated",
+      "v_crack": 1.79,
+      "v_through": 12.48
+    },
+    {
+      "e_crack": 42.52,
+      "e_through": 1701.89,
+      "mass": 4.0,
+      "mm": 6.0,
+      "striker": "fist",
+      "type": "laminated",
+      "v_crack": 4.61,
+      "v_through": 29.17
+    },
+    {
+      "e_crack": 71.54,
+      "e_through": 3009.45,
+      "mass": 70.0,
+      "mm": 6.0,
+      "striker": "body",
+      "type": "laminated",
+      "v_crack": 1.43,
+      "v_through": 9.27
+    },
+    {
+      "e_crack": 1.06,
+      "e_through": 54.0,
+      "mass": 0.03,
+      "mm": 6.0,
+      "striker": "punch_tool",
+      "type": "laminated",
+      "v_crack": 8.39,
+      "v_through": 60.0
+    },
+    {
+      "e_crack": 8.8,
+      "e_through": 436.78,
+      "mass": 0.2,
+      "mm": 10.0,
+      "striker": "stone",
+      "type": "laminated",
+      "v_crack": 9.38,
+      "v_through": 66.09
+    },
+    {
+      "e_crack": 9.87,
+      "e_through": 470.8,
+      "mass": 2.4,
+      "mm": 10.0,
+      "striker": "brick",
+      "type": "laminated",
+      "v_crack": 2.87,
+      "v_through": 19.81
+    },
+    {
+      "e_crack": 14.65,
+      "e_through": 718.71,
+      "mass": 0.9,
+      "mm": 10.0,
+      "striker": "bottle",
+      "type": "laminated",
+      "v_crack": 5.71,
+      "v_through": 39.96
+    },
+    {
+      "e_crack": 13.24,
+      "e_through": 593.43,
+      "mass": 1.0,
+      "mm": 10.0,
+      "striker": "hammer",
+      "type": "laminated",
+      "v_crack": 5.15,
+      "v_through": 34.45
+    },
+    {
+      "e_crack": 22.28,
+      "e_through": 837.87,
+      "mass": 5.0,
+      "mm": 10.0,
+      "striker": "chair",
+      "type": "laminated",
+      "v_crack": 2.99,
+      "v_through": 18.31
+    },
+    {
+      "e_crack": 118.11,
+      "e_through": 3661.88,
+      "mass": 4.0,
+      "mm": 10.0,
+      "striker": "fist",
+      "type": "laminated",
+      "v_crack": 7.68,
+      "v_through": 42.79
+    },
+    {
+      "e_crack": 198.71,
+      "e_through": 6475.3,
+      "mass": 70.0,
+      "mm": 10.0,
+      "striker": "body",
+      "type": "laminated",
+      "v_crack": 2.38,
+      "v_through": 13.6
+    },
+    {
+      "e_crack": 2.94,
+      "e_through": 54.0,
+      "mass": 0.03,
+      "mm": 10.0,
+      "striker": "punch_tool",
+      "type": "laminated",
+      "v_crack": 13.99,
+      "v_through": 60.0
+    },
+    {
+      "e_crack": 0.57,
+      "e_through": 36.4,
+      "mass": 0.2,
+      "mm": 3.0,
+      "striker": "stone",
+      "type": "wired",
+      "v_crack": 2.39,
+      "v_through": 19.08
+    },
+    {
+      "e_crack": 0.64,
+      "e_through": 39.23,
+      "mass": 2.4,
+      "mm": 3.0,
+      "striker": "brick",
+      "type": "wired",
+      "v_crack": 0.73,
+      "v_through": 5.72
+    },
+    {
+      "e_crack": 0.95,
+      "e_through": 59.89,
+      "mass": 0.9,
+      "mm": 3.0,
+      "striker": "bottle",
+      "type": "wired",
+      "v_crack": 1.45,
+      "v_through": 11.54
+    },
+    {
+      "e_crack": 0.86,
+      "e_through": 49.45,
+      "mass": 1.0,
+      "mm": 3.0,
+      "striker": "hammer",
+      "type": "wired",
+      "v_crack": 1.31,
+      "v_through": 9.95
+    },
+    {
+      "e_crack": 1.45,
+      "e_through": 69.82,
+      "mass": 5.0,
+      "mm": 3.0,
+      "striker": "chair",
+      "type": "wired",
+      "v_crack": 0.76,
+      "v_through": 5.28
+    },
+    {
+      "e_crack": 7.68,
+      "e_through": 305.16,
+      "mass": 4.0,
+      "mm": 3.0,
+      "striker": "fist",
+      "type": "wired",
+      "v_crack": 1.96,
+      "v_through": 12.35
+    },
+    {
+      "e_crack": 12.92,
+      "e_through": 539.61,
+      "mass": 70.0,
+      "mm": 3.0,
+      "striker": "body",
+      "type": "wired",
+      "v_crack": 0.61,
+      "v_through": 3.93
+    },
+    {
+      "e_crack": 0.19,
+      "e_through": 14.48,
+      "mass": 0.03,
+      "mm": 3.0,
+      "striker": "punch_tool",
+      "type": "wired",
+      "v_crack": 3.57,
+      "v_through": 31.07
+    },
+    {
+      "e_crack": 1.02,
+      "e_through": 56.04,
+      "mass": 0.2,
+      "mm": 4.0,
+      "striker": "stone",
+      "type": "wired",
+      "v_crack": 3.19,
+      "v_through": 23.67
+    },
+    {
+      "e_crack": 1.14,
+      "e_through": 60.4,
+      "mass": 2.4,
+      "mm": 4.0,
+      "striker": "brick",
+      "type": "wired",
+      "v_crack": 0.97,
+      "v_through": 7.09
+    },
+    {
+      "e_crack": 1.69,
+      "e_through": 92.21,
+      "mass": 0.9,
+      "mm": 4.0,
+      "striker": "bottle",
+      "type": "wired",
+      "v_crack": 1.94,
+      "v_through": 14.31
+    },
+    {
+      "e_crack": 1.53,
+      "e_through": 76.14,
+      "mass": 1.0,
+      "mm": 4.0,
+      "striker": "hammer",
+      "type": "wired",
+      "v_crack": 1.75,
+      "v_through": 12.34
+    },
+    {
+      "e_crack": 2.57,
+      "e_through": 107.5,
+      "mass": 5.0,
+      "mm": 4.0,
+      "striker": "chair",
+      "type": "wired",
+      "v_crack": 1.01,
+      "v_through": 6.56
+    },
+    {
+      "e_crack": 13.65,
+      "e_through": 469.82,
+      "mass": 4.0,
+      "mm": 4.0,
+      "striker": "fist",
+      "type": "wired",
+      "v_crack": 2.61,
+      "v_through": 15.33
+    },
+    {
+      "e_crack": 22.96,
+      "e_through": 830.78,
+      "mass": 70.0,
+      "mm": 4.0,
+      "striker": "body",
+      "type": "wired",
+      "v_crack": 0.81,
+      "v_through": 4.87
+    },
+    {
+      "e_crack": 0.34,
+      "e_through": 22.29,
+      "mass": 0.03,
+      "mm": 4.0,
+      "striker": "punch_tool",
+      "type": "wired",
+      "v_crack": 4.76,
+      "v_through": 38.55
+    },
+    {
+      "e_crack": 2.29,
+      "e_through": 102.95,
+      "mass": 0.2,
+      "mm": 6.0,
+      "striker": "stone",
+      "type": "wired",
+      "v_crack": 4.78,
+      "v_through": 32.09
+    },
+    {
+      "e_crack": 2.57,
+      "e_through": 110.97,
+      "mass": 2.4,
+      "mm": 6.0,
+      "striker": "brick",
+      "type": "wired",
+      "v_crack": 1.46,
+      "v_through": 9.62
+    },
+    {
+      "e_crack": 3.81,
+      "e_through": 169.4,
+      "mass": 0.9,
+      "mm": 6.0,
+      "striker": "bottle",
+      "type": "wired",
+      "v_crack": 2.91,
+      "v_through": 19.4
+    },
+    {
+      "e_crack": 3.44,
+      "e_through": 139.87,
+      "mass": 1.0,
+      "mm": 6.0,
+      "striker": "hammer",
+      "type": "wired",
+      "v_crack": 2.62,
+      "v_through": 16.73
+    },
+    {
+      "e_crack": 5.79,
+      "e_through": 197.49,
+      "mass": 5.0,
+      "mm": 6.0,
+      "striker": "chair",
+      "type": "wired",
+      "v_crack": 1.52,
+      "v_through": 8.89
+    },
+    {
+      "e_crack": 30.71,
+      "e_through": 863.11,
+      "mass": 4.0,
+      "mm": 6.0,
+      "striker": "fist",
+      "type": "wired",
+      "v_crack": 3.92,
+      "v_through": 20.77
+    },
+    {
+      "e_crack": 51.67,
+      "e_through": 1526.24,
+      "mass": 70.0,
+      "mm": 6.0,
+      "striker": "body",
+      "type": "wired",
+      "v_crack": 1.21,
+      "v_through": 6.6
+    },
+    {
+      "e_crack": 0.76,
+      "e_through": 40.95,
+      "mass": 0.03,
+      "mm": 6.0,
+      "striker": "punch_tool",
+      "type": "wired",
+      "v_crack": 7.13,
+      "v_through": 52.25
+    },
+    {
+      "e_crack": 6.36,
+      "e_through": 221.51,
+      "mass": 0.2,
+      "mm": 10.0,
+      "striker": "stone",
+      "type": "wired",
+      "v_crack": 7.97,
+      "v_through": 47.07
+    },
+    {
+      "e_crack": 7.13,
+      "e_through": 238.77,
+      "mass": 2.4,
+      "mm": 10.0,
+      "striker": "brick",
+      "type": "wired",
+      "v_crack": 2.44,
+      "v_through": 14.11
+    },
+    {
+      "e_crack": 10.58,
+      "e_through": 364.5,
+      "mass": 0.9,
+      "mm": 10.0,
+      "striker": "bottle",
+      "type": "wired",
+      "v_crack": 4.85,
+      "v_through": 28.46
+    },
+    {
+      "e_crack": 9.57,
+      "e_through": 300.96,
+      "mass": 1.0,
+      "mm": 10.0,
+      "striker": "hammer",
+      "type": "wired",
+      "v_crack": 4.37,
+      "v_through": 24.53
+    },
+    {
+      "e_crack": 16.09,
+      "e_through": 424.93,
+      "mass": 5.0,
+      "mm": 10.0,
+      "striker": "chair",
+      "type": "wired",
+      "v_crack": 2.54,
+      "v_through": 13.04
+    },
+    {
+      "e_crack": 85.3,
+      "e_through": 1857.12,
+      "mass": 4.0,
+      "mm": 10.0,
+      "striker": "fist",
+      "type": "wired",
+      "v_crack": 6.53,
+      "v_through": 30.47
+    },
+    {
+      "e_crack": 143.52,
+      "e_through": 3283.95,
+      "mass": 70.0,
+      "mm": 10.0,
+      "striker": "body",
+      "type": "wired",
+      "v_crack": 2.02,
+      "v_through": 9.69
+    },
+    {
+      "e_crack": 2.12,
+      "e_through": 54.0,
+      "mass": 0.03,
+      "mm": 10.0,
+      "striker": "punch_tool",
+      "type": "wired",
+      "v_crack": 11.89,
+      "v_through": 60.0
+    },
+    {
+      "e_crack": 23.47,
+      "e_through": "inf",
+      "mass": 0.2,
+      "mm": 20.0,
+      "striker": "stone",
+      "type": "resistant",
+      "v_crack": 15.32,
+      "v_through": "inf"
+    },
+    {
+      "e_crack": 26.31,
+      "e_through": 3020.21,
+      "mass": 2.4,
+      "mm": 20.0,
+      "striker": "brick",
+      "type": "resistant",
+      "v_crack": 4.68,
+      "v_through": 50.17
+    },
+    {
+      "e_crack": 39.06,
+      "e_through": 4610.54,
+      "mass": 0.9,
+      "mm": 20.0,
+      "striker": "bottle",
+      "type": "resistant",
+      "v_crack": 9.32,
+      "v_through": 101.22
+    },
+    {
+      "e_crack": 35.32,
+      "e_through": 3806.88,
+      "mass": 1.0,
+      "mm": 20.0,
+      "striker": "hammer",
+      "type": "resistant",
+      "v_crack": 8.4,
+      "v_through": 87.26
+    },
+    {
+      "e_crack": 59.42,
+      "e_through": 5374.93,
+      "mass": 5.0,
+      "mm": 20.0,
+      "striker": "chair",
+      "type": "resistant",
+      "v_crack": 4.88,
+      "v_through": 46.37
+    },
+    {
+      "e_crack": 314.96,
+      "e_through": 23490.98,
+      "mass": 4.0,
+      "mm": 20.0,
+      "striker": "fist",
+      "type": "resistant",
+      "v_crack": 12.55,
+      "v_through": 108.38
+    },
+    {
+      "e_crack": 529.91,
+      "e_through": 41539.1,
+      "mass": 70.0,
+      "mm": 20.0,
+      "striker": "body",
+      "type": "resistant",
+      "v_crack": 3.89,
+      "v_through": 34.45
+    },
+    {
+      "e_crack": 7.83,
+      "e_through": 146.75,
+      "mass": 0.03,
+      "mm": 20.0,
+      "striker": "punch_tool",
+      "type": "resistant",
+      "v_crack": 22.85,
+      "v_through": 98.91
+    },
+    {
+      "e_crack": 52.81,
+      "e_through": "inf",
+      "mass": 0.2,
+      "mm": 30.0,
+      "striker": "stone",
+      "type": "resistant",
+      "v_crack": 22.98,
+      "v_through": "inf"
+    },
+    {
+      "e_crack": 59.2,
+      "e_through": 5548.48,
+      "mass": 2.4,
+      "mm": 30.0,
+      "striker": "brick",
+      "type": "resistant",
+      "v_crack": 7.02,
+      "v_through": 68.0
+    },
+    {
+      "e_crack": 87.88,
+      "e_through": 8470.1,
+      "mass": 0.9,
+      "mm": 30.0,
+      "striker": "bottle",
+      "type": "resistant",
+      "v_crack": 13.97,
+      "v_through": 137.19
+    },
+    {
+      "e_crack": 79.46,
+      "e_through": 6993.68,
+      "mass": 1.0,
+      "mm": 30.0,
+      "striker": "hammer",
+      "type": "resistant",
+      "v_crack": 12.61,
+      "v_through": 118.27
+    },
+    {
+      "e_crack": 133.7,
+      "e_through": 9874.38,
+      "mass": 5.0,
+      "mm": 30.0,
+      "striker": "chair",
+      "type": "resistant",
+      "v_crack": 7.31,
+      "v_through": 62.85
+    },
+    {
+      "e_crack": 708.65,
+      "e_through": 43155.68,
+      "mass": 4.0,
+      "mm": 30.0,
+      "striker": "fist",
+      "type": "resistant",
+      "v_crack": 18.82,
+      "v_through": 146.89
+    },
+    {
+      "e_crack": 1192.29,
+      "e_through": 76312.19,
+      "mass": 70.0,
+      "mm": 30.0,
+      "striker": "body",
+      "type": "resistant",
+      "v_crack": 5.84,
+      "v_through": 46.69
+    },
+    {
+      "e_crack": 17.62,
+      "e_through": 280.76,
+      "mass": 0.03,
+      "mm": 30.0,
+      "striker": "punch_tool",
+      "type": "resistant",
+      "v_crack": 34.27,
+      "v_through": 136.81
+    },
+    {
+      "e_crack": 93.88,
+      "e_through": "inf",
+      "mass": 0.2,
+      "mm": 40.0,
+      "striker": "stone",
+      "type": "resistant",
+      "v_crack": 30.64,
+      "v_through": "inf"
+    },
+    {
+      "e_crack": 105.24,
+      "e_through": 8542.45,
+      "mass": 2.4,
+      "mm": 40.0,
+      "striker": "brick",
+      "type": "resistant",
+      "v_crack": 9.36,
+      "v_through": 84.37
+    },
+    {
+      "e_crack": 156.24,
+      "e_through": "inf",
+      "mass": 0.9,
+      "mm": 40.0,
+      "striker": "bottle",
+      "type": "resistant",
+      "v_crack": 18.63,
+      "v_through": "inf"
+    },
+    {
+      "e_crack": 141.27,
+      "e_through": 10767.48,
+      "mass": 1.0,
+      "mm": 40.0,
+      "striker": "hammer",
+      "type": "resistant",
+      "v_crack": 16.81,
+      "v_through": 146.75
+    },
+    {
+      "e_crack": 237.69,
+      "e_through": 15202.61,
+      "mass": 5.0,
+      "mm": 40.0,
+      "striker": "chair",
+      "type": "resistant",
+      "v_crack": 9.75,
+      "v_through": 77.98
+    },
+    {
+      "e_crack": 1259.82,
+      "e_through": "inf",
+      "mass": 4.0,
+      "mm": 40.0,
+      "striker": "fist",
+      "type": "resistant",
+      "v_crack": 25.1,
+      "v_through": "inf"
+    },
+    {
+      "e_crack": 2119.63,
+      "e_through": 117490.31,
+      "mass": 70.0,
+      "mm": 40.0,
+      "striker": "body",
+      "type": "resistant",
+      "v_crack": 7.78,
+      "v_through": 57.94
+    },
+    {
+      "e_crack": 31.32,
+      "e_through": "inf",
+      "mass": 0.03,
+      "mm": 40.0,
+      "striker": "punch_tool",
+      "type": "resistant",
+      "v_crack": 45.69,
+      "v_through": "inf"
+    }
+  ],
+  "tiers": {
+    "high": {
+      "brick_annealed": {
+        "build_ms_max_per_frame": 1.63,
+        "frame_ms_max_after": 3.6,
+        "granules": 96,
+        "impact_ms": 12.01,
+        "mask_mb": 0.88,
+        "mesh_instances": 6,
+        "outcome": "shattered",
+        "shards": 68
+      },
+      "bullet": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.0,
+        "granules": 0,
+        "impact_ms": 2.87,
+        "mask_mb": 0.88,
+        "mesh_instances": 6,
+        "outcome": "punched",
+        "shards": 0
+      },
+      "bullet_x10": {
+        "build_ms_max_per_frame": 1.67,
+        "frame_ms_max_after": 3.6,
+        "granules": 79,
+        "impact_ms": 23.78,
+        "mask_mb": 0.88,
+        "mesh_instances": 6,
+        "outcome": "shattered",
+        "shards": 66
+      },
+      "tempered_dice": {
+        "build_ms_max_per_frame": 1.6,
+        "frame_ms_max_after": 3.0,
+        "granules": 2802,
+        "impact_ms": 1.13,
+        "mask_mb": 0.88,
+        "mesh_instances": 5,
+        "outcome": "shattered",
+        "shards": 46
+      }
+    },
+    "low": {
+      "brick_annealed": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.0,
+        "granules": 0,
+        "impact_ms": 1.2,
+        "mask_mb": 0.0,
+        "mesh_instances": 6,
+        "outcome": "shattered",
+        "shards": 0
+      },
+      "bullet": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.0,
+        "granules": 0,
+        "impact_ms": 0.19,
+        "mask_mb": 0.0,
+        "mesh_instances": 6,
+        "outcome": "punched",
+        "shards": 0
+      },
+      "bullet_x10": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.0,
+        "granules": 0,
+        "impact_ms": 1.97,
+        "mask_mb": 0.0,
+        "mesh_instances": 6,
+        "outcome": "shattered",
+        "shards": 0
+      },
+      "tempered_dice": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.1,
+        "granules": 0,
+        "impact_ms": 0.17,
+        "mask_mb": 0.0,
+        "mesh_instances": 5,
+        "outcome": "shattered",
+        "shards": 0
+      }
+    },
+    "medium": {
+      "brick_annealed": {
+        "build_ms_max_per_frame": 1.57,
+        "frame_ms_max_after": 3.1,
+        "granules": 29,
+        "impact_ms": 6.68,
+        "mask_mb": 0.22,
+        "mesh_instances": 6,
+        "outcome": "shattered",
+        "shards": 33
+      },
+      "bullet": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.0,
+        "granules": 0,
+        "impact_ms": 1.17,
+        "mask_mb": 0.22,
+        "mesh_instances": 6,
+        "outcome": "punched",
+        "shards": 0
+      },
+      "bullet_x10": {
+        "build_ms_max_per_frame": 1.6,
+        "frame_ms_max_after": 2.1,
+        "granules": 27,
+        "impact_ms": 11.36,
+        "mask_mb": 0.22,
+        "mesh_instances": 6,
+        "outcome": "shattered",
+        "shards": 33
+      },
+      "tempered_dice": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.9,
+        "granules": 620,
+        "impact_ms": 0.32,
+        "mask_mb": 0.22,
+        "mesh_instances": 5,
+        "outcome": "shattered",
+        "shards": 0
+      }
+    },
+    "minimal": {
+      "brick_annealed": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.0,
+        "granules": 0,
+        "impact_ms": 0.13,
+        "mask_mb": 0.0,
+        "mesh_instances": 5,
+        "outcome": "shattered",
+        "shards": 0
+      },
+      "bullet": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.1,
+        "granules": 0,
+        "impact_ms": 0.17,
+        "mask_mb": 0.0,
+        "mesh_instances": 6,
+        "outcome": "punched",
+        "shards": 0
+      },
+      "bullet_x10": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.0,
+        "granules": 0,
+        "impact_ms": 0.76,
+        "mask_mb": 0.0,
+        "mesh_instances": 5,
+        "outcome": "shattered",
+        "shards": 0
+      },
+      "tempered_dice": {
+        "build_ms_max_per_frame": 0.0,
+        "frame_ms_max_after": 0.0,
+        "granules": 0,
+        "impact_ms": 0.11,
+        "mask_mb": 0.0,
+        "mesh_instances": 5,
+        "outcome": "shattered",
+        "shards": 0
+      }
+    }
+  },
+  "trials": {
+    "bottle_25ms_grazing": {
+      "held": 0,
+      "hit": 1000,
+      "max_err_mm": 429.858684539795,
+      "miss": 0,
+      "passed": 1000,
+      "recomputes": 2000,
+      "trials": 1000,
+      "tunnel": 0
+    },
+    "bottle_25ms_normal": {
+      "held": 0,
+      "hit": 1000,
+      "max_err_mm": 43.8404940068722,
+      "miss": 0,
+      "passed": 1000,
+      "recomputes": 2000,
+      "trials": 1000,
+      "tunnel": 0
+    },
+    "brick_15ms_grazing": {
+      "held": 0,
+      "hit": 1000,
+      "max_err_mm": 343.073099851608,
+      "miss": 0,
+      "passed": 1000,
+      "recomputes": 2000,
+      "trials": 1000,
+      "tunnel": 0
+    },
+    "brick_15ms_normal": {
+      "held": 0,
+      "hit": 1000,
+      "max_err_mm": 36.2456850707531,
+      "miss": 0,
+      "passed": 1000,
+      "recomputes": 2000,
+      "trials": 1000,
+      "tunnel": 0
+    },
+    "bullet_7g_350ms_grazing": {
+      "hit": 1000,
+      "max_err_mm": 14.421577565372,
+      "miss": 0,
+      "pierced": 0,
+      "ricochet": 1000,
+      "stopped": 0,
+      "trials": 1000,
+      "tunnel": 0
+    },
+    "bullet_7g_350ms_normal": {
+      "hit": 1000,
+      "max_err_mm": 2.12998013012111,
+      "miss": 0,
+      "pierced": 1000,
+      "ricochet": 0,
+      "stopped": 0,
+      "trials": 1000,
+      "tunnel": 0
+    }
+  }
+}

@@ -1,0 +1,32 @@
+<!doctype html><meta charset="utf-8"><title>bottle test</title>
+<style>html,body{margin:0;background:#20242b;overflow:hidden}</style>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { setupBottle } from '/shared/shaders/three/bottle_liquid.js';
+const q = new URLSearchParams(location.search);
+const name = q.get('bottle') || 'wine';
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x2b323c);
+const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.MeshStandardMaterial({ color: 0x777777, roughness: .9 }));
+floor.rotation.x = -Math.PI / 2; floor.position.y = -0.4; scene.add(floor);
+const cam = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.05, 20); cam.position.set(0, 0.0, 0.85); cam.lookAt(0, 0, 0);
+const dl = new THREE.DirectionalLight(0xffffff, 2); dl.position.set(1, 2, 2); scene.add(dl);
+const gltf = await new GLTFLoader().loadAsync(`/shared/export/bottle_${name}.glb`);
+const holder = new THREE.Group(); holder.add(gltf.scene); scene.add(holder);
+const box = new THREE.Box3().setFromObject(gltf.scene); const c = box.getCenter(new THREE.Vector3());
+gltf.scene.position.sub(c);                       // rotate around the bottle's centre
+const bottle = setupBottle(gltf.scene, { fill: +(q.get('fill') || 0.6) });
+window.pose = (tiltDeg, fill, spinDeg = 0) => {
+  holder.rotation.set(0, THREE.MathUtils.degToRad(spinDeg), THREE.MathUtils.degToRad(tiltDeg), 'YXZ');
+  bottle.fill = fill;
+  for (let i = 0; i < 600; i++) { holder.updateMatrixWorld(true); bottle.update(1 / 60); }   // let the slosh settle
+  renderer.render(scene, cam);
+};
+window.pose(+(q.get('tilt') || 0), bottle.fill);
+window.__ready = true;
+</script>

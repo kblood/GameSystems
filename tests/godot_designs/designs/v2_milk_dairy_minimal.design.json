@@ -1,0 +1,95 @@
+{
+ "name": "v2_milk_dairy",
+ "tier": "minimal",
+ "bottle": "v2_milk",
+ "asset": "v2_milk",
+ "provider": "lathe_v2",
+ "glb": "v2_milk_dairy_minimal.glb",
+ "liquid_sidecar": "v2_milk_dairy_minimal.liquid.json",
+ "meta": {
+  "description": "Milk bottle with a full paper wrap (blue bands, milk drop emblem).",
+  "tags": [
+   "milk",
+   "wrap",
+   "v2"
+  ],
+  "name": "v2_milk_dairy",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 326,
+  "base_glb": "export/v2/bottle_milk_lod2.glb",
+  "base_tex_mem_kb_rgba8_mips": 0,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 0,
+  "label_tex_mem_kb_compressed_mips": 0
+ },
+ "glass": {
+  "bottle": "milk",
+  "tier": "low",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.03,
+   0.095
+  ],
+  "label_panel": false,
+  "z_top": 0.2222,
+  "r_bore": 0.021,
+  "glass": "flint",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "milkfoil"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 566.8,
+  "z0": 0.00574,
+  "z1": 0.2172,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.95,
+   0.95,
+   0.9,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.0,
+  "foam_height": 0.006,
+  "bubble_size": 1.0,
+  "fill_default": 0.8,
+  "opacity": 1.0
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "wrap",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.4511036472152307,
+    0.5538403801388687,
+    0.641626429121508,
+    1.0
+   ],
+   "width_m": 0.23168,
+   "height_m": 0.068,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "wrap",
+  "front",
+  "back"
+ ]
+}

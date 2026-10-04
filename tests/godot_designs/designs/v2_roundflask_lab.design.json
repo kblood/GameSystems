@@ -1,0 +1,162 @@
+{
+ "name": "v2_roundflask_lab",
+ "tier": "high",
+ "bottle": "v2_roundflask",
+ "asset": "v2_roundflask",
+ "provider": "lathe_v2",
+ "glb": "v2_roundflask_lab.glb",
+ "liquid_sidecar": "v2_roundflask_lab.liquid.json",
+ "meta": {
+  "description": "Round-bottom flask with a label-printer strip, graduation patch and hand-written tag.",
+  "tags": [
+   "lab",
+   "v2"
+  ],
+  "name": "v2_roundflask_lab",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 7,
+  "label_draw_calls": 3,
+  "textures": 6,
+  "texture_sizes": [
+   [
+    128,
+    128
+   ],
+   [
+    204,
+    442
+   ],
+   [
+    404,
+    180
+   ],
+   [
+    404,
+    180
+   ],
+   [
+    276,
+    294
+   ],
+   [
+    276,
+    294
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 2157,
+  "tex_mem_kb_compressed_mips": 539,
+  "glb_kb": 402,
+  "base_glb": "export/v2/bottle_roundflask.glb",
+  "base_tex_mem_kb_rgba8_mips": 85,
+  "base_draw_calls": 4,
+  "label_tex_mem_kb_rgba8_mips": 2072,
+  "label_tex_mem_kb_compressed_mips": 518
+ },
+ "glass": {
+  "bottle": "roundflask",
+  "tier": "high",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": null,
+  "label_panel": false,
+  "z_top": 0.147,
+  "r_bore": 0.0114,
+  "glass": "borosilicate",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "cork"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 295.8,
+  "z0": 0.002,
+  "z1": 0.133,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.15,
+   0.55,
+   0.25,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.35,
+  "foam_height": 0.01,
+  "bubble_size": 1.0,
+  "fill_default": 0.45
+ },
+ "labels": [
+  {
+   "slot": "tag",
+   "texture": "textures/v2_roundflask_lab_tag.png",
+   "wear_mask": "textures/v2_roundflask_lab_tag_wear.png",
+   "material_kind": "tape",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.0269,
+   "height_m": 0.012,
+   "aspect": 2.2411,
+   "arc_deg": 36.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "grad",
+   "texture": "textures/v2_roundflask_lab_grad.png",
+   "wear_mask": null,
+   "material_kind": "clear_film",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.02036,
+   "height_m": 0.04427,
+   "aspect": 0.46,
+   "arc_deg": 30.0,
+   "alpha_mode": "BLEND",
+   "source": "generate",
+   "empty": false
+  },
+  {
+   "slot": "tag_hand",
+   "texture": "textures/v2_roundflask_lab_tag_hand.png",
+   "wear_mask": "textures/v2_roundflask_lab_tag_hand_wear.png",
+   "material_kind": "handwritten_tag",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.02751,
+   "height_m": 0.02934,
+   "aspect": 0.9378,
+   "arc_deg": 40.0,
+   "alpha_mode": "MASK",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "tag",
+  "grad",
+  "tag_hand"
+ ]
+}

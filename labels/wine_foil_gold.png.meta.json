@@ -1,0 +1,17 @@
+{
+ "template": "foil_capsule",
+ "bottle": "wine",
+ "slot": "foil",
+ "size_px": [
+  818,
+  492
+ ],
+ "px_per_cm": 100.1,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 5,
+ "fields": {
+  "foil": "#c9a13a",
+  "brand": "LUNELLE"
+ }
+}

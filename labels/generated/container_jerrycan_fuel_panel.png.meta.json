@@ -1,0 +1,20 @@
+{
+ "template": "labelwriter_yellow",
+ "bottle": "container_jerrycan",
+ "slot": "panel",
+ "size_px": [
+  230,
+  550
+ ],
+ "px_per_cm": 50.0,
+ "alpha": false,
+ "wear": 0.2,
+ "seed": 122,
+ "fields": {
+  "tape": "yellow",
+  "lines": [
+   "DIESEL",
+   "20 L"
+  ]
+ }
+}

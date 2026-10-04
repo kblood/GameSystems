@@ -1,0 +1,67 @@
+{
+  "name": "mason",
+  "family": "v2",
+  "material": "glass",
+  "shatters": true,
+  "source": "scripts/fracture_glb.py",
+  "frame": "bottle-local, glTF Y-up, metres, base centre at origin (same frame as the shipped GLB)",
+  "wall_thickness_m": 0.0032,
+  "density_kg_m3": 2500.0,
+  "glass_volume_m3": 0.00016295529342177952,
+  "glass_mass_kg": 0.4073882335544488,
+  "liquid_mass_kg_per_ml": 0.001,
+  "capacity_ml": 432.7,
+  "height_m": 0.12860000133514404,
+  "max_radius_m": 0.03923780615124895,
+  "base_z": 0.012,
+  "shoulder_z": 0.12860000133514404,
+  "neck_z": 0.12860000133514404,
+  "has_neck": false,
+  "weak_zones": [
+    {
+      "name": "base",
+      "z0": 0.0,
+      "z1": 0.012,
+      "thinness": 1.0
+    },
+    {
+      "name": "body",
+      "z0": 0.012,
+      "z1": 0.12860000133514404,
+      "thinness": 1.0
+    }
+  ],
+  "zone_factor": {
+    "base": 1.15,
+    "body": 1.0,
+    "shoulder": 0.85,
+    "neck": 0.55
+  },
+  "calibration": {
+    "surface": "concrete",
+    "fill": 1.0,
+    "v_n": 4.3,
+    "y": "mid_body",
+    "note": "f_crit_ref solved at load so this hit is exactly the break threshold"
+  },
+  "mesh": {
+    "area_m2": 0.06369311770224328,
+    "non_manifold_edges": 0
+  },
+  "shards": {
+    "count": 16,
+    "tris": 8264,
+    "classes": {
+      "chunk": 8,
+      "shard": 8
+    }
+  },
+  "impact_point": [
+    0.03763780742883682,
+    0.0,
+    0.07029999792575836
+  ],
+  "files": {
+    "shards": "export/v2/bottle_mason_shards.glb"
+  }
+}

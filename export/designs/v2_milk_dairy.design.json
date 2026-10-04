@@ -1,0 +1,113 @@
+{
+ "name": "v2_milk_dairy",
+ "tier": "high",
+ "bottle": "v2_milk",
+ "asset": "v2_milk",
+ "provider": "lathe_v2",
+ "glb": "v2_milk_dairy.glb",
+ "liquid_sidecar": "v2_milk_dairy.liquid.json",
+ "meta": {
+  "description": "Milk bottle with a full paper wrap (blue bands, milk drop emblem).",
+  "tags": [
+   "milk",
+   "wrap",
+   "v2"
+  ],
+  "name": "v2_milk_dairy",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 3,
+  "texture_sizes": [
+   [
+    1024,
+    1024
+   ],
+   [
+    1158,
+    340
+   ],
+   [
+    1158,
+    340
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 9560,
+  "tex_mem_kb_compressed_mips": 2390,
+  "glb_kb": 763,
+  "base_glb": "export/v2/bottle_milk.glb",
+  "base_tex_mem_kb_rgba8_mips": 5460,
+  "base_draw_calls": 3,
+  "label_tex_mem_kb_rgba8_mips": 4100,
+  "label_tex_mem_kb_compressed_mips": 1025
+ },
+ "glass": {
+  "bottle": "milk",
+  "tier": "high",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.03,
+   0.095
+  ],
+  "label_panel": false,
+  "z_top": 0.2222,
+  "r_bore": 0.021,
+  "glass": "flint",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "milkfoil"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 566.8,
+  "z0": 0.00574,
+  "z1": 0.2172,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.95,
+   0.95,
+   0.9,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.0,
+  "foam_height": 0.006,
+  "bubble_size": 1.0,
+  "fill_default": 0.8,
+  "opacity": 1.0
+ },
+ "labels": [
+  {
+   "slot": "wrap",
+   "texture": "textures/v2_milk_dairy_wrap.png",
+   "wear_mask": "textures/v2_milk_dairy_wrap_wear.png",
+   "material_kind": "paper_gloss",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.23168,
+   "height_m": 0.068,
+   "aspect": 3.407,
+   "arc_deg": 360.0,
+   "alpha_mode": "OPAQUE",
+   "source": "generate",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "wrap",
+  "front",
+  "back"
+ ]
+}

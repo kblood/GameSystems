@@ -1,0 +1,23 @@
+{
+ "template": "tag_hand",
+ "bottle": "v2_erlenmeyer",
+ "slot": "front",
+ "size_px": [
+  492,
+  410
+ ],
+ "px_per_cm": 80.0,
+ "alpha": true,
+ "wear": 0.35,
+ "seed": 111,
+ "fields": {
+  "paper": "#d2b27a",
+  "ink": "#27323f",
+  "lines": [
+   "Sample 4",
+   "12/10 - K.S."
+  ],
+  "font": "hand",
+  "angle": 2.0
+ }
+}

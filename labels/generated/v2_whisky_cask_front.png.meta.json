@@ -1,0 +1,21 @@
+{
+ "template": "whiskey_classic",
+ "bottle": "v2_whisky",
+ "slot": "front",
+ "size_px": [
+  644,
+  800
+ ],
+ "px_per_cm": 79.9,
+ "alpha": false,
+ "wear": 0.15,
+ "seed": 101,
+ "fields": {
+  "tagline": "DISTILLED & CASK AGED",
+  "brand": "Glenvorrow",
+  "product": "Single Malt Whisky",
+  "age": "AGED 12 YEARS",
+  "abv": "43% vol",
+  "volume": "700 ml"
+ }
+}

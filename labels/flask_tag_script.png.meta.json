@@ -1,0 +1,23 @@
+{
+ "template": "tag_hand_script",
+ "bottle": "flask",
+ "slot": "tag_hand",
+ "size_px": [
+  440,
+  376
+ ],
+ "px_per_cm": 100.0,
+ "alpha": true,
+ "wear": 0.2,
+ "seed": 5,
+ "fields": {
+  "paper": "#e7d6b0",
+  "ink": "#1f3a6b",
+  "lines": [
+   "Stock",
+   "A  0.5 M"
+  ],
+  "font": "script",
+  "angle": -2.0
+ }
+}

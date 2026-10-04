@@ -1,0 +1,20 @@
+{
+ "template": "labelwriter",
+ "bottle": "v2_roundflask",
+ "slot": "tag",
+ "size_px": [
+  404,
+  180
+ ],
+ "px_per_cm": 150.2,
+ "alpha": false,
+ "wear": 0.05,
+ "seed": 91,
+ "fields": {
+  "tape": "white",
+  "lines": [
+   "CuSO4 0.1 M",
+   "LOT 22"
+  ]
+ }
+}

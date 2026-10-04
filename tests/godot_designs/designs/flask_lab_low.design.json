@@ -1,0 +1,166 @@
+{
+ "name": "flask_lab",
+ "tier": "low",
+ "bottle": "flask",
+ "glb": "flask_lab_low.glb",
+ "liquid_sidecar": "flask_lab_low.liquid.json",
+ "meta": {
+  "description": "Erlenmeyer flask with a label-printer strip, a hand-written tag and graduation marks.",
+  "tags": [
+   "flask",
+   "labelwriter",
+   "handwritten",
+   "graduation"
+  ],
+  "name": "flask_lab",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 4,
+  "label_draw_calls": 1,
+  "textures": 1,
+  "texture_sizes": [
+   [
+    1024,
+    1024
+   ]
+  ],
+  "tex_mem_kb_rgba8_mips": 5460,
+  "tex_mem_kb_compressed_mips": 1365,
+  "glb_kb": 369
+ },
+ "glass": {
+  "tint": [
+   0.85,
+   0.95,
+   0.98,
+   1.0
+  ],
+  "roughness": 0.03,
+  "thickness_mm": 2.0,
+  "ior": 1.5,
+  "note": "thickness_mm is a shader hint only; the mesh wall is fixed (liquid LUT depends on it)"
+ },
+ "cap": {
+  "type": "cork",
+  "r": 0.0148,
+  "z0": 0.185,
+  "z1": 0.215,
+  "top_r": 0.013356
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 1100.2,
+  "z0": 0.0024,
+  "z1": 0.196,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.1,
+   0.55,
+   0.2,
+   1.0
+  ],
+  "carbonation": 0.0,
+  "foam": 0.35,
+  "foam_height": 0.01,
+  "bubble_size": 1.0,
+  "opacity": 0.6,
+  "viscosity": 0.05,
+  "density": 1.0,
+  "fill_default": 0.5,
+  "tint_strength": 1.0,
+  "mass_full_kg": 1.1002
+ },
+ "labels": [
+  {
+   "slot": "tag",
+   "texture": "textures/flask_lab_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "tape",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.03068,
+   "height_m": 0.01253,
+   "aspect": 2.4487,
+   "arc_deg": 31.0,
+   "alpha_mode": "BLEND",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.57227,
+    0.00195,
+    0.90918,
+    0.13965
+   ]
+  },
+  {
+   "slot": "tag_hand",
+   "texture": "textures/flask_lab_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "handwritten_tag",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": -4,
+   "width_m": 0.04398,
+   "height_m": 0.03759,
+   "aspect": 1.1702,
+   "arc_deg": 48.0,
+   "alpha_mode": "BLEND",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.24609,
+    0.00195,
+    0.56836,
+    0.27734
+   ]
+  },
+  {
+   "slot": "grad",
+   "texture": "textures/flask_lab_low_atlas.png",
+   "wear_mask": null,
+   "material_kind": "clear_film",
+   "tint": null,
+   "flip": null,
+   "offset_mm": [
+    0,
+    0
+   ],
+   "scale": 1.0,
+   "rotation_deg": 0.0,
+   "width_m": 0.03274,
+   "height_m": 0.09331,
+   "aspect": 0.3509,
+   "arc_deg": 36.0,
+   "alpha_mode": "BLEND",
+   "source": "image",
+   "empty": false,
+   "atlas_rect": [
+    0.00195,
+    0.00195,
+    0.24219,
+    0.68555
+   ]
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "tag",
+  "tag_hand",
+  "grad",
+  "cap"
+ ]
+}

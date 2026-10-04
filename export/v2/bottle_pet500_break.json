@@ -1,0 +1,69 @@
+{
+  "name": "pet500",
+  "family": "v2",
+  "material": "plastic",
+  "shatters": false,
+  "source": "scripts/fracture_glb.py",
+  "frame": "bottle-local, glTF Y-up, metres, base centre at origin (same frame as the shipped GLB)",
+  "wall_thickness_m": 0.0015,
+  "density_kg_m3": 1380.0,
+  "glass_volume_m3": 1.9075887512191004e-05,
+  "glass_mass_kg": 0.026324724766823585,
+  "liquid_mass_kg_per_ml": 0.001,
+  "capacity_ml": 509.2,
+  "height_m": 0.20334672927856445,
+  "max_radius_m": 0.03649487200906407,
+  "base_z": 0.012,
+  "shoulder_z": 0.1249602554139864,
+  "neck_z": 0.19367567081475287,
+  "has_neck": true,
+  "weak_zones": [
+    {
+      "name": "base",
+      "z0": 0.0,
+      "z1": 0.012,
+      "thinness": 1.0
+    },
+    {
+      "name": "body",
+      "z0": 0.012,
+      "z1": 0.1249602554139864,
+      "thinness": 1.0
+    },
+    {
+      "name": "shoulder",
+      "z0": 0.1249602554139864,
+      "z1": 0.19367567081475287,
+      "thinness": 1.3
+    },
+    {
+      "name": "neck",
+      "z0": 0.19367567081475287,
+      "z1": 0.20334672927856445,
+      "thinness": 0.8
+    }
+  ],
+  "zone_factor": {
+    "base": 1.15,
+    "body": 1.0,
+    "shoulder": 0.85,
+    "neck": 0.55
+  },
+  "calibration": {
+    "surface": "concrete",
+    "fill": 1.0,
+    "v_n": 4.3,
+    "y": "mid_body",
+    "note": "f_crit_ref solved at load so this hit is exactly the break threshold"
+  },
+  "mesh": {
+    "area_m2": 0.08064781196024029,
+    "non_manifold_edges": 0
+  },
+  "leak": {
+    "ratio": 1.0,
+    "hole_r_m": 0.0025,
+    "note": "impact ratio >= ratio pierces/cracks the shell: liquid leaks through a hole (no shards)"
+  },
+  "files": {}
+}

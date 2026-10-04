@@ -1,0 +1,45 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "container_hipflask",
+  "liquid": {
+    "color": [
+      0.5,
+      0.24,
+      0.05,
+      1
+    ],
+    "fill": 0.6
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "whiskey_classic",
+        "seed": 111,
+        "fields": {
+          "brand": "Glenvorrow",
+          "product": "Pocket Malt",
+          "volume": "200 ml"
+        },
+        "wear": 0.25
+      }
+    },
+    {
+      "slot": "back",
+      "generate": {
+        "template": "whiskey_back",
+        "seed": 112,
+        "wear": 0.2
+      }
+    }
+  ],
+  "meta": {
+    "description": "Curved hip flask with a front and back label following the 140 mm bend.",
+    "tags": [
+      "spirit",
+      "container"
+    ],
+    "name": "container_hipflask_engraved",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

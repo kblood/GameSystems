@@ -1,0 +1,18 @@
+{
+ "template": "jar_lid",
+ "bottle": "jar",
+ "slot": "lid",
+ "size_px": [
+  750,
+  750
+ ],
+ "px_per_cm": 100.0,
+ "alpha": false,
+ "wear": 0.0,
+ "seed": 3,
+ "fields": {
+  "style": "gingham",
+  "bg": "#f0b830",
+  "brand": "Meadowbrook"
+ }
+}

@@ -1,0 +1,8 @@
+config_version=5
+
+[application]
+config/name="bottle_audio_test"
+run/main_scene="res://audition.tscn"
+
+[audio]
+buses/default_bus_layout=""

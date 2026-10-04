@@ -1,0 +1,94 @@
+{
+ "name": "v2_whisky_cask",
+ "tier": "minimal",
+ "bottle": "v2_whisky",
+ "asset": "v2_whisky",
+ "provider": "lathe_v2",
+ "glb": "v2_whisky_cask_minimal.glb",
+ "liquid_sidecar": "v2_whisky_cask_minimal.liquid.json",
+ "meta": {
+  "description": "Whisky bottle: front and back labels and a hand-written neck tag.",
+  "tags": [
+   "spirits",
+   "tag",
+   "v2"
+  ],
+  "name": "v2_whisky_cask",
+  "licence": "CC0 / MIT - original art, fictional brands"
+ },
+ "stats": {
+  "draw_calls": 5,
+  "label_draw_calls": 1,
+  "textures": 0,
+  "texture_sizes": [],
+  "tex_mem_kb_rgba8_mips": 0,
+  "tex_mem_kb_compressed_mips": 0,
+  "glb_kb": 451,
+  "base_glb": "export/v2/bottle_whisky_lod2.glb",
+  "base_tex_mem_kb_rgba8_mips": 0,
+  "base_draw_calls": 4,
+  "label_tex_mem_kb_rgba8_mips": 0,
+  "label_tex_mem_kb_compressed_mips": 0
+ },
+ "glass": {
+  "bottle": "whisky",
+  "tier": "low",
+  "spec": "scripts/bottle_specs_v2.py",
+  "label_zone": [
+   0.0449,
+   0.1649
+  ],
+  "label_panel": false,
+  "z_top": 0.2635,
+  "r_bore": 0.0094,
+  "glass": "flint",
+  "tint_override": null
+ },
+ "cap": {
+  "type": "tcork"
+ },
+ "liquid": {
+  "version": 1,
+  "axis": "Y",
+  "capacity_ml": 731.4,
+  "z0": 0.00677,
+  "z1": 0.23953,
+  "n_cos": 33,
+  "n_fill": 64,
+  "color": [
+   0.65,
+   0.32,
+   0.05,
+   1
+  ],
+  "carbonation": 0.0,
+  "foam": 0.0,
+  "foam_height": 0.005,
+  "bubble_size": 1.0,
+  "fill_default": 0.7
+ },
+ "labels": [
+  {
+   "slot": "band",
+   "source_slot": "front",
+   "texture": null,
+   "material_kind": "band",
+   "colour_linear": [
+    0.01971606265471359,
+    0.029928185733171436,
+    0.04358192355324093,
+    1.0
+   ],
+   "width_m": 0.24168,
+   "height_m": 0.1,
+   "alpha_mode": "OPAQUE",
+   "empty": false
+  }
+ ],
+ "tex_note": "textures are relative to this file; GLB embeds copies",
+ "slots_available": [
+  "front",
+  "back",
+  "neck"
+ ]
+}

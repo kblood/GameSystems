@@ -1,0 +1,17 @@
+{
+ "template": "wine_neck",
+ "bottle": "v2_bordeaux",
+ "slot": "neck",
+ "size_px": [
+  572,
+  166
+ ],
+ "px_per_cm": 99.9,
+ "alpha": false,
+ "wear": 0.15,
+ "seed": 4,
+ "fields": {
+  "year": "2019",
+  "product": "R\u00e9serve"
+ }
+}

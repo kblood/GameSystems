@@ -1,0 +1,32 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "container_tumbler",
+  "liquid": {
+    "color": [
+      0.62,
+      0.3,
+      0.04,
+      1
+    ],
+    "fill": 0.5
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "etched",
+        "seed": 131
+      },
+      "material_kind": "clear_film"
+    }
+  ],
+  "meta": {
+    "description": "Whisky tumbler with a frosted/etched monogram (clear_film).",
+    "tags": [
+      "glass",
+      "container"
+    ],
+    "name": "container_tumbler_etched",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}

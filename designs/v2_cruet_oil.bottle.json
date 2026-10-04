@@ -1,0 +1,57 @@
+{
+  "$schema": "../docs/bottle_design.schema.json",
+  "asset": "v2_cruet",
+  "glass": {
+    "tint": "#8fc79a"
+  },
+  "liquid": {
+    "color": [
+      0.55,
+      0.5,
+      0.08,
+      1
+    ],
+    "fill": 0.65,
+    "viscosity": 0.6
+  },
+  "labels": [
+    {
+      "slot": "front",
+      "generate": {
+        "template": "apothecary",
+        "seed": 71,
+        "fields": {
+          "head": "OLIVERA",
+          "product": "Olio d'Oliva",
+          "sub": "Extra Virgin",
+          "dose": "Cold pressed"
+        },
+        "wear": 0.1
+      }
+    },
+    {
+      "slot": "neck",
+      "generate": {
+        "template": "tag_hand",
+        "seed": 72,
+        "fields": {
+          "lines": [
+            "Olive oil",
+            "Oct 2026"
+          ]
+        },
+        "wear": 0.3
+      }
+    }
+  ],
+  "meta": {
+    "description": "Oil cruet with green glass tint override, small front label and a hand-written neck tag.",
+    "tags": [
+      "kitchen",
+      "glass-tint",
+      "v2"
+    ],
+    "name": "v2_cruet_oil",
+    "licence": "CC0 / MIT - original art, fictional brands"
+  }
+}
