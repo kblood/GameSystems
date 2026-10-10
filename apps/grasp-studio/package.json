@@ -1,0 +1,25 @@
+{
+  "name": "gamesystems-grasp-studio",
+  "private": true,
+  "type": "module",
+  "description": "Quest 3 hand-tracking recorder for grasps (GameSystems extensions plan step 4).",
+  "scripts": {
+    "sync": "node scripts/sync.mjs",
+    "predev": "npm run sync",
+    "pretest": "npm run sync",
+    "test": "node --test",
+    "test:browser": "npm run sync && node tests/smoke.mjs",
+    "dev": "vite",
+    "build": "npm run sync && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@pixiv/three-vrm": "3.5.5",
+    "three": "0.170.0"
+  },
+  "devDependencies": {
+    "iwer": "2.5.0",
+    "puppeteer-core": "25.12.0",
+    "vite": "8.3.3"
+  }
+}

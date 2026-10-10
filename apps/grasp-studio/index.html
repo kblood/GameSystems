@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GameSystems · Grasp Studio</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23101619'/%3E%3Cpath d='M9 26V12a2 2 0 014 0v6V8a2 2 0 014 0v10V9a2 2 0 014 0v11-6a2 2 0 014 0v6c0 4-3 6-7 6h-3c-3 0-6-2-6-4z' fill='%23f7c880'/%3E%3C/svg%3E" />
+  <style>
+    :root { font-family: Inter, system-ui, sans-serif; color: #f4e9d8; background: #101619; }
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+    #hud { position: fixed; top: 16px; left: 16px; width: min(460px, calc(100vw - 32px)); background: #111b20de; border: 1px solid #72909277; border-radius: 12px; padding: 14px 16px; box-shadow: 0 10px 30px #0007; }
+    h1 { margin: 0 0 4px; font-size: 17px; letter-spacing: .02em; }
+    p, #status, #library { margin: 5px 0; line-height: 1.45; font-size: 12px; color: #d6d7d0; }
+    #status div:first-child { color: #f7c880; }
+    #actions, #top { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    button, select { background: #26373b; color: #f6eadb; border: 1px solid #668187; border-radius: 7px; padding: 6px 9px; cursor: pointer; font-size: 12px; }
+    button:hover:not(:disabled), select:hover { background: #395059; }
+    button.active { background: #3b6f5a; }
+    button:disabled { opacity: .45; cursor: default; }
+    #enter-xr { background: #f7c880; color: #111; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <section id="hud">
+    <h1>Grasp Studio · Quest 3</h1>
+    <p>Optag greb med håndsporing på en virtuel ølflaske. Hold hånden stille om flasken i ca. 1 s; optagelsen midles, valideres og kan gemmes direkte i <code>extensions/grasp</code>.</p>
+    <div id="top">
+      <button id="enter-xr">Gå i VR</button>
+      <select id="quality" aria-label="Kvalitet"><option value="3">Høj</option><option value="2">Mellem</option><option value="1">Lav</option><option value="0">Minimal</option></select>
+    </div>
+    <div id="status"></div>
+    <div id="actions"></div>
+    <div id="library">Gemte greb: …</div>
+  </section>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

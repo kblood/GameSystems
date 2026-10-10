@@ -1,0 +1,5 @@
+{
+  "schema": "gamesystems.recorded-grasps.v1",
+  "note": "Grasps recorded with GameSystems/apps/grasp-studio (written by its dev-server endpoint). Merged into the baked library by baked_grasps.js; see record.js.",
+  "poses": []
+}

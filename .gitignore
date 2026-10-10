@@ -30,3 +30,10 @@ tests/*/bottle_*.gd
 tests/*/bottle_*.gd.uid
 tests/*/bottle_*.gdshader*
 tests/*/liquid_lut_v2.gd*
+# grasp fit tool output (extensions/grasp/tools/fit_baked_thumbs.mjs; regenerate, then apply_grasp_fit.mjs)
+extensions/grasp/tools/scratch/
+# character-cc generated folders (sync_cc.mjs); only the games hold them
+extensions/character-cc/assets/
+extensions/character-cc/vendor/
+# character-vrm test models (fetch_model.mjs downloads them; sha256 in models.js), never committed
+extensions/character-vrm/assets/

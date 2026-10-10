@@ -6,7 +6,7 @@ stays horizontal at any tilt (sideways, upside down, diagonal). Volume is preser
 `Liquid` extras (`extras.liquid`, also `export/bottle_*.liquid.json`): `lut[cos_tilt][fill] = plane offset`.
 Rebuild assets: `blender.exe -b --python scripts/bottles.py -- [wine beer soda whiskey jar flask]`.
 
-## three.js  (`shaders/three/bottle_liquid.js`)
+## three.js  (`extensions/bottles/bottle_liquid.js`; `shaders/three/*.js` re-export it)
     const b = setupBottle(gltf.scene, { fill: 0.7 });   // once
     b.update(dt);                                       // each frame; b.fill = 0..1
 

@@ -1,0 +1,5 @@
+{
+  "schema": "gamesystems.hand-recordings.v1",
+  "note": "Hand poses and hand animations recorded with GameSystems/apps/grasp-studio (written by its dev-server endpoint /api/hand). Same clip format as hand_poses.json; a recorded clip replaces the library clip with the same id (handposes.js buildLibrary).",
+  "clips": []
+}

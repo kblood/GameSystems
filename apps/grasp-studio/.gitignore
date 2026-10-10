@@ -1,0 +1,11 @@
+node_modules/
+dist/
+# Synced from the Contracts repo by `npm run sync` (src/vendor/contracts: the old plugin copy, removed by the sync)
+public/avatar-assets/
+src/vendor/contracts/
+# Synced from GameSystems/extensions by `npm run sync`
+src/vendor/extensions/
+# browser smoke output
+tests/out/
+# character-vrm test model (CC0; fetched by GameSystems/extensions/character-vrm/fetch_model.mjs, synced by npm run sync)
+public/vrm-assets/
