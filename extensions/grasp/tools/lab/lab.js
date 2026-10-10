@@ -16,6 +16,10 @@ const scene = new THREE.Scene();
 scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.6)); const sun = new THREE.DirectionalLight(0xffffff, 2); sun.position.set(1, 3, 2); scene.add(sun);
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), new THREE.MeshStandardMaterial({ color: 0x3a4650 })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
 const useVRM = new URLSearchParams(location.search).get('character') === 'vrm';
+// ?faces=1 (lab_page FACES=1): the hand skin is sampled on its triangles too (centroid + edge midpoints of every triangle
+// whose corners are all hand vertices, grouped by the corners' majority), not only at vertices: a low-poly hand (the VRM
+// test model: 46 palm vertices, ~6 per finger segment) touches with faces whose vertices stay millimetres away.
+const sampleFaces = new URLSearchParams(location.search).get('faces') === '1';
 let characters, player;
 if (useVRM) {
   const [{ createCharacterPlugin }, { vrmCharacters }] = await Promise.all([import('/extensions/avatar/index.js'), import('/extensions/character-vrm/index.js')]);
@@ -68,7 +72,18 @@ function buildVertexSets() {
         for (let k = 0; k < 4; k++) { const wk = sw.getComponent(i, k); if (wk > w) { w = wk; best = si.getComponent(i, k); } }
         const g = groups[best]; if (g) { idx.push(i); grp.push(g); }
       }
-      if (idx.length) out[side].push({ mesh: o, idx, grp });
+      const tris = [];
+      if (sampleFaces && idx.length) {
+        const at = new Map(idx.map((v, k) => [v, k])), index = o.geometry.index;
+        const count = index ? index.count : n;
+        for (let t = 0; t + 2 < count; t += 3) {
+          const c = [0, 1, 2].map(j => at.get(index ? index.getX(t + j) : t + j));
+          if (c.some(k => k === undefined)) continue;
+          const g = grp[c[0]] === grp[c[1]] || grp[c[0]] === grp[c[2]] ? grp[c[0]] : grp[c[1]] === grp[c[2]] ? grp[c[1]] : grp[c[0]];
+          tris.push(c[0], c[1], c[2], g);
+        }
+      }
+      if (idx.length) out[side].push({ mesh: o, idx, grp, tris });
     });
   }
   vertexSets = out;
@@ -78,10 +93,16 @@ function handPoints(side) {
   if (!vertexSets) buildVertexSets();
   scene.updateMatrixWorld(true);
   const pts = [];
-  for (const { mesh, idx, grp } of vertexSets[side]) {
+  for (const { mesh, idx, grp, tris } of vertexSets[side]) {
     mesh.skeleton.update();
     const m = new THREE.Matrix4().multiplyMatrices(item.inv, mesh.matrixWorld);
-    for (let k = 0; k < idx.length; k++) { mesh.getVertexPosition(idx[k], tmp); tmp.applyMatrix4(m); pts.push({ p: [tmp.x, tmp.y, tmp.z], group: grp[k] }); }
+    const P = [];
+    for (let k = 0; k < idx.length; k++) { mesh.getVertexPosition(idx[k], tmp); tmp.applyMatrix4(m); P.push([tmp.x, tmp.y, tmp.z]); pts.push({ p: P[k], group: grp[k] }); }
+    for (let t = 0; t < tris.length; t += 4) {
+      const a = P[tris[t]], b = P[tris[t + 1]], c = P[tris[t + 2]], group = tris[t + 3];
+      pts.push({ p: [0, 1, 2].map(j => (a[j] + b[j] + c[j]) / 3), group });
+      for (const [u, v] of [[a, b], [b, c], [c, a]]) pts.push({ p: [0, 1, 2].map(j => (u[j] + v[j]) / 2), group });
+    }
   }
   return pts;
 }
@@ -132,17 +153,20 @@ function views(side, wrist, center) {
     center: c.toArray(),
   };
 }
-/** The character's rest hand as close-to-contact needs it (closure.js handGeometry input) + its world scale. */
+/** The character's rest hand as close-to-contact needs it (closure.js handGeometry input, incl. the hand profile) + its world scale. */
 function restHand(side) {
-  const rig = player.rig, h = rig.hands[side];
-  return { scale: player.scale, rest: { side, frame: { F: h.frame.F, D: h.frame.D, R: h.frame.R }, wrist: rig.H[`${side}Hand`],
-    fingers: Object.fromEntries(FINGERS.map(f => [f, { pts: h.fingers[f].pts, len: h.fingers[f].len, rest: { yaw: h.fingers[f].rest.yaw } }])) } };
+  const rig = player.rig, h = rig.hands[side], r = player.restHand?.(side);
+  return { scale: player.scale, rest: { side, frame: { F: h.frame.F, D: h.frame.D, R: h.frame.R }, wrist: rig.H[`${side}Hand`], scale: player.scale,
+    fingers: Object.fromEntries(FINGERS.map(f => [f, { pts: h.fingers[f].pts, len: h.fingers[f].len, rest: { yaw: h.fingers[f].rest.yaw } }])),
+    ...(r?.profile && { profile: r.profile, thumbTilt: r.thumbTilt, handLength: r.handLength }) } };
 }
+/** Runtime hand-profile adjustment on the avatar (entity.setHandProfile): override (fields, size, girth) or null. */
+function setHandProfile(override, side = null) { return player.setHandProfile?.(override, side) ?? null; }
 /** Skin vertices of the posed hand in its commanded hand frame (m; +Z fingers, +Y back of the hand), grouped. */
 function handLocalPoints(side) {
   const cmd = rec.hands[side], m = new THREE.Matrix4().compose(new THREE.Vector3(...cmd.pos), new THREE.Quaternion(...cmd.quat), new THREE.Vector3(1, 1, 1)).invert();
   const toWorld = item.world;
   return handPoints(side).map(({ p, group }) => ({ p: new THREE.Vector3(...p).applyMatrix4(toWorld).applyMatrix4(m).toArray(), group }));
 }
-window.__lab = { THREE, player, setItem, pose, clearHand, measure, shot, views, handPoints, restHand, handLocalPoints, wristInfo, signedDistance, item, rec, scene, renderer };
+window.__lab = { THREE, player, setItem, pose, clearHand, measure, shot, views, handPoints, restHand, setHandProfile, handLocalPoints, wristInfo, signedDistance, item, rec, scene, renderer };
 window.__ready = true;

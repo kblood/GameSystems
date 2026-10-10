@@ -44,9 +44,11 @@ export const PAD_RADIUS = {
  * The hand the baked grasps were fitted on (CharacterCreator male, lab scale): world hand length (m) and the palm
  * anchor (hand-local, m) the wrist offset scales about. A bigger hand moves the wrist away from the item by
  * (1 - k) * palm, k = length / REFERENCE_HAND.length (grasp lab, tools/lab/closure_lab.mjs calibrate `reference`:
- * the palm anchor is the mean of the lowest 10 % palm skin vertices in the hand frame).
+ * the palm anchor is the mean of the lowest 10 % palm skin vertices in the hand frame). palmCenter: the same hand's hand-profile
+ * palm centre (avatar handprofile.js, profile frame: +x radial; mean of both hands, lab scale 1): where placePalm puts a
+ * character's own profile palm centre.
  */
-export const REFERENCE_HAND = { length: 0.203, palm: [0, -0.0238, 0.0685] };
+export const REFERENCE_HAND = { length: 0.203, palm: [0, -0.0238, 0.0685], palmCenter: [-0.0065, -0.0249, 0.0617] };
 /**
  * Closure tuning (see closeFinger): each finger starts at its baked closed row (t = 1; t = 0 is the open approach).
  * A bake deeper than `squeeze` (m) inside the item opens along its shape (down to t = -backoff); one within `touch` (m)
@@ -66,7 +68,7 @@ export const REFERENCE_HAND = { length: 0.203, palm: [0, -0.0238, 0.0685] };
  * goes deeper still (a thumb's approach can swing through the item) is kept if within `tolerate`, else marked stuck.
  * ~40 thumb closures (~1-3 ms in node), only for such poses, once per grab. Without it a pose closes in ~0.1-0.3 ms.
  */
-export const CLOSURE = Object.freeze({ overshoot: 0.35, backoff: 0.5, squeeze: 0.001, touch: 0.002, tolerate: 0.002, step: 0.1, bisect: 6, opposition: 130, thumbSearch: false });
+export const CLOSURE = Object.freeze({ overshoot: 0.7, backoff: 0.5, squeeze: 0.001, touch: 0.002, tolerate: 0.002, step: 0.1, bisect: 6, opposition: 130, thumbSearch: false, palmGap: 0.004, palmSlide: 0.04 });
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -95,42 +97,88 @@ function fingerAxes(finger, side, tilt) {
   return { F, D: Dt, R: norm(reject(sub(scl(R, c), scl(D, s)), Dt)) };
 }
 
+const isV3 = v => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
+/** True when `p` is a usable hand profile (avatar handprofile.js format; checked duck-typed, grasp imports no avatar). */
+export function isHandProfile(p) {
+  return !!p && p.format === HAND_PROFILE_FORMAT && (p.side === 'left' || p.side === 'right') && [p.length, p.knuckle].every(x => Number.isFinite(x) && x > 0)
+    && isV3(p.palmCenter) && isV3(p.palmNormal) && FINGERS.every(f => isV3(p.bases?.[f]) && isV3(p.segments?.[f]) && isV3(p.pad?.[f]) && Number.isFinite(p.spread?.[f]));
+}
+export const HAND_PROFILE_FORMAT = 'gamesystems.hand-profile.v1';
+
 /**
- * Hand geometry for close-to-contact from a character's rest hand (see the header for the shape of `rest`).
- * rest: { side, frame: {F, D, R} (rest frame of that hand, character frame), wrist: rest wrist joint,
- *         fingers: { Thumb..Little: { pts: [knuckle, joint, joint, tip], len?: [3], rest?: { yaw } } } }
- * options: scale (world metres per rig metre, the character's scale), thumbTilt, radii (overrides PAD_RADIUS); scale and
- * thumbTilt default to rest.scale / rest.thumbTilt, so the avatar extension's entity.restHand(side) is complete input.
- * Returns { side, scale, length (world m, wrist -> middle fingertip), thumbTilt, fingers: { f: { base, len, restYaw,
- * radius, axes, hinge } } }; everything in hand-local rig metres except `length`.
+ * A hand profile from a rest hand WITHOUT one (bones only: tracked XR hands, reference_hand.json, old providers): the
+ * knuckles, segment lengths and rest spread of the rest hand, pads = `radii` (fraction of the hand length, PAD_RADIUS by
+ * default) and the palm from REFERENCE_HAND.palm scaled to this hand. Same format as the avatar's measured profile
+ * (hand-local, +x radial for both hands, rig metres).
  */
-export function handGeometry(rest, { scale = rest?.scale ?? 1, thumbTilt = rest?.thumbTilt ?? THUMB_TILT, radii = PAD_RADIUS } = {}) {
+export function profileFromRest(rest, { thumbTilt = rest?.thumbTilt ?? THUMB_TILT, radii = PAD_RADIUS } = {}) {
   const { side, frame, wrist } = rest;
   if (side !== 'left' && side !== 'right') throw new TypeError(`handGeometry: side ${side}?`);
-  const X = norm(cross(frame.D, frame.F)), Y = norm(frame.D), Z = norm(frame.F);
-  const toLocal = v => [dot(v, X), dot(v, Y), dot(v, Z)];
-  const fingers = {};
+  const R = norm(frame.R ?? (side === 'left' ? scl(cross(frame.D, frame.F), -1) : cross(frame.D, frame.F))), Y = norm(frame.D), Z = norm(frame.F);
+  const toLocal = v => [dot(v, R), dot(v, Y), dot(v, Z)];
+  const bases = {}, segments = {}, spread = {};
   for (const f of FINGERS) {
     const src = rest.fingers[f], pts = src.pts.map(p => toLocal(sub(p, wrist)));
-    const lens = src.len || [0, 1, 2].map(k => len(sub(pts[k + 1], pts[k])));
-    const axes = fingerAxes(f, side, thumbTilt), v0 = norm(sub(pts[1], pts[0]));
-    fingers[f] = { base: pts[0], len: lens, axes, hinge: norm(cross(axes.D, axes.F)),
-      restYaw: src.rest?.yaw ?? Math.atan2(dot(v0, axes.R), dot(v0, axes.F)), radius: [0, 0, 0] };
+    bases[f] = pts[0];
+    segments[f] = src.len || [0, 1, 2].map(k => len(sub(pts[k + 1], pts[k])));
+    const v0 = norm(sub(pts[1], pts[0]));
+    spread[f] = src.rest?.yaw ?? Math.atan2(v0[0], v0[2]);
   }
-  const m = fingers.Middle, length = len(m.base) + m.len[0] + m.len[1] + m.len[2];
-  for (const f of FINGERS) fingers[f].radius = radii[f].map(r => r * length);
-  return { side, scale, length: length * scale, thumbTilt, fingers };
+  const knuckle = len(bases.Middle), length = knuckle + segments.Middle[0] + segments.Middle[1] + segments.Middle[2];
+  const pad = Object.fromEntries(FINGERS.map(f => [f, radii[f].map(r => r * length)]));
+  return { format: HAND_PROFILE_FORMAT, side, source: 'rest', length, knuckle, palmWidth: 0.43 * length, palmThickness: 0.16 * length,
+    palmCenter: scl(REFERENCE_HAND.palm, length / REFERENCE_HAND.length), palmNormal: [0, -1, 0], palmPatch: [],
+    thumbRoot: pad.Thumb[0], thumbTilt, bases, spread, segments, girth: pad, pad };
+}
+
+/**
+ * Hand geometry for close-to-contact. Everything comes from the HAND PROFILE (avatar handprofile.js: measured from the
+ * character's skin, overridable, adjustable at runtime): rest.profile when the rest hand has one (the avatar's
+ * entity.restHand(side)), else profileFromRest(rest). options: scale (world metres per rig metre; default rest.scale),
+ * profile (use this profile instead), thumbTilt, radii (legacy: pads as PAD_RADIUS-style fractions of the hand length,
+ * replacing the profile's). Returns { side, scale, length (world m), thumbTilt, profile, fingers: { f: { base, len,
+ * restYaw, radius, axes, hinge } }, palm: { center, normal, samples, width, thickness }, thenar: { a, b, radius } };
+ * hand-local rig metres (closure frame, see the header) except `length`.
+ */
+export function handGeometry(rest, { scale = rest?.scale ?? 1, thumbTilt, radii = null, profile = null } = {}) {
+  let p = profile ?? (isHandProfile(rest?.profile) ? rest.profile : null);
+  if (!p) p = profileFromRest(rest, { thumbTilt: thumbTilt ?? rest?.thumbTilt ?? THUMB_TILT, ...(radii && { radii }) });
+  else if (radii) p = { ...p, pad: Object.fromEntries(FINGERS.map(f => [f, radii[f].map(r => r * p.length)])) };
+  const side = p.side ?? rest?.side;
+  if (side !== 'left' && side !== 'right') throw new TypeError(`handGeometry: side ${side}?`);
+  const tilt = thumbTilt ?? p.thumbTilt ?? rest?.thumbTilt ?? THUMB_TILT;
+  // profile +x is radial for both hands; the closure frame's +X is radial for the right hand only.
+  const cv = v => (side === 'left' ? [-v[0], v[1], v[2]] : [v[0], v[1], v[2]]);
+  const fingers = {};
+  for (const f of FINGERS) {
+    const axes = fingerAxes(f, side, tilt);
+    fingers[f] = { base: cv(p.bases[f]), len: [...p.segments[f]], axes, hinge: norm(cross(axes.D, axes.F)), restYaw: p.spread[f], radius: [...p.pad[f]] };
+  }
+  const center = cv(p.palmCenter), normal = norm(cv(p.palmNormal));
+  let samples = (p.palmPatch || []).filter(isV3).map(cv);
+  if (samples.length < 3) {
+    // No measured patch: a 3 x 3 grid on the palm plane (width across, knuckle along the fingers).
+    const w = 0.3 * (p.palmWidth || 0.43 * p.length), d = 0.25 * p.knuckle, u = norm(reject([1, 0, 0], normal)), v = norm(cross(normal, u));
+    samples = [];
+    for (const i of [-1, 0, 1]) for (const j of [-1, 0, 1]) samples.push(add(center, add(scl(u, i * w), scl(v, j * d))));
+  }
+  samples.push(center);
+  // Thenar / thumb root: the profile's thenar skin points, else the proximal 60 % of the rest thumb metacarpal as a
+  // capsule of radius thumbRoot.
+  const tb = fingers.Thumb.base, tj = fingerChain(fingers.Thumb, [0, 0, 0, 0])[1];
+  const thenar = { a: tb, b: add(tb, scl(sub(tj, tb), 0.6)), radius: p.thumbRoot ?? fingers.Thumb.radius[0], points: (p.thenarPatch || []).filter(isV3).map(cv) };
+  return { side, scale, length: p.length * scale, thumbTilt: tilt, profile: p, fingers,
+    palm: { center, normal, samples, width: p.palmWidth, thickness: p.palmThickness }, thenar };
 }
 
 /**
  * handGeometry() from an avatar extension rig (the public `entity.rig`: rig.hands[side] and the
- * rest heads rig.H) and the character's world scale (`player.scale`). Any character that exposes the same rest-hand
- * fields works; others call handGeometry() directly.
+ * rest heads rig.H) and the character's world scale (`player.scale`). Uses the rig hand's profile when it has one.
  */
 export function handFromRig(rig, side, { scale = 1, ...options } = {}) {
   const h = rig?.hands?.[side], wrist = rig?.H?.[`${side}Hand`];
   if (!h || !wrist) return null;
-  return handGeometry({ side, frame: h.frame, wrist, fingers: h.fingers }, { scale, ...options });
+  return handGeometry({ side, frame: h.frame, wrist, fingers: h.fingers, profile: h.profile }, { scale, ...options });
 }
 
 /** Joint positions [knuckle, joint, joint, tip] (hand-local rig metres) of one finger for a row in degrees. */
@@ -149,6 +197,9 @@ export function fingerChain(finger, row) {
 }
 
 /** Hand-local point -> item space for a wrist placement { wrist, quat } on a hand of scale s. */
+const qmul = (a, b) => [a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1], a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+  a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3], a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]];
+const qaxis = (k, a) => { const h = a / 2, s = Math.sin(h); return [k[0] * s, k[1] * s, k[2] * s, Math.cos(h)]; };
 const placer = (wrist, quat, s) => p => add(wrist, rotate(quat, scl(p, s)));
 
 /**
@@ -189,7 +240,7 @@ function segmentGaps(chain, finger, place, distance, s, from, out) {
  * Returns { row, t: [segment 0, 1, 2 parameters], touching: segment indices at the surface, backedOff, stuck }.
  */
 function closeFinger(name, finger, open, closed, place, distance, s, opts) {
-  const H = HARD[name], deep = -opts.squeeze, tMax = 1 + opts.overshoot, thumb = name === 'Thumb';
+  const H = HARD[name], deep = -opts.squeeze, thumb = name === 'Thumb', tMax = 1 + (thumb ? opts.thumbOvershoot ?? opts.overshoot : opts.overshoot);
   const lim = opts.free ? (j, v) => v : (j, v) => Math.max(H[KEYS[j]][0], Math.min(H[KEYS[j]][1], v));
   // T[0] drives dyaw + pitch (segment 0), T[1] bend1 (segment 1), T[2] bend2 (segment 2).
   const rowAt = T => { const t0 = thumb ? Math.min(1, T[0]) : T[0];
@@ -281,22 +332,91 @@ function searchThumb(thumb, open, closed, refAngle, place, distance, s, opts) {
 }
 
 /**
- * Close every finger of `rows` ({ open, angles }: 5 rows each, deg, thumb..little) to contact with `shape` for the hand
- * placed at { wrist, quat } (item space; default: placeWrist(pose, hand)). `keep`: fingers closed along their own rows without
- * the joint ranges (a CLAMP_EXEMPT bake's thumb). The thumb is searched (see CLOSURE) only when it touches
- * nothing along its shape; a stuck thumb (bake too deep, opening goes deeper) keeps the clamped bake.
- * Returns { open, angles (clamped rows), wrist, quat, fingers: { f: { t, touching, backedOff, stuck?, kept?, searched? } } }.
+ * Where the pose's recording hand had its palm (item space): the bake's wrist + its hand frame x the palm of the hand
+ * the data was fitted on (REFERENCE_HAND, the CharacterCreator lab hand: bake provenance, like a recording's
+ * `handLength`); a recorded pose's palm is the reference palm scaled to its `handLength`. The character's own hand is
+ * then placed by ITS profile palm against that point (placePalm), so the closure never assumes the reference size.
  */
-export function closeToContact(pose, hand, shape, { rows = pose, wrist = null, quat = null, keep = [], options = CLOSURE } = {}) {
-  const placed = wrist && quat ? { wrist, quat } : placeWrist(pose, hand);
-  const s = hand.scale, place = placer(placed.wrist, placed.quat, s), distance = p => signedDistance(shape, p);
-  const opts = { ...CLOSURE, ...options }, angles = {}, fingers = {}, wrap = (pose.mode ?? 'wrap') === 'wrap';
+export function palmAnchor(pose, side = pose.side, reference = REFERENCE_HAND) {
+  const k = Number.isFinite(pose.handLength) && pose.handLength > 0 ? pose.handLength / reference.length : 1, c = reference.palmCenter;
+  return add(pose.wrist, rotate(pose.quat, scl(side === 'left' ? [-c[0], c[1], c[2]] : c, k)));
+}
+
+/**
+ * The thenar skin points moved with the thumb's metacarpal for a thumb row (deg; null = rest): the rotation that takes
+ * the rest metacarpal direction to the row's, about the thumb base (the thenar bulk rides on the CMC joint).
+ */
+function thenarPoints(hand, thumbRow) {
+  const t = hand.thenar;
+  if (!thumbRow || !t.points.length) return t.points;
+  const T = hand.fingers.Thumb, base = T.base, r0 = norm(sub(fingerChain(T, [0, 0, 0, 0])[1], base)), r1 = norm(sub(fingerChain(T, thumbRow)[1], base));
+  const axis = cross(r0, r1), sin = len(axis);
+  if (sin < 1e-6) return t.points;
+  const angle = Math.atan2(sin, dot(r0, r1)), k = scl(axis, 1 / sin);
+  return t.points.map(p => add(base, turn(sub(p, base), k, angle)));
+}
+
+/** Smallest signed distance (m) of the hand's palm patch and thenar on a placement (skin points: no pad). */
+function palmGaps(hand, place, distance, thumbRow = null) {
+  let palm = Infinity;
+  for (const p of hand.palm.samples) palm = Math.min(palm, distance(place(p)));
+  const s = hand.scale, t = hand.thenar;
+  let thenar = Infinity;
+  if (t.points.length) for (const p of thenarPoints(hand, thumbRow)) thenar = Math.min(thenar, distance(place(p)));
+  else for (const k of [0, 0.5, 1]) thenar = Math.min(thenar, distance(place(add(t.a, scl(sub(t.b, t.a), k)))) - t.radius * s);
+  return { palm, thenar };
+}
+
+/**
+ * Wrist placement from the hand profile: the profile's palm centre on the pose's palm anchor (palmAnchor), same hand
+ * orientation, then slid along the palm normal until the palm patch is `palmGap` (m, CLOSURE) from the item's surface
+ * (at most `palmSlide` either way), and backed off along the normal while the thenar / thumb root (profile thumbRoot) is
+ * inside the item. `offset` (closeToContact's search; hand frame, about the palm centre, before the slide):
+ * { lateral (m, + = radial), along (m, the hand point put on the anchor moves from the palm centre toward the knuckles:
+ * the hand moves back, so a narrow item sits under the distal palm of a long hand), pitch (deg, about the hand's X axis:
+ * + lowers the knuckle end of the palm, lifts the thenar), twist (deg, about the palm normal), normal (m, after the
+ * slide, + = away from the item) }. thumbRow: the thumb row (deg) the thenar is checked with (default: the pose's open
+ * approach row: the closing thumb keeps its own metacarpal out, see closeFinger).
+ * Returns { wrist, quat, palmGap, thenarGap } (item space, m).
+ */
+export function placePalm(pose, hand, shape, options = CLOSURE, offset = null, thumbRow = pose.open?.[0] ?? null) {
+  const opts = { ...CLOSURE, ...options }, s = hand.scale, o = offset || {};
+  let quat = [...pose.quat];
+  if (o.pitch) quat = qmul(quat, qaxis([1, 0, 0], o.pitch * D2R));
+  if (o.twist) quat = qmul(quat, qaxis(hand.palm.normal, o.twist * D2R));
+  let pivot = palmAnchor(pose, hand.side);
+  if (o.lateral) pivot = add(pivot, rotate(pose.quat, [hand.side === 'left' ? -o.lateral : o.lateral, 0, 0]));
+  const c = hand.palm.center, at = o.along ? [c[0], c[1], c[2] + o.along / s] : c;
+  let wrist = sub(pivot, rotate(quat, scl(at, s)));
+  if (!shape) return { wrist, quat };
+  const distance = p => signedDistance(shape, p), n = rotate(quat, hand.palm.normal);
+  let moved = 0, g = palmGaps(hand, placer(wrist, quat, s), distance, thumbRow);
+  for (let i = 0; i < 3 && Number.isFinite(g.palm); i++) {
+    const want = Math.max(-opts.palmSlide - moved, Math.min(opts.palmSlide - moved, g.palm - opts.palmGap - (hand.profile.palmOffset || 0) * s));
+    if (Math.abs(want) < 1e-4) break;
+    wrist = add(wrist, scl(n, want)); moved += want;
+    g = palmGaps(hand, placer(wrist, quat, s), distance, thumbRow);
+  }
+  for (let i = 0; i < 3 && g.thenar < -opts.squeeze; i++) {
+    wrist = add(wrist, scl(n, g.thenar + opts.squeeze / 2));
+    g = palmGaps(hand, placer(wrist, quat, s), distance, thumbRow);
+  }
+  if (o.normal) { wrist = add(wrist, scl(n, -o.normal)); g = palmGaps(hand, placer(wrist, quat, s), distance, thumbRow); }
+  return { wrist, quat, palmGap: g.palm, thenarGap: g.thenar };
+}
+
+/** Close the five fingers on one placement (see closeToContact); returns { angles (unclamped), fingers }. */
+function closeAll(hand, rows, placed, distance, keep, opts, wrap) {
+  const s = hand.scale, place = placer(placed.wrist, placed.quat, s), angles = {}, fingers = {};
   FINGERS.forEach((f, i) => {
     const kept = keep.includes(f), r = closeFinger(f, hand.fingers[f], rows.open[i], rows.angles[i], place, distance, s, { ...opts, ...(kept && { free: true }), ...(!wrap && { overshoot: 0 }) });
     angles[f] = r.row; fingers[f] = { t: r.t, touching: r.touching, backedOff: r.backedOff, stuck: r.stuck, ...(kept && { kept }) };
   });
   const thumb = fingers.Thumb;
-  if (opts.thumbSearch && wrap && !thumb.kept && !thumb.stuck && !thumb.touching.length) {
+  // a baked-shape thumb that ends within gradeGrasp's reach (3 mm) is kept: it counts as touching, and a searched CMC drifts
+  // from the skin (SEARCHED_THUMB)
+  const near = () => { const g = segmentGaps(fingerChain(hand.fingers.Thumb, angles.Thumb), hand.fingers.Thumb, place, distance, s, 0, [0, 0, 0]); return Math.min(g[1], g[2]) <= 0.003; };
+  if (opts.thumbSearch && wrap && !thumb.kept && (opts.thumbSearch === 'any' ? thumb.stuck || !thumb.touching.length : !thumb.stuck && !thumb.touching.length) && (thumb.stuck || !near())) {
     const tips = ['Index', 'Middle'].map(f => place(fingerChain(hand.fingers[f], angles[f])[3]));
     const ref = around([(tips[0][0] + tips[1][0]) / 2, 0, (tips[0][2] + tips[1][2]) / 2]);
     const clampedOpen = clampRows({ Thumb: rows.open[0] }).Thumb, clampedClosed = clampRows({ Thumb: rows.angles[0] }).Thumb;
@@ -306,8 +426,110 @@ export function closeToContact(pose, hand, shape, { rows = pose, wrist = null, q
       fingers.Thumb = { t: r.t, touching: r.touching, backedOff: false, searched: true, opposition: Math.round(r.opposition * 10) / 10 };
     }
   }
+  return { angles, fingers };
+}
+
+/**
+ * Bone-model grade of a closed grasp (m / deg): deepest segment, palm patch and thenar gaps, fingertips (index..little
+ * distal segment within `reach`), thumb touching (distal or middle segment), thumb opposition around the item's +Y axis,
+ * and `score` (higher is better): contacts and opposition up, penetration and a palm far from the item down.
+ */
+export function gradeGrasp(hand, shape, placed, angles, { reach = 0.003, palmGap = CLOSURE.palmGap, wrap = true } = {}) {
+  const s = hand.scale, place = placer(placed.wrist, placed.quat, s), distance = p => signedDistance(shape, p);
+  const list = Array.isArray(angles) ? angles : FINGERS.map(f => angles[f]);
+  let deepest = Infinity;
+  const tips = {}, gaps = {};
+  FINGERS.forEach((f, i) => {
+    const chain = fingerChain(hand.fingers[f], list[i]), g = segmentGaps(chain, hand.fingers[f], place, distance, s, 0, [0, 0, 0]);
+    gaps[f] = g; deepest = Math.min(deepest, ...g); tips[f] = place(chain[3]);
+  });
+  const pg = palmGaps(hand, place, distance, list[0]);
+  const fingersTouching = FINGERS.slice(1).filter(f => gaps[f][2] <= reach).length;
+  const thumbTouching = Math.min(gaps.Thumb[1], gaps.Thumb[2]) <= reach;
+  const ref = [(tips.Index[0] + tips.Middle[0]) / 2, 0, (tips.Index[2] + tips.Middle[2]) / 2];
+  const opposition = separation(around(tips.Thumb), around(ref)) * 180 / Math.PI;
+  const pen = Math.max(0, -Math.min(deepest, pg.thenar, pg.palm)) * 1000;
+  let score = 3 * fingersTouching - 6 * Math.max(0, pen - 1.5) - 1.5 * Math.max(0, pg.palm * 1000 - Math.max(5, palmGap * 1000 + 1));
+  if (wrap) score += (thumbTouching ? 5 : 0) + (thumbTouching ? Math.min(opposition, 140) / 35 : 0) + (thumbTouching && opposition >= 125 ? 3 : 0);
+  return { score, penetration: pen / 1000, deepest, palmGap: pg.palm, thenarGap: pg.thenar, fingersTouching, thumbTouching, opposition, gaps };
+}
+
+/**
+ * Bounded wrist search per grasp quality (closeToContact `search`): placePalm offsets tried (every combination; each
+ * candidate is re-slid to the palm gap): `lateral` across the palm (fraction of the profile palm width, + = radial),
+ * `along` (fraction of the palm centre -> middle knuckle distance: the hand point on the palm anchor moves toward the
+ * knuckles, the hand back; a long hand on a narrow item), `pitch` (deg) about the hand's X axis (+ rolls the palm contact toward the knuckles, lifting the thenar: a hand with a
+ * big thumb root), `twist` (deg) about the palm normal, `normal` along the palm normal (fraction of the hand length,
+ * + = away from the item).
+ * Every candidate is one closure of the five fingers; the best gradeGrasp score wins (the unsearched placement unless
+ * another is better by `margin`). thumbSearch 'any': the thumb CMC search also runs for a stuck thumb (its bake inside the
+ * item on this hand, e.g. a bigger thumb). Fractions of the profile's sizes, so the steps follow the hand.
+ */
+export const SEARCH = Object.freeze({
+  mid: Object.freeze({ normal: [0], lateral: [-0.12, 0, 0.12], along: [0, 0.4, 0.8], pitch: [-10, 0, 20], twist: [0], margin: 1, thumbSearch: 'any' }),
+  high: Object.freeze({ normal: [0, 0.02], lateral: [-0.12, 0, 0.12], along: [0, 0.4, 0.8], pitch: [-10, 0, 20], twist: [-12, 0, 12], margin: 1, thumbSearch: 'any' }),
+});
+
+/** Score handicap of a searched thumb in closeToContact's search (see there). */
+const SEARCHED_THUMB = 4;
+/** gradeGrasp score of a full wrap (4 fingertips, thumb touching, opposition >= 140 deg, no penalty): the search stops there. */
+const GRADE_FULL = 3 * 4 + 5 + 140 / 35 + 3;
+// A thumb closed far past its baked shape (t > THUMB_STRETCH.from) scores THUMB_STRETCH.per less per unit t: the bone thumb
+// under-reads the skin most there (grasp lab, CC beer r180 / neck bakes: 6-8 mm skin inside at t ~1.7, bone model -1 mm).
+const THUMB_STRETCH = Object.freeze({ from: 1.4, per: 8 });
+
+/**
+ * Close every finger of `rows` ({ open, angles }: 5 rows each, deg, thumb..little) to contact with `shape` on the hand
+ * (handGeometry: the character's hand profile). Placement: { wrist, quat } when given (the shown wrist, 'high' re-check),
+ * else placePalm (the profile's palm patch on the pose's palm anchor, thenar kept out). `keep`: fingers closed along their
+ * own rows without the joint ranges (a CLAMP_EXEMPT bake's thumb). `search`: null | 'mid' | 'high' | a SEARCH-like object:
+ * a bounded search over wrist offsets (wraps only, never with a given wrist) keeping the best gradeGrasp score; the
+ * thumb's CMC is searched (see CLOSURE) when it touches nothing along its shape.
+ * Returns { open, angles (clamped rows), wrist, quat, fingers: { f: { t, touching, backedOff, stuck?, kept?, searched? } },
+ * grade, tried (closures run) }.
+ */
+export function closeToContact(pose, hand, shape, { rows = pose, wrist = null, quat = null, keep = [], options = CLOSURE, search = null } = {}) {
+  const opts = { ...CLOSURE, ...options }, wrap = (pose.mode ?? 'wrap') === 'wrap', distance = p => signedDistance(shape, p);
+  const given = !!(wrist && quat), base = given ? { wrist, quat } : placePalm(pose, hand, shape, opts, null, rows.open[0]);
+  const plan = !given && wrap && search ? (typeof search === 'string' ? SEARCH[search] : search) : null;
+  // A searched thumb (CMC off its baked shape) scores SEARCHED_THUMB less: the capsule thumb drifts from the skin away from
+  // the bake (grasp lab: up to 9 mm skin inside on the CC hand), so a bake-shaped thumb that touches is preferred.
+  const run = (placed, o) => {
+    const r = closeAll(hand, rows, placed, distance, keep, o, wrap), grade = gradeGrasp(hand, shape, placed, r.angles, { palmGap: opts.palmGap + (hand.profile.palmOffset || 0) * hand.scale, wrap });
+    if (r.fingers.Thumb.searched) grade.score -= SEARCHED_THUMB;
+    if (wrap) grade.score -= THUMB_STRETCH.per * Math.max(0, Math.max(...r.fingers.Thumb.t) - THUMB_STRETCH.from);
+    return { placed, ...r, grade };
+  };
+  let best = run(base, opts), tried = 1;
+  // Unsearched (raw/low) tiers: a thumb whose baked shape is already inside the item on this hand (a hand much bigger than
+  // the bake's: the 1.56x VRM test hand) or misses it gets one CMC search (kept only when it grades better).
+  if (!plan && !given && wrap && (best.fingers.Thumb.stuck || !best.fingers.Thumb.touching.length) && !keep.includes('Thumb')) {
+    const r = run(base, { ...opts, thumbSearch: 'any' }); tried++; if (r.grade.score > best.grade.score) best = r;
+  }
+  if (plan) {
+    const o = { ...opts, thumbSearch: plan.thumbSearch ?? opts.thumbSearch }, s = hand.scale;
+    if (o.thumbSearch && (best.fingers.Thumb.stuck || !best.fingers.Thumb.touching.length)) { const r = run(base, o); tried++; if (r.grade.score > best.grade.score) best = r; }
+    const width = (hand.profile.palmWidth || 0.43 * hand.profile.length) * s, L = hand.profile.length * s;
+    let winner = best;
+    const span = Math.max(0, hand.fingers.Middle.base[2] - hand.palm.center[2]) * s;
+    // Every combination, nearest first; none when the placePalm grasp already grades full (GRADE_FULL: 4 fingertips, thumb
+    // touching with >= 140 deg opposition, no penalty), and it stops at the first full-grade candidate.
+    const offsets = [];
+    for (const dn of plan.normal ?? [0]) for (const dl of plan.lateral ?? [0]) for (const da of plan.along ?? [0]) for (const pitch of plan.pitch ?? [0]) for (const twist of plan.twist ?? [0]) {
+      if (dn || dl || da || pitch || twist) offsets.push({ dn, dl, da, pitch, twist, cost: Math.abs(dn) * 20 + Math.abs(dl) * 4 + Math.abs(da) + Math.abs(pitch) / 15 + Math.abs(twist) / 15 });
+    }
+    offsets.sort((a, b) => a.cost - b.cost);
+    for (const { dn, dl, da, pitch, twist } of best.grade.score >= GRADE_FULL - 1e-9 ? [] : offsets) {
+      const r = run(placePalm(pose, hand, shape, opts, { normal: dn * L, lateral: dl * width, along: da * span, pitch, twist }, rows.open[0]), o); tried++;
+      if (r.grade.score > winner.grade.score) winner = r;
+      if (winner.grade.score >= GRADE_FULL - 1e-9) break;
+    }
+    if (winner !== best && winner.grade.score >= best.grade.score + (plan.margin ?? 0)) best = winner;
+  }
+  const { angles, fingers, placed, grade } = best;
   const clamped = clampRows(angles), open = clampRows(Object.fromEntries(FINGERS.map((f, i) => [f, rows.open[i]])));
-  return { open: FINGERS.map((f, i) => keep.includes(f) ? rows.open[i] : open[f]), angles: FINGERS.map(f => keep.includes(f) ? angles[f] : clamped[f]), wrist: placed.wrist, quat: placed.quat, fingers };
+  return { open: FINGERS.map((f, i) => keep.includes(f) ? rows.open[i] : open[f]), angles: FINGERS.map(f => keep.includes(f) ? angles[f] : clamped[f]),
+    wrist: placed.wrist, quat: placed.quat, fingers, grade, tried };
 }
 
 /** Bone-model contact readout (m) of rows on a placed hand: per finger the smallest segment gap and the tip gap. */

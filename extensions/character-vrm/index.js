@@ -29,8 +29,11 @@ export function modelURL(assetsURL, id = DEFAULT_MODEL) {
  * Character provider for the avatar extension (createCharacterPlugin({ character })), same shape as character-cc's
  * ccCharacters(). url: the .vrm to load (default: modelURL(assetsURL, model)); quality: 'low' | 'high' or
  * { player, npc } per kind (default player 'high', npc 'low'). Every create() loads its own copy of the model.
+ * handProfile: hand-profile override for this character (avatar handprofile.js format: fields, `size`, `girth`; flat or
+ * { left, right }), applied on top of the profile the avatar measures from the mesh and, for a known model loaded from
+ * its own file, the model's lab-calibrated MODELS[model].handProfile; per create: options.handProfile.
  */
-export function vrmCharacters({ url, assetsURL = new URL('./assets/', import.meta.url), model = DEFAULT_MODEL, quality = {}, load = loadVRM } = {}) {
+export function vrmCharacters({ url, assetsURL = new URL('./assets/', import.meta.url), model = DEFAULT_MODEL, quality = {}, load = loadVRM, handProfile = null } = {}) {
   const source = url ?? modelURL(assetsURL, model);
   const tierFor = kind => (typeof quality === 'string' ? quality : quality?.[kind] ?? (kind === 'npc' ? 'low' : 'high'));
   return {
@@ -38,7 +41,10 @@ export function vrmCharacters({ url, assetsURL = new URL('./assets/', import.met
     quality: VRM_QUALITY,
     async create({ kind = 'player', options = {}, signal } = {}) {
       const vrm = await load(options.url ?? source, { signal });
-      return createVRMCharacter(vrm, { quality: options.characterQuality ?? tierFor(kind), signal });
+      const character = createVRMCharacter(vrm, { quality: options.characterQuality ?? tierFor(kind), signal });
+      const own = url || options.url ? null : MODELS[model]?.handProfile, profiles = [own, handProfile].filter(Boolean);
+      if (profiles.length) character.handProfile = profiles.length === 1 ? profiles[0] : profiles;
+      return character;
     },
   };
 }

@@ -129,7 +129,8 @@ const near = (a, b) => length(sub(a.pos, b.pos)) < 5e-4 && quatAngle(a.quat, b.q
 /**
  * The pose to show on a character's hand at the active quality. 'raw'/'low', no hand, or no shape: the pose itself.
  * 'mid': a copy (same id) whose wrist is placed for this hand's length and whose closed angles are closed to contact
- * with the item (closure.js), memoised per pose, hand and shape, so a grab costs one closure (~0.1-0.3 ms in node) and every later
+ * with the item (closure.js), memoised per pose, hand and shape, so a grab costs one closure search (closure.SEARCH[quality]: 'mid' ~7 closures,
+ * 'high' ~60, each ~0.1-0.3 ms in node; the hand is placed by its profile palm) and every later
  * frame nothing. 'high' with `local` (the shown wrist in item space, { pos, quat }): the fingers are re-closed against
  * that wrist whenever it moved more than 0.5 mm / 0.5 deg since the last check.
  * hand: closure.handGeometry() of the character's hand; shape: the item's catalogue shape unless given (scaled props).
@@ -144,7 +145,7 @@ export function graspPose(pose, hand, { shape = null, local = null } = {}) {
   if (!byShape) byPose.set(pose, byShape = new Map());
   let out = byShape.get(s);
   if (!out) {
-    const r = closeToContact(pose, hand, s, { rows: runtimeRows(pose), keep: CLAMP_EXEMPT.includes(pose.kind) ? EXEMPT_KEEP : [] });
+    const r = closeToContact(pose, hand, s, { rows: runtimeRows(pose), keep: CLAMP_EXEMPT.includes(pose.kind) ? EXEMPT_KEEP : [], search: quality });
     byShape.set(s, out = { ...pose, wrist: r.wrist, quat: r.quat, open: r.open, angles: r.angles, contact: r.fingers, source: pose });
   }
   if (quality !== 'high' || !local) return out;

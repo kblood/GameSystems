@@ -18,10 +18,10 @@ const AVATAR_TIER = { off: 'off', low: 'arms', high: 'full' };
 
 export default function avatarTwin() {
   let characters = null, player = null, hidden = false, handCache = null;
-  /** closure.handGeometry() of the twin's rest hand (player.restHand(side)), rebuilt when the rig or the scale changes. */
+  /** closure.handGeometry() of the twin's rest hand (player.restHand(side)), rebuilt when the rig, the scale or the hand profile (player.setHandProfile) changes. */
   function handOf(side) {
     if (!player?.rig) return null;
-    if (handCache?.rig !== player.rig || handCache.scale !== player.scale) handCache = { rig: player.rig, scale: player.scale };
+    if (handCache?.rig !== player.rig || handCache.scale !== player.scale || handCache.version !== player.handProfileVersion) handCache = { rig: player.rig, scale: player.scale, version: player.handProfileVersion };
     if (!(side in handCache)) { const rest = player.restHand(side); handCache[side] = rest && !rest.mitten ? handGeometry(rest) : null; }
     return handCache[side];
   }

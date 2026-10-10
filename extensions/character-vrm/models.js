@@ -13,6 +13,14 @@ export const MODELS = Object.freeze({
     size: 1599132,
     sha256: 'aca7f1d2b4a3637c79cc543e978087b73af294e86d2c79787a2e8d0771ccb6be',
     vrm: '0.x (UniVRM 0.62.0), Mixamo rig, 52 humanoid bones incl. all 30 finger joints, meta licenseName CC0',
+    // Hand-profile override (avatar handprofile.js format, rig metres) from the grasp lab's calibrate on this model
+    // (GameSystems/extensions/grasp/tools/lab/closure_lab.mjs, CHARACTER=vrm ALL=1 KINDS=bottle_beer,bottle_wine,can):
+    // the contact radius its low-poly skin has when the fingers curl (smaller than the rest-pose reach the avatar measures)
+    // and the posed palm-skin offset. vrmCharacters() applies it under the caller's handProfile.
+    handProfile: Object.freeze({
+      left: { pad: { Thumb: [0.0073, 0.0036, 0.0032], Index: [0.0058, 0.0053, 0.0024], Middle: [0.0079, 0.0053, 0.0087], Ring: [0.0024, 0.0024, 0.003], Little: [0.0024, 0.0032, 0.0024] }, palmOffset: -0.0029 },
+      right: { pad: { Thumb: [0.0053, 0.0061, 0.0024], Index: [0.0058, 0.0053, 0.0042], Middle: [0.0084, 0.0052, 0.0077], Ring: [0.008, 0.0024, 0.0055], Little: [0.0073, 0.0035, 0.0039] }, palmOffset: -0.0035 },
+    }),
   }),
 });
 export const DEFAULT_MODEL = 'jimmy';

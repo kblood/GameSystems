@@ -29,6 +29,8 @@ import { createNPCAnimator, localAimPoint } from './npc-animation.js';
 import { createLifetime, frameDelta } from './lifecycle.js';
 import { prepareRig, THUMB_AXIS, FINGERS } from './rigdata.js';
 import { qRotate } from './qx.js';
+import { measureHandProfile, rigHandProfile, applyHandProfile } from './handprofile.js';
+import { handSkinPoints } from './handskin.js';
 
 export { handFromGrip, gripFromHand, GRIP_WRIST_OFFSET } from './tracking.js';
 export { fingerStateFromCurls, fingerStateFromJoints, syntheticJoints, limitFingerState, blendFingerStates, LIMITS, XR_JOINTS, XR_CHAINS } from './fingers.js';
@@ -44,6 +46,8 @@ export {
   reduceKeyframes, processRecording, mirrorClip,
 } from './handposes.js';
 export { LAYERS };
+export { HAND_PROFILE_FORMAT, HAND_BONES, DEFAULT_PROPORTIONS, PAD_CONTACT, handLocal, rigHandProfile, measureHandProfile, applyHandProfile, isHandProfile } from './handprofile.js';
+export { handSkinPoints } from './handskin.js';
 
 const GESTURE_FADE = 0.15;   // s, gesture in / out
 /**
@@ -115,27 +119,42 @@ const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 /**
  * IK rest data of a character: rig = prepareRig(rest heads with mitten hands completed), plus rig.skeleton (the check
  * report) and rig.hands[side].mitten. Throws when required body joints are missing.
+ * Hand profiles (handprofile.js): rig.hands[side].measured = measured once here from the character's rest-pose skin
+ * (handskin.js; rig-only proportional defaults without skin), rig.hands[side].profile = measured + overrides
+ * (options.handProfile: one override or a list applied in order; the character's own `handProfile` goes first).
+ * options.skin: false skips the skin read (rig-only profile).
  */
-export function measureCharacter(character) {
+export function measureCharacter(character, { handProfile = null, skin = true } = {}) {
   const heads = character.restHeads(), skeleton = checkSkeleton(heads);
   if (!skeleton.ok) throw new Error(`character skeleton unusable: ${skeleton.warnings[0]}`);
   const rig = prepareRig(completeHands(heads, skeleton).heads, { eyeOffset: character.eyeOffset?.() ?? null });
   rig.skeleton = skeleton;
-  for (const side of ['left', 'right']) rig.hands[side].mitten = skeleton.hands[side].mitten;
+  const overrides = [character.handProfile, handProfile].flat().filter(Boolean);
+  for (const side of ['left', 'right']) {
+    const h = rig.hands[side];
+    h.mitten = skeleton.hands[side].mitten;
+    const base = { side, frame: h.frame, wrist: rig.H[`${side}Hand`], fingers: h.fingers, thumbTilt: THUMB_AXIS.tilt };
+    let points = null;
+    if (skin && !h.mitten) { try { points = handSkinPoints(character, side); } catch (error) { console.warn(`[avatar] ${side} hand skin not measured: ${error.message}`); } }
+    h.measured = points ? measureHandProfile(base, points) : rigHandProfile(base);
+    h.profile = overrides.reduce(applyHandProfile, h.measured);
+  }
   return rig;
 }
 
 /**
  * Rest hand of a rig for grasping (GameSystems grasp closure.handGeometry() input): { side, frame: {F, D, R}, wrist,
  * fingers: { Thumb..Little: { pts, len, rest } }, scale, handLength (world m, wrist -> middle fingertip along the bones),
- * thumbTilt (this avatar's thumb axis tilt, rad), mitten }. Character frame, rig metres except handLength.
+ * thumbTilt (this avatar's thumb axis tilt, rad), mitten, profile (the hand profile, handprofile.js) }. Character frame,
+ * rig metres except handLength. Grasping reads only `profile` (+ scale) when it is there.
  */
 export function restHand(rig, side, scale = 1) {
   const h = rig?.hands?.[side], wrist = rig?.H?.[`${side}Hand`];
   if (!h || !wrist) return null;
   const m = h.fingers.Middle, handLength = (dist(m.pts[0], wrist) + m.len[0] + m.len[1] + m.len[2]) * scale;
   const fingers = Object.fromEntries(FINGERS.map(f => [f, { pts: h.fingers[f].pts, len: h.fingers[f].len, rest: h.fingers[f].rest }]));
-  return { side, frame: h.frame, wrist, fingers, scale, handLength, thumbTilt: THUMB_AXIS.tilt, mitten: !!h.mitten };
+  const profile = h.profile ?? null;
+  return { side, frame: h.frame, wrist, fingers, scale, handLength: profile ? profile.length * scale : handLength, thumbTilt: profile?.thumbTilt ?? THUMB_AXIS.tilt, mitten: !!h.mitten, profile };
 }
 
 /**
@@ -143,7 +162,7 @@ export function restHand(rig, side, scale = 1) {
  * character: a character provider { id, create({ kind, options, signal, physicsScene }) -> character contract }.
  * quality: avatar tier for new players ('full' | 'arms' | 'off'; 'high'/'low' map to 'full'/'arms').
  */
-export function createCharacterPlugin({ scene, renderer, character: provider, quality = 'full' } = {}) {
+export function createCharacterPlugin({ scene, renderer, character: provider, quality = 'full', handProfile = null } = {}) {
   if (!scene?.add || !scene?.remove) throw new TypeError('createCharacterPlugin requires a three.js scene');
   if (!renderer?.xr?.getReferenceSpace) throw new TypeError('createCharacterPlugin requires a WebXR-capable renderer');
   if (typeof provider?.create !== 'function') throw new TypeError('createCharacterPlugin requires a character provider ({ create })');
@@ -162,6 +181,19 @@ export function createCharacterPlugin({ scene, renderer, character: provider, qu
     const rigListeners = new Set();
     child.onDispose(() => { unsubscribe(); offRest(); rigListeners.clear(); avatar?.dispose(); root.removeFromParent(); entities.delete(entity); removeParentCleanup(); });
     let scale = Number.isFinite(options.scale) && options.scale > 0 ? options.scale : 1;
+    // Hand profile overrides: provider/plugin option, player option, then the runtime setter (setHandProfile).
+    const profileOverrides = [handProfile, options.handProfile].filter(Boolean);
+    const runtimeProfile = { left: null, right: null };
+    let handProfileVersion = 0;
+    const measure = () => measureCharacter(avatar);
+    const reprofile = () => {
+      if (!rig) return;
+      for (const side of ['left', 'right']) {
+        const h = rig.hands[side];
+        h.profile = [avatar?.handProfile, ...profileOverrides, runtimeProfile[side]].flat().filter(Boolean).reduce(applyHandProfile, h.measured);
+      }
+      handProfileVersion++;
+    };
     const entity = {
       root,
       get rig() { return rig; }, get body() { return avatar?.body ?? avatar?.meshes?.[0] ?? null; },
@@ -177,15 +209,31 @@ export function createCharacterPlugin({ scene, renderer, character: provider, qu
       },
       /** Rest hand for grasping (see restHand()), at the entity's current scale. */
       restHand: side => restHand(rig, side, scale),
+      /** The hand profile in effect for a side (handprofile.js; measured + overrides), or null before the rig exists. */
+      handProfile: side => rig?.hands?.[side]?.profile ?? null,
+      /** The measured profile (no overrides). */
+      measuredHandProfile: side => rig?.hands?.[side]?.measured ?? null,
+      /**
+       * Runtime adjustment: override (see applyHandProfile: fields, `size`, `girth`; flat or { left, right }) on top of the
+       * measured profile and the provider/player overrides, for one side or both; null clears. Bumps handProfileVersion,
+       * so hosts rebuild their grasp hand (closure.handGeometry) and the next grab closes on the new profile.
+       */
+      setHandProfile(override, side = null) {
+        for (const s of side ? [side] : ['left', 'right']) runtimeProfile[s] = override ?? null;
+        reprofile();
+        return { left: entity.handProfile('left'), right: entity.handProfile('right') };
+      },
+      /** Increments whenever a hand profile changes (setHandProfile, rest change): a cache key for grasp hands. */
+      get handProfileVersion() { return handProfileVersion; },
       dispose: () => child.dispose(), ready: null,
     };
     try {
       avatar = await provider.create({ kind, options, signal: child.signal, physicsScene: scene });
       child.assertAlive(); lifetime.assertAlive();   // disposed meanwhile: the catch below disposes the character once
-      rig = measureCharacter(avatar);
+      rig = measure(); reprofile();
       for (const warning of rig.skeleton.warnings) console.warn(`[avatar] ${warning}`);
       offRest = avatar.onRestChange?.(() => {
-        rig = measureCharacter(avatar);
+        rig = measure(); reprofile();
         for (const callback of [...rigListeners]) callback(rig);
       }) ?? (() => {});
       root.add(avatar.root);

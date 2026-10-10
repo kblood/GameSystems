@@ -7,6 +7,7 @@
 // CharacterCreator one, posed by the GameSystems avatar extension (/extensions/ = GameSystems/extensions); three-vrm comes
 // from an app's node_modules (THREE_VRM_DIR, default GameSystems/webxr-demo/node_modules/@pixiv/three-vrm) and the model from
 // character-vrm/assets (fetch it with extensions/character-vrm/fetch_model.mjs).
+// FACES=1 (env, or openLab({ faces: true })): the skin is also sampled on the hand's triangles (lab.js ?faces=1).
 import { createServer } from 'node:http';
 import { readFile, stat, access } from 'node:fs/promises';
 import { join, dirname, resolve, normalize, extname, sep } from 'node:path';
@@ -38,7 +39,7 @@ export function serveMounts(mounts) {
   });
 }
 
-export async function openLab({ errors = [], width = 960, height = 720, character = process.env.CHARACTER || 'cc' } = {}) {
+export async function openLab({ errors = [], width = 960, height = 720, character = process.env.CHARACTER || 'cc', faces = process.env.FACES === '1' } = {}) {
   for (const f of ['packages/character-plugin/src/index.js', 'src/extensions/character-cc/assets/base_body.glb', 'vendor/three/build/three.module.js', 'tools/browser.mjs']) {
     await access(join(contracts, f)).catch(() => { throw new Error(`grasp lab needs the Contracts repo with synced assets: ${join(contracts, f)} missing (set CONTRACTS_DIR, run npm run sync there)`); });
   }
@@ -51,7 +52,7 @@ export async function openLab({ errors = [], width = 960, height = 720, characte
   const context = await browser.createBrowserContext(), page = await context.newPage();
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
-  await page.goto(`${server.url}grasp/tools/lab/index.html?character=${encodeURIComponent(character)}`, { waitUntil: 'load', timeout: 120000 });
+  await page.goto(`${server.url}grasp/tools/lab/index.html?character=${encodeURIComponent(character)}${faces ? '&faces=1' : ''}`, { waitUntil: 'load', timeout: 120000 });
   await page.waitForFunction('window.__ready === true', { timeout: 240000, polling: 250 });
   return { page, errors, close: async () => { await context.close().catch(() => {}); await browser.close(); await server.close(); } };
 }

@@ -89,7 +89,8 @@ led-grænser (validatorens `clampRows`). Kvalitetsniveauer:
 - `mid`: lukning-til-kontakt én gang ved greb,
 - `high`: kontakt-tjek hver frame (fingre følger når genstanden glider).
 
-Det erstatter hudmarginer (`SKIN_MARGIN`) og refit pr. karakter.
+Det erstatter hudmarginer (`SKIN_MARGIN`) og refit pr. karakter. Siden trin 10 afhænger lukningen kun af karakterens
+**håndprofil** (målt fra meshet, kan overstyres og justeres i runtime), ikke af CC-referencehånden.
 
 ### Hånd-poser og -animationer (i `avatar`)
 
@@ -121,10 +122,11 @@ genstanden (greb) eller hånden/kroppen (gestus). Retargeter til enhver karakter
 | 3 ✅ | Lukning-til-kontakt | i `grasp`, med kvalitetsniveauer; tests mod lab-målinger | greb ser ens ud på CC-hånd uden `SKIN_MARGIN`; validator-gates bestået |
 | 4 | Grasp Studio v1 | én genstand, auto-capture, score, gem til data | et nyt greb optaget på Quest dukker op i demoen |
 | 5 ✅ | Del pluginet op | `humanoid`, `avatar`, `character-cc` — først inde i Contracts, derefter flyt til GameSystems | Contracts `npm test` + `test:hands` + `test:browser` grønne |
-| 6 (◐) | `character-vrm` | three-vrm-provider + CC0 testmodel; kør grebs-lab på den | demo kan skifte karakter med `?character=vrm`; greb består validator |
+| 6 (kode ✅) | `character-vrm` | three-vrm-provider + CC0 testmodel; kør grebs-lab på den | demo kan skifte karakter med `?character=vrm` (grebskriteriet flyttet til trin 10) |
 | 7 (kode ✅) | Hånd-poser og -animationer | format, afspilning, controller-blend; studio-animationstilstand | controller-hænder bruger optagede poser |
 | 8 ✅ | `bottles` på physics-adapteren | fjern direkte cannon-brug | demo uændret |
 | 9 (kode ✅) | Contracts får `bottles` | Contracts' physics-adapter; erstat procedurale flasker; brud/skår flyttes fra Contracts' solver til adapter-events | Contracts-tests grønne; flasker med væske/hældning i spillet |
+| 10 (kode ✅) | Håndprofil + profilstyret lukning | håndmål pr. karakter (`avatar/handprofile.js`), justerbar profil, lukning der kun afhænger af profilen, afgrænset søgning pr. kvalitet | flaske/dåse-greb består validatoren på både CC og VRM (Jimmy) |
 
 Trin 2 bør også tage grab_findings 1.5 (held-drive rotation) og 2.x-punkterne med, når filerne alligevel flyttes.
 
@@ -335,7 +337,7 @@ Trin 2 bør også tage grab_findings 1.5 (held-drive rotation) og 2.x-punkterne 
   for først at dele inde i Contracts. 'arms' tegner stadig hele kroppen (kun beregningen er billigere). Lifecycle-koden findes
   to steder (avatar: lille, character-cc: fuld), fordi avatar ikke må importere character-cc. Intet headset-test.
 
-### Trin 6 — kode færdig; greb består IKKE validatoren på VRM-testmodellen (2026-10-10)
+### Trin 6 — kode færdig (2026-10-10; brugerens beslutning: grebskriteriet er flyttet til trin 10, Håndprofil)
 
 - Ny `extensions/character-vrm/` (flade filer): `character.js` (`createVRMCharacter(vrm, {quality})`, samme kontrakt som
   character-cc: `root, meshes, humanoid, restHeads(), applyPose(), resetPose(), headBone, capabilities, quality, dispose()`
@@ -573,6 +575,77 @@ Trin 2 bør også tage grab_findings 1.5 (held-drive rotation) og 2.x-punkterne 
 - Åbne punkter / headset-test: væske-shaderen, gennemsigtigt glas og pytter i headsettet (ydelse på Quest ved tier high vs. mid),
   hældning fra en holdt åben flaske (flaskerne står åbne), om 2,5 m/s-kalibreringen føles rigtig ved rigtige kast, om brud ved
   slag med holdt flaske savnes, hover-omridset om GLB'ens Glass-mesh, lyden (HTML-audio, ikke spillets AudioContext).
+
+### Trin 10 (Håndprofil) — kode færdig, afventer headset-test (2026-10-10)
+
+Mål: greb der virker uanset håndstørrelse (VRM-testmodellen Jimmy har en hånd 1,56× CC-hånden: palm-gap 31–37 mm, én
+fingerspids, tommelrod i flasken). Hele lukningen afhænger nu kun af en **håndprofil**, ikke af CC-referencehånden.
+
+**Profilformat** (`extensions/avatar/handprofile.js`, `HAND_PROFILE_FORMAT = 'gamesystems.hand-profile.v1'`): et lille, fladt
+dataobjekt i håndens egen ramme (origo i håndleddet, +x radial/tommelside for begge hænder, +y dorsal, +z distal; meter i
+karakterens hvile-rig, verdensstørrelse = × `restHand().scale`):
+
+| felt | betydning |
+|---|---|
+| `format, side, source` | `'measured'` (fra hud) / `'rig'` (ingen hud: proportionale standarder) / `'…+override'` |
+| `length`, `knuckle` | håndled → langfingerspids; håndled → langfingerkno |
+| `palmWidth`, `palmThickness` | bredde over knoerne; tykkelse midt i håndfladen (hud) |
+| `palmCenter [3]`, `palmNormal [3]`, `palmPatch [[3]]` | håndfladens kontaktcentrum, normal ud af håndfladen, ≤ 12 palmare hudpunkter (3×4-gitter, kun fast vægtede vertices) |
+| `thumbRoot`, `thenarPatch [[3]]` | tommelrod-/thenar-tykkelse (85-percentil); ≤ 6 thenar-hudpunkter (proksimale tommel-metacarpal) |
+| `palmOffset` | korrektion for posed hud (m, standard 0; lab'ens `calibrate`): håndfladen holdes på `palmGap + palmOffset` |
+| `thumbTilt` | tommelens bøjningsplan (rad) |
+| `bases`, `spread`, `segments` `{Thumb..Little}` | knoer, hvile-spredning (rad), segmentlængder |
+| `girth`, `pad` `{Thumb..Little: [3]}` | medianradius pr. segment; kontaktradius = `PAD_CONTACT` (0,75 fingre / 0,55 tommel) × median fleksor-rækkevidde |
+
+- **Måling** (rene funktioner, avatar importerer ikke grasp): `handskin.js handSkinPoints(character, side)` læser
+  hvile-hudens vertices pr. dominerende hånd-/fingerknogle (én gang pr. karakter og efter rest-ændring);
+  `measureHandProfile(rest, points)` → profilen; uden hud `rigHandProfile` (CC-proportioner). Lav-poly-segmenter (Jimmy:
+  ringe kun ved leddene) samples bredere; håndfladepatch kun af vertices med vægt ≥ 0,8 (knoområdet løfter sig ved krum).
+- **Overstyring**: `applyHandProfile(profile, override)` — felter erstattes (pr.-finger-objekter flettes), plus `size`
+  (alle længder/positioner) og `girth` (tykkelser); flad eller `{ left, right }`. Kilder i rækkefølge: karakterens egen
+  (`character.handProfile`, fx `character-vrm/models.js` jimmy: lab-kalibreret `pad` + `palmOffset`), provider-option
+  (`ccCharacters({handProfile})`, `vrmCharacters({handProfile})`), plugin-option (`createCharacterPlugin({handProfile})`,
+  også Contracts' facade), spiller-option (`createPlayer({handProfile})`), runtime `entity.setHandProfile(override, side?)`
+  (null rydder). `entity.handProfile(side)`, `entity.measuredHandProfile(side)`, `entity.handProfileVersion` (bumpes ved
+  hver ændring; demo/studio/Contracts bruger den i cache-nøglen for `handGeometry`, så næste greb lukker på den nye profil).
+  `restHand(side)` er bagudkompatibel og har nu `profile`.
+- **Lukning** (`grasp/closure.js`): `handGeometry` bygges fra profilen (pad pr. segment i stedet for `PAD_RADIUS`, thenar
+  som kollisionspunkter der drejer med tommelrækken). `placePalm`: profilens palm-centrum på bake'ets palm-anker
+  (`palmAnchor`: bake-håndled + referencehåndens palm, kun som bake-proveniens), glid langs palmenormalen til
+  `palmGap` (4 mm) + `palmOffset`, ryk tilbage hvis thenar er inde. Kvalitetsniveauer: `raw/low` ingen søgning (én ekstra
+  tommel-CMC-søgning hvis tommelen sidder fast eller ikke når), `mid`/`high`: afgrænset søgning (`SEARCH`: lateral, langs,
+  pitch, twist, normal; mid 27 kandidater, high 162) inden for HARD-grænserne, bedst `gradeGrasp`-score vinder, nærmeste
+  først, stopper ved fuld score (4 spidser + tommel + opposition ≥ 140°) — CC-standardgreb koster derfor 1 lukning.
+  Tommelregler: en søgt tommel scorer 4 lavere; en bake-formet tommel inden for 3 mm beholdes (søgt CMC driver fra huden);
+  tommel ud over t = 1,4 straffes. Pris (node, desktop): måling 1–6 ms pr. karakter; lukning 0,3–1 ms; mid ≤ 30 ms og
+  high ≤ 160 ms i værste fald (én gang pr. greb, memoiseret).
+- **Grebs-lab**: `closure_lab.mjs report|calibrate` med `CHARACTER=cc|vrm`, `SEARCH=mid|high|none`, `PROFILE='{...}'`
+  (runtime-override via `__lab.setHandProfile`), `IDS=` (pose-id-delstrenge), `FACES=1` (trekant-sampling af huden).
+  `calibrate` måler effektiv pad pr. segment og `palmOffset` fra posed hud og udskriver en færdig override.
+- **Lab før → efter** (standardposer, mid; pen = hud inde i mm, palm = palm-gap mm):
+  | | CC før | CC efter | VRM før | VRM efter (med models.js-profil) |
+  |---|---|---|---|---|
+  | bottle_beer R/L | OK/OK, pen 0,35/0,35, palm 3,9/5,1 | OK/OK, pen 0,60/1,86, palm 3,6/3,3 | FAIL/FAIL, palm 36/32, 1 spids | OK/OK, pen 2,2/1,0, palm 1,6/4,3, 3+T |
+  | bottle_wine R/L | OK/OK, pen 0,51/0,37 | OK/OK, pen 1,11/1,14 | FAIL/FAIL, palm 37/31 | OK/OK, pen 1,2/1,1, 3–4+T |
+  | can R/L | OK/OK, pen 0,35/0,39 | OK/OK, pen 0,76/1,00 | FAIL/FAIL, palm 37/31 | OK/OK, pen 1,2/0,9, 3+T |
+  | mug R/L | FAIL (tommel rører ikke), pen 1,1, palm 0,1 | FAIL (samme), pen 1,25, palm 2,2 | FAIL, pen 22/17 | FAIL, pen 3,2/17,9 |
+  | carton R/L | FAIL (håndled 95°) | FAIL (samme) | FAIL (håndled 109°) | FAIL (håndled 104°) |
+  Kun målt profil (uden models.js-override, mellemversion): VRM palm-gap 7–9 mm, 1–4 spidser, tommel rører ikke → Jimmy
+  kræver den kalibrerede override (lav-poly LBS: fingerhuden trækkes ind ved bøjning mere end målingen kan se).
+  Profiljustering i lab'en (CC): `PROFILE='{"size":1.15}'` → lukningen tror på en 0,228 m hånd: bone-modellen griber
+  (score 24, palm 4 mm), men den rigtige 0,198 m hud går 16–19 mm ind → lukningen følger profilen, og en profil der ikke
+  passer til meshet giver forkerte greb. `PROFILE='{"girth":1.3}'` → fingrene stopper ~0,5 mm tidligere, pen 0–0,6 mm,
+  tommelen stopper 6–8 mm fra flasken (rører ikke). Enhedstesten viser det modsatte tilfælde: en 1,3×/1,4×-girth hånd med
+  sin egen profil får ≥ 3 spidser uden gennemtrængning, mens den lille hånds greb går ind i den store hånd.
+- Tests: ny `webxr-demo/tests/hand-profile.test.js` (6: måling af syntetisk hånd med kendte mål, overrides, profil-afhængig
+  lukning på større/tykkere hånd, `placePalm`/tiers, entity `handProfile`/`setHandProfile`/version, søgningens stop).
+  Demo `npm test` 147 → 153/153 (inkl. de 6 nye; 147 var før-tallet i denne session med andre agenters tests), studio 17/17,
+  Contracts `npm test` 339/339, `test:hands` OK (33 PASS), `test:browser` OK, `test:interaction` OK.
+  Contracts `tests/interaction-grasp-closure.test.mjs`: tommelen skal nu være inden for gradeGrasp's 3 mm (før 2 mm).
+- Åbent / headset-test: mug (CLAMP_EXEMPT beholder rå tommel; VRM venstre 17,9 mm), carton (bake-håndled 95–109°),
+  enkelte ikke-standard CC-beer-bakes (r180 højre krop 3,9 mm, hals 6,5–7,4 mm tommel-proksimal: median-pad
+  undervurderer tommelens side), Jimmys venstre/højre-asymmetri (separat override pr. side), auto-profil alene er ikke nok
+  på lav-poly VRM. Headset: VRM-greb i demoen (`?character=vrm`), runtime `setHandProfile` under spil, Quest-pris for mid.
 
 ## Afklaringer og risici
 

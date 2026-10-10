@@ -16,6 +16,7 @@ export {
 } from './baked_grasps.js';
 export {
   THUMB_TILT, PAD_RADIUS, REFERENCE_HAND, CLOSURE, handGeometry, handFromRig, fingerChain, placeWrist, closeToContact, chainGaps,
+  HAND_PROFILE_FORMAT, isHandProfile, profileFromRest, palmAnchor, placePalm, gradeGrasp, SEARCH,
 } from './closure.js';
 export {
   RECORDED_SCHEMA, DEFAULT_OPEN, XR_CHAINS, XR_JOINTS, quatFromBasis, handBasis, handLengthFromJoints, restFromJoints, rowsFromJoints,

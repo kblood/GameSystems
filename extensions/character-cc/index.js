@@ -39,8 +39,10 @@ export function qualityFor(quality, kind, overrides) {
  * assetsURL: folder with base_body.glb etc. (default ./assets/ next to this module); quality: see qualityFor().
  * Character options: outfit (['shirt', 'jeans', 'shoes']), hair ('short02'; null/'none' = none), skin, hairColor, eyeColor,
  * body ({ sliderId: -1..1 }), sex ('male' | 'female'), colors ({ itemId: { primary, secondary } }), wind, quality (overrides).
+ * handProfile: hand-profile override for this character (avatar handprofile.js format: fields, `size`, `girth`; flat or
+ * { left, right }), applied on top of the profile the avatar measures from the mesh; per create: options.handProfile.
  */
-export function ccCharacters({ assetsURL, quality = {} } = {}) {
+export function ccCharacters({ assetsURL, quality = {}, handProfile = null } = {}) {
   const base = assetBaseURL(assetsURL);
   return {
     id: 'cc',
@@ -52,6 +54,7 @@ export function ccCharacters({ assetsURL, quality = {} } = {}) {
         quality: qualityFor(quality, kind, options.quality), signal,
         settings: { values: { ...options, outfit: options.outfit ?? ['shirt', 'jeans', 'shoes'], hair: options.hair === undefined ? 'short02' : options.hair, sex: options.sex ?? 'male' } } });
       await character.ready;
+      if (handProfile) character.handProfile = handProfile;
       return character;
     },
   };

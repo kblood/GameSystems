@@ -127,11 +127,11 @@ async function createAvatar({ scene, renderer, camera, game, quality, assetURL }
   const holds = new Map(); // owner -> { bottle, side, grasp, k, close }
   let t = 0;
   // The avatar's own hand for close-to-contact grasps (the avatar's public rest hand, player.restHand(side): this
-  // character's finger geometry, calibrated scale and thumb tilt), rebuilt when the rig or the scale changes.
+  // character's finger geometry, calibrated scale and thumb tilt), rebuilt when the rig, the scale or the hand profile (player.setHandProfile) changes.
   let handCache = null;
   function handOf(side) {
     if (!player.rig) return null;
-    if (handCache?.rig !== player.rig || handCache.scale !== player.scale) handCache = { rig: player.rig, scale: player.scale };
+    if (handCache?.rig !== player.rig || handCache.scale !== player.scale || handCache.version !== player.handProfileVersion) handCache = { rig: player.rig, scale: player.scale, version: player.handProfileVersion };
     if (!(side in handCache)) { const rest = player.restHand(side); handCache[side] = rest && !rest.mitten ? handGeometry(rest) : null; }
     return handCache[side];
   }
