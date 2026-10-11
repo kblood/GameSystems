@@ -100,7 +100,8 @@ NightfallContractsGodot har nu handlingsbaseret skift: det aktive våben skal st
 før et andet hentes. Våbnene beholder separat ammunition, chamber og magasin-tokenidentitet.
 Rygsækkens aktuelle kapacitet giver Kestrel, Morrow, Shear og én rifle ad gangen (Tern eller
 startup-valgt Rook). Multi-våben checkpointing afvises eksplicit, indtil checkpointformatet kan
-gemme alle tilstande atomisk. Ændringen er pushet til Nightfall `main` som `1737af9`.
+gemme alle tilstande atomisk. Skiftet er pushet til Nightfall `main` som `1737af9`; missionsbinding
+og oprydning af variant-cache fulgte i `f31bc66`.
 
 Verifikation: 5/5 fokuserede suites bestod efter sidste kodeændring; Sol kørte uafhængigt
 backpack weapon-regressionen **107/107** uden blocker. Headset-fit og XR frame pacing mangler fysisk
