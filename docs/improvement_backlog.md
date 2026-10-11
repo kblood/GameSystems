@@ -31,6 +31,16 @@ Verifikation: fokuseret fire/pool-batch **31/31**, fuld WebXR-demo Node-suite **
 uden blocker; den uafhængige bogføringssuite bestod **12/12**. Pushet til GameSystems `main` som
 `a90c0d6`.
 
+## Afsluttet fire-scene checkpoint-ledger-runde — 2026-10-12
+
+Fire-scene restore kræver nu, at hele flaskeejede pytvolumen stadig findes i de forberedte pooldata.
+Et ellers balanceret snapshot, der fjernede pyt og thermal node og bogførte volumen som removed,
+blev tidligere accepteret og efterlod flaskevolumen uden rumlig owner. Uoverensstemmelsen afvises
+før scenen ændres.
+
+Verifikation: checkpoint-suite **21/21**, fuld WebXR-demo Node-suite **507/507** og Sol-review uden
+blocker. Pushet til GameSystems `main` som `8260879`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
