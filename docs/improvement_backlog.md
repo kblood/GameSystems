@@ -3,6 +3,15 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
+## Afsluttet sprinkler-lifecycle-runde — 2026-10-12
+
+Sprinkler callbacks kan ikke længere starte et indlejret tick, checkpoint/restore eller ændre/dispose
+systemet midt i simuleringen. Et kast fra en event observer springer ikke væskedeposit over eller
+genbruger et allerede debiteret fast tick; checkpointing venter, indtil køen af hele ticks er drænet.
+
+Verifikation: fokuseret suite **16/16**, fuld WebXR-demo Node-suite **503/503** og uafhængig Sol-review
+uden blocker. Ændringen er pushet til GameSystems `main` som `72e63d0`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
