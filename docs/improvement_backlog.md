@@ -48,8 +48,9 @@ NightfallContractsGodot har nu en fungerende håndbetjent rygsæk med tre indven
 udvendige mounts, reach-/occlusion-regler, weapon-/magasin-integration og et Blender-authored,
 tekstureret canvas asset integreret i runtime-scenen. De fire visuelle meshgrupper bevarer de
 eksisterende slot-/håndtagsankre, bruger 13.982 trekanter og tilføjer ingen kollidere eller
-løbende fysik. Asset-, importer- og hinge-kontrakter er grønne. Det aktive arbejde er nu
-headset-afprøvning og eventuelle målte forbedringer af komfort, rækkevidde og læsbarhed samt
+løbende fysik. Asset-, importer- og hinge-kontrakter er grønne. Den seneste backpack-kørsel
+består 8/8 processer og 256 headless-checks; dette beviser ikke headset-fit. Det aktive
+arbejde er headset-afprøvning og eventuelle målte forbedringer af komfort, rækkevidde og læsbarhed samt
 fortsat kontrol af tracking-tab, afbrudt greb og checkpoint/lifecycle-regressioner. Undgå
 stof-/lynlåsfysik og kontinuerlig simulation af opbevarede genstande; hold løsningen eventbaseret.
 Headless-tests må ikke tælle som headset-accept. Detaljer og acceptkriterier står i
@@ -630,34 +631,6 @@ med styring dividerede cykelmodellen med denne værdi og gjorde position/retning
 bevarer endelig tilstand under kørsel. Grænsen er dokumenteret. 1 ny regressionstest,
 465/465 samlet suite og 6/6 browserkontroller for bilens bevægelse består.
 Kilde og modelgrænser: [vehicle_system.md](vehicle_system.md).
-
-## Løbende mål: fysisk VR-backpack
-
-NightfallContractsGodot har allerede en scene-bundet inventory-extension med hofte-/rygslots,
-fysisk opbevaring af grebne genstande, adgangskontrol for hænder/rækkevidde/sigtelinje,
-retrieval til hånden og checkpoint/reset. Dette mål er at videreudvikle det til en
-brugbar fysisk VR-rygsæk i stil med Walking Dead: Saints & Sinners, uden at gøre den til
-en abstrakt menu.
-
-Dette delmål er føjet til det aktive, løbende GameSystems/NightfallContracts-mål. Behandl
-rygsækken som en selvstændig inventory-/adgangskomponent, der kan stå alene og forbindes
-med våben, magasiner og andre genstandssystemer gennem stabile ID'er og entydigt ejerskab.
-Headless-tests viser allerede 250 checks grønne; målet er fortsat åbent indtil den
-genbrugelige systemgrænse er afklaret, de platformstilpassede integrationer er verificeret,
-og ergonomi, synlighed og performance er gennemgået på headset. Headset-resultater må ikke
-udledes af headless-tests.
-
-- Gennemgå ergonomi og scene-flow på begge hænder: våbenhylstre, rygslot, ammunition og
-  små værktøjer skal have tydelige, kompatible pladser og forudsigelige retrieve-handlinger.
-- Afprøv store bevægelser, mistet håndtracking, blokeret slot, lukket lomme og optaget slot;
-  fejlslagne forsøg skal bevare ejerskab og må ikke kaste genstanden.
-- Gør rygtræk til en tydelig over-skulder-handling med valideret tilgangsretning, og
-  vurder om taskens skal skal bidrage til occlusion uden at blokere dens egne slots.
-- Forbind slots til weapon/item-tags, så det nye våbensystem kan bruge samme inventory-
-  kontrakt uden at indføre en separat beholdning.
-- Bevar deterministisk checkpoint/restore, sceneejerskab og bounded interaktionsarbejde;
-  kontrollér resultatet i Godot-testscener og XR/browser kun dér, hvor platformen bruger
-  den samme implementation.
 
 ## Afsluttet extension-lifecycle- og kamerakatalog-runde — 2026-10-11
 
