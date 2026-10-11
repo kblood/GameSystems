@@ -305,7 +305,7 @@ export function createThermalSystem({ emit = () => {}, quality = 'high', ambient
     },
     configure(id, values={}) {
       const s=objects.get(id),candidate={...s};
-      for(const key of ['flammability','ignition','burnPower','fuelJ','temperature','smokeYield','heatCapacity','airConductance']) {
+      for(const key of ['flammability','ignition','burnPower','fuelJ','temperature','smokeYield','heatCapacity','airConductance','wetMl']) {
         if(values[key]===undefined)continue;
         candidate[key]=key==='flammability'?clamp(finite(values[key]),0,1):['ignition','temperature'].includes(key)?finite(values[key]):positive(values[key],key,key!=='heatCapacity');
       }

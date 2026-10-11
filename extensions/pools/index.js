@@ -36,6 +36,7 @@ export function createPoolsSystem({ thermal, emit=()=>{}, quality='high', maxPoo
   if(!thermal?.add||!thermal?.configure||!thermal?.replaceObjects)throw new TypeError('pools needs the thermal public API, including replaceObjects');
   positive(airConductance,'airConductance',true);positive(maxPools);if(!Number.isSafeInteger(maxPools))throw new RangeError('maxPools must be integer');positive(mergeDistance);const records=new Map(),nodeIndex=new Map(),tiers=tierState(quality);
   let nextId=1,initialMl=0,burnedMl=0,removedMl=0,remainingMl=0,disposed=false,notifying=false,clearing=false;
+  const wetAccounts=new WeakMap();
   const groups=new Map(),visibleRecords=new Map(),orders=new WeakMap(),cellSize=Math.max(1,mergeDistance);let sequence=0;
   const queryIndex=createPoolQueryIndex(cellSize);
   const pendingHot=new Map(),hotRooms=new Map();
@@ -75,7 +76,13 @@ export function createPoolsSystem({ thermal, emit=()=>{}, quality='high', maxPoo
     return {airConductance:p.airConductance,fuelJ:fuel(p),ignition:combustibleMl?ignition/combustibleMl:1000,flammability:ml?flammability/ml:0,
       smokeYield:combustibleMl?smoke/combustibleMl:0,heatCapacity:Math.max(10,ml*0.1),burnPower:800*clamp(radiusOf(ml)*3,0.2,2)};
   }
-  function heatState(p){return p.active?thermal.state(p.thermalId):{...p.storedHeat,...profile(p)};}
+  function account(p){let value=wetAccounts.get(p);if(!value){value={sources:Object.create(null),unattributed:0};wetAccounts.set(p,value);}return value;}
+  function reconcileWetness(p,wetMl){const value=account(p),sourceTotal=Object.values(value.sources).reduce((sum,ml)=>sum+ml,0),tracked=sourceTotal+value.unattributed;
+    if(wetMl<tracked&&tracked>0){const scale=wetMl/tracked;for(const key of Object.keys(value.sources))value.sources[key]*=scale;value.unattributed*=scale;}
+    else if(wetMl>tracked)value.unattributed+=wetMl-tracked;
+    return value;
+  }
+  function heatState(p){const state=p.active?thermal.state(p.thermalId):{...p.storedHeat,...profile(p)};reconcileWetness(p,state.wetMl);return state;}
   function sync(p) {if(p.active)thermal.configure(p.thermalId,profile(p));}
   function linked(p){return thermal.hasConnections?thermal.hasConnections(p.thermalId):thermal.capture().links.some(l=>l.a===p.thermalId||l.b===p.thermalId);}
   function suspendable(p){if(!p.active)return false;const s=thermal.state(p.thermalId),cfg=profile(p);return s.roomId===p.roomId&&distance(s.position,p.position)<=1e-8&&!s.burning&&!s.heaterW&&s.temperature<=ambient+.1&&!s.wetMl&&!s.blast&&s.cooling===.3&&s.extinctionAuto&&Object.entries(cfg).every(([key,value])=>Math.abs(s[key]-value)<1e-6)&&!linked(p);}
@@ -104,7 +111,7 @@ export function createPoolsSystem({ thermal, emit=()=>{}, quality='high', maxPoo
         if(id===null) {generatedId=true;do{if(!Number.isSafeInteger(nextGeneratedId)||nextGeneratedId>=Number.MAX_SAFE_INTEGER)throw new RangeError('Generated pool ids exhausted');id=`puddle-${nextGeneratedId++}`;}while(records.has(id)||thermal.hasObject?.(`pool:${id}`));}
         if(typeof id!=='string'||!id)throw new Error('Invalid pool id');
         if(thermal.hasObject?.(`pool:${id}`))throw new Error('Thermal pool id is already owned');
-        p={id,active:false,airConductance,thermalId:`pool:${id}`,surfaceId,roomId,position,components:{},sources:Object.create(null),sourceMl:0,storedHeat:{temperature:ambient,burning:false,blanket:0,wetMl:0,heaterW:0}};
+        p={id,active:false,airConductance,thermalId:`pool:${id}`,surfaceId,roomId,position,components:{},sources:Object.create(null),sourceMl:0,storedHeat:{temperature:ambient,burning:false,blanket:0,wetMl:0,heaterW:0}};account(p);
       }
       const isNew=!records.has(p.id),old=heatState(p),previousMl=total(p),nextComponents={...p.components},sources=copySources(p.sources);
       for(const[k,amount]of Object.entries(incoming)){nextComponents[k]=(nextComponents[k]??0)+amount;if(!Number.isFinite(nextComponents[k]))throw new RangeError('Pool component volume exceeds the finite range');}
@@ -115,7 +122,7 @@ export function createPoolsSystem({ thermal, emit=()=>{}, quality='high', maxPoo
       const waterMl=incoming.water??0,waterDose=fuel(staged)>0?waterMl:0,cooled=waterDose?cooledState(temperature,old.wetMl,waterDose,capacity,ambient):{temperature,wetMl:old.wetMl};
       if(!p.active&&thermal.hasObject?.(p.thermalId)&&!nodeIndex.has(p.thermalId))throw new Error('Thermal pool id is already owned');
       if(p.active)thermal.configure(p.thermalId,{...stagedProfile,temperature});
-      p.components=nextComponents;p.sources=sources;p.sourceMl=sourceMl;p.storedHeat={...p.storedHeat,temperature:cooled.temperature,wetMl:cooled.wetMl};if(isNew)records.set(p.id,p);if(generatedId)nextId=nextGeneratedId;initialMl=nextInitial;remainingMl=nextRemaining;index(p);
+      p.components=nextComponents;p.sources=sources;p.sourceMl=sourceMl;p.storedHeat={...p.storedHeat,temperature:cooled.temperature,wetMl:cooled.wetMl};if(waterDose){const tracked=account(p);tracked.sources[sourceKey]=(tracked.sources[sourceKey]??0)+waterDose;}if(isNew)records.set(p.id,p);if(generatedId)nextId=nextGeneratedId;initialMl=nextInitial;remainingMl=nextRemaining;index(p);
       // Water carried by a deposited liquid is also a suppression dose. Stage its exact
       // cooling first so active pools can use the thermal API and dormant pools retain it.
       if(p.active&&waterDose)thermal.water(p.thermalId,waterDose);
@@ -156,7 +163,7 @@ export function createPoolsSystem({ thermal, emit=()=>{}, quality='high', maxPoo
     ignite(id){mutable();const p=get(id);if(p.active)return thermal.ignite(p.thermalId);const cfg=profile(p);if(!cfg.fuelJ||!cfg.flammability||p.storedHeat.wetMl>=1e-8||p.storedHeat.blanket>=.95)return false;if(p.roomId){let room;try{room=thermal.roomState(p.roomId);}catch{return false;}if(room.oxygen<=oxygenCutoff+.01)return false;}return api.activate(id)&&thermal.ignite(p.thermalId);},
     heat(id,joules){mutable();positive(joules,'joules',true);const p=get(id);if(p.active)thermal.addHeat(p.thermalId,joules);else{const temperature=heatedTemperature(p.storedHeat.temperature,joules,profile(p).heatCapacity);if(api.activate(id))thermal.addHeat(p.thermalId,joules);else p.storedHeat.temperature=temperature;}publish(p);},
     foam(id,coverage=1){mutable();coverage=clamp(finite(coverage),0,1);const p=get(id);if(p.active)thermal.suppress(p.thermalId,coverage);else p.storedHeat.blanket=coverage;publish(p);},
-    cool(id,ml){mutable();positive(ml,'ml',true);const p=get(id);if(p.active)thermal.water(p.thermalId,ml);else Object.assign(p.storedHeat,cooledState(p.storedHeat.temperature,p.storedHeat.wetMl,ml,profile(p).heatCapacity,ambient));publish(p);},
+    cool(id,ml){mutable();positive(ml,'ml',true);const p=get(id);if(p.active)thermal.water(p.thermalId,ml);else Object.assign(p.storedHeat,cooledState(p.storedHeat.temperature,p.storedHeat.wetMl,ml,profile(p).heatCapacity,ambient));account(p).unattributed+=ml;publish(p);},
     // Called from thermal:burned; only declared combustible millilitres are consumed, water persists.
     burned(thermalId,joules){
       const p=nodeIndex.get(thermalId);if(!p)return;positive(joules,'joules',true);
@@ -180,13 +187,15 @@ export function createPoolsSystem({ thermal, emit=()=>{}, quality='high', maxPoo
         unindex(p);removedMl+=removed;remainingMl=Math.max(0,remainingMl-removed);
         const event={id:p.id,ml:removed,surfaceId:p.surfaceId,position:[...p.position],sourceVolumes:{[sourceKey]:removed}};
         if(nextTotal===0){if(p.active)thermal.remove(p.thermalId);nodeIndex.delete(p.thermalId);records.delete(p.id);emit('pools:removed',event);continue;}
-        p.components=nextComponents;p.sources=nextSources;p.sourceMl=Math.max(nextTotal,p.sourceMl-removed);p.storedHeat.temperature=old.temperature;
-        if(p.active)thermal.configure(p.thermalId,{...profile(p),temperature:old.temperature});
+        const waterAccount=account(p),wetDose=Math.min(old.wetMl,waterAccount.sources[sourceKey]??0),wetMl=Math.max(0,old.wetMl-wetDose);
+        delete waterAccount.sources[sourceKey];
+        p.components=nextComponents;p.sources=nextSources;p.sourceMl=Math.max(nextTotal,p.sourceMl-removed);p.storedHeat.temperature=old.temperature;p.storedHeat.wetMl=wetMl;
+        if(p.active)thermal.configure(p.thermalId,{...profile(p),temperature:old.temperature,wetMl});
         index(p);publish(p);emit('pools:removed',event);
       }}finally{clearing=false;}
     },
     clear({account=true}={}){live();if(clearing)throw new Error('Pool clear is reentrant');clearing=true;const removed=account?[...records.values()].map(p=>({id:p.id,ml:total(p),surfaceId:p.surfaceId,position:[...p.position],sourceVolumes:sourceVolumes(p.sources)})):[];try{for(const p of records.values())if(p.active)thermal.remove(p.thermalId);records.clear();nodeIndex.clear();groups.clear();visibleRecords.clear();queryIndex.clear();pendingHot.clear();hotRooms.clear();initialMl=burnedMl=removedMl=remainingMl=0;nextId=1;for(const event of removed)emit('pools:removed',event);}finally{clearing=false;}},
-    save(){return {schema:'gamesystems.pools.v1',nextId,activeOrder:[...nodeIndex.values()].map(p=>p.id),hotOrder:[...pendingHot.keys()],ledger:api.ledger(),pools:api.all()};},
+    save(){const states=api.all().map(state=>{const p=records.get(state.id),wet=account(p);return {...state,wetSources:{...wet.sources},wetUnattributed:wet.unattributed};});return {schema:'gamesystems.pools.v1',nextId,activeOrder:[...nodeIndex.values()].map(p=>p.id),hotOrder:[...pendingHot.keys()],ledger:api.ledger(),pools:states};},
     prepareRestore(data,{thermalPlan=null}={}){
       mutable();if(notifying)throw new Error('Cannot restore during pool notification');const prepared=parsePoolSnapshot(jsonState(data),{maxPools,presets:LIQUID_FIRE_PRESETS,roomExists:id=>thermalPlan?thermalPlan.roomState(id):thermal.roomState(id)});
       for(const p of prepared.pools){const ml=total(p),cfg=profile(p);if(!Number.isFinite(ml)||Object.values(cfg).some(value=>typeof value==='number'&&!Number.isFinite(value)))throw new RangeError('Pool profile exceeds the finite range');}
@@ -205,7 +214,7 @@ export function createPoolsSystem({ thermal, emit=()=>{}, quality='high', maxPoo
         commit(){
           mutable();if(notifying)throw new Error('Cannot restore during pool notification');if(!thermalPlan)thermal.replaceObjects([...nodeIndex.keys()],states);
           records.clear();nodeIndex.clear();groups.clear();visibleRecords.clear();queryIndex.clear();pendingHot.clear();hotRooms.clear();
-          for(const {ml,temperature,burning,blanket,wetMl,heaterW,...p}of prepared.pools){const own={...p,position:[...p.position],components:{...p.components},sources:Object.assign(Object.create(null),copySources(p.sources)),storedHeat:{temperature,burning,blanket,wetMl,heaterW}};records.set(own.id,own);index(own);}
+          for(const {ml,temperature,burning,blanket,wetMl,heaterW,wetSources,wetUnattributed,...p}of prepared.pools){const own={...p,position:[...p.position],components:{...p.components},sources:Object.assign(Object.create(null),copySources(p.sources)),storedHeat:{temperature,burning,blanket,wetMl,heaterW}};wetAccounts.set(own,{sources:Object.assign(Object.create(null),wetSources),unattributed:wetUnattributed});records.set(own.id,own);index(own);}
           for(const id of prepared.activeOrder){const p=records.get(id);nodeIndex.set(p.thermalId,p);}
           pendingHot.clear();for(const id of prepared.hotOrder)pendingHot.set(id,records.get(id));
           initialMl=prepared.ledger.initialMl;burnedMl=prepared.ledger.burnedMl;removedMl=prepared.ledger.removedMl;remainingMl=prepared.ledger.remainingMl;nextId=prepared.nextId;

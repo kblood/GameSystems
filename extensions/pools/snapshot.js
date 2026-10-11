@@ -34,9 +34,15 @@ export function parsePoolSnapshot(data, { maxPools, presets, roomExists }) {
     if (raw.burning !== undefined && typeof raw.burning !== 'boolean') throw new TypeError('Invalid burning state');
     const active=raw.active===undefined?true:raw.active;if(typeof active!=='boolean')throw new TypeError('Invalid pool activity');
     if(!active&&(raw.burning||raw.heaterW))throw new Error('Dormant pools cannot burn or run heaters');
-    return { id, active, airConductance:positive(raw.airConductance??0,'airConductance',true),thermalId: `pool:${id}`, surfaceId, roomId, position: vector(raw.position), components, sources: parseSources(raw.sources, components, presets),
+    const sources=parseSources(raw.sources,components,presets),wetSources=Object.create(null);
+    if(raw.wetSources!==undefined){if(!raw.wetSources||typeof raw.wetSources!=='object'||Array.isArray(raw.wetSources))throw new Error('Invalid source wetness');for(const[key,amount]of Object.entries(raw.wetSources)){if(!Object.hasOwn(sources,key)||amount>(sources[key].water??0)+1e-5)throw new Error('Source wetness exceeds source water');wetSources[key]=positive(amount,'source wetness',true);}}
+    const wetMl=positive(raw.wetMl??0,'wetMl',true);let wetUnattributed=positive(raw.wetUnattributed??wetMl,'wetUnattributed',true);const tracked=Object.values(wetSources).reduce((sum,amount)=>sum+amount,0)+wetUnattributed;
+    if(tracked>wetMl+1e-5)throw new Error('Wetness accounts exceed pool wetness');
+    wetUnattributed+=Math.max(0,wetMl-tracked);
+    return { id, active, airConductance:positive(raw.airConductance??0,'airConductance',true),thermalId: `pool:${id}`, surfaceId, roomId, position: vector(raw.position), components, sources,
+      wetSources,wetUnattributed,
       sourceMl, ml, temperature: finite(raw.temperature), blanket, burning: raw.burning ?? false,
-      wetMl: positive(raw.wetMl ?? 0, 'wetMl', true), heaterW: positive(raw.heaterW ?? 0, 'heaterW', true) };
+      wetMl, heaterW: positive(raw.heaterW ?? 0, 'heaterW', true) };
   });
   if(pools.filter(p=>p.active).length>maxPools)throw new Error('Active pool budget exceeded');
   const activeIds=pools.filter(p=>p.active).map(p=>p.id),activeOrder=data.activeOrder===undefined?activeIds:data.activeOrder;

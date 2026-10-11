@@ -30,6 +30,34 @@ test('foam stays an inert fluid component and coats its actual receiving puddle'
 test('fresh liquid dilutes existing pool blanket by footprint; foam dose adds coverage afterward',()=>{
   const w=world();w.pools.deposit({id:'p',ml:100,kind:'water'});w.pools.foam('p',1);w.pools.deposit({id:'p',ml:100,kind:'water'});near(w.pools.state('p').blanket,.5);w.pools.deposit({id:'p',ml:100,kind:'foam'});near(w.pools.state('p').blanket,1);
 });
+test('removing a liquid source removes only its water suppression dose from a fuel pool',()=>{
+  const w=world();w.pools.deposit({id:'p',ml:100,kind:'diesel',sourceKey:'fuel'});assert.equal(w.pools.ignite('p'),true);
+  w.pools.deposit({id:'p',ml:100,kind:'water',sourceKey:'water-a'});w.pools.deposit({id:'p',ml:25,kind:'water',sourceKey:'water-b'});
+  near(w.pools.state('p').wetMl,125);assert.equal(w.pools.state('p').burning,false);
+  w.pools.removeSource('water-a');near(w.pools.state('p').wetMl,25);assert.equal(w.pools.state('p').components.water,25);
+  w.pools.removeSource('water-b');near(w.pools.state('p').wetMl,0);assert.equal(w.pools.state('p').components.water,undefined);
+  w.pools.heat('p',10000);w.thermal.step(.05);assert.equal(w.pools.state('p').burning,true,'remaining fuel can reignite after the removed source no longer wets it');
+});
+test('removing pre-fuel water preserves unrelated cooling dose and source attribution survives pool restore',()=>{
+  const w=world();w.pools.deposit({id:'p',ml:100,kind:'water',sourceKey:'early-water'});w.pools.deposit({id:'p',ml:100,kind:'diesel',sourceKey:'fuel'});
+  w.pools.cool('p',50);near(w.pools.state('p').wetMl,50);w.pools.removeSource('early-water');near(w.pools.state('p').wetMl,50);
+  const checkpoint=world();checkpoint.pools.deposit({id:'p',ml:100,kind:'diesel',sourceKey:'fuel'});checkpoint.pools.deposit({id:'p',ml:100,kind:'water',sourceKey:'water'});checkpoint.pools.cool('p',50);
+  const saved=checkpoint.pools.save();checkpoint.pools.removeSource('water');near(checkpoint.pools.state('p').wetMl,50);checkpoint.pools.restore(saved);checkpoint.pools.removeSource('water');near(checkpoint.pools.state('p').wetMl,50);
+});
+test('source wetness decays proportionally and follows dormant pool activation',()=>{
+  const thermal=createThermalSystem(),pools=createPoolsSystem({thermal,maxPools:1});
+  pools.deposit({id:'blocker',ml:10,kind:'diesel'});pools.ignite('blocker');
+  pools.deposit({id:'target',ml:100,kind:'diesel',sourceKey:'fuel',position:[5,0,0]});pools.deposit({id:'target',ml:100,kind:'water',sourceKey:'water',position:[5,0,0]});pools.cool('target',100);
+  assert.equal(pools.state('target').active,false);pools.remove('blocker');assert.equal(pools.activate('target'),true);
+  thermal.step(.1);near(pools.state('target').wetMl,199.995);pools.removeSource('water');near(pools.state('target').wetMl,99.9975);
+});
+test('removing a fully dried source water leaves a checkpoint-valid wetness ledger',()=>{
+  const thermal=createThermalSystem({fixedStep:10}),pools=createPoolsSystem({thermal});
+  pools.deposit({id:'p',ml:100,kind:'diesel',sourceKey:'fuel'});pools.deposit({id:'p',ml:100,kind:'water',sourceKey:'water'});
+  for(let i=0;i<200;i++)thermal.step(10);
+  near(pools.state('p').wetMl,0);pools.removeSource('water');const snapshot=pools.save();
+  assert.equal(Object.hasOwn(snapshot.pools[0].wetSources,'water'),false);pools.restore(snapshot);near(pools.state('p').wetMl,0);
+});
 test('dormant foam pool retains blanket without creating a thermal node and active decay resumes',()=>{
   const thermal=createThermalSystem(),pools=createPoolsSystem({thermal,maxPools:1});const coats=createCoatingSystem({thermal,pools});pools.deposit({id:'a',ml:10});pools.ignite('a');pools.deposit({id:'b',ml:100,kind:'foam',position:[5,0,0]});coats.deposited({id:'b',components:{foam:100},previousMl:0,previousBlanket:0});assert.equal(pools.state('b').active,false);coats.step(5);near(pools.state('b').blanket,1);pools.remove('a');pools.activate('b');coats.step(1);assert.ok(pools.state('b').blanket<1);
 });
