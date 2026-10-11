@@ -94,6 +94,15 @@ opdaterer stadig deres textures.
 Verifikation: fokuseret camera-suite **10/10**, fuld Node-suite **515/515**, Sol-review uden blocker.
 Pushet til GameSystems `main` som `55379ba`.
 
+## Afsluttet grasp motion-tidsvalidering — 2026-10-12
+
+`pushHandMotion` afviser nu ikke-finite `dt`, før sample-historik eller cached hastigheder røres.
+`Infinity`, `-Infinity`, `NaN`, nul og negative tider lader både sample-vinduet og publiceret motion
+uændret, så `Infinity / Infinity` ikke kan forgifte håndhastighed med `NaN`.
+
+Verifikation: grasp-suite **6/6**, fuld GameSystems Node-suite **516/516**, Contracts WebXR
+interaction-grab **17/17**, Sol-review uden blocker. Pushet til `main` som `255609e`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
