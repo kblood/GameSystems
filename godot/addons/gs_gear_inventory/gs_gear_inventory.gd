@@ -6,7 +6,7 @@ extends RefCounted
 signal ownership_changed(item_id: String, from_owner: String, to_owner: String, slot_id: String)
 
 const CHECKPOINT_VERSION := 1
-const OWNERS := ["world", "hand:left", "hand:right"]
+const OWNERS := ["world", "hand:left", "hand:right", "equipped"]
 
 var _slots: Dictionary = {}
 var _items: Dictionary = {}
@@ -85,6 +85,21 @@ func transfer(item_id: String, expected_owner: String, new_owner: String) -> boo
 	if expected_owner == new_owner: return true
 	item.owner = new_owner
 	_emit_ownership_changed(item_id, expected_owner, new_owner, "")
+	return true
+
+## Remove an item after another system has accepted it. Scene ownership stays
+## with the host; slot indexes are cleared with the item record.
+func unregister_item(item_id: String, expected_owner: String) -> bool:
+	if _disposed or _transition_emitting or not _items.has(item_id): return false
+	var item: Dictionary = _items[item_id]
+	if item.owner != expected_owner or expected_owner not in OWNERS + ["slot"]: return false
+	var slot_id := String(item.slot)
+	if expected_owner == "slot":
+		if slot_id.is_empty() or _slot_items.get(slot_id, "") != item_id: return false
+		_slot_items[slot_id] = ""
+	elif not slot_id.is_empty():
+		return false
+	_items.erase(item_id)
 	return true
 
 ## Restore the owner assigned when each stable item ID was registered.

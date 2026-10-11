@@ -1,6 +1,25 @@
 # Plan: Godot-versionen af Contracts på de fælles extensions
 
-Status (2026-10-11): **G0 afklaret, G1 implementeret** (se [G1-resultat](#g1-resultat-2026-10-11)). Intet er committet.
+## Current verified state — 2026-10-11
+
+This status supersedes older worktree/branch references and the historical table below.
+`gs_host` was merged into `GameSystems/main` in commit `5234a29`; the reusable gear ledger
+was merged in `155ad21`. The current source also contains `gs_weapon_catalog` and
+`gs_resource_adapters`. The gear ledger and scene adapter now include safe
+consumption/unregistration and scene-exit cleanup; these source changes are staged
+but not yet committed. Ledger tests cover the `equipped` weapon owner through transfer,
+checkpoint restore and reset. Their independent source tests pass 57/57 and 65/65, and
+the source addon sync check against NightfallContractsGodot passes. The five current
+Godot addon contract scripts pass 212 checks total on Godot 4.7.2.
+
+The next port-plan step remains `gs_bottles` with the documented physics adapter and
+quality wiring; resource adapters and the weapon catalog are parallel additions, not
+evidence that the bottle port is complete. The primary Godot game, GameSystems source,
+and WebXR game each track their own `main`; old duplicate Godot branches were verified
+as ancestors of kblood's Godot `main` and cleaned up. See
+[`improvement_backlog.md`](improvement_backlog.md) for the current per-task record.
+
+Status (2026-10-11): **G0 afklaret, G1 implementeret og versioneret** (se [G1-resultat](#g1-resultat-2026-10-11)); `gs_bottles` er fortsat næste planlagte porttrin.
 Status (2026-10-10): undersøgelse, ingen kode ændret i `NightfallContractsGodot*` eller i `GameSystems/extensions`. Relateret: [extensions_plan.md](extensions_plan.md) (trin 1–9), [grab_findings.md](grab_findings.md).
 
 > **Ufuldstændig kortlægning.** Denne version blev skrevet, før de to baggrunds-kortlægninger var færdige: (1) Godot-koden pr.
@@ -19,15 +38,16 @@ Første lag er arkitekturen. Andet lag er deling af data og algoritmer med JS-ve
 
 | Del | Godot i dag | Extensions (three) | Bemærkning |
 |---|---|---|---|
-| Hovedprojekt | `C:\Devstuff\GameDev\NightfallContractsGodot` (branch `interaction-fix`). Worktrees: `-fix-*`, `-integ-bisect`, `-pkg-A..E`, `-pkg-P1`, `-r2-avatar/-carry/-corpse/-grasp` og `.claude/worktrees/opus-physical-grasp` | — | `-blood` og `-npcai` står ikke i `git worktree list`. De er separate mapper, og deres status er ikke afklaret. `docs/nightfall_handoff.md` siger "No git repo", men det er forældet. |
-| Motor | Godot 4.6+ (projektets binary er `.tools/godot/editor/Godot_v4.7.2-stable_win64_console.exe`), OpenXR, Mobile-renderer, 72 Hz fysik, GodotPhysics3D (ikke Jolt), ingen autoloads | three 0.170 + cannon-es / Contracts' egen solver | Mål: Steam Frame, Linux ARM64 (Adreno 750) + PCVR. |
-| Flasker | `addons/game_systems/{bottles,glass,shaders}` vendoret fra `GameSystems/gameplay/godot` + `shaders/godot` @ `e6a49d6` med `SOURCE.json` (sha256). Adapter: `nightfall_interaction/system_bottle.gd` | Ikke en extension endnu (trin 8–9) | **Godot er længst fremme her.** 4 vendorede filer er ændret lokalt (`bottle_break_manager.gd`, `bottle_pour.gd`, `bottle_liquid.gd`, `glass_system.gd`: shaderstier, LOW-budget, pour-maske, scene-ejet manager). De skal tilbage til kilden som konfiguration/hooks. |
-| Greb | `addons/nightfall_interaction/`: `grabbable.gd` (grab-kontrakt `can_grab/begin_grab/update_grab/get_grasp/end_grab…`), `baked_grasp_library.gd`, `grasp_catalog.gd`, `held_drive.gd`, `throw_release.gd`, `grasp_contact.gd`, `authored_grasp.gd`, `surface_grasp.gd`, `palm_proxy.gd`, `grasp_feedback.gd`, `swept_carry.gd`, `insertion_corridor.gd` … Data: `baked_grasps/*.json` (5 filer á ca. 3 MB, én pr. kropstype). Bager: `tools/bake_grasps.{gd,py}`, `tools/grasp_bake/` | `extensions/grasp` (JS, ca. 1100 linjer + 127 KB data) | **Godot er den oprindelige kilde.** JS-`catalog.js` er en port af `grasp_catalog.gd`, og `baked_grasps.data.json` er konverteret fra `nightfall.baked-grasps.v1` (`night-watch.glb`). Lukning-til-kontakt gør bagningerne pr. kropstype unødvendige (ca. 15 MB → én bagning). |
+| Hovedprojekt | `C:\Devstuff\GameDev\NightfallContractsGodot`, branch `main` at `33a84d0`, tracking `origin/main`; Godot 4.7.2/OpenXR | — | Primærcheckout har ingen side-worktrees. De ældre `-blood` og `-npcai` kloner er fast-forwardet til samme `main`; deres gamle lokale branches er fjernet, og genererede `.uid`/cache-artefakter er bevaret i lokale stashes. |
+| Motor | Godot 4.7.2, OpenXR, Mobile-renderer, 72 Hz fysik, Jolt Physics, ingen autoloads | three 0.170 + cannon-es / Contracts' egen solver | Projektets feature declaration er stadig 4.6; Steam Frame Linux ARM64 (Adreno 750) og PCVR er separate valideringsmål. |
+| Flasker | `addons/game_systems/{bottles,glass,shaders}` vendoret fra GameSystems' Godot-kilde med `SOURCE.json`; adapter: `nightfall_interaction/system_bottle.gd` | Ikke en extension endnu (trin 8–9) | Den genbrugelige `gs_bottles`-port med scene hooks, physics adapter og quality wiring er stadig åben. `gs_resource_adapters` er et separat færdigt stykke. |
+| Greb | Spillets fysiske greb forbliver i `addons/nightfall_interaction`; generisk ejerskab/opbevaring ligger i `gs_gear_inventory` | `extensions/grasp` (JS, ca. 1100 linjer + 127 KB data) | Godot er fortsat ophav for de spil-specifikke surface-fitted grasps; bagning, katalog og eventuel konformitetsport kræver et separat tranche. |
 | Fingre/hånd | `nightfall_characters/finger_poses.gd` (1234 linjer), `hand_contact.gd`, `hand_skin_contact.gd`, `free_hand_contact.gd`, `validated_hand_fit.gd`, `wrap_fit.gd`, `hand_view.gd` | `avatar/fingers.js`, `rigdata.js`, `grasp/closure.js`, `record.js` | Det er ikke afklaret, om Godot bruger samme rækkeformat `[dyaw, pitch, bend1, bend2]`. Det er det vigtigste punkt i konformitetsarbejdet. |
 | Avatar/IK | `nightfall_characters/operator_ik.gd` (1421), `operator_body.gd`, `body_height.gd`, `foot_gait.gd`, `player_motion.gd`, `rig_transport.gd` | `avatar/vrik.js` m.fl. | Godot har sin egen solver. |
 | Karakter/skelet | `nightfall_characters/character_actor.gd`, `active_ragdoll*.gd`, `ragdoll_joint_profile.gd`, `character_physics.gd`. `addons/nightfall_creator/` (udseende, spejl, valg). Eksport: `tools/build_characters.mjs`, `character-export.*` (ejes af parent ifølge AGENTS.md) | `humanoid/`, `character-cc/` | Godot-AGENTS.md: "Character data/logic stays in a reusable addons/nightfall_characters component". |
-| Fysik/events | Signaler på de enkelte noder (`interaction_noise`, `shattered`, `broke`), `physics_work_budget.gd`, `work_clock.gd`. Ingen fælles bus | `host/events.js`, `host/physics.js` | Der er ingen adapter-grænse. Spillets kode kalder RigidBody3D direkte. |
-| Kvalitet | Pr. system (fx `BottleBreakManager.Quality`, `locomotion_settings.gd`, `comfort_menu.gd`) | `host/quality.js` (globalt niveau 0–3 → tiers pr. extension) | Der er ingen fælles mekanisme. |
+| Fysik/events | `GSHost`/`GSEventBus` er flyttet til `GameSystems/godot/addons/gs_host` og integreret i Godot-spillet via core-event-broen | `host/events.js`, `host/physics.js` | Fælles host/lifecycle findes; gameplayets lokale fysikadapters og eventdækning er fortsat trinvist arbejde. |
+| Inventory | `gs_gear_inventory` ledger + scene adapter findes som genbrugelige addons; Nightfall kobler dem til tasker, våben og magasiner | Ingen tilsvarende inventory-extension endnu | Source-tests kører separat i GameSystems; Nightfall dækker player-/scene-integration. Seneste lifecycle-udvidelse testes i aktuelle branches. |
+| Kvalitet | `GSQuality` og `GSHost.set_quality` findes; enkelte lokale system-/menuindstillinger består | `host/quality.js` (globalt niveau 0–3 → tiers pr. extension) | Host-tier kontrakten findes; comfort-menu kobling og konsekvent brug i alle systemer mangler. |
 | Test/eksport | `tests/run_native_suite.py`, `tools/fast_tests.py`, `tools/export_native.py`, `tools/verify_frame_export.mjs`, `tools/run_frame.sh` | node-tests, puppeteer-lab | Godot-tests er headless GDScript-scener. |
 
 ## Anbefalet arkitektur (lag 1: samme moduler som extensions)
@@ -172,7 +192,7 @@ og G6 også efter trin 4's headset-test. G8 kommer efter trin 7. Extensions-trin
 
 ## G1-resultat (2026-10-11)
 
-Implementeret af Claude (Opus i stedet for Astra, jf. Godot-AGENTS.md). Intet committet.
+Implementeret af Claude (Opus i stedet for Astra, jf. Godot-AGENTS.md) og efterfølgende versioneret på GameSystems `main` (`5234a29`) med Nightfall-integrationen på Godot `main`.
 - **GameSystems** `godot/addons/gs_host/`: `gs_host.gd` (`GSHost`), `gs_extension.gd`, `gs_context.gd`, `gs_event_bus.gd`, `gs_quality.gd`,
   `gs_physics_adapter.gd` (kun interface, implementeres i G2), `gs_error_trap.gd`, `data/tier_for.golden.json`, `tests/gs_host_tests.gd`, `LICENSE-NOTES.md`.
   Desuden `godot/project.godot` (minimalt projekt til test uden spil), `godot/tools/sync_addons.py` og `godot/tools/gen_golden.mjs`.
@@ -190,7 +210,7 @@ Implementeret af Claude (Opus i stedet for Astra, jf. Godot-AGENTS.md). Intet co
   (samme nøgler som `addons/game_systems`, plus `dirty`, `generator` og `sha256_text`). Tekst hashes efter CRLF → LF (autocrlf), og Godots `*.uid`/`*.import` ignoreres.
   `--check` fejler ved redigerede kopier, ekstra eller manglende filer, kopier bagud for GameSystems og forældet golden (`gen_golden.mjs --check`).
   Godot-testen tjekker desuden kopiens hashes mod `SOURCE.json`.
-- **Nightfall** (`interaction-fix`): `addons/gs_host/` (synket kopi), `runtime/gs_core_events.gd` (observatør: poller `player.objects` efter spillerens
+- **Nightfall ved G1-implementering** (siden integreret på `main`): `addons/gs_host/` (synket kopi), `runtime/gs_core_events.gd` (observatør: poller `player.objects` efter spillerens
   fysik-tick og forbinder `shattered`-signaler i missionen plus OpenXR-session-, controller- og hand-tracker-signaler), et hook på 19 linjer i
   `runtime/game.gd` (`_attach_gs_host()` i `_start_mission`), `tests/test_gs_host.gd` (wrapper), `tests/test_gs_core_events.gd` og `tests/suites/gs.json`.
   Ingen extensions er loadet endnu, og det globale niveau er ikke koblet til comfort-menuen.
@@ -209,10 +229,9 @@ Implementeret af Claude (Opus i stedet for Astra, jf. Godot-AGENTS.md). Intet co
 - **Fysikmotor**: rettet efter G0-kortlægningen: `project.godot` har `3d/physics_engine="Jolt Physics"`, så spil, flasker og held-drive
   er allerede på Jolt. Adapteren skrives mod Jolt; GodotPhysics3D er ikke et krav.
 - **Godot-version**: værktøjet er 4.7.2 (`.tools/godot/engine.json`), mens `project.godot` siger feature "4.6". Lås gs-addons på 4.7.2.
-- **Worktrees** (rettet efter G0-kortlægningen): alle `fix-*`, `pkg-*`, `r2-*`, `blood`, `npc-ai` og `opus-physical-grasp` er allerede merget
-  ind i `interaction-fix` (0 commits bagud). `-blood`/`-npcai` er separate kloner af samme origin. Deres udestående ændringer er næsten
-  kun CRLF-støj i `*.import` og genererede `.uid`/`.pyc`. Integrationslinjen er `interaction-fix` (lokal, ikke pushet, 131 commits foran `main`).
-  Den anbefales som base. Worktrees kan lukkes, men kun efter brugerens beslutning.
+- **Worktrees/branches**: auditten 2026-10-11 bekræftede, at `blood`, `npc-ai`, `interaction-fix` og `worktree-opus-physical-grasp`
+  alle var forfædre til kbloods Godot `main`. De to gamle kloner blev fast-forwardet og branch-navnene fjernet; stash-noten står i
+  [`improvement_backlog.md`](improvement_backlog.md). GameSystems, WebXR og Steam Frame/Godot bevares som adskilte projekter.
 - **Licens (brugerens beslutning 2026-10-10)**: Godot-karaktermodulet bruger kun byggede karakterer (GLB + metadata) og ingen CharacterCreator-kode
   i runtime. Byggeværktøjet (`tools/build_characters.mjs`) læser WebXR-pluginet, hvis `vendor/cc` er fra MIT-commit `dc664c07`, og CharacterCreators
   GPL-commit gør genererede filer CC0. Hvis et modul alligevel ender med at indeholde GPL-kode, licenseres det modul som GPL-3.0-or-later.

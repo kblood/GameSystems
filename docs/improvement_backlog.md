@@ -3,6 +3,128 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
+## Afsluttet WebXR-grenkonsolidering — 2026-10-11
+
+De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
+extension-host lifecycle-fix — er flettet ind i `main` i
+[`kblood/NightfallContractsWebXR` PR #1](https://github.com/kblood/NightfallContractsWebXR/pull/1).
+Efter merge blev den lokale checkout sat på `main`, og den nu indeholdte lokale/remote feature-gren
+blev fjernet. WebXR forbliver et selvstændigt projekt; dets kode er ikke flyttet ind i Godot/Steam Frame.
+
+Verifikation: fuld WebXR `npm test`-suite består 339/339 efter merge; checkout matcher `origin/main`.
+
+## Afsluttet GameSystems-grenkonsolidering — 2026-10-11
+
+`codex/liquid-opacity-depth-write` er flettet ind i `kblood/GameSystems` `main` via
+[PR #1](https://github.com/kblood/GameSystems/pull/1). Den lokale GameSystems-checkout
+følger nu `main`, og den flettede feature-gren er fjernet fra både lokal branch-liste og remote.
+Ændringen holder fuldt opaque Godot-væske i depth-writing render pipeline og skifter til alpha
+shader ved translucency.
+
+Verifikation: Godot 4.7.2 `liquid_controls_test.gd` passerer (`LIQUID_CONTROLS_OK`); lokal `main`
+matcher `origin/main`. Igangværende, urelaterede GameSystems-ændringer blev bevaret.
+
+## Afsluttet Godot-grengennemgang — 2026-10-11
+
+De lokale `blood`, `npc-ai`, `interaction-fix` og `worktree-opus-physical-grasp` branches i de
+to ældre NightfallContractsGodot-kloner var alle allerede forfædre til `origin/main`; deres
+kode og tests var derfor indlemmet i projektets kblood-repository. Begge kloner er fast-forwardet
+til commit `33a84d0` på `main`, og de indlemmede lokale branchnavne er fjernet. De to kloners
+genererede Godot `.uid`-artefakter og Python-cache blev bevaret i lokale Git-stashes, da nogle UID'er
+afviger fra den primære checkout. Steam Frame/Godot forbliver separat fra WebXR.
+
+Verifikation: begge kloner matcher `origin/main`; ingen af de gennemgåede branches havde commits
+foran remote `main`. De primære GameSystems-, WebXR- og Godot-checkouts forbliver hver på deres egen
+`main`.
+
+## Nyt løbende delmål — VR-backpack
+
+Færdiggør og verificér et selvstændigt, genbrugeligt VR-backpack-system med fysisk adgang inspireret af
+*The Walking Dead VR*: spilleren åbner tasken med hånden, ser afgrænsede lommer og tager faktiske
+genstande ud. Inventory-ledgeren ejer slot og genstand; spillets objekter ejer deres egen ammunition,
+væske og gameplay-tilstand. Samspil mellem systemerne skal bruge stabile ID'er og atomiske overførsler.
+
+NightfallContractsGodot har nu en fungerende håndbetjent rygsæk med tre indvendige lommer,
+udvendige mounts, reach-/occlusion-regler, weapon-/magasin-integration og et Blender-authored,
+tekstureret canvas asset integreret i runtime-scenen. De fire visuelle meshgrupper bevarer de
+eksisterende slot-/håndtagsankre, bruger 13.982 trekanter og tilføjer ingen kollidere eller
+løbende fysik. Asset-, importer- og hinge-kontrakter er grønne. Det aktive arbejde er nu
+headset-afprøvning og eventuelle målte forbedringer af komfort, rækkevidde og læsbarhed samt
+fortsat kontrol af tracking-tab, afbrudt greb og checkpoint/lifecycle-regressioner. Undgå
+stof-/lynlåsfysik og kontinuerlig simulation af opbevarede genstande; hold løsningen eventbaseret.
+Headless-tests må ikke tælle som headset-accept. Detaljer og acceptkriterier står i
+[`NightfallContractsGodot/docs/vr_backpack_weapon_system.md`](../../NightfallContractsGodot/docs/vr_backpack_weapon_system.md)
+og [`NightfallContractsGodot/docs/backpack_runtime.md`](../../NightfallContractsGodot/docs/backpack_runtime.md).
+
+Dette er et delmål under det aktive, vedvarende forbedringsmål og afslutter det ikke.
+
+## Afsluttet våbenkatalog-valideringsrunde — 2026-10-11
+
+Våbenkataloget afviser nu kapaciteter over `WeaponState`'s 128-skudsgrænse, ukendte eller dobbelte
+fire modes, ugyldig default mode og skudhastigheder uden for runtime-intervallet 0,03–2 sekunder.
+Det forhindrer kataloget i at godkende profiler, som gameplay-adapteren senere afviser. Kildetesten
+ligger i GameSystems; den genererede addon-kopi i NightfallContracts er synkroniseret og drift-kontrolleret.
+
+Verifikation: 19/19 GameSystems-kildetests og fire NightfallContracts-processer for katalog, våbenvarianter,
+weapon gameplay og backpack-våben består. Headset-fit og balance er fortsat en separat enhedsaccept.
+
+En ekstra Nightfall-regression dækker nu et ugyldigt valgt våben ved player-opstart: runtime falder tilbage
+til Kestrel med intakt 15-skuds state, og `firearm_load_errors` beholder den maskinlæsbare årsag. Den
+målrettede firearm-variant-suite består 75 checks; Sol har godkendt testen.
+
+## Afsluttet inventory-root-lifecycle-runde — 2026-10-11
+
+Scene-adapteren afviser nu item-registrering sikkert, hvis et konfigureret owner-root er blevet
+frigivet eller står uden for scenetræet. Tidligere kunne hierarkikontrollen dereferere en fri
+root og give en engine-fejl. Når root erstattes med et gyldigt håndanker, kan registrering igen
+fortsætte. Addon-kilden er synkroniseret til NightfallContracts.
+
+Verifikation: 61/61 målrettede scene-adapterchecks og 8/8 relevante backpack-/inventory-processer
+består. Magasiner slettet fra tasken og permanente scene-detach frigiver fortsat deres slot-claims.
+
+## Afsluttet genbrugelig gear-inventory lifecycle-runde — 2026-10-11
+
+`gs_gear_inventory` har nu en selvstændig Godot-kildekontrakt for ledger-forbrug/unregistering,
+og scene-adapteren rydder slot claims ved både permanent detach og ekstern destruction. Sol-review
+fandt ingen blocker: expected-owner validering, reverse-slot-index, deferred tree-exit cleanup og
+Nightfall-kopiens manifest stemmer. Review-hærdning tilføjede også synkron `free()` af et slotted item
+foruden `queue_free()`.
+
+Verifikation: GameSystems ledger **57/57**, scene adapter 65/65, alle fem GameSystems Godot-addon-suiter
+**212 checks samlet**, addon sync-check og Nightfall adapter-kontrakten 65/65 består på Godot 4.7.2.
+Den afsluttende source-ledger-runde dækker også `equipped`-ejeren for våben ved transfer, checkpoint
+restore og reset; den samlede kildepakke er staged til review, endnu ikke committed.
+Kørsel af Nightfall headless-testen kræver `--xr-mode off`; almindelig fallback uden headset gav ikke
+frameticks i denne direkte script-kørsel.
+
+## Afsluttet extension dependency-lifecycle-runde — 2026-10-11
+
+Extension hosten lukker nu transitive afhængige extensions ned, før en navngiven dependency fjernes.
+Det forhindrer eksempelvis `flow` i at blive stående som klar efter `supply` er disposed og gør også
+igangværende dependent-init ugyldig. En async init, der afsluttes sent, kører `dispose()` præcis én
+gang; sene init-fejl rapporteres fortsat med deres korrekte fase.
+
+Verifikation: host- og supply→flow-regressioner, herunder sen succes/fejl efter annullering, består.
+Hele WebXR-demoens Node-suite består 491/491 tests. GameSystems-host-kopien og NightfallContractsWebXR-
+kopien er synkroniseret; Sol reviewede ændringen uden resterende blocker.
+
+## Afsluttet Aster-adapterkontrakt og interaktionsrunde — 2026-10-11
+
+Godot-bilens eksterne væske- og strøm-adaptere kræver nu eksplicit reversibilitet og validerede,
+begrænsede state-former. Ugyldige adapters afvises atomisk, og en delvis strømudtagning refunderes
+præcist. Det bevarer en let lokal store som fallback og lader værten koble bilen på fælles systemer.
+
+GameSystems har nu `gs_resource_adapters`: en begrænset, navngiven væsketank, en reversibel
+brændstofadapter og en reversibel batteriadapter. Adapterne er synkroniseret til
+NightfallContractsGodot og koblet direkte til Aster. Bilen kan fyldes fra petrol-komponenten,
+forbruge fælles brændstof, trække startstrøm og returnere generatorladning uden at blande diesel
+ind i benzinforbruget. Simple og disabled vehicle modes er stadig tilgængelige.
+
+Verifikation: 25/25 kildechecks for adapters, 12/12 Aster/shared-resource integrationchecks,
+112 native Aster-kontraktchecks og 1.439 panelinteraktionschecks består. Isoleret import består,
+og Sol reviewede adapterkontrakten uden blocker. Fysisk rør-/ledningsnet, kredsløb og headset-
+gennemgang af bilens VR-paneler er fortsat åbne, særskilte opgaver.
+
 ## Afsluttet væske-opacitet-runde — 2026-10-11
 
 Designfeltet `opacity` styrer nu væskens gennemskinnelighed i Three.js og Godot over samme referencevej,
@@ -516,6 +638,14 @@ fysisk opbevaring af grebne genstande, adgangskontrol for hænder/rækkevidde/si
 retrieval til hånden og checkpoint/reset. Dette mål er at videreudvikle det til en
 brugbar fysisk VR-rygsæk i stil med Walking Dead: Saints & Sinners, uden at gøre den til
 en abstrakt menu.
+
+Dette delmål er føjet til det aktive, løbende GameSystems/NightfallContracts-mål. Behandl
+rygsækken som en selvstændig inventory-/adgangskomponent, der kan stå alene og forbindes
+med våben, magasiner og andre genstandssystemer gennem stabile ID'er og entydigt ejerskab.
+Headless-tests viser allerede 250 checks grønne; målet er fortsat åbent indtil den
+genbrugelige systemgrænse er afklaret, de platformstilpassede integrationer er verificeret,
+og ergonomi, synlighed og performance er gennemgået på headset. Headset-resultater må ikke
+udledes af headless-tests.
 
 - Gennemgå ergonomi og scene-flow på begge hænder: våbenhylstre, rygslot, ammunition og
   små værktøjer skal have tydelige, kompatible pladser og forudsigelige retrieve-handlinger.

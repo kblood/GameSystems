@@ -63,9 +63,23 @@ static func _validate_entry(entry: Dictionary, index: int, errors: Array[String]
 	else:
 		var capacity: Variant = entry.get("capacity")
 		var capacity_value := float(capacity) if typeof(capacity) in [TYPE_INT, TYPE_FLOAT] else 0.0
-		if typeof(capacity) not in [TYPE_INT, TYPE_FLOAT] or capacity_value < 1.0 or capacity_value > 2147483647.0 or floorf(capacity_value) != capacity_value:
-			errors.append("%s needs a positive integer magazine capacity" % label)
+		if typeof(capacity) not in [TYPE_INT, TYPE_FLOAT] or capacity_value < 1.0 or capacity_value > 128.0 or floorf(capacity_value) != capacity_value:
+			errors.append("%s needs a whole-number magazine capacity from 1 to 128" % label)
 		if not fire_modes is Array or fire_modes.is_empty(): errors.append("%s needs at least one fire mode" % label)
+		elif fire_modes is Array:
+			var seen_modes: Array[String] = []
+			for mode in fire_modes:
+				var mode_name := str(mode)
+				if mode_name not in ["semi", "auto"]: errors.append("%s has unsupported fire mode %s" % [label, mode_name])
+				if mode_name in seen_modes: errors.append("%s repeats fire mode %s" % [label, mode_name])
+				seen_modes.append(mode_name)
+			var default_mode := str(entry.get("default_fire_mode", "semi"))
+			if default_mode not in ["semi", "auto"]: errors.append("%s has unsupported default fire mode %s" % [label, default_mode])
+			elif default_mode not in seen_modes: errors.append("%s default fire mode %s is not listed in fire_modes" % [label, default_mode])
+		var interval: Variant = entry.get("shot_interval_s", 0.12)
+		var interval_value := float(interval) if typeof(interval) in [TYPE_INT, TYPE_FLOAT] else NAN
+		if typeof(interval) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(interval_value) or interval_value < 0.03 or interval_value > 2.0:
+			errors.append("%s shot interval must be from 0.03 to 2 seconds" % label)
 	if attachments is Array:
 		for marker in attachments:
 			if not str(marker).begins_with("attach_"): errors.append("%s has invalid attachment marker %s" % [label, marker])
