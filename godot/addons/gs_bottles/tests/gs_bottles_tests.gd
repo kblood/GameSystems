@@ -3,6 +3,11 @@ extends SceneTree
 const ManagerScript = preload("../bottle_break_manager.gd")
 const BottleScript = preload("../breakable_bottle.gd")
 const LiquidScript = preload("../shaders/bottle_liquid.gd")
+const HostScript = preload("res://addons/gs_host/gs_host.gd")
+const ExtensionScript = preload("../gs_bottle_extension.gd")
+
+class SilentBottle extends GSBreakableBottle:
+	func _ready() -> void: pass
 
 var checks := 0
 var failures := 0
@@ -45,6 +50,54 @@ func run() -> void:
 	check(GSBottleBreakManager.get_for(first_scene) == manager,
 		"remaining scene resolves its own live manager after another exits")
 	check(is_instance_valid(manager), "other scene manager remains alive after sibling teardown")
+	current_scene = null
+	var nested_scene := Node3D.new()
+	var left_branch := Node3D.new()
+	var right_branch := Node3D.new()
+	root.add_child(nested_scene)
+	nested_scene.add_child(left_branch)
+	nested_scene.add_child(right_branch)
+	var nested_a := GSBottleBreakManager.get_for(left_branch)
+	var nested_b := GSBottleBreakManager.get_for(right_branch)
+	check(nested_a == nested_b and nested_a.get_parent() == nested_scene,
+		"manager resolves the top scene when current_scene is unset")
+	nested_scene.queue_free()
+	await process_frame
+	var extension_scene := Node3D.new()
+	root.add_child(extension_scene)
+	current_scene = extension_scene
+	var sample := SilentBottle.new()
+	extension_scene.add_child(sample) # Existing scene bottles must be discovered on init.
+	var host: GSHost = HostScript.new()
+	host.auto_update = false
+	host.scene_root = extension_scene
+	extension_scene.add_child(host)
+	var api: GSBottleExtension = host.load_extension(ExtensionScript, {"asset_root": "assets/game_systems/bottles/"})
+	check(api != null and api.get_manager().get_parent() == extension_scene,
+		"extension loads with a mission-owned manager")
+	host.set_tier(&"gs_bottles", &"low")
+	check(api.get_manager().quality == GSBottleBreakManager.Quality.LOW,
+		"host quality tiers configure the bottle manager")
+	var transient := SilentBottle.new()
+	extension_scene.add_child(transient)
+	check(api._tracked.size() == 2, "extension tracks runtime-added bottles")
+	extension_scene.remove_child(transient)
+	check(api._tracked.size() == 1, "extension prunes bottles when they leave the scene")
+	transient.free()
+	var broken_events: Array[Dictionary] = []
+	host.on(&"broken", func(data: Dictionary) -> void: broken_events.append(data))
+	sample.broke.emit(Vector3.ONE, 2.5, &"shatter")
+	check(broken_events.size() == 1 and broken_events[0].get("body") == sample
+		and broken_events[0].get("at") == Vector3.ONE,
+		"pre-existing bottle is bridged to one core broken event")
+	check(api._tracked.is_empty(), "one-shot break event releases its tracked reference")
+	var extension_manager := api.get_manager()
+	host.dispose(&"gs_bottles")
+	await process_frame
+	check(not is_instance_valid(extension_manager), "extension teardown frees its owned manager")
+	host.queue_free()
+	extension_scene.queue_free()
+	await process_frame
 	first_scene.queue_free()
 	await process_frame
 	print("GS_BOTTLES: %d checks, %d failures" % [checks, failures])

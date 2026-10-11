@@ -75,18 +75,37 @@ var live_droplets := 0
 
 
 static func get_for(node: Node) -> GSBottleBreakManager:
+	var manager := find_for(node)
+	if manager != null:
+		return manager
 	var tree := node.get_tree()
-	var scope := tree.current_scene
-	if scope == null or (node != scope and not scope.is_ancestor_of(node)):
-		scope = node
-	for candidate in tree.get_nodes_in_group("bottle_break_manager"):
-		var existing := candidate as GSBottleBreakManager
-		if is_instance_valid(existing) and (existing == scope or scope.is_ancestor_of(existing)):
-			return existing
+	var scope := _scope_for(node, tree)
 	var m := GSBottleBreakManager.new()
 	m.name = "GSBottleBreakManager"
 	scope.add_child(m)
 	return m
+
+
+static func find_for(node: Node) -> GSBottleBreakManager:
+	if node == null or not is_instance_valid(node) or not node.is_inside_tree():
+		return null
+	var tree := node.get_tree()
+	var scope := _scope_for(node, tree)
+	for candidate in tree.get_nodes_in_group("bottle_break_manager"):
+		var manager := candidate as GSBottleBreakManager
+		if is_instance_valid(manager) and (manager == scope or scope.is_ancestor_of(manager)):
+			return manager
+	return null
+
+
+static func _scope_for(node: Node, tree: SceneTree) -> Node:
+	var scope := tree.current_scene
+	if scope != null and (node == scope or scope.is_ancestor_of(node)):
+		return scope
+	scope = node
+	while is_instance_valid(scope.get_parent()) and scope.get_parent() != tree.root:
+		scope = scope.get_parent()
+	return scope
 
 
 func set_quality(q: int) -> void:

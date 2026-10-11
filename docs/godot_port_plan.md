@@ -191,20 +191,22 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 ### G2 progress (2026-10-11)
 
 `godot/addons/gs_bottles` now contains the reusable breakable-bottle/liquid scripts,
-adjacent shader resources, license, README, and a headless addon test. It is synced to
-Nightfall at `addons/gs_bottles` with `SOURCE.json`. The current source test passes 8/8
-checks; the existing Nightfall `game-systems` suite passes 20/20. Nightfall already had
-global bottle classes in the legacy addon, so the extracted API uses `GSBottle*` class
-names to avoid collisions. New tests cover scene ownership and teardown; this suite is
-separate from the legacy bottle integration coverage.
+adjacent shader resources, `GSBottleExtension`, license, README, and headless tests. It is
+synced to Nightfall at `addons/gs_bottles` with `SOURCE.json`. The addon test passes 16/16;
+Nightfall's `game-systems` integration passes 23/23, the bottle physics review passes
+191/191, and the bullet-impact review passes 75/75. The Nightfall adapter now derives from
+`GSBreakableBottle`, the extension owns scene-scoped manager/quality and forwards the core
+`broken` event, and the old bottle scripts/shaders have been removed from the legacy glass
+addon. Nightfall keeps only its glass-pane runtime and bottle data assets in that folder.
 
-This is an extraction milestone, not G2 completion. The bottle remains backed by
-Godot `RigidBody3D` contacts; `GSPhysicsAdapter` is for hosted custom extensions and
-forcing bottle internals through it now would duplicate or alter Godot collision
-handling. Follow-up work: expose manager ownership and quality as extension options,
-publish a stable bottle API and `broken` event, and keep Nightfall grab/cap/asset/pour
-configuration in its local adapter. Remove the legacy vendored copy only after that
-adapter consumes the new API and the full bottle suite passes.
+G2 still has work: verify multiple simultaneous mission scopes in the actual game harness
+and reconcile the two quality controls (glass-pane and bottle extension) with the
+user-facing comfort setting. The extension API's bottle creation and its scene tracking
+are now covered in Nightfall's integration suite.
+Bottle collision stays Godot `RigidBody3D`-managed; routing those contacts through
+`GSPhysicsAdapter` would duplicate or alter engine collision handling. Headset performance
+and comfort remain unmeasured. Sol's review found and prompted pruning of tracking entries
+on scene removal and after one-shot break delivery; the extension regression now covers both.
 
 Det er ca. **10 trin** (G0–G9). G1 og G2 kan starte før extensions-trin 5, fordi de kun afhænger af host og bottles. G3–G7 kommer efter trin 5,
 og G6 også efter trin 4's headset-test. G8 kommer efter trin 7. Extensions-trin 8–9 (bottles i three) kan bruge G2's API som model.
