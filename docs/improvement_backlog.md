@@ -138,6 +138,14 @@ reparerer dem kun når wrist/underarm-ankrene selv er gyldige.
 Verifikation: humanoid-suite **2/2**, fuld Node-suite **521/521**, Sol-review uden blocker.
 Pushet til GameSystems `main` som `1716a40`.
 
+## Afsluttet Cannon adapter timestep-validering — 2026-10-12
+
+`step(dt)` afviser nu `NaN`, infinities og negative tider før Cannon state ændres; nul er et no-op.
+Det forhindrer NaN-accumulator poisoning og tillader efterfølgende gyldige fysiksteps.
+
+Verifikation: physics-adapter **8/8**, fuld GameSystems Node-suite **522/522**, Sol-review uden
+blocker og Contracts-kopien/hash er matchet. Pushet til `main` som `6ef7cb0`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
