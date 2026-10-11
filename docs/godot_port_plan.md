@@ -12,8 +12,9 @@ checkpoint restore and reset. Their independent source tests pass 57/57 and 65/6
 the source addon sync check against NightfallContractsGodot passes. The five current
 Godot addon contract scripts pass 212 checks total on Godot 4.7.2.
 
-The next port-plan step remains `gs_bottles` with the documented physics adapter and
-quality wiring; resource adapters and the weapon catalog are parallel additions, not
+The next port-plan step remains `gs_bottles`; its portable scripts and shaders are now
+extracted as a source addon and synced to Nightfall, but adapter/quality wiring and full
+game integration remain open. Resource adapters and the weapon catalog are parallel additions, not
 evidence that the bottle port is complete. The primary Godot game, GameSystems source,
 and WebXR game each track their own `main`; old duplicate Godot branches were verified
 as ancestors of kblood's Godot `main` and cleaned up. See
@@ -178,7 +179,7 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 |---|---|---|---|
 | G0 | Afklaring | Brugerens svar på spørgsmålene nedenfor. Ret kortlægningen i denne fil (fingerkonvention, worktree-status, `-blood`/`-npcai`). Vælg hvilke `r2-*`/`pkg-*` der merges først | beslutninger skrevet her |
 | G1 (færdig 2026-10-11) | `gs_host` + sync | `GameSystems/godot/addons/gs_host`, sync-script med `SOURCE.json` + `--check` (genbrug formatet fra `addons/game_systems`), `tier_for`-golden. Contracts-Godot får en `GSHost` i missionsscenen og sender core-events | headless-test: load/fejlisolering/tiers; `run_native_suite.py` grøn |
-| G2 | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`. De 4 lokale ændringer bliver til options. Fysik via `GSPhysicsAdapter`, `broken`-event | `addons/game_systems` erstattet uden lokale ændringer; `--only game-systems` grøn |
+| G2 | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`; sceneejet manager, asset-/quality-options, stabil API og `broken`-event i `GSHost` | Nightfall-adapter bruger den synkede addon; legacy-flaskekopi fjernet; bottle- og `--only game-systems`-suiter grønne |
 | G3 | Data ud af JS | `extensions/grasp/data/*.json` + `humanoid` bone maps som JSON. JS læser dem (efter trin 5) | JS-tests uændret grønne; golden-generator findes |
 | G4 | `gs_grasp` kerne | Port: katalog/SDF, validator (`clamp_rows`), `baked_grasps` (nearest + hysterese, `merge_poses`), held-drive, kast | golden-tests ≤ tolerance; Godot-greb uændrede i `test`-suiten |
 | G5 | `gs_humanoid` + `gs_character_cc` | Canonical skelet, bone maps → `Skeleton3D`, `rest_hand()`. CC-karakter bag `GSCharacter` | karakter-kontrakt-test i Godot; `rest_hand` = JS-golden |
@@ -186,6 +187,24 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 | G7 | `gs_avatar` | VR-IK, kalibrering, fingermapping (OpenXR → rækker) bag samme API. Beslut port af `vrik.js` vs. Godots IK-modifiers | Godot-avatar-tests grønne; fingre fra hand tracking = JS-golden |
 | G8 | Hånd-poser/-animationer | Følger extensions-trin 7 (samme format) | controller-hænder bruger optagede poser i Godot |
 | G9 | Steam Frame | ARM64-eksport, profil pr. tier på enheden | målinger skrevet ind her (ikke editor-tal) |
+
+### G2 progress (2026-10-11)
+
+`godot/addons/gs_bottles` now contains the reusable breakable-bottle/liquid scripts,
+adjacent shader resources, license, README, and a headless addon test. It is synced to
+Nightfall at `addons/gs_bottles` with `SOURCE.json`. The current source test passes 8/8
+checks; the existing Nightfall `game-systems` suite passes 20/20. Nightfall already had
+global bottle classes in the legacy addon, so the extracted API uses `GSBottle*` class
+names to avoid collisions. New tests cover scene ownership and teardown; this suite is
+separate from the legacy bottle integration coverage.
+
+This is an extraction milestone, not G2 completion. The bottle remains backed by
+Godot `RigidBody3D` contacts; `GSPhysicsAdapter` is for hosted custom extensions and
+forcing bottle internals through it now would duplicate or alter Godot collision
+handling. Follow-up work: expose manager ownership and quality as extension options,
+publish a stable bottle API and `broken` event, and keep Nightfall grab/cap/asset/pour
+configuration in its local adapter. Remove the legacy vendored copy only after that
+adapter consumes the new API and the full bottle suite passes.
 
 Det er ca. **10 trin** (G0–G9). G1 og G2 kan starte før extensions-trin 5, fordi de kun afhænger af host og bottles. G3–G7 kommer efter trin 5,
 og G6 også efter trin 4's headset-test. G8 kommer efter trin 7. Extensions-trin 8–9 (bottles i three) kan bruge G2's API som model.
@@ -218,8 +237,9 @@ Implementeret af Claude (Opus i stedet for Astra, jf. Godot-AGENTS.md) og efterf
   `gs-host` 47/47, `gs-core-events` 11/11, `fast_tests.py --tier full`: 124/127. `combat` og `review-routes` fejlede allerede ved HEAD.
   `magazine-acquisition-budget` (1 ms realtidsbudget under 8 parallelle jobs) består alene 2/2 og bruger ikke G1-kode.
   `run_native_suite.py --only gs-* --only smoke --only game-systems` er grøn.
-- **Næste (G2)**: `gs_bottles` med sync af assets uden for `addons/` (`EXTRAS` pr. addon), en `GSPhysicsAdapter` til Jolt i spillet,
-  `broken` fra bottle-extensionen i stedet for broens `shattered`-videresendelse for systemflasker, og det globale niveau koblet til `GSHost.set_quality`.
+- **Næste (G2)**: bottle API/extension oven på Godots `RigidBody3D`, sceneejet manager, `broken`-event,
+  Nightfall-adapter til grab/cap/asset/pour og kvalitetskobling til `GSHost.set_quality`. `GSPhysicsAdapter` bruges
+  kun til fysik, som ikke allerede håndteres af Godots rigid-body-kontakter.
 
 ## Afklaringer og risici
 
