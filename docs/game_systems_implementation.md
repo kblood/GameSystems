@@ -23,8 +23,9 @@ Alle kerner har `setQuality`, `quality` og `dispose`. Alle moduler eksporterer e
 af kernerne; de importerer ingen rendering- eller physics-engine og ingen søstersystems interne filer.
 
 `extensions/workshop/index.js` er en valgfri composition med alle seks systemer som eksplicitte afhængigheder. Den
-registrerer scenariets objekter og kobler dem via public API og events. Ved unload fjernes scenariets egne objekter,
-rum, portaler og ventende lytterevents; andre objekter i de delte systemer bevares.
+registrerer scenariets objekter og kobler dem via public API og events. Ved unload eller fejl midt i init fjernes kun
+ressourcer, som scenariet nåede at oprette: objekter, rum, portaler og lytterevents. Eksisterende objekter med samme ID
+bevares, så en senere load kan lykkes, når ID-konflikten er løst.
 
 ## Indlæsning
 

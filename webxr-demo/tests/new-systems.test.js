@@ -161,6 +161,50 @@ test('composition can unload and reload without disposing shared systems', async
   assert.ok(await host.load(workshop)); assert.deepEqual(errors, []); host.dispose();
 });
 
+test('workshop init failure rolls back only acquired resources and can retry', async () => {
+  const errors = [], host = createHost({ onError: (error, id, phase) => errors.push([id, phase, error.message]) });
+  for (const module of [mechanics, electricity, materials, thermal, tools, acoustics]) assert.ok(await host.load(module));
+  const sharedMaterials = host.get('materials');
+  sharedMaterials.add('bench', { material: 'wood' });
+  assert.equal(await host.load(workshop), null);
+  assert.equal(host.state('workshop'), 'absent');
+  assert.throws(() => host.get('mechanics').state('drawer'));
+  assert.throws(() => host.get('electricity').state('battery'));
+  assert.equal(sharedMaterials.state('bench').material, 'wood', 'the conflicting pre-existing surface remains owned by its caller');
+  sharedMaterials.remove('bench');
+  const api = await host.load(workshop);
+  assert.ok(api, errors.map(row => row.join(': ')).join('\n'));
+  assert.equal(api.mechanics.state('drawer').id, 'drawer');
+  assert.deepEqual(errors.map(([id, phase]) => [id, phase]), [['workshop', 'init']]);
+  host.dispose();
+});
+
+test('workshop rollback detects an add that mutates before its host callback throws', async () => {
+  const errors = []; let failPose = true;
+  const host = createHost({ onError: (error, id, phase) => errors.push([id, phase, error.message]) });
+  const modules = [
+    [mechanics, { applyPose() { if (failPose) { failPose = false; throw new Error('render pose failed'); } } }],
+    [electricity, {}], [materials, {}], [thermal, {}], [tools, {}], [acoustics, {}],
+  ];
+  for (const [module, options] of modules) assert.ok(await host.load(module, options));
+  assert.equal(await host.load(workshop), null);
+  assert.throws(() => host.get('mechanics').state('drawer'));
+  const api = await host.load(workshop);
+  assert.ok(api, errors.map(row => row.join(': ')).join('\n'));
+  assert.equal(api.mechanics.state('drawer').id, 'drawer');
+  host.dispose();
+});
+
+test('workshop can release a canceled fuse using its public owner and hand it to another owner', async () => {
+  const { host, api } = await station();
+  api.mechanics.setValue('drawer', 0.5);
+  assert.equal(api.takeFuse('left-hand'), true);
+  assert.equal(api.releaseFuse('left-hand'), true);
+  assert.equal(api.takeFuse('right-hand'), true);
+  assert.equal(api.releaseFuse('right-hand'), true);
+  host.dispose();
+});
+
 test('disposing supply unloads flow before its captured dependency API becomes invalid', async () => {
   const errors = [], host = createHost({ onError: (e, id, phase) => errors.push([id, phase, e.message]) });
   const source = await host.load(supply); source.add('tank', { capacityMl: 1000, components: { water: 1000 } });

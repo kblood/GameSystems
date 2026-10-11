@@ -131,7 +131,7 @@ function release(cancel = false) {
     if (active.kind === 'fuse') {
       const axis = new THREE.Vector3(0, 0, -1).applyQuaternion(nodes.fuse.quaternion).toArray();
       const inserted = cancel !== true && station.insertFuse(nodes.fuse.position.toArray(), axis, active.owner);
-      if (!inserted) station.tools.release('spareFuse', active.owner);
+      if (!inserted) station.releaseFuse(active.owner);
       message(inserted ? 'Sikring indsat. Drej kontakten.' : 'Sikringen blev lagt tilbage i skuffen.');
     } else if (active.mechanism) station.mechanics.release(active.mechanism, active.owner);
   }
