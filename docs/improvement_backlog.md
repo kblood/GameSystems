@@ -67,6 +67,15 @@ selv om en callback fejler. Step-guard frigives, og første fejl rapporteres eft
 Verifikation: fokuseret system-suite **25/25**, fuld WebXR-demo Node-suite **512/512** og Sol-review
 uden blocker. Pushet til GameSystems `main` som `f00a6f0`.
 
+## Afsluttet vehicle-step observer-fejl-runde — 2026-10-12
+
+Køretøjets `step()` fuldfører nu beregnet brændstof-/strømforbrug, bevægelse og delopdateringer for
+alle biler, selv hvis `vehicle:stopped` eller `vehicle:part` observers kaster. Første fejl rejses
+efter batchen; direkte `stop()` beholder sin synkrone eventsemantik.
+
+Verifikation: fokuseret køretøjsbatch **32/32**, fuld WebXR-demo Node-suite **513/513**, Sol-review
+uden blocker og uafhængig vehicle-motion/vehicle suite **26/26**. Pushet som `be0f965`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
