@@ -32,6 +32,10 @@ func valid_left(policy: RefCounted) -> void:
 func run() -> void:
 	var approach := Approach.new()
 	check(approach.check("right", Vector3.ZERO, SHOULDER_Y).reason == "back_approach_required", "requires a sampled approach")
+	check(approach.check("middle", Vector3.ZERO, SHOULDER_Y).reason == "back_approach_invalid", "unknown hand side is rejected")
+	approach.observe("middle", true, Vector3(0.18,0.40,0.0), SHOULDER_Y, 0.02)
+	check(approach.check("middle", Vector3(0.18,0.40,0.0), SHOULDER_Y).reason == "back_approach_invalid",
+		"unknown side observation cannot create access history")
 	approach.observe("right", false, Vector3(0.20, 0.30, 0.20), SHOULDER_Y, 0.02)
 	check(approach.check("right", Vector3(0.20, 0.30, 0.20), SHOULDER_Y).reason == "back_approach_required", "tracking loss clears approach history")
 	approach.observe("right", true, Vector3(0.20, 0.30, 0.20), SHOULDER_Y, 0.16)
@@ -39,6 +43,36 @@ func run() -> void:
 	sample(approach, "right", Vector3(0.18, 0.40, 0.0))
 	approach.observe("right", true, Vector3(0.18, 0.40, 0.5), 0.0, 0.02)
 	check(approach.check("right", Vector3(0.18, 0.40, 0.5), SHOULDER_Y).reason == "back_approach_required", "teleport-sized hand jump resets history")
+	valid_right(approach)
+	approach.observe("right",true,Vector3(NAN,0.4,0.0),SHOULDER_Y,0.02)
+	check(approach.check("right",Vector3(0.08,0.10,0.36),SHOULDER_Y).reason == "back_approach_required",
+		"non-finite sampled hand clears only its own history")
+	valid_right(approach)
+	approach.observe("right",true,Vector3(0.18,0.40,0.0),NAN,0.02)
+	check(approach.check("right",Vector3(0.08,0.10,0.36),SHOULDER_Y).reason == "back_approach_required",
+		"non-finite shoulder height clears the affected history")
+	for invalid_dt in [0.0,-0.02,NAN,INF]:
+		valid_right(approach)
+		approach.observe("right",true,Vector3(0.18,0.40,0.0),SHOULDER_Y,invalid_dt)
+		check(approach.check("right",Vector3(0.08,0.10,0.36),SHOULDER_Y).reason == "back_approach_required",
+			"invalid sample dt %s clears the affected history" % invalid_dt)
+	valid_left(approach)
+	approach.observe("right",true,Vector3(0.18,0.40,0.0),SHOULDER_Y,0.02)
+	approach.observe("right",true,Vector3(0.18,0.40,0.0),SHOULDER_Y,-0.02)
+	check(approach.check("left",Vector3(-0.08,0.10,0.36),SHOULDER_Y).allowed,
+		"invalid right-hand sample preserves independent left-hand history")
+	check(approach.check("right",Vector3(0.18,0.40,0.0),SHOULDER_Y).reason == "back_approach_required",
+		"invalid sample clears only the sampled hand")
+	approach.reset()
+	approach.observe("right",true,Vector3(0.18,0.40,0.0),SHOULDER_Y,0.15)
+	approach.observe("right",true,Vector3(0.18,0.40,0.30),SHOULDER_Y,0.15)
+	check(approach.check("right",Vector3(0.18,0.40,0.30),SHOULDER_Y).allowed,
+		"exact maximum sample interval and movement boundary remain valid")
+	approach.reset()
+	approach.observe("right",true,Vector3(0.18,0.40,0.0),SHOULDER_Y,0.02)
+	approach.observe("right",true,Vector3(0.18,0.40,0.15),SHOULDER_Y,0.02)
+	check(approach.check("right",Vector3(0.18,0.40,0.45),SHOULDER_Y).allowed,
+		"final access check accepts a valid hand position exactly 0.30 m from its last observation")
 	sample(approach, "right", Vector3(0.18, 0.40, 0.0))
 	var low := approach.check("right", Vector3(0.18, 0.20, 0.15), SHOULDER_Y)
 	check(not low.allowed and low.reason == "back_approach_path", "low shoulder-plane crossing is rejected")

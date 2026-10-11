@@ -17,6 +17,7 @@ const RETRIEVE_BELOW_SHOULDER_M := 0.35
 const CENTRE_CROSS_TOLERANCE_M := 0.04
 const MIN_PROGRESS_M := 0.08
 const PATH_SHOULDER_CLEARANCE_M := 0.05
+const BOUNDARY_EPSILON := 0.000001
 
 var _hands: Dictionary = {}
 
@@ -26,11 +27,11 @@ func reset(side: String = "") -> void:
 
 func observe(side: String, tracked: bool, local_hand: Vector3, shoulder_y: float, dt: float) -> void:
 	if side not in ["left", "right"]: return
-	if not tracked or not local_hand.is_finite() or not is_finite(shoulder_y) or not is_finite(dt) or dt <= 0.0 or dt > MAX_SAMPLE_DT:
+	if not tracked or not local_hand.is_finite() or not is_finite(shoulder_y) or not is_finite(dt) or dt <= 0.0 or dt > MAX_SAMPLE_DT + BOUNDARY_EPSILON:
 		reset(side)
 		return
 	var previous: Dictionary = _hands.get(side, {})
-	if not previous.is_empty() and local_hand.distance_to(previous.position) > MAX_SAMPLE_JUMP_M:
+	if not previous.is_empty() and local_hand.distance_to(previous.position) > MAX_SAMPLE_JUMP_M + BOUNDARY_EPSILON:
 		# A recovered/teleported hand must make a new continuous approach. Do not
 		# arm from the discontinuity itself, even when it lands above a shoulder.
 		reset(side)
@@ -50,7 +51,7 @@ func check(side: String, local_hand: Vector3, shoulder_y: float) -> Dictionary:
 	if side not in ["left", "right"] or not local_hand.is_finite() or not is_finite(shoulder_y): return _result(false, "back_approach_invalid")
 	var hand: Dictionary = _hands.get(side, {})
 	if hand.is_empty(): return _result(false, "back_approach_required")
-	if local_hand.distance_to(hand.position) > MAX_SAMPLE_JUMP_M:
+	if local_hand.distance_to(hand.position) > MAX_SAMPLE_JUMP_M + BOUNDARY_EPSILON:
 		reset(side)
 		return _result(false, "back_approach_jump")
 	if not _path_clear(side,hand.position,local_hand,shoulder_y):
