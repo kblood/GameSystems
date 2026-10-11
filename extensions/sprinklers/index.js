@@ -6,19 +6,25 @@ export function createSprinklerSystem({ supply, thermal, emit = () => {}, powere
   if (!supply?.draw || !supply?.state || !thermal?.objects || !thermal?.water) throw new TypeError('Sprinklers require supply and thermal public APIs');
   positive(maxHeads, 'maxHeads'); if (!Number.isSafeInteger(maxHeads)) throw new RangeError('maxHeads must be integer');
   if(powerFraction!==null&&typeof powerFraction!=='function')throw new TypeError('powerFraction must be a function');
-  const heads = registry(), tiers = tierState(quality); let pending = 0, disposed = false;
+  const heads = registry(), tiers = tierState(quality); let pending = 0, disposed = false, stepping = false, restoring = false;
   function live() { if (disposed) throw new Error('System is disposed'); }
+  function idle(operation) { if (stepping || restoring) throw new Error(`Cannot ${operation} during a sprinkler step or restore`); }
   function publish(id) { emit('sprinklers:changed', api.state(id)); }
   function targets(head, objects) {
     return objects.filter(s => s.roomId === head.roomId && s.position[1] <= head.position[1] && distance(s.position, head.position) <= head.radius);
   }
   function tick(dt) {
+    let observerFailed = false, observerError;
+    const publishTickEvent = (name, payload) => {
+      try { emit(name, payload); }
+      catch (error) { if (!observerFailed) { observerFailed = true; observerError = error; } }
+    };
     const objects = thermal.objects(), groups = new Map();
     for (const head of heads.entries.values()) {
       const nearby = targets(head, objects);
       const sensed = Math.max(20, head.roomId === null ? 20 : thermal.roomState(head.roomId).temperature, ...nearby.map(s => s.temperature));
       head.temperature += (sensed - head.temperature) * (1 - Math.exp(-dt / head.responseSeconds));
-      if (!head.triggered && head.temperature >= head.triggerTemperature) { head.triggered = true; emit('sprinklers:triggered', { id: head.id }); }
+      if (!head.triggered && head.temperature >= head.triggerTemperature) { head.triggered = true; publishTickEvent('sprinklers:triggered', { id: head.id }); }
       head.flowMlPerSecond = 0;
       if (!head.triggered || !head.open || !powered(head.id)) continue;
       if (!groups.has(head.tankId)) groups.set(head.tankId, []);
@@ -47,7 +53,7 @@ export function createSprinklerSystem({ supply, thermal, emit = () => {}, powere
         head.deliveredMl += ml; head.flowMlPerSecond = ml / dt;
         const event = { id: head.id, ml, components, sourceKey: `sprinkler:${head.id}`, roomId: head.roomId,
           surfaceId: head.surfaceId, position: [head.position[0], head.floorY, head.position[2]], targets: nearby.map(s => s.id) };
-        emit('sprinklers:spray', event);
+        publishTickEvent('sprinklers:spray', event);
         // Pools in spray range receive an even share directly. This lets a
         // sprinkler reach a burning puddle without requiring its floor impact
         // point to fall inside the pool merge radius. Otherwise the spray forms
@@ -62,31 +68,34 @@ export function createSprinklerSystem({ supply, thermal, emit = () => {}, powere
             delete deposit.surfaceId;
             delete deposit.roomId;
             delete deposit.targets;
-            emit('liquid:deposit', deposit);
+            publishTickEvent('liquid:deposit', deposit);
           }
           if (nonPoolTargets.length) {
             const remainder = Object.fromEntries(Object.entries(components).map(([kind, amount]) => [kind, amount * nonPoolTargets.length * targetShare]));
             const deposit = { ...event, ml: Object.values(remainder).reduce((sum, amount) => sum + amount, 0),
               components: remainder, emitterId: head.id };
             delete deposit.id;
-            emit('liquid:deposit', deposit);
+            publishTickEvent('liquid:deposit', deposit);
           }
         } else {
           // `id` belongs to the sprinkler head; pools interpret `id` as an
           // explicit pool record. Preserve emitter identity separately.
           const deposit = { ...event, emitterId: head.id };
           delete deposit.id;
-          emit('liquid:deposit', deposit);
+          publishTickEvent('liquid:deposit', deposit);
         }
       }
     }
-    for (const id of heads.entries.keys()) publish(id);
+    for (const id of heads.entries.keys()) publishTickEvent('sprinklers:changed', api.state(id));
+    // Finish every event/deposit in the tick before surfacing an observer fault;
+    // callers can safely checkpoint afterward without capturing a half-tick.
+    if (observerFailed) throw observerError;
   }
   const api = {
     get quality() { return tiers.quality; }, setQuality: tiers.setQuality,
     add(id, { tankId, position = [0, 2.5, 0], roomId = null, surfaceId = 'ground', floorY = 0, radius = 4,
       rateMlPerSecond = 250, triggerTemperature = 68, responseSeconds = 2, open = true } = {}) {
-      live(); if (heads.entries.size >= maxHeads) throw new RangeError('Sprinkler head budget exceeded');
+      live(); idle('add head'); if (heads.entries.size >= maxHeads) throw new RangeError('Sprinkler head budget exceeded');
       supply.state(tankId); if (roomId !== null) thermal.roomState(roomId); position = vector(position);
       if (typeof surfaceId !== 'string' || !surfaceId) throw new TypeError('Surface id required');
       finite(floorY); if (floorY > position[1]) throw new RangeError('Floor above sprinkler');
@@ -97,20 +106,32 @@ export function createSprinklerSystem({ supply, thermal, emit = () => {}, powere
     },
     state(id) { live(); const head = heads.get(id); return { ...head, position: [...head.position] }; },
     all() { live(); return [...heads.entries.keys()].map(id => api.state(id)); },
-    setOpen(id, value) { live(); heads.get(id).open = booleanState(value); publish(id); },
-    trigger(id) { live(); heads.get(id).triggered = true; publish(id); },
-    reset(id) { live(); const h = heads.get(id); h.triggered = false; h.temperature = 20; h.flowMlPerSecond = 0; publish(id); },
+    setOpen(id, value) { live(); idle('change valve'); heads.get(id).open = booleanState(value); publish(id); },
+    trigger(id) { live(); idle('trigger head'); heads.get(id).triggered = true; publish(id); },
+    reset(id) { live(); idle('reset head'); const h = heads.get(id); h.triggered = false; h.temperature = 20; h.flowMlPerSecond = 0; publish(id); },
     step(dt) {
-      live(); positive(dt, 'dt', true);
+      live(); idle('step'); positive(dt, 'dt', true);
       if (dt > 10) throw new RangeError('Sprinkler update exceeds catch-up budget');
-      pending += dt;
-      while (pending >= 0.1 - 1e-9) { pending = Math.max(0, pending - 0.1); tick(0.1); }
+      stepping = true;
+      try {
+        pending += dt;
+        while (pending >= 0.1 - 1e-9) {
+          pending = Math.max(0, pending - 0.1);
+          // Consume the phase before invoking host callbacks. If a listener
+          // throws after a supply draw, retrying this same step could debit it twice.
+          tick(0.1);
+        }
+      } finally { stepping = false; }
     },
-    capture() { return { schema: 'gamesystems.sprinklers.v1', pending, heads: api.all() }; },
+    capture() {
+      live(); idle('capture');
+      if (pending >= 0.1 - 1e-9) throw new Error('Cannot capture with unprocessed sprinkler steps');
+      return { schema: 'gamesystems.sprinklers.v1', pending, heads: api.all() };
+    },
     prepareRestore(raw) {
-      live(); const data = jsonState(raw);
+      live(); idle('prepare restore'); const data = jsonState(raw);
       if (data.schema !== 'gamesystems.sprinklers.v1' || !Array.isArray(data.heads) || data.heads.length !== heads.entries.size) throw new Error('Sprinkler topology differs');
-      positive(data.pending, 'pending', true); if (data.pending >= 0.1) throw new RangeError('Invalid sprinkler phase');
+      positive(data.pending, 'pending', true); if (data.pending >= 0.1 - 1e-9) throw new RangeError('Invalid sprinkler phase');
       const staged = new Map(), dynamic = new Set(['temperature', 'open', 'triggered', 'deliveredMl', 'flowMlPerSecond']);
       for (const saved of data.heads) {
         const current = api.state(saved.id); if (staged.has(saved.id)) throw new Error('Duplicate sprinkler');
@@ -121,10 +142,21 @@ export function createSprinklerSystem({ supply, thermal, emit = () => {}, powere
         staged.set(saved.id, { ...current, temperature: saved.temperature, open: saved.open, triggered: saved.triggered,
           deliveredMl: saved.deliveredMl, flowMlPerSecond: saved.flowMlPerSecond });
       }
-      return { commit() { live(); pending = data.pending; for (const [id, h] of staged) heads.entries.set(id, { ...h, position: [...h.position] }); }, notify() { for (const id of staged.keys()) publish(id); } };
+      return {
+        commit() {
+          live(); idle('commit restore'); restoring = true;
+          try { pending = data.pending; for (const [id, h] of staged) heads.entries.set(id, { ...h, position: [...h.position] }); }
+          finally { restoring = false; }
+        },
+        notify() {
+          live(); idle('notify restore'); restoring = true;
+          try { for (const id of staged.keys()) publish(id); }
+          finally { restoring = false; }
+        },
+      };
     },
     restore(raw) { const plan = api.prepareRestore(raw); plan.commit(); plan.notify(); },
-    dispose() { if (disposed) return; disposed = true; heads.dispose(); },
+    dispose() { if (disposed) return; idle('dispose'); disposed = true; heads.dispose(); },
   };
   return api;
 }

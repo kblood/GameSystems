@@ -91,6 +91,74 @@ test('sprinkler checkpoint restores phase and trigger; invalid restore is atomic
   assert.throws(() => system.restore(bad)); assert.deepEqual(system.capture(), saved);
   assert.throws(() => system.step(11)); assert.deepEqual(system.capture(), saved);
 });
+test('sprinkler rejects reentrant steps and restore commits during spray callbacks', () => {
+  const supply = createSupplySystem(), thermal = createThermalSystem(); supply.add('tank', { capacityMl: 100, components: { water: 100 } });
+  thermal.addRoom('room'); thermal.add('chair', { roomId: 'room', position: [0, 0, 0], temperature: 300, cooling: 0 });
+  let system, plan, restoringNotify = false, nestedStepError = '', nestedCaptureError = '', nestedPrepareError = '', nestedRestoreError = '', restoreCaptureError = '';
+  const mutationErrors = [];
+  system = createSprinklerSystem({ supply, thermal, emit: name => {
+    if (restoringNotify && name === 'sprinklers:changed') {
+      try { system.capture(); } catch (error) { restoreCaptureError = error.message; }
+      return;
+    }
+    if (name !== 'sprinklers:spray') return;
+    try { system.step(0.1); } catch (error) { nestedStepError = error.message; }
+    try { system.capture(); } catch (error) { nestedCaptureError = error.message; }
+    try { system.prepareRestore({}); } catch (error) { nestedPrepareError = error.message; }
+    try { plan.commit(); } catch (error) { nestedRestoreError = error.message; }
+    for (const mutate of [
+      () => system.add('late', { tankId: 'tank' }),
+      () => system.setOpen('head', false),
+      () => system.trigger('head'),
+      () => system.reset('head'),
+      () => system.dispose(),
+    ]) { try { mutate(); } catch (error) { mutationErrors.push(error.message); } }
+  } });
+  system.add('head', { tankId: 'tank', roomId: 'room', rateMlPerSecond: 100 }); system.trigger('head');
+  plan = system.prepareRestore(system.capture());
+  system.step(0.1);
+  assert.match(nestedStepError, /during a sprinkler step/); assert.match(nestedCaptureError, /during a sprinkler step/);
+  assert.match(nestedPrepareError, /during a sprinkler step/);
+  assert.match(nestedRestoreError, /during a sprinkler step/);
+  assert.equal(mutationErrors.length, 5); assert.ok(mutationErrors.every(message => message.includes('during a sprinkler step')));
+  assert.equal(system.state('head').open, true); assert.equal(system.all().length, 1, 'callbacks cannot mutate the live head registry');
+  near(supply.state('tank').ml, 90); near(system.state('head').deliveredMl, 10);
+  assert.doesNotThrow(() => system.prepareRestore(system.capture()));
+  plan.commit(); restoringNotify = true; plan.notify(); restoringNotify = false;
+  assert.match(restoreCaptureError, /during a sprinkler step or restore/);
+  assert.equal(system.state('head').deliveredMl, 0, 'restore works after the active tick exits');
+});
+test('sprinkler releases its step guard after callback failure and blocks invalid partial checkpoints', () => {
+  const supply = createSupplySystem(), thermal = createThermalSystem(); supply.add('tank', { capacityMl: 100, components: { water: 100 } });
+  thermal.addRoom('room'); thermal.add('chair', { roomId: 'room', position: [0, 0, 0], temperature: 300, cooling: 0 });
+  let throwOnce = true;
+  const system = createSprinklerSystem({ supply, thermal,
+    powerFraction: () => { if (throwOnce) { throwOnce = false; throw new Error('pump callback failed'); } return 1; } });
+  system.add('head', { tankId: 'tank', roomId: 'room', rateMlPerSecond: 100 }); system.trigger('head');
+  assert.throws(() => system.step(0.2), /pump callback failed/);
+  near(supply.state('tank').ml, 100);
+  assert.throws(() => system.capture(), /unprocessed sprinkler steps/);
+  system.step(0);
+  near(supply.state('tank').ml, 90); near(system.state('head').deliveredMl, 10);
+  near(system.capture().pending, 0);
+});
+test('sprinkler completes liquid effects before surfacing a spray observer error', () => {
+  const supply = createSupplySystem(), thermal = createThermalSystem(), events = [];
+  supply.add('tank', { capacityMl: 100, components: { water: 100 } });
+  thermal.addRoom('room'); thermal.add('chair', { roomId: 'room', position: [0, 0, 0], temperature: 300, cooling: 0 });
+  let failSpray = true;
+  const system = createSprinklerSystem({ supply, thermal, emit: name => {
+    events.push(name);
+    if (name === 'sprinklers:spray' && failSpray) { failSpray = false; throw new Error('spray observer failed'); }
+  } });
+  system.add('head', { tankId: 'tank', roomId: 'room', rateMlPerSecond: 100 }); system.trigger('head');
+  assert.throws(() => system.step(0.1), /spray observer failed/);
+  near(supply.state('tank').ml, 90); near(system.state('head').deliveredMl, 10);
+  assert.ok(events.includes('liquid:deposit'), 'puddle deposit still emits before observer error returns');
+  near(system.capture().pending, 0);
+  system.step(0.1);
+  near(supply.state('tank').ml, 80); near(system.state('head').deliveredMl, 20);
+});
 test('battery supplies bounded energy, charges and balances portable state', () => {
   const b = createEnergyStore({ capacityWh: 2 }); near(b.supplyWatts(3600, 1), 3600); near(b.draw(9), 1); near(b.draw(1), 0);
   near(b.charge(5), 2); b.setEnabled(false); near(b.draw(1), 0);

@@ -32,6 +32,18 @@ så pools kan oprette brændbare pytter. Kilder navngives `sprinkler:<headId>`.
 
 Simuleringen kører i faste 0,1-sekundsskridt med højst 256 hoveder som standard og højst
 10 sekunders catch-up pr. kald. Kvalitet ændrer ikke forbrug eller slukning.
+`step()` kan ikke kaldes igen fra en synkron sprinkler-/sprayobserver eller pumpe-callback.
+Restore-forberedelse og commit afvises også midt i et fixed step; restore-notifikationer
+kan ikke starte en ny step/restore. Head-ændringer og `dispose()` afvises også fra en aktiv
+step/restore-callback. `capture()` er kun tilgængelig mellem steps og afvises, mens et helt
+fixed step venter eller restore-notifikationer kører. Guard'en frigives også ved callback-fejl. Fixed-step-fasen
+forbruges før eksterne callbacks køres, så fejl efter et forsyningsudtag ikke kan få samme
+faste tick til at blive afspillet og debitere tanken igen. Host-callbacks bør validere deres
+input og undgå sideeffekter før de returnerer. Fejl fra tick-events gemmes, til alle
+spray-/depositions-events for fixed steppet er sendt, hvorefter den første fejl kastes.
+Hvis et catch-up-kald afbrydes, mens hele fixed steps stadig venter, afvises checkpoint
+capture indtil værten fortsætter med `step(0)` eller næste frame-delta og tømmer de ventende
+steps. Det holder gemte `pending` under ét fast step, som restore-kontrakten kræver.
 Sensoren nærmer sig rummets/de nærliggende varme objekters temperatur eksponentielt. Modellen
 simulerer ikke luftstrøm, hydraulisk tryk eller separate temperaturlag ved loftet.
 Vandets køleeffekt fordeles ligeligt mellem objekter i samme rum under hovedet og inden for rækkevidden.
