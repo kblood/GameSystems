@@ -103,6 +103,14 @@ uændret, så `Infinity / Infinity` ikke kan forgifte håndhastighed med `NaN`.
 Verifikation: grasp-suite **6/6**, fuld GameSystems Node-suite **516/516**, Contracts WebXR
 interaction-grab **17/17**, Sol-review uden blocker. Pushet til `main` som `255609e`.
 
+## Afsluttet VRM eye-offset world-matrix-runde — 2026-10-12
+
+`eyeOffset()` opdaterer nu root og ancestor matrices, før den konverterer øjenpositioner til root-lokal
+offset. Resultatet ændres derfor ikke, når avatar eller parent flyttes/roteres efter sidste renderer-opdatering.
+
+Verifikation: character-vrm-suite **9/9**, fuld GameSystems Node-suite **517/517** og Sol-review uden
+blocker. Pushet til GameSystems `main` som `d7189dc`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
