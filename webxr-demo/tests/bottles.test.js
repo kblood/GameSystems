@@ -131,6 +131,69 @@ test('a moderate hit only cracks (damage mark); a held bottle ignores impacts', 
   assert.ok(Math.abs(b.root.position.y - 1.4) < 1e-9, 'the held pose is synced to the model');
 });
 
+test('checkpoint restore reconciles bottle crack and dent marks in both directions', async () => {
+  const { api } = await setup();
+  const b = api.adopt(model());
+  const intact = api.capture();
+  api.breakage.addDamageMarkLocal(b, new THREE.Vector3(0, 0.1, 0.03), new THREE.Vector3(0, 0, 1), 'crack');
+  b.damage = 0.4; b.damageStage = 'crack';
+  const damaged = api.capture();
+  assert.equal(damaged.bottles[0].damageMarks.length, 1);
+  api.restore(intact);
+  assert.equal(b.damageMarks.length, 0, 'restore clears marks absent from the saved state');
+  assert.equal(b.damageStage, 'intact');
+  api.restore(damaged);
+  assert.equal(b.damageMarks.length, 1, 'restore rebuilds saved visual marks');
+  assert.equal(b.damageMarks[0].userData.damageKind, 'crack');
+});
+
+test('checkpoint restore rejects a hole radius that could create non-finite geometry', async () => {
+  const { api } = await setup();
+  const b = api.adopt(model());
+  api.breakage.addHoleLocal(b, new THREE.Vector3(0, 0.1, 0.03), new THREE.Vector3(0, 0, 1), 0.0025);
+  const saved = api.capture();
+  saved.bottles[0].holes[0].radius = 1e308;
+  assert.throws(() => api.prepareRestore(saved), /hole geometry/i);
+  assert.equal(b.holes.length, 1, 'validation happens before mutating live bottle state');
+});
+
+test('large authored leak radii are bounded to the checkpoint-safe geometry limit', async () => {
+  const { api } = await setup();
+  const b = api.adopt(model());
+  const hole = api.breakage.addHoleLocal(b, new THREE.Vector3(0, 0.1, 0.03), new THREE.Vector3(0, 0, 1), 0.03);
+  assert.equal(hole.radius, 0.02);
+  assert.doesNotThrow(() => api.restore(api.capture()));
+});
+
+test('bottle checkpoints remain compatible with v1 snapshots without visual marks and adapt to lower quality', async () => {
+  const { api } = await setup();
+  const b = api.adopt(model());
+  const legacy = api.capture();
+  delete legacy.bottles[0].damageMarks;
+  assert.doesNotThrow(() => api.restore(legacy));
+  api.setQuality('high');
+  for (let i = 0; i < 8; i++) api.breakage.addDamageMarkLocal(b, new THREE.Vector3(i * 0.001, 0.1, 0.03), new THREE.Vector3(0, 0, 1), 'crack');
+  const high = api.capture();
+  api.setQuality('low');
+  assert.doesNotThrow(() => api.restore(high));
+  assert.equal(b.damageMarks.length, 5, 'the low-tier visual budget is respected when restoring a high-tier snapshot');
+});
+
+test('evicting a bottle damage mark disposes its geometry and material', async () => {
+  const { api } = await setup();
+  const b = api.adopt(model());
+  api.setQuality('low');
+  api.breakage.addDamageMarkLocal(b, new THREE.Vector3(0, 0.1, 0.03), new THREE.Vector3(0, 0, 1), 'crack');
+  const first = b.damageMarks[0];
+  let geometryDisposed = false, materialDisposed = false;
+  first.geometry.addEventListener('dispose', () => { geometryDisposed = true; });
+  first.material.addEventListener('dispose', () => { materialDisposed = true; });
+  for (let i = 0; i < 5; i++) api.breakage.addDamageMarkLocal(b, new THREE.Vector3(0, 0.1 + i * 0.001, 0.03), new THREE.Vector3(0, 0, 1), 'dent');
+  assert.equal(first.parent, null);
+  assert.equal(geometryDisposed, true);
+  assert.equal(materialDisposed, true);
+});
+
 test('contacts below the impact speed and contacts on unknown bodies are ignored', async () => {
   const { physics, api, events } = await setup();
   const b = api.adopt(model());
@@ -185,6 +248,21 @@ test('shattering on a low tier spawns fewer debris bodies and trims them to the 
   for (let i = 0; i < 6; i++) { pane.broken = false; api.breakage.breakPane(pane, new THREE.Vector3(0, 1, -1), 1000, false); }
   assert.ok(api.breakage.debris.length <= BOTTLE_QUALITY.minimal.maxDebris);
   assert.equal(physics.bodies.size - before, api.breakage.debris.length);
+});
+
+test('pane crack budget disposes evicted GPU geometry and materials', async () => {
+  const {api}=await setup(),pane=api.breakage.pane('budget-window',[0,1,-1],0,[1,1]);
+  assert.throws(()=>api.breakage.pane('budget-window',[0,1,-2],0,[1,1]),/Invalid or duplicate pane id/);
+  for(let i=0;i<8;i++)api.breakage.markPaneDamage(pane,new THREE.Vector3(0,0,0),'cracked');
+  const evicted=pane.cracks[0];let geometryDisposed=false,materialDisposed=false;
+  const survivor=pane.cracks[4];let survivorMaterialDisposed=false;
+  evicted.geometry.addEventListener('dispose',()=>geometryDisposed=true);
+  evicted.material.addEventListener('dispose',()=>materialDisposed=true);
+  survivor.material.addEventListener('dispose',()=>survivorMaterialDisposed=true);
+  api.breakage.markPaneDamage(pane,new THREE.Vector3(0,0,0),'chip');
+  assert.equal(pane.cracks.length,72);assert.equal(evicted.parent,null);
+  assert.equal(geometryDisposed,true);assert.equal(materialDisposed,true);
+  assert.equal(survivorMaterialDisposed,false,'evicting a line must not dispose a surviving line material');api.dispose();
 });
 
 test('dispose removes every body and listener', async () => {

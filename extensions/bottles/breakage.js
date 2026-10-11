@@ -9,6 +9,11 @@ import { bottleQuality } from './quality.js';
 let loader = null;
 /** Bullet holes a bottle can take; further hits only mark it. */
 export const MAX_HOLES = 3;
+export const MAX_HOLE_RADIUS = 0.02;
+function disposeMark(mark) {
+  mark.parent?.remove(mark);mark.geometry?.dispose();
+  for(const material of Array.isArray(mark.material)?mark.material:[mark.material])material?.dispose();
+}
 
 export class BreakageSystem {
   /** bodies: BottleBodies (or any { shard, remove, velocity, isHeld }). */
@@ -55,8 +60,8 @@ export class BreakageSystem {
       new THREE.MeshBasicMaterial({ color: kind === 'crack' ? 0xaedce4 : 0x9e9a91, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }));
     ring.position.copy(local).addScaledVector(localNormal, 0.001);
     ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), localNormal);
-    ring.userData.damageMark = true; b.root.add(ring); b.damageMarks ??= []; b.damageMarks.push(ring);
-    while (b.damageMarks.length > this.settings.damageMarks) b.root.remove(b.damageMarks.shift());
+    ring.userData.damageMark = true; ring.userData.damageKind = kind; b.root.add(ring); b.damageMarks ??= []; b.damageMarks.push(ring);
+    while (b.damageMarks.length > this.settings.damageMarks) disposeMark(b.damageMarks.shift());
   }
 
   addHole(b, point, normal, radius = 0.0025, isExit = false) {
@@ -69,9 +74,10 @@ export class BreakageSystem {
 
   addHoleLocal(b, local, localNormal, radius = 0.0025, isExit = false) {
     if (!b || b.broken || (b.holes?.length ?? 0) >= MAX_HOLES) return null;
+    if (!Number.isFinite(radius) || radius <= 0) throw new TypeError('Invalid bottle hole radius');
     b.root.updateWorldMatrix(true, true);
     localNormal.normalize();
-    const holeRadius = Math.max(0.0015, radius * (isExit ? 1.5 : 1));
+    const holeRadius = Math.min(MAX_HOLE_RADIUS, Math.max(0.0015, radius * (isExit ? 1.5 : 1)));
     const mark = new THREE.Group();
     mark.position.copy(local).addScaledVector(localNormal, 0.0008);
     mark.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), localNormal);
@@ -83,6 +89,9 @@ export class BreakageSystem {
   }
 
   pane(name, position, yaw, size, tempered = false) {
+    if(typeof name!=='string'||!name||this.panes.some(pane=>pane.name===name))throw new Error('Invalid or duplicate pane id');
+    if(!Array.isArray(position)||position.length!==3||!position.every(Number.isFinite)||!Number.isFinite(yaw))throw new TypeError('Invalid pane transform');
+    if(!Array.isArray(size)||size.length!==2||!size.every(v=>Number.isFinite(v)&&v>0)||typeof tempered!=='boolean')throw new TypeError('Invalid pane dimensions or material');
     const group = new THREE.Group();
     group.position.set(...position); group.rotation.y = yaw;
     const [w, h] = size;
@@ -155,19 +164,72 @@ export class BreakageSystem {
   markPaneDamage(pane, local, outcome, radius = 0) {
     const center = new THREE.Vector3(local.x, local.y, 0.001);
     const crackCount = outcome === 'chip' ? 4 : 9;
-    const crackMaterial = new THREE.LineBasicMaterial({ color: 0xc5e4ea, transparent: true, opacity: 0.78 });
     for (let i = 0; i < crackCount; i++) {
       const angle = i * Math.PI * 2 / crackCount + (Math.random() - 0.5) * 0.2;
       const length = (0.08 + Math.random() * 0.12) * (outcome === 'chip' ? 0.4 : 1);
       const end = center.clone().add(new THREE.Vector3(Math.cos(angle) * length, Math.sin(angle) * length, 0));
-      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([center, end]), crackMaterial);
+      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([center, end]), new THREE.LineBasicMaterial({ color: 0xc5e4ea, transparent: true, opacity: 0.78 }));
       line.position.z = 0.001; pane.group.add(line); pane.cracks.push(line);
     }
     if (radius > 0) {
       const hole = new THREE.Mesh(new THREE.CircleGeometry(radius, 24), new THREE.MeshBasicMaterial({ color: 0x25383b, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }));
       hole.position.copy(center); pane.group.add(hole); pane.holes.push({ point: new THREE.Vector2(local.x, local.y), radius, mesh: hole });
     }
-    while (pane.cracks.length > 72) pane.group.remove(pane.cracks.shift());
+    while (pane.cracks.length > 72) disposeMark(pane.cracks.shift());
+  }
+
+  capturePaneState() {
+    return this.panes.map(pane => ({
+      name: pane.name, w: pane.w, h: pane.h, tempered: pane.tempered,
+      broken: pane.broken, damage: pane.damage,
+      holes: pane.holes.map(hole => ({ point: hole.point.toArray(), radius: hole.radius })),
+      cracks: pane.cracks.map(line => ({
+        vertices: Array.from(line.geometry.getAttribute('position').array),
+        position: line.position.toArray(), color: line.material.color.getHex(), opacity: line.material.opacity,
+      })),
+    }));
+  }
+
+  preparePaneRestore(raw) {
+    if (!Array.isArray(raw) || raw.length !== this.panes.length) throw new Error('Pane checkpoint topology differs');
+    const saved = new Map();
+    for (const item of raw) {
+      if (!item || typeof item.name !== 'string' || saved.has(item.name)) throw new Error('Invalid pane checkpoint id');
+      const pane = this.panes.find(candidate => candidate.name === item.name);
+      if (!pane || item.w !== pane.w || item.h !== pane.h || item.tempered !== pane.tempered) throw new Error('Saved pane does not match authored scene');
+      if (typeof item.broken !== 'boolean' || !Number.isFinite(item.damage) || item.damage < 0 || item.damage > 1 ||
+        !Array.isArray(item.holes) || !Array.isArray(item.cracks) || item.holes.length > 4096 || item.cracks.length > 72) throw new Error('Invalid saved pane state');
+      const holes = item.holes.map(hole => {
+        if (!Array.isArray(hole?.point) || hole.point.length !== 2 || !hole.point.every(Number.isFinite) || hole.point.some(v=>Math.abs(v)>1000) || !Number.isFinite(hole.radius) || hole.radius <= 0 || hole.radius>1000) throw new Error('Invalid saved pane hole');
+        return { point: [...hole.point], radius: hole.radius };
+      });
+      const cracks = item.cracks.map(crack => {
+        if (!Array.isArray(crack?.vertices) || crack.vertices.length !== 6 || !crack.vertices.every(Number.isFinite) || crack.vertices.some(v=>Math.abs(v)>1000) ||
+          !Array.isArray(crack.position) || crack.position.length !== 3 || !crack.position.every(Number.isFinite) || crack.position.some(v=>Math.abs(v)>1000) ||
+          !Number.isSafeInteger(crack.color) || crack.color < 0 || crack.color > 0xffffff ||
+          !Number.isFinite(crack.opacity) || crack.opacity < 0 || crack.opacity > 1) throw new Error('Invalid saved pane crack');
+        return { vertices: [...crack.vertices], position: [...crack.position], color: crack.color, opacity: crack.opacity };
+      });
+      saved.set(item.name, { pane, w:pane.w, h:pane.h, tempered:pane.tempered, broken: item.broken, damage: item.damage, holes, cracks });
+    }
+    if (this.panes.some(pane => !saved.has(pane.name))) throw new Error('Pane checkpoint topology differs');
+    return { commit: () => {
+      if(this.panes.length!==saved.size||this.panes.some(pane=>{const staged=saved.get(pane.name);return !staged||pane!==staged.pane||pane.w!==staged.w||pane.h!==staged.h||pane.tempered!==staged.tempered;})) throw new Error('Pane checkpoint topology changed');
+      this.reset(); // Shards are transient physics debris; pane damage is the persisted state.
+      for (const { pane, broken, damage, holes, cracks } of saved.values()) {
+        pane.broken = broken; pane.damage = damage; pane.sheet.visible = !broken;
+        for (const hole of holes) {
+          const point = new THREE.Vector2(...hole.point), center = new THREE.Vector3(point.x, point.y, 0.001);
+          const mesh = new THREE.Mesh(new THREE.CircleGeometry(hole.radius, 24), new THREE.MeshBasicMaterial({ color: 0x25383b, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }));
+          mesh.position.copy(center); pane.group.add(mesh); pane.holes.push({ point, radius: hole.radius, mesh });
+        }
+        for (const crack of cracks) {
+          const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(crack.vertices, 3));
+          const material = new THREE.LineBasicMaterial({ color: crack.color, transparent: true, opacity: crack.opacity });
+          const line = new THREE.Line(geometry, material); line.position.fromArray(crack.position); pane.group.add(line); pane.cracks.push(line);
+        }
+      }
+    } };
   }
 
   async breakBottle(b, speed = 6, impact = {}) {
@@ -339,7 +401,7 @@ export class BreakageSystem {
     this.generation++;
     for (const pane of this.panes) {
       pane.broken = false; pane.damage = 0; pane.sheet.visible = true;
-      for (const mark of [...pane.cracks, ...pane.holes.map(h => h.mesh)]) pane.group.remove(mark);
+      for (const mark of [...pane.cracks, ...pane.holes.map(h => h.mesh)]) disposeMark(mark);
       pane.cracks = []; pane.holes = [];
     }
     for (const d of this.debris) { this.bodies.remove(d.entry); this.scene.remove(d.mesh); }

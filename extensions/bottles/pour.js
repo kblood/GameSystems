@@ -45,7 +45,7 @@ export class PourSystem {
     this.settings = factory.settings ?? bottleQuality('high');
     this.surfaces = new SurfaceWorld(surfaces);
     this.onDeposit = onDeposit;
-    this.initialMl = 0; this.puddleMl = 0; this.lostMl = 0; this.burnedMl = 0;
+    this.initialMl = 0; this.puddleMl = 0; this.lostMl = 0; this.burnedMl = 0; this.removedMl = 0;
     this.puddles = []; this.flights = []; this.streams = new Map();
     this.material = new THREE.MeshStandardMaterial({ color: 0xb57835, transparent: true, opacity: 0.78, roughness: 0.16, depthWrite: false });
     this.dropMaterials = new Map(); // dropKey(absorbance) -> material shared by every drop/stream of that liquid
@@ -81,7 +81,25 @@ export class PourSystem {
     for (const f of this.flights) this.scene.remove(f.mesh);
     for (const s of this.streams.values()) { this.scene.remove(s.mesh); s.mesh.geometry.dispose(); }
     this.puddles = []; this.flights = []; this.streams.clear();
-    this.initialMl = this.puddleMl = this.lostMl = this.burnedMl = 0;
+    this.initialMl = this.puddleMl = this.lostMl = this.burnedMl = this.removedMl = 0;
+  }
+  // Restore physical flights without merging them or emitting new liquid. Saved high-quality flights remain logical state.
+  restoreFlight(f) {
+    const mesh=new THREE.Mesh(dropGeometry,this._dropMaterial(f.absorbance));
+    const index=this.flights.length;mesh.visible=index<this.settings.maxFlights&&(this.settings.dropStride<=1||index%this.settings.dropStride===0);
+    mesh.scale.setScalar(clamp(Math.cbrt(3*f.ml*1e-6/(4*Math.PI)),.0012,.015));mesh.position.copy(f.position);this.scene.add(mesh);
+    this.flights.push({...f,components:{...f.components},absorbance:[...f.absorbance],position:f.position.clone(),velocity:f.velocity.clone(),mesh});
+  }
+  restoreVisualPuddle(saved) {
+    const material=this.material.clone();material.side=THREE.DoubleSide;
+    const mesh=new THREE.Mesh(new THREE.BufferGeometry(),material);mesh.renderOrder=3;
+    const p={...saved,absorbance:[...saved.absorbance],hit:{...saved.hit,point:saved.hit.point.clone(),normal:saved.hit.normal.clone(),localNormal:saved.hit.localNormal.clone()},mesh};
+    this.puddles.push(p);this.scene.add(mesh);this._puddleGeometry(p);this._trimPuddles();
+  }
+  restoreStream(key,saved) {
+    const geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(saved.points.map(p=>new THREE.Vector3(...p))),saved.segments,saved.radius,5,false);
+    const mesh=new THREE.Mesh(geometry,this._dropMaterial(saved.absorbance));mesh.visible=this.settings.streams;this.scene.add(mesh);
+    this.streams.set(key,{mesh,timer:saved.timer,point:new THREE.Vector3(...saved.point),velocity:new THREE.Vector3(...saved.velocity),active:true});
   }
   // Emitted volume lives until a swept collision lands it, including after the
   // source bottle shatters or its hole stops flowing.
@@ -159,6 +177,8 @@ export class PourSystem {
   setQuality(settings) {
     const reshade = !!this.settings.puddleGradient !== !!settings.puddleGradient;
     this.settings = settings; this._trimPuddles();
+    this.flights.forEach((f,i)=>{f.mesh.visible=i<settings.maxFlights&&(settings.dropStride<=1||i%settings.dropStride===0);});
+    for(const s of this.streams.values())s.mesh.visible=settings.streams;
     if (reshade) for (const p of this.puddles) this._puddleGeometry(p);
   }
   /**
@@ -248,7 +268,7 @@ export class PourSystem {
       } else if (surface) { this.land(f.ml, surface, f.kind, f.source, f.absorbance, f.components); finished = true; }
       else if (f.age > 6 || f.position.y < -15) { this.lostMl += f.ml; finished = true; }
       if (finished) { this.scene.remove(f.mesh); this.flights.splice(i, 1); }
-      else { f.mesh.position.copy(f.position); f.mesh.visible = this.settings.dropStride <= 1 || i % this.settings.dropStride === 0; }
+      else { f.mesh.position.copy(f.position); f.mesh.visible = i<this.settings.maxFlights&&(this.settings.dropStride <= 1 || i % this.settings.dropStride === 0); }
     }
   }
   _stream(key, point, velocity, rateMl, dt, absorbance = DEFAULT_ABSORBANCE) {
@@ -322,8 +342,9 @@ export class PourSystem {
     }
   }
   /** Public sink for the persistent pool/fire owner. VFX eviction does not erase logical volume. */
-  consumePuddleVolume(ml, { surfaceId = null, position = null } = {}) {
+  consumePuddleVolume(ml, { surfaceId = null, position = null, reason = 'burn' } = {}) {
     if (!Number.isFinite(ml) || ml < 0) throw new RangeError('ml must be finite and nonnegative');
+    if(!['burn','remove'].includes(reason))throw new RangeError('Invalid puddle sink');
     const taken = Math.min(ml, this.puddleMl); let visible = taken;
     const candidates = this.puddles.filter(p => !surfaceId || (p.hit.object.userData?.materialId ?? p.hit.object.uuid) === surfaceId);
     if (position) candidates.sort((a,b) => a.hit.point.distanceToSquared(new THREE.Vector3(...position)) - b.hit.point.distanceToSquared(new THREE.Vector3(...position)));
@@ -334,18 +355,18 @@ export class PourSystem {
       if (p.ml < 1e-8) { this.scene.remove(p.mesh);p.mesh.geometry.dispose();p.mesh.material.dispose();this.puddles.splice(this.puddles.indexOf(p),1); }
       else this._puddleGeometry(p);
     }
-    this.puddleMl -= taken; this.burnedMl += taken; return taken;
+    this.puddleMl -= taken;if(reason==='remove')this.removedMl+=taken;else this.burnedMl += taken; return taken;
   }
   /** Restore consumption state when the persistent owner restores its matching snapshot. */
-  restorePuddleLedger({puddleMl,burnedMl=0}) {
-    if(!Number.isFinite(puddleMl)||!Number.isFinite(burnedMl)||puddleMl<0||burnedMl<0)throw new RangeError('Invalid liquid ledger');
-    if(Math.abs(puddleMl+burnedMl-this.puddleMl-this.burnedMl)>1e-5)throw new Error('New liquid has been deposited since this snapshot');
-    this.puddleMl=puddleMl;this.burnedMl=burnedMl;
+  restorePuddleLedger({puddleMl,burnedMl=0,removedMl=0}) {
+    if(![puddleMl,burnedMl,removedMl].every(v=>Number.isFinite(v)&&v>=0))throw new RangeError('Invalid liquid ledger');
+    if(Math.abs(puddleMl+burnedMl+removedMl-this.puddleMl-this.burnedMl-this.removedMl)>1e-5)throw new Error('New liquid has been deposited since this snapshot');
+    this.puddleMl=puddleMl;this.burnedMl=burnedMl;this.removedMl=removedMl;
   }
   ledger() {
     const inBottlesMl = [...this.factory.bottles].reduce((sum, b) => sum + b.fillMl, 0);
     const inFlightMl = this.flights.reduce((sum, f) => sum + f.ml, 0);
-    return { initialMl: this.initialMl, inBottlesMl, inFlightMl, puddleMl: this.puddleMl, lostMl: this.lostMl, burnedMl: this.burnedMl,
-      errorMl: this.initialMl - inBottlesMl - inFlightMl - this.puddleMl - this.lostMl - this.burnedMl };
+    return { initialMl: this.initialMl, inBottlesMl, inFlightMl, puddleMl: this.puddleMl, lostMl: this.lostMl, burnedMl: this.burnedMl, removedMl: this.removedMl,
+      errorMl: this.initialMl - inBottlesMl - inFlightMl - this.puddleMl - this.lostMl - this.burnedMl - this.removedMl };
   }
 }

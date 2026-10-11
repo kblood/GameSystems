@@ -11,6 +11,7 @@ import { PourSystem } from './pour.js';
 import { BreakageSystem } from './breakage.js';
 import { BottleAudio } from './audio.js';
 import { BOTTLE_TIERS } from './quality.js';
+import { createBottleStateOwner } from './state.js';
 
 /**
  * scene: THREE.Scene; physics: host physics adapter; catalog: GameSystems catalog.json content; assetURL(path) -> url of a
@@ -18,13 +19,15 @@ import { BOTTLE_TIERS } from './quality.js';
  * tier: one of BOTTLE_TIERS; emit(event, data): the host bus.
  */
 export function createBottleSystem({ scene, physics, catalog = { assets: [] }, assetURL = path => path, surfaces = [], audio = null,
-  tier = 'high', emit = () => {} } = {}) {
+  tier = 'high', emit = () => {}, sourceKey = 'bottles' } = {}) {
+  if(typeof sourceKey!=='string'||!sourceKey)throw new TypeError('Invalid bottle source key');
   assertPhysicsAdapter(physics);
   audio ??= new BottleAudio(assetURL);
   const bodies = new BottleBodies(physics);
   const factory = new BottleFactory(scene, bodies, audio, catalog, { assetURL, tier: BOTTLE_TIERS.includes(tier) ? tier : 'high' });
-  const pour = new PourSystem(scene, factory, audio, surfaces, bodies, data => emit('liquid:deposit', data));
+  const pour = new PourSystem(scene, factory, audio, surfaces, bodies, data => emit('liquid:deposit', {...data, sourceKey}));
   const breakage = new BreakageSystem(scene, bodies, factory, pour, audio);
+  const stateOwner=createBottleStateOwner({factory,pour,bodies,physics,scene,breakage,sourceKey});
   breakage.onBroken = bottle => emit('broken', { bottle });
 
   function step(dt) {
@@ -62,6 +65,7 @@ export function createBottleSystem({ scene, physics, catalog = { assets: [] }, a
     emit('bottles:reset', {});
   }
   function dispose() {
+    stateOwner.dispose();
     offStep?.(); offStep = null;
     reset();
     breakage.disposePanes();
@@ -69,12 +73,15 @@ export function createBottleSystem({ scene, physics, catalog = { assets: [] }, a
   }
 
   return {
-    factory, pour, breakage, bodies, audio,
+    factory, pour, breakage, bodies, audio, sourceKey,
+    capture:stateOwner.capture,prepareRestore:stateOwner.prepareRestore,
+    restore(raw){const plan=stateOwner.prepareRestore(raw);plan.commit();},
     get bottles() { return factory.bottles; },
     get tier() { return factory.tier; },
     get settings() { return factory.settings; },
     spawn, adopt, reset, setQuality, dispose,
     consumePuddleVolume: (ml, options) => pour.consumePuddleVolume(ml, options),
+    removePuddleVolume: (ml, options) => pour.consumePuddleVolume(ml, {...options, reason:'remove'}),
     restorePuddleLedger: state => pour.restorePuddleLedger(state),
     remove: bottle => factory.remove(bottle),
     /** Fire a shot (ray); returns the first hit or null. */

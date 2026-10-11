@@ -51,7 +51,7 @@ export default function bottlesExtension(options = {}) {
       if (!ctx.physics) throw new Error('The bottles extension needs ctx.physics (a host physics adapter)');
       system = createBottleSystem({ scene: ctx.scene, physics: ctx.physics, catalog: options.catalog,
         assetURL: options.assetURL ?? (path => String(ctx.assetURL(path))), surfaces: options.surfaces, audio: options.audio,
-        tier: ctx.quality, emit: ctx.emit });
+        tier: ctx.quality, emit: ctx.emit, sourceKey: options.sourceKey ?? 'bottles' });
       return system;
     },
     // No update(): the system steps from ctx.physics.onStep, right after the physics it depends on.
