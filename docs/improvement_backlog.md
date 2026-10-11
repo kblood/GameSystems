@@ -12,6 +12,15 @@ genbruger et allerede debiteret fast tick; checkpointing venter, indtil køen af
 Verifikation: fokuseret suite **16/16**, fuld WebXR-demo Node-suite **503/503** og uafhængig Sol-review
 uden blocker. Ændringen er pushet til GameSystems `main` som `72e63d0`.
 
+## Afsluttet electricity-solver lifecycle-runde — 2026-10-12
+
+Synkrone strøm-observers kan fortsat læse nettilstand, men nested solve/step, batteri- og
+topologimutation samt restore-commit afvises, mens solver eller tidsstep er aktivt. Eventets
+energi-resultat er en kopi, så observermutation ikke ændrer receipt fra `step()`.
+
+Verifikation: fokuseret electricity-suite **15/15**, fuld WebXR-demo Node-suite **505/505** og
+Sol-review uden blocker. Ændringen er pushet til GameSystems `main` som `2d52bdf`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
