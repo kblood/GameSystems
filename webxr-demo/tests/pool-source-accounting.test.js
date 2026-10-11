@@ -8,12 +8,12 @@ import bottles from '../src/vendor/extensions/bottles/index.js';
 import { connectBottlePools } from '../src/vendor/extensions/pools/bottle-bridge.js';
 import { createFakePhysics } from './fake-physics.js';
 
-async function setup({maxPools=128,second=false}={}) {
+async function setup({maxPools=128,second=false,beforePools=null}={}) {
   const scene = new THREE.Scene(), physics = createFakePhysics(), errors = [];
   const host = createHost({ scene, physics, onError: e => errors.push(e.message) });
   const floor = new THREE.Mesh(new THREE.BoxGeometry(2, .2, 2), new THREE.MeshStandardMaterial());
   floor.position.y = -.1; floor.userData.materialId = 'floor'; scene.add(floor);
-  await host.load(thermal); const p = await host.load(pools,{maxPools});
+  await host.load(thermal); beforePools?.(host); const p = await host.load(pools,{maxPools});
   const b = await host.load(bottles, { surfaces: [floor], audio: { play() {} } });
   const off = connectBottlePools({ host, bottles: b, pools: p });
   b.pour.initialMl = second?200:100;
@@ -93,6 +93,22 @@ test('one source cannot be bound twice and disconnect is safe across a later reb
   p.ignite(p.all()[0].id); host.update(1);
   assert.ok(Math.abs(b.ledger().burnedMl - p.ledger().burnedMl) < 1e-5);
   off2(); host.dispose();
+});
+
+test('thermal burn observers cannot alter the liquid source debit', async () => {
+  let mutationBlocked=false;
+  const {host,p,b,off,errors}=await setup({beforePools(host){
+    host.on('thermal:burned',event=>{mutationBlocked=!Reflect.set(event,'joules',0);});
+  }});
+  const id=p.all()[0].id,initialFuel=p.state(id).fuelJ;
+  p.ignite(id);host.update(1);
+  const expectedBurnedMl=(initialFuel-p.state(id).fuelJ)/400;
+  assert.equal(mutationBlocked,true);
+  assert.ok(Math.abs(p.state(id).components.diesel-(100-expectedBurnedMl))<1e-6);
+  assert.ok(Math.abs(p.ledger().burnedMl-expectedBurnedMl)<1e-6);
+  assert.ok(Math.abs(b.ledger().burnedMl-expectedBurnedMl)<1e-6);
+  assert.ok(Math.abs(b.ledger().errorMl)<1e-6);
+  assert.deepEqual(errors,[]);off();host.dispose();
 });
 
 test('consumption-state rewind preserves both source sinks and refuses mismatched history', async () => {

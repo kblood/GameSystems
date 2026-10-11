@@ -339,6 +339,8 @@ og bevarer den anden agents absorbance-/shaderimplementation.
 `pools.ignite(id)` og `pools.heat(id, joules)` bruger pyttens antændelsestærskel.
 Når pytten brænder, forsvinder kun brændbare ml; vand bliver tilbage. `pools:consumed` kobles via bridgen til
 `bottles.consumePuddleVolume`, så `burnedMl` bliver en dokumenteret sink i flaskernes ledger.
+Thermals `thermal:burned`-payload er frosset, så en tidligere observer ikke kan ændre joule-beløbet,
+før pool-systemet bogfører den tilsvarende mængde brændstof.
 VFX-eviction ændrer ikke den logiske pyt. Man kan således komme tilbage til diesel, der stadig ligger på gulvet.
 
 `pools.save()` er et JSON-kompatibelt snapshot med position, komponenter, kilder, temperatur og forbrug.

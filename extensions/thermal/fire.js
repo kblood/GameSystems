@@ -386,7 +386,9 @@ export function createThermalSystem({ emit = () => {}, quality = 'high', ambient
           if(s.roomId) { const r=rooms.get(s.roomId);r.smoke+=released*s.smokeYield;r.temperature+=released*r.heatFraction/(r.volume*r.heatCapacityPerVolume);consumedAir.set(r,(consumedAir.get(r)??0)+released);if(released&&r.heatFraction)wakeAir(r.id); }
           s.temperature=blendTemperature(s.temperature,ambient,-Math.expm1(-s.cooling/s.heatCapacity*h));
           if(s.temperature!==previousTemperature)wakeAir(s.roomId);
-          if(released>0)notify('thermal:burned',{id:s.id,joules:released,roomId:s.roomId});
+          // The event is consumed by systems such as liquid pools to debit their own
+          // fuel ledgers. Keep observers from changing the amount seen by later listeners.
+          if(released>0)notify('thermal:burned',Object.freeze({id:s.id,joules:released,roomId:s.roomId}));
           stats.objectSteps++;if(disposed)return;if(objects.entries.get(s.id)!==s)continue;
           if(s.burning&&(!eligible(s)||s.temperature<s.extinction))burn(s,false);
           if(disposed)return;if(objects.entries.get(s.id)!==s)continue;
