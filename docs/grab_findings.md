@@ -6,6 +6,8 @@ Sammenlagt fra 34 verificerede punkter til 26 opgaver. De rettede forslag fra sk
 
 ## 1) Gør nu: små opgaver med høj værdi
 
+**Runtime-hardening 2026-10-12:** `pushHandMotion` ignorerer ikke-endelige tidsprøver. `Infinity` kunne ellers gøre det vægtede gennemsnit til `Infinity / Infinity` og sende NaN-hastigheder videre til et greb; ugyldige prøver efterlader sample-vinduet og sidst beregnede hastigheder uændrede.
+
 **1.1 Hånden bliver hængende på en flaske, der er skudt i stykker**
 - **Status:** ✅ Rettet 2026-10-09 (extensions trin 1): `interaction._dropHold` sender `release`; `breakage.onBroken` → `interaction.dropBottle` + `broken`-event; avatarens `update` dropper holds uden parent. `shoot()`-delen er ikke lavet.
 - **Projekt:** demo

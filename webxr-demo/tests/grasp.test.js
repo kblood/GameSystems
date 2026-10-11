@@ -55,3 +55,12 @@ test('hold drive follows the hand: carried velocity v + w x r, mean of the last 
   for (let i = 0; i < grasp.HAND_MOTION_SAMPLES; i++) grasp.pushHandMotion(m, [0, 0, 0], [0, 0, 0], 1 / 72);
   assert.deepEqual(m.linear, [0, 0, 0], 'only the last HAND_MOTION_SAMPLES count');
 });
+test('hand motion ignores non-finite and nonpositive sample durations without changing its window', () => {
+  const m = grasp.createHandMotion();
+  grasp.pushHandMotion(m, [1, 2, 3], [4, 5, 6], 1 / 72);
+  const before = structuredClone(m);
+  for (const dt of [Infinity, -Infinity, NaN, 0, -1]) {
+    assert.equal(grasp.pushHandMotion(m, [7, 8, 9], [10, 11, 12], dt), m);
+    assert.deepEqual(m, before);
+  }
+});

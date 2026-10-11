@@ -38,7 +38,7 @@ export const HAND_MOTION_SAMPLES = 2;
 export function createHandMotion() { return { samples: [], linear: [0, 0, 0], angular: [0, 0, 0] }; }
 /** Add one hand velocity sample (linear m/s, angular rad/s, world) over dt; updates motion.linear/angular (dt-weighted mean). */
 export function pushHandMotion(motion, linear, angular, dt) {
-  if (!(dt > 0) || ![...linear, ...angular].every(Number.isFinite)) return motion;
+  if (!Number.isFinite(dt) || !(dt > 0) || ![...linear, ...angular].every(Number.isFinite)) return motion;
   const samples = motion.samples;
   samples.push({ dt, linear: [...linear], angular: [...angular] });
   if (samples.length > HAND_MOTION_SAMPLES) samples.shift();
