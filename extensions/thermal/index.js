@@ -4,5 +4,5 @@ export { createThermalSystem, FIRE_PRESETS } from './fire.js';
 export { assessFireHazards } from './hazards.js';
 export { createElectricalHeatAdapter } from './electrical-heat.js';
 export default options => extension('thermal', createThermalSystem, options, (ctx, api) => {
-  ctx.on('liquid:deposit', ({ thermalId, ml, kind }) => { if (thermalId && kind === 'water') { try { api.state(thermalId); } catch { return; } api.water(thermalId, ml); } });
+  ctx.on('liquid:deposit', ({ thermalId, ml, kind }) => { if (typeof thermalId === 'string' && !thermalId.startsWith('pool:') && kind === 'water') { try { api.state(thermalId); } catch { return; } api.water(thermalId, ml); } });
 });

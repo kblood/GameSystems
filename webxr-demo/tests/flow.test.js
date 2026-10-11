@@ -2,6 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createSupplySystem} from '../../extensions/supply/index.js';
 import {createFlowSystem} from '../../extensions/flow/index.js';
+import {createHost} from '../../extensions/host/index.js';
+import thermalExtension from '../../extensions/thermal/index.js';
+import poolsExtension from '../../extensions/pools/index.js';
+import supplyExtension from '../../extensions/supply/index.js';
+import flowExtension from '../../extensions/flow/index.js';
 import {createFireSceneProvider} from '../../extensions/checkpoint/fire-scene.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 const target={targetId:'chair',roomId:'room',surfaceId:'floor',position:[1,0,0],impactPosition:[1,.5,0]};
@@ -46,6 +51,17 @@ test('complete finite mixture withdrawal cannot overflow component arithmetic',(
 });
 test('scene composition rejects ambiguous flow and bottle provenance before recording',()=>{
   const w=world();assert.throws(()=>createFireSceneProvider({supply:w.supply,flow:w.flow,bottles:{sourceKey:'hose'}}),/share a liquid source key/);
+});
+test('host flow deposits one water dose into an active pool and pool ownership prevents double cooling',async()=>{
+  const errors=[],host=createHost({onError:error=>errors.push(error.message)});
+  const thermal=await host.load(thermalExtension),pools=await host.load(poolsExtension);pools.deposit({id:'fire',surfaceId:'floor',position:[0,0,0],ml:100,kind:'diesel',sourceKey:'can'});assert.equal(pools.ignite('fire'),true);
+  const supply=await host.load(supplyExtension);supply.add('tank',{capacityMl:20,components:{water:20}});
+  const flow=await host.load(flowExtension);flow.add('hose',{tankId:'tank',sourceKey:'hose'});
+  let deposit;host.on('liquid:deposit',event=>{deposit=event;});
+  flow.pulse('hose',20,{targetId:'pool:fire',thermalId:'pool:fire',surfaceId:'floor',position:[0,0,0]});
+  const puddle=pools.state('fire');assert.equal(puddle.wetMl,20);assert.equal(puddle.components.water,20);assert.equal(puddle.sources.hose.water,20);assert.equal(puddle.burning,false);assert.equal(supply.state('tank').ml,0);assert.deepEqual(errors,[]);
+  assert.equal(deposit.thermalId,'pool:fire');
+  host.dispose();
 });
 test('invalid simple-source adapters cannot poison emitter history or publish liquid',()=>{
   for(const out of [{ml:NaN,components:{}},{ml:20,components:{water:20}},{ml:10,components:{water:9}}]){

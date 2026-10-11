@@ -71,6 +71,12 @@ test('logical smoke, wetness, foam and hot empty pool traces survive serialized 
   const saved=w.checkpoint.capture();w.pools.clear({account:false});w.checkpoint.restore(JSON.parse(JSON.stringify(saved)));
   const p=w.pools.state('diesel');assert.equal(p.ml,0);assert.equal(p.temperature,250);assert.equal(p.wetMl,10);assert.equal(p.blanket,.8);assert.equal(w.thermal.roomState('room').smoke,.4);
 });
+test('checkpoint restores extinguishing water deposited into a burning puddle',()=>{
+  const w=world();assert.equal(w.pools.ignite('diesel'),true);w.pools.deposit({id:'diesel',ml:10,kind:'water',sourceKey:'sprinkler'});
+  const saved=JSON.parse(JSON.stringify(w.checkpoint.capture())),suppressed=w.pools.state('diesel');assert.equal(suppressed.burning,false);assert.equal(suppressed.wetMl,10);
+  w.pools.remove('diesel');w.checkpoint.restore(saved);const restored=w.pools.state('diesel');
+  assert.equal(restored.burning,false);assert.equal(restored.wetMl,10);assert.equal(restored.components.diesel,20);assert.equal(restored.components.water,10);assert.equal(restored.sources.sprinkler.water,10);
+});
 test('thermal continuation is identical across restoring a fractional fixed-step phase',()=>{
   const a=world(),b=world();a.thermal.arm('charge');a.thermal.step(.13);b.checkpoint.restore(a.checkpoint.capture());
   for(let i=0;i<20;i++){a.thermal.step(.016);b.thermal.step(.016);}

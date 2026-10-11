@@ -4,10 +4,10 @@ import {jsonState,stateId} from '../host/state.js';
 function targetState(raw){
   if(raw===null)return null;
   if(!raw||typeof raw!=='object')throw new TypeError('Flow target required');
-  const surfaceId=stateId(raw.surfaceId,'surfaceId'),roomId=raw.roomId??null,targetId=raw.targetId??null;
-  if(roomId!==null)stateId(roomId,'roomId');if(targetId!==null)stateId(targetId,'targetId');
+  const surfaceId=stateId(raw.surfaceId,'surfaceId'),roomId=raw.roomId??null,targetId=raw.targetId??null,thermalId=raw.thermalId??null;
+  if(roomId!==null)stateId(roomId,'roomId');if(targetId!==null)stateId(targetId,'targetId');if(thermalId!==null)stateId(thermalId,'thermalId');
   const unit=v=>{v=vector(v);const length=Math.hypot(...v);if(length<1e-9)throw new RangeError('Zero aim direction');return Math.abs(length-1)<1e-12?v:v.map(n=>n/length);};
-  return {surfaceId,roomId,targetId,position:vector(raw.position),impactPosition:vector(raw.impactPosition??raw.position),normal:unit(raw.normal??[0,1,0]),direction:unit(raw.direction??[0,-1,0])};
+  return {surfaceId,roomId,targetId,...(thermalId===null?{}:{thermalId}),position:vector(raw.position),impactPosition:vector(raw.impactPosition??raw.position),normal:unit(raw.normal??[0,1,0]),direction:unit(raw.direction??[0,-1,0])};
 }
 
 // Analytic flow from finite storage. Input owners are transient; volume and targets are persistent.

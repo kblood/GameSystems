@@ -112,9 +112,13 @@ export function createPoolsSystem({ thermal, emit=()=>{}, quality='high', maxPoo
       const sourceMl=p.sourceMl+ml,nextInitial=initialMl+ml,nextRemaining=remainingMl+ml;if(!Number.isFinite(sourceMl)||!Number.isFinite(nextInitial)||!Number.isFinite(nextRemaining))throw new RangeError('Pool ledger exceeds the finite range');
       const staged={...p,components:nextComponents,sources,sourceMl},nextMl=total(staged),stagedProfile=profile(staged);if(!Number.isFinite(nextMl)||Object.values(stagedProfile).some(value=>typeof value==='number'&&!Number.isFinite(value)))throw new RangeError('Pool profile exceeds the finite range');
       const capacity=stagedProfile.heatCapacity,temperature=blendTemperature(ambient,old.temperature,old.heatCapacity/capacity);if(!Number.isFinite(temperature))throw new RangeError('Pool temperature exceeds the finite range');
+      const waterMl=incoming.water??0,waterDose=fuel(staged)>0?waterMl:0,cooled=waterDose?cooledState(temperature,old.wetMl,waterDose,capacity,ambient):{temperature,wetMl:old.wetMl};
       if(!p.active&&thermal.hasObject?.(p.thermalId)&&!nodeIndex.has(p.thermalId))throw new Error('Thermal pool id is already owned');
       if(p.active)thermal.configure(p.thermalId,{...stagedProfile,temperature});
-      p.components=nextComponents;p.sources=sources;p.sourceMl=sourceMl;p.storedHeat.temperature=temperature;if(isNew)records.set(p.id,p);if(generatedId)nextId=nextGeneratedId;initialMl=nextInitial;remainingMl=nextRemaining;index(p);
+      p.components=nextComponents;p.sources=sources;p.sourceMl=sourceMl;p.storedHeat={...p.storedHeat,temperature:cooled.temperature,wetMl:cooled.wetMl};if(isNew)records.set(p.id,p);if(generatedId)nextId=nextGeneratedId;initialMl=nextInitial;remainingMl=nextRemaining;index(p);
+      // Water carried by a deposited liquid is also a suppression dose. Stage its exact
+      // cooling first so active pools can use the thermal API and dormant pools retain it.
+      if(p.active&&waterDose)thermal.water(p.thermalId,waterDose);
       if(!p.active)api.activate(p.id,{evict:false});
       if(!p.active)emit('pools:budget',{maxPools,ml,id:p.id,retained:true});publish(p);
       emit('pools:deposited',{id:p.id,ml,components:{...incoming},sourceKey,previousMl,previousBlanket:old.blanket});return api.state(p.id);

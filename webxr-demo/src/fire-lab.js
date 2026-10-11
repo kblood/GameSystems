@@ -98,7 +98,7 @@ async function reset(){
   sprinklers=await host.load(sprinklersExtension,{powerFraction:pump.powerFraction});
   for(const [id,x]of [['west',-1.2],['east',1.2]])sprinklers.add(id,{tankId:'sprinkler-tank',position:[x,2.5,0],roomId:id,surfaceId:`floor-${id}`,radius:3.2,rateMlPerSecond:120,open:false});
   interest=await host.load(poolInterestExtension,{radius:1});
-  flow=await host.load(flowExtension,{resolveTarget:hoseTarget,acceptTarget:t=>t.targetId===null?surfaces.some(s=>s.userData.materialId===t.surfaceId):heat.hasObject(t.targetId)||(t.targetId?.startsWith('pool:')&&pools.has(t.targetId.slice(5))),apply:r=>{const water=r.components.water??0;if(water&&r.targetId){if(r.targetId.startsWith('pool:'))pools.cool(r.targetId.slice(5),water);else heat.water(r.targetId,water);}}});
+  flow=await host.load(flowExtension,{resolveTarget:hoseTarget,acceptTarget:t=>t.targetId===null?surfaces.some(s=>s.userData.materialId===t.surfaceId):heat.hasObject(t.targetId)||(t.targetId?.startsWith('pool:')&&pools.has(t.targetId.slice(5))),apply:r=>{const water=r.components.water??0;if(water&&r.targetId&&!r.targetId.startsWith('pool:'))heat.water(r.targetId,water);}});
   flow.add('hose',{tankId:'hose-tank',sourceKey:'hose',rateMlPerSecond:240});
   flow.add('foam',{tankId:'foam-tank',sourceKey:'foam',rateMlPerSecond:120});
   const catalog=await(await fetch(assetUrl('catalog.json'))).json();if(current!==token)return;

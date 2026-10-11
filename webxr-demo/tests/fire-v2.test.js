@@ -55,6 +55,19 @@ test('pools: diesel has flash/ignition threshold; water and unknown do not burn'
   assert.equal(p.ignite('water'),false);t.step(1);assert.equal(p.state('diesel').burning,false);p.heat('diesel',10000);t.step(1);assert.equal(p.state('diesel').burning,true);
   p.foam('diesel');assert.equal(p.state('diesel').burning,false);assert.ok(p.state('diesel').ml>0);
 });
+test('pools: deposited water cools and wets an active burning pool without losing liquid attribution',()=>{
+  const t=createThermalSystem(),p=createPoolsSystem({thermal:t});p.deposit({id:'fuel',ml:100,kind:'diesel',sourceKey:'can'});p.heat('fuel',10000);t.step(1);assert.equal(p.state('fuel').burning,true);
+  const before=p.state('fuel'),ledger=p.ledger();p.deposit({id:'fuel',ml:20,kind:'water',sourceKey:'hose'});const after=p.state('fuel');
+  assert.equal(after.burning,false);assert.equal(after.wetMl,20);assert.ok(after.temperature<before.temperature);assert.equal(after.components.diesel,100);assert.equal(after.components.water,20);
+  assert.equal(after.sources.can.diesel,100);assert.equal(after.sources.hose.water,20);assert.equal(p.ledger().initialMl,ledger.initialMl+20);assert.equal(p.ledger().remainingMl,ledger.remainingMl+20);
+  assert.equal(p.ignite('fuel'),false);
+});
+test('pools: deposited water cools hot budget-dormant pools and preserves that state through restore',()=>{
+  const t=createThermalSystem(),p=createPoolsSystem({thermal:t,maxPools:1});p.deposit({id:'blocker',ml:20,kind:'diesel'});p.ignite('blocker');p.deposit({id:'dormant',position:[5,0,0],ml:100,kind:'diesel'});
+  p.heat('dormant',20000);assert.equal(p.state('dormant').active,false);const hot=p.state('dormant');assert.ok(hot.temperature>20);
+  p.deposit({id:'dormant',ml:20,kind:'water',sourceKey:'sprinkler'});const cooled=p.state('dormant');assert.equal(cooled.active,false);assert.equal(cooled.burning,false);assert.equal(cooled.wetMl,20);assert.ok(cooled.temperature<hot.temperature);
+  const saved=JSON.parse(JSON.stringify(p.save()));p.remove('blocker');p.restore(saved);const restored=p.state('dormant');assert.equal(restored.active,false);assert.equal(restored.wetMl,20);assert.equal(restored.temperature,cooled.temperature);assert.equal(restored.components.diesel,100);assert.equal(restored.components.water,20);assert.equal(restored.sources.sprinkler.water,20);
+});
 test('pools: combustible volume consumed conservatively, water remains, snapshot survives reload',()=>{
   const t=createThermalSystem(),p=createPoolsSystem({thermal:t});p.deposit({id:'p',ml:100,kind:'diesel'});p.deposit({id:'p',ml:50,kind:'water'});
   const before=p.state('p').fuelJ;t.configure('pool:p',{fuelJ:before-400});p.burned('pool:p',400);near(p.state('p').components.diesel,99);near(p.state('p').components.water,50);
@@ -85,11 +98,11 @@ test('liquid composition survives receiving and re-pouring a mixed bottle',()=>{
   const b={fillMl:100,liquidKind:'diesel'};receiveComponents(b,{water:50},50,50);b.fillMl+=50;
   assert.equal(b.liquidKind,'mixed');const components=dropComponents(30,b.liquidKind,b);near(components.diesel,20);near(components.water,10);
 });
-test('pools: quality-limited mixed flight keeps diesel identity and burnable amount',async()=>{
+test('pools: quality-limited mixed flight keeps diesel identity and applies water suppression',async()=>{
   const physics=createFakePhysics(),scene=new THREE.Scene(),host=createHost({THREE,scene,physics});await host.load(thermal);
   const floor=new THREE.Mesh(new THREE.BoxGeometry(2,.2,2),new THREE.MeshStandardMaterial());floor.position.y=-.1;scene.add(floor);const p=await host.load(pools),b=await host.load(bottles,{surfaces:[floor],audio:{play(){}}});
   b.pour.settings={...b.pour.settings,maxFlights:1};b.pour.initialMl=100;b.pour.emit(50,new THREE.Vector3(0,.5,0),undefined,{liquidKind:'diesel'});b.pour.emit(50,new THREE.Vector3(0,.5,0),undefined,{liquidKind:'water'});
-  for(let i=0;i<60;i++)physics.step(1/60);const pool=p.all()[0];near(pool.components.diesel,50);near(pool.components.water,50);assert.ok(pool.fuelJ>0);assert.equal(p.ignite(pool.id),true);host.dispose();
+  for(let i=0;i<60;i++)physics.step(1/60);const pool=p.all()[0];near(pool.components.diesel,50);near(pool.components.water,50);assert.ok(pool.fuelJ>0);assert.equal(pool.wetMl,50);assert.equal(p.ignite(pool.id),false);host.dispose();
 });
 test('source ledger restore accepts consumption rewind but rejects new deposits',async()=>{
   const physics=createFakePhysics(),scene=new THREE.Scene(),host=createHost({scene,physics});const b=await host.load(bottles,{audio:{play(){}}});b.pour.initialMl=100;b.pour.puddleMl=100;const saved=b.ledger();b.consumePuddleVolume(10);b.restorePuddleLedger(saved);near(b.ledger().errorMl,0);near(b.ledger().puddleMl,100);b.pour.initialMl+=10;b.pour.puddleMl+=10;assert.throws(()=>b.restorePuddleLedger(saved));host.dispose();
