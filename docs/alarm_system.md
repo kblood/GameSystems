@@ -36,7 +36,9 @@ audible, timer og rum. Observer-udskiftning/disposal håndteres med instans-batc
 nested step/restore/notify er afvist. Input valideres for hele første sensor-batch før
 timerfasen ændres. Ugyldig strømstatus, temperatur eller røgtæthed ved update-indgangen
 efterlader phase og detektorer uændret. Senere observer-/callback-fejl efter allerede
-udførte ticks er ikke en generel transaction med rollback af eksterne sideeffekter.
+udførte ticks ruller ikke eksterne sideeffekter tilbage. Fejl fra event-observers under
+`step` gemmes dog, hele fixed-step-batchen og dens detector-notifikationer færdiggøres,
+og den første observerfejl kastes efterfølgende, når update-guard er frigivet.
 
 Thermal eksponerer `hasRoom(id)`. Hvis rummet forsvinder, får tilknyttede detektorer
 fault:'room-missing', powered:false og nul dwell; signalet stopper, mens latch/silence

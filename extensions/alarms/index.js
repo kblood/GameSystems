@@ -8,7 +8,7 @@ export function createAlarmSystem({thermal,emit=()=>{},isPowered=()=>true,qualit
   const detectors=registry(),tiers=tierState(quality);let pending=0,disposed=false,busy=false,notifying=false;
   const live=()=>{if(disposed)throw new Error('Alarm system is disposed');};
   const clear=(d,r)=>(d.mode==='smoke'||r.temperature<=d.clearHeat)&&(d.mode==='heat'||r.smokeDensity<=d.clearSmoke);
-  const publish=d=>{if(!disposed&&detectors.entries.get(d.id)===d)emit('alarms:changed',api.state(d.id));};
+  const publish=(d,dispatch=emit)=>{if(!disposed&&detectors.entries.get(d.id)===d)dispatch('alarms:changed',api.state(d.id));};
   function sample(){
     const rooms=new Map(),batch=[];
     for(const d of [...detectors.entries.values()]){
@@ -35,15 +35,17 @@ export function createAlarmSystem({thermal,emit=()=>{},isPowered=()=>true,qualit
     step(dt){
       live();if(busy||notifying)throw new Error('Alarm update is reentrant');positive(dt,'dt',true);if(dt>10)throw new RangeError('Alarm catch-up budget exceeded');
       const next=pending+dt,count=Math.floor((next+1e-9)/.1);if(!count){pending=next;return;}busy=true;
+      let observerError,observerFailed=false;const report=(event,payload)=>{try{emit(event,payload);}catch(error){if(!observerFailed){observerError=error;observerFailed=true;}}};
       try{let batch=sample();pending=Math.max(0,next-count*.1);for(let i=0;i<count;i++){
-        if(disposed)return;if(i)batch=sample();
-        for(const {d,r,powered,fault}of batch){if(disposed)return;if(detectors.entries.get(d.id)!==d)continue;d.powered=d.enabled&&powered;d.fault=fault;
+        if(disposed)break;if(i)batch=sample();
+        for(const {d,r,powered,fault}of batch){if(disposed)break;if(detectors.entries.get(d.id)!==d)continue;d.powered=d.enabled&&powered;d.fault=fault;
           const heat=!!r&&d.mode!=='smoke'&&r.temperature>=d.heatThreshold,smoke=!!r&&d.mode!=='heat'&&r.smokeDensity>=d.smokeThreshold;
           d.dwellSeconds=d.powered&&(heat||smoke)?Math.min(d.delaySeconds,d.dwellSeconds+.1):0;
-          if(d.powered&&!d.triggered&&(heat||smoke)&&d.dwellSeconds+1e-9>=d.delaySeconds){d.triggered=true;d.reason=heat&&smoke?'heat+smoke':heat?'heat':'smoke';emit('alarms:triggered',api.state(d.id));}
-          publish(d);
+          if(d.powered&&!d.triggered&&(heat||smoke)&&d.dwellSeconds+1e-9>=d.delaySeconds){d.triggered=true;d.reason=heat&&smoke?'heat+smoke':heat?'heat':'smoke';report('alarms:triggered',api.state(d.id));}
+          publish(d,report);
         }
       }}finally{busy=false;}
+      if(observerFailed)throw observerError;
     },
     capture(){live();return {schema:'gamesystems.alarms.v1',pending,detectors:api.all()};},
     prepareRestore(raw,{roomExists=id=>thermal.roomState(id)}={}){

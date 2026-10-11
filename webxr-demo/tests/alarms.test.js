@@ -36,6 +36,19 @@ test('alarms: invalid topology/state, time and detector budgets are atomic',()=>
 test('alarms: trigger observers may remove sensors; notification batches and disposal are bounded',()=>{
   const thermal=createThermalSystem();thermal.addRoom('r',{temperature:100});let a,n=0;a=createAlarmSystem({thermal,emit:e=>{if(e==='alarms:triggered'){n++;a.remove('a');}}});a.add('a',{roomId:'r'});a.step(1);assert.equal(n,1);assert.equal(a.all().length,0);a.dispose();assert.throws(()=>a.step(.1));
 });
+test('alarms: observer failures finish the fixed-step batch and release the update guard',()=>{
+  const thermal=createThermalSystem();thermal.addRoom('r',{temperature:100});const failure=new Error('trigger observer failed'),events=[];let throwOnce=true;
+  const a=createAlarmSystem({thermal,emit:(event,state)=>{if(event==='alarms:triggered'){events.push(state.id);if(throwOnce&&state.id==='a')throw failure;}}});
+  a.add('a',{roomId:'r',delaySeconds:.1});a.add('b',{roomId:'r',delaySeconds:.1});
+  assert.throws(()=>a.step(.1),error=>error===failure);assert.deepEqual(events,['a','b']);assert.equal(a.state('a').triggered,true);assert.equal(a.state('b').triggered,true);
+  thermal.configureRoom('r',{temperature:20,smoke:0});assert.equal(a.reset('a'),true);assert.equal(a.reset('b'),true);
+  thermal.configureRoom('r',{temperature:100});throwOnce=false;a.step(.1);assert.equal(a.state('a').triggered,true);assert.equal(a.state('b').triggered,true);
+});
+test('alarms: observer error is rethrown after that observer disposes the system',()=>{
+  const thermal=createThermalSystem();thermal.addRoom('r',{temperature:100});const failure=new Error('dispose observer failed');let a;
+  a=createAlarmSystem({thermal,emit:event=>{if(event==='alarms:triggered'){a.dispose();throw failure;}}});a.add('a',{roomId:'r',delaySeconds:.1});a.add('b',{roomId:'r',delaySeconds:.1});
+  assert.throws(()=>a.step(.2),error=>error===failure);assert.throws(()=>a.capture(),/disposed/);
+});
 test('alarms: restore notifications can replace a sensor once and reject recursive commits',()=>{
   const thermal=createThermalSystem();thermal.addRoom('r');let a,n=0,saved,plan;a=createAlarmSystem({thermal,emit:e=>{if(e==='alarms:changed'){assert.ok(++n<=1);assert.throws(()=>a.restore(saved));assert.throws(()=>plan.commit());a.remove('a');a.add('a',{roomId:'r'});}}});a.add('a',{roomId:'r'});saved=a.capture();plan=a.prepareRestore(saved);a.restore(saved);assert.equal(n,1);
 });
