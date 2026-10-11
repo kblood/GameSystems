@@ -120,6 +120,15 @@ Forudinstallerede skruer og søm er fortsat gyldige.
 Verifikation: fokuseret `new-systems`-suite **27/27**, fuld Node-suite **518/518** og Sol-review uden
 blocker. Pushet til GameSystems `main` som `3840d10`.
 
+## Afsluttet mission-start reentrancy-runde — 2026-10-12
+
+`start()` afviser nu en nested start under den aktive transition før endnu et run oprettes. Start-guard
+frigives også, hvis input- eller event-callback kaster; reset fra evaluator og start efter terminal
+state er uændret.
+
+Verifikation: mission-suite **6/6**, fuld Node-suite **519/519**, Sol-review uden blocker. Pushet til
+GameSystems `main` som `1be7096`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
