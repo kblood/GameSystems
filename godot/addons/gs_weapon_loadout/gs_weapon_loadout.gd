@@ -84,6 +84,22 @@ func select(entry_id: StringName, can_switch: Callable = Callable(),
 	active_entry_changed.emit(StringName(previous.id) if previous != null else &"", entry_id)
 	return {"ok":true, "reason":"selected", "entry":candidate, "previous":previous}
 
+## Publish an already-applied selection restored by a trusted host transaction.
+## The host must validate and commit the live state/presentation before calling
+## this method; this registry method performs no host transition itself.
+func restore_active_entry(entry_id: StringName) -> Dictionary:
+	if _selection_callback_active: return _failure("selection_in_progress", "A weapon selection callback is already running")
+	var candidate: Variant = get_entry(entry_id)
+	if candidate == null: return _failure("unknown_id", "Unknown weapon entry: %s" % entry_id)
+	if StringName(candidate.id) != entry_id: return _failure("entry_changed", "Restored entry identity does not match its ID")
+	if entry_id == _active_id: return {"ok":true, "reason":"already_active", "entry":candidate}
+	var previous: Variant = active_entry()
+	_selection_callback_active = true
+	_active_id = entry_id
+	active_entry_changed.emit(StringName(previous.id) if previous != null else &"", entry_id)
+	_selection_callback_active = false
+	return {"ok":true, "reason":"restored", "entry":candidate, "previous":previous}
+
 func _callback_result(value: Variant) -> Dictionary:
 	if typeof(value) == TYPE_BOOL: return {"ok":value, "reason":""}
 	if value is Dictionary:

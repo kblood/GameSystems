@@ -82,6 +82,16 @@ func _initialize() -> void:
 	case_result(not loadout.remove_entry(&"kestrel").ok, "refuses removal of active entry")
 	case_result(loadout.remove_entry(&"shear").ok and loadout.get_entry(&"shear") == null,
 		"removes an inactive entry explicitly")
+	var restore_probe: Variant = Loadout.new()
+	restore_probe.add_entry(&"kestrel", kestrel_state)
+	restore_probe.add_entry(&"shear", shear_state)
+	restore_probe.restore_active_entry(&"kestrel")
+	var restored_active: Dictionary = restore_probe.restore_active_entry(&"shear")
+	case_result(restored_active.ok and restored_active.reason == "restored" and restore_probe.active_id() == &"shear",
+		"trusted host restore publishes an already-committed active entry")
+	var missing_restore: Dictionary = restore_probe.restore_active_entry(&"missing")
+	case_result(not missing_restore.ok and restore_probe.active_id() == &"shear",
+		"unknown checkpoint selection leaves the active entry unchanged")
 	kestrel_model.free()
 	shear_model.free()
 	print("GS_WEAPON_LOADOUT passed=%d failed=%d" % [passed,failed])

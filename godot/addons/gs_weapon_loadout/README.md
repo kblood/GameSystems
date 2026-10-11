@@ -36,6 +36,13 @@ updates the active ID and emits `active_entry_changed(previous_id, active_id)`
 only after the host reports success. A callback returning false must not leave
 partial host changes behind; the host owns that rollback guarantee.
 
+`restore_active_entry(id)` is a narrow trusted-host seam for checkpoint
+transactions. It only publishes an existing entry ID and emits the normal
+change signal; it does not validate or apply scene/state changes. Call it only
+after the host has validated the complete checkpoint and committed every live
+weapon state and ownership transition. It refuses calls during a selection
+callback and leaves the active ID unchanged for unknown entries.
+
 For a Godot player, the apply callback should reject switches while hands own
 items, a magazine or mechanism is active, or a melee action is latched. It can
 then bind the candidate's state, scene, presenter, magazine factory, and contact
