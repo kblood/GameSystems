@@ -4,6 +4,7 @@ import { jsonState, booleanState } from '../host/state.js';
 // Analytic one-degree-of-freedom constraints. The host applies output poses to rendering/physics.
 export function createMechanicsSystem({ emit = () => {}, quality = 'high', applyPose = () => {} } = {}) {
   const store = registry(), tiers = tierState(quality), holds = new Map();
+  const holdKey = (id, owner) => JSON.stringify([id, owner]);
   const api = {
     get quality() { return tiers.quality; }, setQuality: tiers.setQuality,
     capture() {return {schema:'gamesystems.mechanics.v1',constraints:[...store.entries.values()].map(({forces,...m})=>({...m,origin:[...m.origin],axis:[...m.axis]}))};},
@@ -35,10 +36,10 @@ export function createMechanicsSystem({ emit = () => {}, quality = 'high', apply
     setValue(id, value) { const m = store.get(id); if (m.locked) return false; m.value = clamp(finite(value), m.min, m.max); m.velocity = 0; publish(m); return true; },
     // External force (N for slider, Nm for hinge/valve). Two hands add their forces.
     drive(id, owner, force) { const m = store.get(id); if (!owner) throw new Error('drive needs owner'); m.forces.set(owner, finite(force)); },
-    release(id, owner) { store.get(id).forces.delete(owner); holds.delete(`${id}:${owner}`); },
-    grab(id, owner, point) { const m = store.get(id); holds.set(`${id}:${owner}`, { point: vector(point), value: m.value }); },
+    release(id, owner) { store.get(id).forces.delete(owner); holds.delete(holdKey(id, owner)); },
+    grab(id, owner, point) { const m = store.get(id); holds.set(holdKey(id, owner), { id, point: vector(point), value: m.value }); },
     moveHand(id, owner, point, stiffness = 80) {
-      const m = store.get(id), h = holds.get(`${id}:${owner}`); if (!h) return false;
+      const m = store.get(id), h = holds.get(holdKey(id, owner)); if (!h) return false;
       point = vector(point); positive(stiffness);
       let target;
       if (m.kind === 'slider') target = h.value + dot(point.map((v, i) => v - h.point[i]), m.axis);
@@ -72,7 +73,7 @@ export function createMechanicsSystem({ emit = () => {}, quality = 'high', apply
         if (before !== m.value) publish(m);
       }
     },
-    remove(id) { for (const key of holds.keys()) if (key.startsWith(`${id}:`)) holds.delete(key); return store.remove(id); },
+    remove(id) { for (const [key, hold] of holds) if (hold.id === id) holds.delete(key); return store.remove(id); },
     releaseAll() { holds.clear(); for (const m of store.entries.values()) m.forces.clear(); },
     dispose() { holds.clear(); store.dispose(); },
   };

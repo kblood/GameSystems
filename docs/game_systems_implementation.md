@@ -54,7 +54,9 @@ alle seks samt workshop med. Et andet spil behøver kun at synke de systemer, de
 `kind` er `slider`, `hinge` eller `valve`. Lineær koordinat er meter; roterende koordinat er radianer.
 `drive(id, owner, force)` anvender kraft i N eller moment i Nm. Flere ejere summeres, så to hænder kan hjælpe
 eller modarbejde hinanden. `grab/moveHand` omregner håndpositioner til en begrænset målkoordinat og fjederkraft.
-Låse stopper bevægelse; mekaniske endestop nulstiller hastighed og udsender stødenergi.
+Ejere er lokale for hvert mekanisme-id, så id'er og ejernavne må gerne indeholde kolon uden at kollidere;
+fjernes en mekanisme, ryddes kun dens egne greb. Låse stopper bevægelse; mekaniske endestop nulstiller
+hastighed og udsender stødenergi.
 
 Det er en analytisk frihedsgrad med modstand og dæmpning. Værten skal forbinde output til sine collidere og beslutte,
 hvordan omgivende objekter påvirker mekanismen. Labben driver synlige 3D-objekter; den er ikke en fuld rigid-body-ledsolver.

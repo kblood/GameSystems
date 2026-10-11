@@ -28,6 +28,16 @@ test('mechanics: tracked slider and hinge movement uses object-space geometry', 
   const s = createMechanicsSystem(); s.add('drawer', { axis: [0, 0, 1], max: 1 }); s.grab('drawer', 'hand', [0, 0, 0]); s.moveHand('drawer', 'hand', [0, 0, 0.5]); s.step(0.5); assert.ok(s.state('drawer').value > 0.2);
   s.add('door', { kind: 'hinge', axis: [0, 1, 0], max: Math.PI / 2 }); s.grab('door', 'hand', [1, 0, 0]); s.moveHand('door', 'hand', [0, 0, -1]); s.step(0.5); assert.ok(s.state('door').value > 0.5);
 });
+test('mechanics: colon-containing ids and owners keep holds independent during removal', () => {
+  const s = createMechanicsSystem();
+  s.add('door'); s.add('door:inner'); s.grab('door:inner', 'hand', [0, 0, 0]);
+  s.remove('door'); assert.equal(s.moveHand('door:inner', 'hand', [0.5, 0, 0]), true);
+  s.add('cabinet:left'); s.add('cabinet');
+  s.grab('cabinet:left', 'hand', [0, 0, 0]); s.grab('cabinet', 'left:hand', [100, 0, 0]);
+  assert.equal(s.moveHand('cabinet:left', 'hand', [0.5, 0, 0]), true); s.step(0.5);
+  assert.ok(s.state('cabinet:left').value > 0.2);
+  assert.equal(s.moveHand('cabinet', 'left:hand', [100, 0, 0]), true);
+});
 test('electricity: series resistance, Kirchhoff current and power balance', () => {
   const s = createElectricitySystem(); s.add('battery', { kind: 'source', a: 'p', b: 'g', voltage: 12 }); s.add('wire', { kind: 'wire', a: 'p', b: 'l', resistance: 2 }); s.add('lamp', { a: 'l', b: 'g', resistance: 10 });
   const result = s.evaluate(); assert.equal(result.fault, null); near(s.state('lamp').current, 1); near(s.state('wire').current, 1); near(s.state('battery').current, -1);
