@@ -2,7 +2,7 @@ import { registry, positive, finite, vector, distance, clamp, extension, tierSta
 
 // Room/portal graph; choose lowest-loss path, then distance attenuation and speed-of-sound delay.
 export function createAcousticsSystem({ emit = () => {}, quality = 'high', speedOfSound = 343, maxPending = 128 } = {}) {
-  positive(speedOfSound); positive(maxPending); const rooms = registry(), portals = registry(), listeners = registry(), tiers = tierState(quality); let clock = 0; const pending = [];
+  positive(speedOfSound); positive(maxPending); const rooms = registry(), portals = registry(), listeners = registry(), tiers = tierState(quality); let clock = 0, stepping = false; const pending = [];
   const api = {
     get quality() { return tiers.quality; }, setQuality: tiers.setQuality,
     addRoom(id) { rooms.add(id, { id }); },
@@ -35,9 +35,10 @@ export function createAcousticsSystem({ emit = () => {}, quality = 'high', speed
       }
       return results;
     },
-    step(dt) { positive(dt, 'dt', true); clock += dt; const due = [];
+    step(dt) { if(stepping)throw new Error('Acoustics step is reentrant');positive(dt, 'dt', true);stepping=true;let observerError,observerFailed=false;const report=callback=>{try{callback();}catch(error){if(!observerFailed){observerError=error;observerFailed=true;}}};try{clock += dt; const due = [];
       for (let i = pending.length - 1; i >= 0; i--) if (pending[i].at <= clock) due.push(...pending.splice(i, 1));
-      due.sort((a, b) => a.at - b.at); for (const { event } of due) { const l = listeners.entries.get(event.listenerId); if (l) { l.receive(event); emit('acoustics:heard', event); } }
+      due.sort((a, b) => a.at - b.at); for (const { event } of due) { const l = listeners.entries.get(event.listenerId); if (l) { report(()=>l.receive(event));report(()=>emit('acoustics:heard',event)); } }
+      }finally{stepping=false;}if(observerFailed)throw observerError;
     },
     removeListener(id) { for (let i = pending.length - 1; i >= 0; i--) if (pending[i].event.listenerId === id) pending.splice(i, 1); return listeners.remove(id); },
     removePortal: portals.remove,

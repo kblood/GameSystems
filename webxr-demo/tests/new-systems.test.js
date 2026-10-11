@@ -94,6 +94,16 @@ test('acoustics: alternate portal path and bounded pending stimuli', () => {
   s.addPortal('direct', { a: 'a', b: 'c', closedLossDb: 50 }); s.addPortal('one', { a: 'a', b: 'b', closedLossDb: 5 }); s.addPortal('two', { a: 'b', b: 'c', closedLossDb: 5 });
   assert.deepEqual(s.path('a', 'c').portals, ['one', 'two']); s.addListener('g', { room: 'c' }); for (let i = 0; i < 10; i++) s.sound({ room: 'a' }); assert.equal(s.pendingCount, 2); s.dispose(); assert.equal(s.pendingCount, 0);
 });
+test('acoustics: callback failures do not drop other due sounds or heard receipts',()=>{
+  const receiveFailure=new Error('listener failed'),emitFailure=new Error('heard observer failed'),received=[],heard=[];let throwReceive=true,throwEmit=true,s;
+  s=createAcousticsSystem({emit:(event,data)=>{if(event==='acoustics:heard'){heard.push(data);if(throwEmit){throwEmit=false;throw emitFailure;}}}});s.addRoom('r');
+  s.addListener('a',{room:'r',receive:event=>received.push(event)});
+  s.addListener('b',{room:'r',receive:event=>{received.push(event);if(throwReceive){throwReceive=false;throw receiveFailure;}}});
+  s.sound({room:'r',sourceId:'first'});s.sound({room:'r',sourceId:'second'});
+  assert.throws(()=>s.step(0),error=>error===receiveFailure);assert.equal(received.length,4);assert.equal(heard.length,4);
+  assert.deepEqual(new Set(received.map(event=>event.sourceId)),new Set(['first','second']));assert.equal(s.pendingCount,0);
+  s.sound({room:'r',sourceId:'recovery'});assert.doesNotThrow(()=>s.step(0));assert.equal(received.length,6);s.dispose();
+});
 test('integration: drawer → fuse → switch → lamp → door; overload relocks', async () => {
   const { host, api, errors } = await station(); assert.equal(api.takeFuse(), false); assert.equal(api.mechanics.setValue('door', 1), false);
   api.mechanics.setValue('drawer', 0.5); assert.equal(api.takeFuse(), true); assert.equal(api.insertFuse([1, 1, 1]), false); assert.equal(api.insertFuse([-0.7, 1.3, 0]), true);

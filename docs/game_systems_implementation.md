@@ -132,6 +132,8 @@ registrerer lydafspilning eller en NPC's stimulusindgang.
 `sound({room, position, db, kind, sourceId})` vælger den vej med mindst portaldæmpning, dæmper derefter med afstand
 og køer modtagelse med afstand / lydhastighed. Ingen forbindelse betyder ingen lyd.
 `maxPending` (standard 128) begrænser ventende events. Budgetoverskridelse udsender `acoustics:dropped`.
+`step` forsøger alle forfaldne listener-callbacks og `acoustics:heard`-events, selv hvis en callback kaster, og kaster
+derefter den første fejl videre; en reentrant `step` afvises, så allerede forbrugte cues ikke springer over.
 
 Modellen erstatter ikke bølgeakustik, rumklang eller generel lydmotor. Labben afspiller en kort rumlig WebAudio-tone
 og viser en navngiven AI-lytters dB-stimulus. NPC-integration i andre spil sker via `receive`.
