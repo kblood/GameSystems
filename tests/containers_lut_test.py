@@ -24,7 +24,7 @@ def targets(names):
     t = []
     for p in sorted(glob.glob(os.path.join(ROOT, "export", "container_*.glb"))):
         n = os.path.basename(p)[:-4]
-        if n.endswith("_lod1"):
+        if n.endswith(("_lod1", "_broken", "_shards")):
             continue
         t.append((n, p, os.path.join(ROOT, "export", n + ".liquid.json")))
     for p in sorted(glob.glob(os.path.join(ROOT, "export", "bottle_*.glb"))):
@@ -38,10 +38,13 @@ def targets(names):
 
 
 def main(names):
+    selected = targets(names)
+    if names and not selected:
+        raise SystemExit("No container LUT targets matched: " + ", ".join(names))
     rng = np.random.default_rng(2024)
     report, cases = {}, {}
     worst_all = 0.0
-    for n, glb, side in targets(names):
+    for n, glb, side in selected:
         V, F, ex = L.read_glb_node(glb, "Liquid")
         info = json.load(open(side))
         if "liquid" in ex and n.startswith("container"):          # extras embedded in the GLB must equal the sidecar
