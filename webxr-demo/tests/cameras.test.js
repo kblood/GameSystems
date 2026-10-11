@@ -18,6 +18,27 @@ test('camera feeds render only selected feeds and screens share a single texture
   assert.equal(api.step(.1), 1); assert.equal(calls.length, 1); assert.equal(api.feedState('b').frames, 0); assert.equal(mesh.material.map, second.material.map);
   api.switchFeed('screen', 'b'); api.step(.1); assert.equal(mesh.material.map, api.texture('b'));
 });
+test('feed options give a selectable screen a live, isolated feed catalog', () => {
+  const { api, mesh } = setup();
+  api.addFeed('hall', { camera: new THREE.PerspectiveCamera(), label: 'Hallway' });
+  api.addFeed('garage', { camera: new THREE.PerspectiveCamera(), label: 'Garage' });
+  api.addScreen('monitor', { mesh, feedId: 'hall' });
+  const options = api.feedOptions('monitor');
+  assert.deepEqual(options, [
+    { id: 'hall', label: 'Hallway', enabled: true, selected: true },
+    { id: 'garage', label: 'Garage', enabled: true, selected: false },
+  ]);
+  options[0].selected = false; // A UI consumer only receives snapshots.
+  api.switchFeed('monitor', 'garage');
+  api.setFeedEnabled('hall', false);
+  assert.deepEqual(api.feedOptions('monitor'), [
+    { id: 'hall', label: 'Hallway', enabled: false, selected: false },
+    { id: 'garage', label: 'Garage', enabled: true, selected: true },
+  ]);
+  assert.throws(() => api.feedOptions('missing'));
+  api.removeFeed('garage');
+  assert.deepEqual(api.feedOptions('monitor'), [{ id: 'hall', label: 'Hallway', enabled: false, selected: false }]);
+});
 test('feed rendering restores XR, viewport, scissor, target and monitor visibility even on failure', () => {
   const { api, mesh, renderer, calls } = setup(); api.addFeed('a', { camera: new THREE.PerspectiveCamera() }); api.addScreen('screen', { mesh, feedId: 'a' });
   const prior = new THREE.WebGLRenderTarget(12, 12); renderer.target = prior;

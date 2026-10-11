@@ -47,14 +47,14 @@ export function createCameraSystem({ THREE, renderer, scene, quality = 'high', e
       for (const feed of feeds.entries.values()) { feed.target.setSize(...dimensions(feed.aspect)); feed.frames = 0; feed.lastTime = -Infinity; }
       refresh();
     },
-    addFeed(id, { camera, feedScene = scene, enabled = true } = {}) {
+    addFeed(id, { camera, feedScene = scene, enabled = true, label = id } = {}) {
       live(); if (feeds.entries.size >= maxFeeds) throw new RangeError('Camera feed budget exceeded');
       if (!camera?.isPerspectiveCamera || !feedScene?.isScene) throw new TypeError('Perspective camera and scene required');
       const aspect = positive(camera.aspect, 'camera aspect'); if (aspect < .25 || aspect > 4) throw new RangeError('Camera aspect outside render budget');
-      booleanState(enabled);
+      booleanState(enabled); if (typeof label !== 'string' || !label.trim()) throw new TypeError('Camera feed label must be a non-empty string');
       // Validate registry id before allocating a GPU resource.
       if (typeof id !== 'string' || !id || feeds.entries.has(id)) throw new Error('Invalid or duplicate camera feed');
-      const target = allocate(aspect); feeds.add(id, { id, camera, scene: feedScene, aspect, enabled, target, frames: 0, lastTime: -Infinity });
+      const target = allocate(aspect); feeds.add(id, { id, label: label.trim(), camera, scene: feedScene, aspect, enabled, target, frames: 0, lastTime: -Infinity });
       return api.feedState(id);
     },
     addScreen(id, { mesh, feedId = null, enabled = true } = {}) {
@@ -68,6 +68,10 @@ export function createCameraSystem({ THREE, renderer, scene, quality = 'high', e
     },
     feedState(id) { live(); const f = feeds.get(id); return { id, enabled: f.enabled, aspect: f.aspect, frames: f.frames, width: f.target.width, height: f.target.height }; },
     screenState(id) { live(); const s = screens.get(id); return { id, feedId: s.feedId, enabled: s.enabled }; },
+    feedOptions(screenId) {
+      live(); const s = screens.get(screenId);
+      return [...feeds.entries.values()].map(f => ({ id: f.id, label: f.label, enabled: f.enabled, selected: s.feedId === f.id }));
+    },
     texture(id) { live(); return feeds.get(id).target.texture; },
     switchFeed(screenId, feedId) { live(); if (feedId !== null) feeds.get(feedId); const s = screens.get(screenId); s.feedId = feedId; display(s); emit('cameras:screen', api.screenState(screenId)); },
     setScreenEnabled(id, value) { live(); const s = screens.get(id); s.enabled = booleanState(value); display(s); },

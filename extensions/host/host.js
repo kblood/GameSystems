@@ -40,11 +40,26 @@ export function createHost({ THREE = null, scene = null, renderer = null, camera
   }
 
   function safeDispose(record) {
+    if (record.disposeCalled) return;
+    record.disposeCalled = true;
     try { record.ext.dispose?.(); } catch (e) { onError(e, record.ext.id, 'dispose'); }
   }
 
   // ready -> disposed (dispose now); loading -> cancelled (dispose once init settles); failed init -> dispose now.
   function teardown(record, phase, error) {
+    if (!record) return;
+    const registered = records.get(record.ext.id) === record;
+    // A canceled async init may settle after its record has been removed. Its
+    // rejection still needs reporting and exactly-once cleanup of partial state.
+    if (!registered && !(record.state === 'cancelled' && error)) return;
+    // Dependencies are a runtime contract, not just a load-time check. Unload every
+    // transitive dependent before invalidating this record's API. Loading dependents
+    // are cancelled too; their init completion path will dispose them exactly once.
+    if (registered) {
+      for (const dependent of [...records.values()]) {
+        if ((dependent.ext.requires || []).includes(record.ext.id)) teardown(dependent, 'dependency', null);
+      }
+    }
     if (error) onError(error, record.ext.id, phase);
     for (const off of record.unsubscribers.splice(0)) off();
     if (record.state === 'loading' && !error) record.state = 'cancelled';
@@ -79,7 +94,7 @@ export function createHost({ THREE = null, scene = null, renderer = null, camera
       if (records.has(ext.id)) { onError(new Error(`Extension '${ext.id}' is already loaded`), ext.id, 'load'); return null; }
       const missing = (ext.requires || []).filter(id => !host.get(id));
       if (missing.length) { onError(new Error(`Extension '${ext.id}' requires ${missing.join(', ')}`), ext.id, 'load'); return null; }
-      const record = { ext, state: 'loading', api: null, tier: tierFor(tiersOf(ext), level, maxLevel), pinned: null, unsubscribers: [] };
+      const record = { ext, state: 'loading', api: null, tier: tierFor(tiersOf(ext), level, maxLevel), pinned: null, unsubscribers: [], disposeCalled: false };
       records.set(ext.id, record);
       try {
         const api = await ext.init(contextFor(record));

@@ -72,6 +72,50 @@ test('extension lifecycle: init gets ctx, update skips off tier, quality switche
   assert.equal(errors.length, 0);
 });
 
+test('disposing a dependency tears down transitive dependents and listeners first', async () => {
+  const host = createHost({ onError: () => {} }), order = [], events = [];
+  await host.load({ id: 'base', init: () => ({ value: 1 }), dispose() { order.push('base'); } });
+  await host.load({ id: 'middle', requires: ['base'], init(ctx) {
+    ctx.on('change', () => events.push('middle'));
+    return { value: ctx.get('base').value + 1 };
+  }, dispose() { order.push('middle'); } });
+  await host.load({ id: 'leaf', requires: ['middle'], init(ctx) {
+    ctx.on('change', () => events.push('leaf'));
+    return { value: ctx.get('middle').value + 1 };
+  }, dispose() { order.push('leaf'); } });
+  assert.deepEqual([host.get('base').value, host.get('middle').value, host.get('leaf').value], [1, 2, 3]);
+  assert.equal(host.events.count('change'), 2);
+
+  host.dispose('base');
+
+  assert.deepEqual(order, ['leaf', 'middle', 'base'], 'dependents dispose before their dependency');
+  assert.deepEqual([host.state('base'), host.state('middle'), host.state('leaf')], ['absent', 'absent', 'absent']);
+  assert.deepEqual([host.get('base'), host.get('middle'), host.get('leaf')], [null, null, null]);
+  assert.equal(host.events.count('change'), 0, 'all dependent listeners are removed');
+  host.emit('change');
+  assert.deepEqual(events, [], 'disposed dependents receive no further events');
+});
+
+test('a canceled dependent disposes once when async init later resolves or rejects', async () => {
+  for (const rejectInit of [false, true]) {
+    const errors = [], host = createHost({ onError: (error, id, phase) => errors.push([error.message, id, phase]) });
+    await host.load({ id: 'base', init: () => ({}) });
+    let settle, disposed = 0;
+    const pending = host.load({ id: 'dependent', requires: ['base'],
+      init: () => new Promise((resolve, reject) => { settle = rejectInit ? reject : resolve; }),
+      dispose() { disposed++; },
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(host.state('dependent'), 'loading');
+    host.dispose('base');
+    assert.equal(host.state('dependent'), 'absent');
+    settle(rejectInit ? new Error('late init failure') : {});
+    assert.equal(await pending, null);
+    assert.equal(disposed, 1);
+    assert.deepEqual(errors, rejectInit ? [['late init failure', 'dependent', 'init']] : []);
+  }
+});
+
 test('a failing or missing extension never breaks the host', async () => {
   const { errors, onError } = quiet(), host = createHost({ onError });
   // Missing module (what a dynamic import of an unsynced file does).
