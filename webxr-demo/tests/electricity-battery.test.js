@@ -52,6 +52,41 @@ test('checkpoint commit restores solved voltages silently before observers run',
   const events=[],s=createElectricitySystem({emit:(name,data)=>events.push([name,data])});s.add('b',{kind:'battery',a:'p',b:'g',resistance:1});s.add('l',{a:'p',b:'g',resistance:11});s.evaluate();const saved=s.capture();
   s.setEnabled('l',false);s.evaluate();const plan=s.prepareRestore(saved);events.length=0;plan.commit();near(s.state('l').volts,11);assert.equal(events.length,0);plan.notify();assert.ok(events.length>0);
 });
+test('circuit solve observers cannot re-enter evaluation or mutate live topology',()=>{
+  let armed=false,s;const refused=[];
+  s=createElectricitySystem({emit:name=>{
+    if(!armed||name!=='electricity:changed')return;
+    armed=false;
+    for(const action of [()=>s.evaluate(),()=>s.remove('load'),()=>s.configure('load',{resistance:22}),()=>s.setEnabled('battery',false)]){
+      try{action();}catch(error){refused.push(error.message);}
+    }
+  }});
+  s.add('battery',{kind:'battery',a:'p',b:'g',voltage:12,resistance:1,capacityWh:1,energyWh:1});
+  s.add('load',{a:'p',b:'g',resistance:11});armed=true;
+  const solved=s.evaluate();
+  assert.equal(solved.components.length,2);assert.equal(refused.length,4);assert.ok(refused.every(message=>message.includes('during electricity evaluate')));
+  near(s.state('load').current,1);assert.deepEqual(s.all().map(component=>component.id),['battery','load']);
+  armed=false;s.configure('load',{resistance:22});s.evaluate();near(s.state('load').current,12/23);
+});
+test('energy receipt observers cannot nest steps or alter battery accounting',()=>{
+  let s,armed=true,nestedStepError='',nestedEvaluateError='',mutationError='',restoreError='',observedEnergy=0;
+  s=createElectricitySystem({emit:(name,receipt)=>{
+    if(name!=='electricity:energy'||!armed)return;
+    armed=false;observedEnergy=s.state('battery').energyWh;
+    receipt.seconds=99;receipt.energyJ.load=999;
+    for(const [action,key] of [[()=>s.step(1),'step'],[()=>s.evaluate(),'evaluate'],[()=>s.charge('battery',.1),'charge'],[()=>s.setEnabled('load',false),'mutation']]){
+      try{action();}catch(error){if(key==='step')nestedStepError=error.message;else if(key==='evaluate')nestedEvaluateError=error.message;else mutationError=error.message;}
+    }
+    try{restorePlan.commit();}catch(error){restoreError=error.message;}
+  }});
+  s.add('battery',{kind:'battery',a:'p',b:'g',voltage:12,resistance:1,capacityWh:1,energyWh:1});
+  s.add('load',{a:'p',b:'g',resistance:11});const restorePlan=s.prepareRestore(s.capture());
+  const receipt=s.step(1);
+  assert.equal(receipt.seconds,1);near(receipt.energyJ.load,11);assert.equal(observedEnergy,s.state('battery').energyWh);
+  for(const message of [nestedStepError,nestedEvaluateError,mutationError,restoreError])assert.match(message,/during electricity step/);
+  near(s.state('battery').suppliedWh,12/3600);near(s.state('battery').initialWh+s.state('battery').chargedWh-s.state('battery').suppliedWh,s.state('battery').energyWh);
+  s.step(.1);assert.ok(s.state('battery').energyWh<1,'the step guard releases after the energy receipt callback');
+});
 test('vehicle starter and DC loads share one finite battery through public adapter',()=>{
   const net=circuit(),cars=createVehicleSystem();cars.add('car',{power:net.batteryAdapter('battery')});assert.equal(cars.start('car').started,true);
   near(net.state('battery').energyWh,.65);net.step(1);near(net.state('battery').energyWh,.65-12/3600);

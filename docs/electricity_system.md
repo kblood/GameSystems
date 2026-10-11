@@ -44,6 +44,13 @@ Lineære matricer løses kun, når net/kildegrænser ændres. Kvalitet ændrer i
 Uforenelige ideelle kilder giver en eksplicit fault med endelige nulværdier i det berørte net.
 Modellen simulerer ikke AC, batterialdring, temperaturafhængig kemi, kapacitans, induktans eller trykte kredsløb.
 
+Synkrone observers kan læse `state()`/`all()` under solve- og energihændelser, men kan ikke starte
+et nyt solve/step, ændre komponenter eller committe restore midt i operationen. Capture er også
+begrænset til mellemrummet mellem operationer, så checkpoint ikke kan indeholde en halv solver-
+iteration. Guard'en frigives ved fejl, hvorefter netværket kan evalueres eller ændres normalt igen.
+`electricity:energy` udsendes som en kopi af resultatet; observere kan gemme eller ændre eventet
+uden at ændre den autoritative receipt, som `step()` returnerer.
+
 ## Checkpoint og integration
 
 Checkpoint bevarer komponentparametre, afbrydere, sprunget sikring og batteriernes endelige energi/ledger.
