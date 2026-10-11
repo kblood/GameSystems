@@ -21,6 +21,16 @@ energi-resultat er en kopi, så observermutation ikke ændrer receipt fra `step(
 Verifikation: fokuseret electricity-suite **15/15**, fuld WebXR-demo Node-suite **505/505** og
 Sol-review uden blocker. Ændringen er pushet til GameSystems `main` som `2d52bdf`.
 
+## Afsluttet termisk brændstof-eventrunde — 2026-10-12
+
+`thermal:burned` udsender nu et frosset payload, så en tidligere synkron listener ikke kan ændre
+joulebeløbet før pytter og flasker debiterer deres brændstofledgers. Listener-fejl bliver fortsat
+isoleret af eventbussen, så senere forbrugere modtager hændelsen.
+
+Verifikation: fokuseret fire/pool-batch **31/31**, fuld WebXR-demo Node-suite **506/506** og Sol-review
+uden blocker; den uafhængige bogføringssuite bestod **12/12**. Pushet til GameSystems `main` som
+`a90c0d6`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
