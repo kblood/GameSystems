@@ -14,6 +14,7 @@ var _owner_roots: Dictionary = {}
 var _slots: Dictionary = {}
 var _items: Dictionary = {}
 var _body_state: Dictionary = {}
+var _initial_body_state: Dictionary = {}
 var _busy := false
 
 func set_owner_root(owner: String, root: Node3D) -> bool:
@@ -75,7 +76,7 @@ func check_slot_access(requesting_hand: String, hand_tracked: bool, hand_world: 
 ## Gated entry points intended for input/grab events. Direct store/retrieve remain
 ## available to trusted game reset/checkpoint code that already validated access.
 func request_store(item_id: String, expected_owner: String, slot_id: String, requesting_hand: String, hand_tracked: bool, hand_world: Transform3D, reach_m: float, exclude: Array[RID] = [], collision_mask: int = 0xFFFFFFFF) -> Dictionary:
-	if requesting_hand != expected_owner: return _access_result(false, "wrong_hand")
+	if expected_owner != "world" and requesting_hand != expected_owner: return _access_result(false, "wrong_hand")
 	var access := check_slot_access(requesting_hand, hand_tracked, hand_world, slot_id, reach_m, exclude, collision_mask)
 	if not access.allowed: return access
 	if not store(item_id, expected_owner, slot_id): return _access_result(false, "store_rejected", float(access.distance_m))
@@ -109,6 +110,10 @@ func register_item(item_id: String, node: Node3D, category: String, size: Vector
 	var row := {"node":node,"initial_owner_transform":owner_root.global_transform.affine_inverse() * node.global_transform,"initial_owner":initial_owner}
 	if not inventory.register_item(item_id, node, category, size, initial_owner): return false
 	_items[item_id] = row
+	if node is RigidBody3D:
+		var initial_body := _capture_body_state(node)
+		_initial_body_state[item_id] = initial_body
+		if initial_owner.begins_with("hand:"): _body_state[item_id] = initial_body.duplicate()
 	return true
 
 func store(item_id: String, expected_owner: String, slot_id: String) -> bool:
@@ -122,7 +127,7 @@ func store(item_id: String, expected_owner: String, slot_id: String) -> bool:
 	_busy = true
 	var old_parent := node.get_parent()
 	var old_global := node.global_transform
-	var old_body := _capture_body_state(node)
+	var old_body: Dictionary = _body_state.get(item_id, _capture_body_state(node))
 	if node.get_parent() != anchor:
 		node.reparent(anchor, false)
 	node.transform = Transform3D.IDENTITY
@@ -153,8 +158,12 @@ func retrieve(slot_id: String, new_owner: String) -> String:
 		return ""
 	node.reparent(root, true)
 	node.global_transform = at
-	_restore_body_state(node, _body_state.get(item_id, {}))
-	_body_state.erase(item_id)
+	var body_state: Dictionary = _body_state.get(item_id, {})
+	if new_owner.begins_with("hand:"):
+		_freeze_in_slot(node)
+	else:
+		_restore_body_state(node, body_state)
+		_body_state.erase(item_id)
 	_busy = false
 	_emit_ownership_changed(item_id, "slot", new_owner, slot_id)
 	return item_id
@@ -163,7 +172,9 @@ func retrieve(slot_id: String, new_owner: String) -> String:
 ## root and captured spawn pose. Rejects before mutating when a node/root is gone.
 func reset_inventory() -> bool:
 	if _busy or not _registered_nodes_valid(): return _fail("invalid_registered_node")
+	var previous_owners: Dictionary = {}
 	for item_id in _items:
+		previous_owners[item_id] = {"owner":inventory.owner_of(item_id),"slot":inventory.slot_of(item_id)}
 		var initial_owner := _initial_owner(item_id)
 		var initial_root: Node3D = _owner_roots.get(initial_owner)
 		if not _valid_owner_root(initial_owner): return _fail("missing_owner_root:%s" % initial_owner)
@@ -172,6 +183,12 @@ func reset_inventory() -> bool:
 	inventory.reset()
 	var ok := _reconcile_all(true)
 	_busy = false
+	if ok:
+		for item_id in _items:
+			var previous: Dictionary = previous_owners[item_id]
+			var current_owner := inventory.owner_of(item_id)
+			if String(previous.owner) != current_owner:
+				_emit_ownership_changed(item_id, String(previous.owner), current_owner, String(previous.slot))
 	return ok
 
 ## Two-phase checkpoint API mirrors the ledger. Reconciliation is prevalidated,
@@ -210,7 +227,7 @@ func _reconcile_all(reset_pose: bool) -> bool:
 			node.reparent(target, false)
 		if owner == "slot":
 			node.transform = Transform3D.IDENTITY
-			if not _body_state.has(item_id): _body_state[item_id] = _capture_body_state(node)
+			if not _body_state.has(item_id): _body_state[item_id] = _initial_body_state.get(item_id, _capture_body_state(node))
 			_freeze_in_slot(node)
 		else:
 			if reset_pose:
@@ -218,8 +235,15 @@ func _reconcile_all(reset_pose: bool) -> bool:
 				node.global_transform = owner_root.global_transform * _items[item_id].initial_owner_transform
 			else:
 				node.global_transform = old_global
-			_restore_body_state(node, _body_state.get(item_id, {}))
-			_body_state.erase(item_id)
+			var body_state: Dictionary = _body_state.get(item_id, {})
+			if owner.begins_with("hand:"):
+				if not _body_state.has(item_id):
+					_body_state[item_id] = _initial_body_state.get(item_id, _capture_body_state(node))
+				_freeze_in_slot(node)
+			else:
+				_restore_body_state(node, body_state if not body_state.is_empty() else _initial_body_state.get(item_id, {}))
+				_quiesce_body(node)
+				_body_state.erase(item_id)
 	return true
 
 func _prepared_scene_valid(prepared: Dictionary) -> bool:
@@ -315,10 +339,17 @@ func _capture_body_state(node: Node3D) -> Dictionary:
 func _freeze_in_slot(node: Node3D) -> void:
 	if node is RigidBody3D:
 		var body := node as RigidBody3D
+		_quiesce_body(node)
 		body.freeze = true
 		body.sleeping = true
 		body.collision_layer = 0
 		body.collision_mask = 0
+
+func _quiesce_body(node: Node3D) -> void:
+	if node is RigidBody3D:
+		var body := node as RigidBody3D
+		body.linear_velocity = Vector3.ZERO
+		body.angular_velocity = Vector3.ZERO
 
 func _restore_body_state(node: Node3D, state: Dictionary) -> void:
 	if node is RigidBody3D and not state.is_empty():
