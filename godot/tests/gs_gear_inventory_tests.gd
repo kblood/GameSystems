@@ -49,6 +49,13 @@ func run() -> void:
 	var checkpoint: Dictionary = inventory.capture()
 	var prepared: Dictionary = inventory.prepare_restore(checkpoint)
 	check(bool(prepared.get("valid", false)), "captured ownership state prepares")
+	var json_checkpoint: Variant = JSON.parse_string(JSON.stringify(checkpoint))
+	check(json_checkpoint is Dictionary and bool(inventory.prepare_restore(json_checkpoint).get("valid", false)),
+		"JSON-decoded integer schema version remains restorable")
+	var integral_float_version: Dictionary = checkpoint.duplicate(true)
+	integral_float_version.version = 1.0
+	check(bool(inventory.prepare_restore(integral_float_version).get("valid", false)),
+		"integral numeric schema version is accepted")
 	check(inventory.transfer("equipped_rifle", "equipped", "world"), "test mutates equipped weapon after capture")
 	check(inventory.retrieve("back", "hand:right") == "medkit", "test mutates state after capture")
 	check(inventory.commit_restore(prepared), "prepared checkpoint commits")

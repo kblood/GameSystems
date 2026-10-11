@@ -122,7 +122,12 @@ func capture() -> Dictionary:
 ## Checkpoints can only refer to the same registered IDs and configured slots.
 func prepare_restore(snapshot: Dictionary) -> Dictionary:
 	var version: Variant = snapshot.get("version")
-	if _disposed or typeof(version) != TYPE_INT or version != CHECKPOINT_VERSION: return {"valid":false,"reason":"version"}
+	var valid_version: bool = typeof(version) == TYPE_INT and version == CHECKPOINT_VERSION
+	# JSON decoders represent numeric values as floats. Accept the exact integral
+	# schema version they produce, while continuing to reject fractional values.
+	if typeof(version) == TYPE_FLOAT:
+		valid_version = is_finite(version) and version == float(CHECKPOINT_VERSION)
+	if _disposed or not valid_version: return {"valid":false,"reason":"version"}
 	var rows: Variant = snapshot.get("items")
 	var slots: Variant = snapshot.get("slots")
 	if not rows is Dictionary or not slots is Dictionary or rows.size() != _items.size() or slots.size() != _slots.size(): return {"valid":false,"reason":"shape"}
