@@ -76,6 +76,15 @@ efter batchen; direkte `stop()` beholder sin synkrone eventsemantik.
 Verifikation: fokuseret køretøjsbatch **32/32**, fuld WebXR-demo Node-suite **513/513**, Sol-review
 uden blocker og uafhængig vehicle-motion/vehicle suite **26/26**. Pushet som `be0f965`.
 
+## Afsluttet mechanics hold-ejerskabsrunde — 2026-10-12
+
+Hold-nøgler koder nu `(mechanism_id, owner)` som en tuple i stedet for kolon-join. Fjernelse af `door`
+kan derfor ikke fjerne grebet på `door:inner`, og kolon i både mechanism-ID og owner skaber ikke
+kollisionsaliaser. Hold-records matcher removal på præcis mechanism-ID.
+
+Verifikation: fokuseret `new-systems`-suite **26/26**, fuld Node-suite **514/514**, Sol-review uden
+blocker. Pushet til GameSystems `main` som `7315101`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
