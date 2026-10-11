@@ -192,17 +192,20 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 
 `godot/addons/gs_bottles` now contains the reusable breakable-bottle/liquid scripts,
 adjacent shader resources, `GSBottleExtension`, license, README, and headless tests. It is
-synced to Nightfall at `addons/gs_bottles` with `SOURCE.json`. The addon test passes 16/16;
-Nightfall's `game-systems` integration passes 23/23, the bottle physics review passes
+synced to Nightfall at `addons/gs_bottles` with `SOURCE.json`. The addon test passes 17/17;
+Nightfall's `game-systems` integration passes 25/25, the bottle physics review passes
 191/191, and the bullet-impact review passes 75/75. The Nightfall adapter now derives from
 `GSBreakableBottle`, the extension owns scene-scoped manager/quality and forwards the core
 `broken` event, and the old bottle scripts/shaders have been removed from the legacy glass
 addon. Nightfall keeps only its glass-pane runtime and bottle data assets in that folder.
 
-G2 still has work: verify multiple simultaneous mission scopes in the actual game harness
-and reconcile the two quality controls (glass-pane and bottle extension) with the
-user-facing comfort setting. The extension API's bottle creation and its scene tracking
-are now covered in Nightfall's integration suite.
+The VR settings now persist one effects-quality choice and apply it to both the glass-pane
+tiers and the `GSHost` quality level, keeping bottle and glass tiers in sync. Mission-level
+integration verifies that the choice reaches both systems together; settings persistence,
+legacy-config fallback, UI cycling and host tier mapping are covered by headless tests.
+Simultaneous mission-host scopes and independent teardown are covered in Nightfall's
+integration suite. Headset performance/comfort evidence is still needed. Bottle creation
+and scene tracking are also covered in Nightfall's integration suite.
 Bottle collision stays Godot `RigidBody3D`-managed; routing those contacts through
 `GSPhysicsAdapter` would duplicate or alter engine collision handling. Headset performance
 and comfort remain unmeasured. Sol's review found and prompted pruning of tracking entries

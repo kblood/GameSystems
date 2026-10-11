@@ -3,7 +3,7 @@ extends GSExtension
 ## GSHost lifecycle and event bridge for the reusable bottle core.
 
 const ID := &"gs_bottles"
-const QUALITY := ["off", "low", "medium", "high"]
+const QUALITY := ["minimal", "low", "medium", "high"]
 
 var _context: GSContext
 var _scope: Node
@@ -37,7 +37,7 @@ func set_quality(tier: StringName) -> bool:
 	if not is_instance_valid(_manager):
 		return false
 	match String(tier):
-		"off": _manager.set_quality(GSBottleBreakManager.Quality.MINIMAL)
+		"minimal": _manager.set_quality(GSBottleBreakManager.Quality.MINIMAL)
 		"low": _manager.set_quality(GSBottleBreakManager.Quality.LOW)
 		"medium": _manager.set_quality(GSBottleBreakManager.Quality.MEDIUM)
 		"high": _manager.set_quality(GSBottleBreakManager.Quality.HIGH)

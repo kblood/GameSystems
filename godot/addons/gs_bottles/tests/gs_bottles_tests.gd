@@ -78,6 +78,10 @@ func run() -> void:
 	host.set_tier(&"gs_bottles", &"low")
 	check(api.get_manager().quality == GSBottleBreakManager.Quality.LOW,
 		"host quality tiers configure the bottle manager")
+	host.set_tier(&"gs_bottles", &"minimal")
+	check(api.get_manager().quality == GSBottleBreakManager.Quality.MINIMAL,
+		"host minimal tier maps to the bottle minimal budget")
+	host.set_tier(&"gs_bottles", &"low")
 	var transient := SilentBottle.new()
 	extension_scene.add_child(transient)
 	check(api._tracked.size() == 2, "extension tracks runtime-added bottles")
