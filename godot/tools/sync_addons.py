@@ -69,12 +69,14 @@ def plan(name: str) -> list[tuple[Path, str, str]]:
 
 def manifest(name: str, files: list[tuple[Path, str, str]], old: dict | None) -> dict:
     entries = [{'source': src, 'target': dst, 'sha256': sha256(path)} for path, src, dst in files]
-    if old and old.get('files') == entries:
-        return old
     sources = [src for _, src, _ in files]
+    commit = git('rev-parse', 'HEAD')
+    dirty = bool(git('status', '--porcelain', '--', *sources))
+    if old and old.get('files') == entries and old.get('commit') == commit and old.get('dirty') == dirty:
+        return old
     return {'repository': (git('remote', 'get-url', 'origin').removesuffix('.git') or REPOSITORY),
-            'commit': git('rev-parse', 'HEAD'),
-            'dirty': bool(git('status', '--porcelain', '--', *sources)),
+            'commit': commit,
+            'dirty': dirty,
             'generator': 'godot/tools/sync_addons.py',
             'sha256_text': 'text files (.gd .json .md .cfg .tscn .tres .gdshader, LICENSE) hashed after CRLF -> LF',
             'files': entries,
