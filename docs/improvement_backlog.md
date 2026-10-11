@@ -146,6 +146,15 @@ Det forhindrer NaN-accumulator poisoning og tillader efterfølgende gyldige fysi
 Verifikation: physics-adapter **8/8**, fuld GameSystems Node-suite **522/522**, Sol-review uden
 blocker og Contracts-kopien/hash er matchet. Pushet til `main` som `6ef7cb0`.
 
+## Afsluttet workshop partial-init cleanup — 2026-10-12
+
+Workshop init ejer nu eksplicit de registreringer, listeners, acoustic rooms/portals og fuse grabs,
+som den selv har erhvervet. En senere konflikt eller callback-fejl rydder kun disse op, bevarer
+konfliktens eksisterende objekt og tillader retry. Fuse release-tokenet bevarer korrekt håndejerskab.
+
+Verifikation: fokuseret workshop/system-suite **30/30**, fuld Node-suite **525/525**, Sol-review uden
+blocker. Pushet til GameSystems `main` som `af3658b`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
