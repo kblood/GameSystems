@@ -3,6 +3,12 @@ import assert from 'node:assert/strict';
 import {createThermalSystem} from '../../extensions/thermal/index.js';
 import {createPoolsSystem} from '../../extensions/pools/index.js';
 import {createCoatingSystem} from '../../extensions/coatings/index.js';
+import {createHost} from '../../extensions/host/index.js';
+import thermalExtension from '../../extensions/thermal/index.js';
+import poolsExtension from '../../extensions/pools/index.js';
+import supplyExtension from '../../extensions/supply/index.js';
+import coatingsExtension from '../../extensions/coatings/index.js';
+import sprinklersExtension from '../../extensions/sprinklers/index.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 function world(options={}){let coats;const thermal=createThermalSystem(),pools=createPoolsSystem({thermal,emit:(name,e)=>{if(name==='pools:deposited')coats?.deposited(e);}});coats=createCoatingSystem({thermal,pools,...options});return {thermal,pools,coats};}
 function surface(w,id,areaM2=1,normal=[0,1,0],heightM=0){w.thermal.add(id,{ignition:100,fuelJ:10000});w.coats.add(id,{areaM2,normal,heightM});}
@@ -45,4 +51,58 @@ test('combined owner checkpoint preserves coverage without a second independent 
 });
 test('pool dilution plus fresh foam publish one final coverage; decay emits a reusable change event',()=>{
   const changes=[],w=world({emit:(name,e)=>{if(name==='coatings:changed')changes.push(e);}});w.pools.deposit({id:'p',ml:100,kind:'water'});w.pools.foam('p',.5);changes.length=0;w.pools.deposit({id:'p',ml:20,kind:'foam'});assert.equal(changes.length,1);near(changes[0].coverage,w.pools.state('p').blanket);w.coats.step(1);assert.equal(changes.length,2);
+});
+
+test('host sprinkler preserves fluid provenance and only water or foam suppresses a burning fuel pool',async()=>{
+  for(const kind of ['foam','water','diesel','oil']){
+    const errors=[],host=createHost({onError:error=>errors.push(error.message)});
+    try{
+      const thermal=await host.load(thermalExtension);
+      const pools=await host.load(poolsExtension);
+      const supply=await host.load(supplyExtension);
+      const coatings=await host.load(coatingsExtension);
+      const sprinklers=await host.load(sprinklersExtension);
+      let spray=null,deposit=null;const poolCoverage=[];
+      host.on('sprinklers:spray',event=>{spray=event;});
+      host.on('liquid:deposit',event=>{deposit=event;});
+      host.on('coatings:changed',event=>{if(event.id==='pool:fuel')poolCoverage.push(event.coverage);});
+      // The existing pool is in the spray radius but outside the floor-impact
+      // merge radius; pool targeting must still reach it directly.
+      pools.deposit({id:'fuel',surfaceId:'ground',position:[3,0,0],ml:100,kind:'diesel',sourceKey:'can'});
+      assert.equal(pools.ignite('fuel'),true);
+      pools.heat('fuel',10000);
+      supply.add('tank',{capacityMl:100,components:{[kind]:100}});
+      sprinklers.add('head',{tankId:'tank',position:[0,2.5,0],surfaceId:'ground',floorY:0,radius:4,rateMlPerSecond:1000});
+      sprinklers.trigger('head');sprinklers.step(.1);
+
+      const pool=pools.state('fuel'),tank=supply.state('tank');
+      assert.ok(spray.targets.includes('pool:fuel'),'spray explicitly targets the existing fuel pool');
+      assert.equal(spray.id,'head','spray event retains the sprinkler identity');
+      assert.equal(deposit.id,'fuel','targeted pool receives a direct pool-owned deposit');
+      assert.equal(deposit.emitterId,'head','liquid deposit retains the sprinkler identity as emitterId');
+      assert.equal(pools.all().length,1,`${kind} reaches the existing puddle instead of creating a sprinkler-id pool`);
+      assert.equal(tank.ml,0,`${kind} leaves no unaccounted tank volume`);
+      near(tank.drawnMl,100);
+      near(pool.components.diesel,100+(kind==='diesel'?100:0));
+      near(pool.sources.can.diesel,100);
+      near(pool.sources['sprinkler:head'][kind],100);
+      near(pools.ledger().remainingMl,200);
+      assert.deepEqual(pool.position,[3,0,0],'targeted pool stays at its authored location');
+      if(kind==='foam'){
+        assert.ok(pool.blanket>=.95,`sprinkler foam coats the receiving fuel pool (coverage ${pool.blanket})`);
+        assert.equal(poolCoverage.length,1,'pool receives one coating application through deposit, without double coverage');
+        assert.equal(pool.burning,false,'foam blanket suppresses the existing pool fire');
+        assert.equal(pool.wetMl,0,'foam does not invent water cooling');
+      }else if(kind==='water'){
+        assert.equal(pool.burning,false,'sprinkler water cools the existing pool fire');
+        near(pool.wetMl,100);
+        assert.equal(pool.blanket,0,'water does not invent foam coverage');
+      }else{
+        assert.equal(pool.burning,true,`${kind} remains fuel rather than suppressing the fire`);
+        assert.equal(pool.blanket,0,`${kind} does not create foam coverage`);
+        assert.ok(pool.fuelJ>0,`${kind} adds combustible energy`);
+      }
+      assert.deepEqual(errors,[]);
+    }finally{host.dispose();}
+  }
 });

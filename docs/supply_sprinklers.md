@@ -34,9 +34,12 @@ Simuleringen kører i faste 0,1-sekundsskridt med højst 256 hoveder som standar
 10 sekunders catch-up pr. kald. Kvalitet ændrer ikke forbrug eller slukning.
 Sensoren nærmer sig rummets/de nærliggende varme objekters temperatur eksponentielt. Modellen
 simulerer ikke luftstrøm, hydraulisk tryk eller separate temperaturlag ved loftet.
-Vandets køleeffekt fordeles mellem objekter i samme rum under hovedet og inden for rækkevidden.
-Væsken projiceres som en gulvpyt under hovedet. Overfladevædning og pyt bruger samme spray som effekt;
-det er derfor ikke en detaljeret massemodel for vand bundet til materialer og afløb.
+Vandets køleeffekt fordeles ligeligt mellem objekter i samme rum under hovedet og inden for rækkevidden.
+Pool-targets køles kun gennem væskedepositionen, så samme vanddosis ikke anvendes to gange. Væskeandelen
+for hvert pool-target tilføres direkte til den eksisterende pyt; andele for øvrige targets danner fortsat
+en gulvpyt under hovedet. Dermed behøver en pyt ikke ligge inden for gulvdepositionens merge-radius for at
+blive ramt af sprinkleren. Overfladevædning og pyt bruger samme spray som gameplay-effekt; det er derfor
+ikke en detaljeret massemodel for vand bundet til materialer og afløb.
 Pytterne bevares nu som hvilende logiske poster uden for det aktive termiske budget; se [pool_budget.md](pool_budget.md).
 
 ## Endeligt batteri

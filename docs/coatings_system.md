@@ -37,8 +37,9 @@ volumen/coverage. Når en pyt vokser, spredes dens eksisterende blanket over st�
 Opsamling, kilde-provenance og volumen bruger fortsat pools/supply/flow-ledgerne.
 
 Flow mod registrerede objekter giver skumcoverage fra hit-normal og stråleretning. Gulv-/pool-deposition får
-coverage gennem den faktisk modtagende pyt. En skumfyldt sprinkler fordeler effekten på de ramte objekters
-topflader og sender samme fluid til gulvet; eksisterende pool-targets behandles gennem depositionen uden dobbelt pool-dose.
+coverage gennem den faktisk modtagende pyt. En skumfyldt sprinkler fordeler coverage-andelen på de ramte
+objekters topflader. Fluidandelen for eksisterende pool-targets deponeres direkte i de pågældende pytter;
+resten sendes til gulvet. Hver pyt får dermed sin væske og coating gennem én deposition uden dobbelt dosis.
 
 Ligesom vandkøling plus gulvpyt er dette en gameplay-effekt og en projektion: overfladedækningen er ikke en
 anden beholdning af fysisk skumvolumen. Faktisk væskemængde tælles én gang hos supply/flow/pools.

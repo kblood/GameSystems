@@ -39,12 +39,45 @@ export function createSprinklerSystem({ supply, thermal, emit = () => {}, powere
         const components = Object.fromEntries(Object.entries(out.components).map(([kind, amount]) => [kind, amount * fraction]));
         const waterMl = components.water ?? 0;
         // Spray coverage is a gameplay effect, not a CFD/droplet collision model.
-        for (const target of nearby) if (waterMl) thermal.water(target.id, waterMl / nearby.length);
+        // Pools own their wetness through liquid:deposit below; cooling them here
+        // as well would apply one sprinkler dose twice.
+        const poolTargets = nearby.filter(target => target.id.startsWith('pool:'));
+        const nonPoolTargets = nearby.filter(target => !target.id.startsWith('pool:'));
+        for (const target of nonPoolTargets) if (waterMl) thermal.water(target.id, waterMl / Math.max(1, nearby.length));
         head.deliveredMl += ml; head.flowMlPerSecond = ml / dt;
         const event = { id: head.id, ml, components, sourceKey: `sprinkler:${head.id}`, roomId: head.roomId,
           surfaceId: head.surfaceId, position: [head.position[0], head.floorY, head.position[2]], targets: nearby.map(s => s.id) };
         emit('sprinklers:spray', event);
-        emit('liquid:deposit', event);
+        // Pools in spray range receive an even share directly. This lets a
+        // sprinkler reach a burning puddle without requiring its floor impact
+        // point to fall inside the pool merge radius. Otherwise the spray forms
+        // the usual persistent puddle beneath the head.
+        if (poolTargets.length) {
+          const targetShare = 1 / Math.max(1, nearby.length);
+          for (const target of poolTargets) {
+            const share = Object.fromEntries(Object.entries(components).map(([kind, amount]) => [kind, amount * targetShare]));
+            const deposit = { ...event, id: target.id.slice('pool:'.length), ml: Object.values(share).reduce((sum, amount) => sum + amount, 0),
+              components: share, emitterId: head.id };
+            delete deposit.position;
+            delete deposit.surfaceId;
+            delete deposit.roomId;
+            delete deposit.targets;
+            emit('liquid:deposit', deposit);
+          }
+          if (nonPoolTargets.length) {
+            const remainder = Object.fromEntries(Object.entries(components).map(([kind, amount]) => [kind, amount * nonPoolTargets.length * targetShare]));
+            const deposit = { ...event, ml: Object.values(remainder).reduce((sum, amount) => sum + amount, 0),
+              components: remainder, emitterId: head.id };
+            delete deposit.id;
+            emit('liquid:deposit', deposit);
+          }
+        } else {
+          // `id` belongs to the sprinkler head; pools interpret `id` as an
+          // explicit pool record. Preserve emitter identity separately.
+          const deposit = { ...event, emitterId: head.id };
+          delete deposit.id;
+          emit('liquid:deposit', deposit);
+        }
       }
     }
     for (const id of heads.entries.keys()) publish(id);
