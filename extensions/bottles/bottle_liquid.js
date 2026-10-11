@@ -24,6 +24,7 @@ const TIER_DEFINES = { 3: { LIQUID_HIGH: '' } };   // add 2/1/0 here (MEDIUM/LOW
 const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _qi = new THREE.Quaternion(), _s = new THREE.Vector3();
 const _v = new THREE.Vector3(), _acc = new THREE.Vector3(), _tgt = new THREE.Vector3(), _tq = new THREE.Quaternion();
 const UP = new THREE.Vector3(0, 1, 0);
+const clampFinite = (v, lo, hi, fallback) => Number.isFinite(Number(v)) ? Math.min(hi, Math.max(lo, Number(v))) : fallback;
 
 // ---------------------------------------------------------------------------------------------------------------- GLSL
 const LIQUID_COMMON = /* glsl */`
@@ -322,8 +323,9 @@ export async function setupBottleFromUrl(root, glbUrl, opts = {}) {
 function visibleInTree(o) { for (; o; o = o.parent) if (!o.visible) return false; return true; }
 
 /**
- * Drive the liquid of a loaded bottle/container scene. Options: fill, slosh, bubbles (0..1), carbonation (-1 = baked),
- * capOpen, allowSleep, foamCapacity (-1 = baked `foam`), foamSettle, quality (only 3 = HIGH implemented), info.
+ * Drive the liquid of a loaded bottle/container scene. Options: fill, slosh, bubbles (0..1), bubbleSize (0..4),
+ * viscosity (0 thin .. 1 thick, default 0.45), carbonation (-1 = baked), capOpen, allowSleep,
+ * foamCapacity (-1 = baked `foam`), foamSettle, quality (only 3 = HIGH implemented), info.
  */
 export function setupBottle(root, opts = {}) {
   const { liquid, cap } = findLiquid(root);
@@ -337,7 +339,8 @@ export function setupBottle(root, opts = {}) {
   const z0 = info.z0 ?? (bnd.min ? bnd.min[1] : 0), z1 = info.z1 ?? (bnd.max ? bnd.max[1] : 0.2);
   U.uBaseY.value = z0;
   U.uFlowPivot.value.set(0, z0 + (z1 - z0) * 0.4, 0);
-  U.uBubbleSize.value = info.bubble_size ?? 1;
+  let bubbleSize = clampFinite(opts.bubbleSize ?? info.bubble_size ?? 1, 0, 4, 1);
+  U.uBubbleSize.value = bubbleSize;
   const foamH = info.foam_height ?? 0.022;
   U.uFoamHeight.value = foamH;
   U.uFlipFaces.value = signedVolume(liquid.geometry) < 0;
@@ -353,6 +356,7 @@ export function setupBottle(root, opts = {}) {
   let first = true, kick = 0, agit = 0, foam = 0, rise = 0, time = 0, stable = 0, sleeping = false, poll = 0;
   let appFill = -1, appOpen = false, memoFill = -1, memoOpen = false, foamScale = 1;
   let fill = opts.fill ?? 0.6, slosh = opts.slosh ?? true, bubbles = opts.bubbles ?? 1, carbonation = opts.carbonation ?? -1, capOpen = opts.capOpen ?? false;
+  let viscosity = clampFinite(opts.viscosity ?? info.viscosity ?? 0.45, 0, 1, 0.45);
 
   const S = {
     liquid, material: mat, uniforms: U, lut, info,
@@ -363,6 +367,10 @@ export function setupBottle(root, opts = {}) {
     get fill() { return fill; }, set fill(v) { fill = v; S.wake(); },
     get slosh() { return slosh; }, set slosh(v) { slosh = v; S.wake(); },
     get bubbles() { return bubbles; }, set bubbles(v) { bubbles = v; S.wake(); },
+    get bubbleSize() { return bubbleSize; }, set bubbleSize(v) {
+      bubbleSize = clampFinite(v, 0, 4, 1); U.uBubbleSize.value = bubbleSize; S.wake();
+    },
+    get viscosity() { return viscosity; }, set viscosity(v) { viscosity = clampFinite(v, 0, 1, 0.45); S.wake(); },
     get carbonation() { return carbonation; }, set carbonation(v) { carbonation = v; S.wake(); },
     get capOpen() { return capOpen; }, set capOpen(v) { capOpen = v; S.wake(); },
     get sleeping() { return sleeping; },
@@ -412,7 +420,8 @@ export function setupBottle(root, opts = {}) {
     _tgt.set(0, 1, 0);
     if (slosh) {
       _tgt.addScaledVector(_acc, -0.06 / 9.81).addScaledVector(_v, -0.01).normalize();
-      vel.addScaledVector(_tgt.sub(upEff), 160 * dt).multiplyScalar(Math.max(0, 1 - 5.5 * dt));
+      const spring = 220 - viscosity * (400 / 3), damping = 2.5 + viscosity * (20 / 3);
+      vel.addScaledVector(_tgt.sub(upEff), spring * dt).multiplyScalar(Math.max(0, 1 - damping * dt));
       upEff.addScaledVector(vel, dt).normalize();
       kick = Math.min(1, kick * Math.max(0, 1 - 2.5 * dt) + vel.length() * 0.15);
       agit = Math.min(1, Math.max(agit * Math.max(0, 1 - dt), vel.length() * 0.5));

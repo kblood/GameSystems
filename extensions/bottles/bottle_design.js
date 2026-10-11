@@ -11,7 +11,7 @@
 // setLabelImage() returns false there (reload a higher tier first).
 //
 // TODO(owner) - liquid settings in extras.liquid that bottle_liquid.js cannot honour yet:
-//   viscosity, opacity, foam static head, tint_strength, bubble_size runtime setter, density.  (see docs/bottle_designs.md)
+//   opacity, foam static head, tint_strength, density.  (see docs/bottle_designs.md)
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { setupBottle } from './bottle_liquid.js';
@@ -52,7 +52,7 @@ function hasAlpha(img) {
   return false;
 }
 
-export async function loadDesign(path, { tier = 'high', fill = 0.6, slosh = true, withLiquid = true } = {}) {
+export async function loadDesign(path, { tier = 'high', fill = 0.6, slosh = true, bubbleSize, viscosity, withLiquid = true } = {}) {
   const gltf = await new GLTFLoader().loadAsync(tierPath(path, tier));
   const root = gltf.scene;
   const out = { root, path, tier, bottle: null, labels: {}, atlas: null };
@@ -64,7 +64,7 @@ export async function loadDesign(path, { tier = 'high', fill = 0.6, slosh = true
       out.labels[ex.slot] = o;
     } else if (o.name === 'Labels') out.atlas = o;
   });
-  if (withLiquid) out.bottle = setupBottle(root, { fill, slosh });
+  if (withLiquid) out.bottle = setupBottle(root, { fill, slosh, bubbleSize, viscosity });
   out.update = (dt) => out.bottle && out.bottle.update(dt);
   out.supportsSlotSwap = () => Object.keys(out.labels).length > 0;
 
@@ -97,7 +97,8 @@ export async function loadDesign(path, { tier = 'high', fill = 0.6, slosh = true
     return true;
   };
   out.setTier = async (t) => {
-    const next = await loadDesign(path, { tier: t, fill: out.bottle ? out.bottle.fill : fill, slosh, withLiquid });
+    const next = await loadDesign(path, { tier: t, fill: out.bottle ? out.bottle.fill : fill, slosh,
+      bubbleSize: out.bottle?.bubbleSize, viscosity: out.bottle?.viscosity, withLiquid });
     const parent = root.parent;
     if (parent) { next.root.position.copy(root.position); next.root.quaternion.copy(root.quaternion); next.root.scale.copy(root.scale); parent.add(next.root); parent.remove(root); }
     return next;                                                         // caller replaces its reference

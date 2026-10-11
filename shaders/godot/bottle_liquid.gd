@@ -26,6 +26,17 @@ signal opened                           ## cap_open set true (BottlePour listens
 	set(v):
 		bubbles = v
 		wake()
+## Runtime multiplier for the bubble radii in the shader; -1 keeps the authored sidecar value.
+@export_range(-1.0, 4.0) var bubble_size := -1.0:
+	set(v):
+		bubble_size = clampf(v, -1.0, 4.0) if is_finite(v) else -1.0
+		if _mat: _mat.set_shader_parameter("bubble_size", _bubble_size_value())
+		wake()
+## Normalized viscosity (0 = thin/quick response, 1 = thick/damped); -1 uses the sidecar, default 0.45.
+@export_range(-1.0, 1.0) var viscosity := -1.0:
+	set(v):
+		viscosity = clampf(v, -1.0, 1.0) if is_finite(v) else -1.0
+		wake()
 @export var carbonation := -1.0:             ## -1 = use the value baked into the GLB (soda/beer fizz)
 	set(v):
 		carbonation = v
@@ -136,7 +147,7 @@ func setup(root: Node, fill_: float = 0.6, sidecar_json := "") -> void:
 	var z1 := float(_info.get("z1", bnd["max"][1] if bnd.has("max") else 0.2))
 	_mat.set_shader_parameter("base_y", z0)
 	_mat.set_shader_parameter("flow_pivot", Vector3(0.0, lerpf(z0, z1, 0.4), 0.0))
-	_mat.set_shader_parameter("bubble_size", float(_info.get("bubble_size", 1.0)))
+	_mat.set_shader_parameter("bubble_size", _bubble_size_value())
 	_foam_h = float(_info.get("foam_height", 0.022))
 	_mat.set_shader_parameter("foam_height", _foam_h)
 	_mat.set_shader_parameter("flip_faces", _signed_volume(liquid.mesh) < 0.0)
@@ -196,6 +207,14 @@ func _apply_color() -> void:
 ## Interior volume in ml from the liquid sidecar (v2 tables carry the mesh-verified value).
 func capacity_ml() -> float:
 	return float(_info.get("capacity_ml", _info.get("v1_capacity_ml", 500.0)))
+
+
+func _bubble_size_value() -> float:
+	return clampf(float(_info.get("bubble_size", 1.0)) if bubble_size < 0.0 else bubble_size, 0.0, 4.0)
+
+
+func _viscosity_value() -> float:
+	return clampf(float(_info.get("viscosity", 0.45)) if viscosity < 0.0 else viscosity, 0.0, 1.0)
 
 
 ## A slosh kick from outside (liquid poured in). Wakes the controller.
@@ -398,8 +417,11 @@ func _apply(delta: float) -> void:
 	var target := Vector3.UP
 	if slosh:
 		target = (Vector3.UP - acc * (0.06 / 9.81) - vel * 0.01).normalized()
-		_vel += (target - _up_eff) * 160.0 * delta
-		_vel *= maxf(0.0, 1.0 - 5.5 * delta)
+		var liquid_viscosity := _viscosity_value()
+		var spring := 220.0 - liquid_viscosity * (400.0 / 3.0)
+		var damping := 2.5 + liquid_viscosity * (20.0 / 3.0)
+		_vel += (target - _up_eff) * spring * delta
+		_vel *= maxf(0.0, 1.0 - damping * delta)
 		_up_eff = (_up_eff + _vel * delta).normalized()
 		_kick = minf(1.0, _kick * maxf(0.0, 1.0 - 2.5 * delta) + _vel.length() * 0.15)
 		_agit = minf(1.0, maxf(_agit * maxf(0.0, 1.0 - 1.0 * delta), _vel.length() * 0.5))

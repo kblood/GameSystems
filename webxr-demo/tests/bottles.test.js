@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { resolve, relative, sep } from 'node:path';
 import * as THREE from 'three';
 import { createHost, assertPhysicsAdapter } from '../src/vendor/extensions/host/index.js';
-import bottlesExtension, { BOTTLE_TIERS, BOTTLE_QUALITY, IMPACT_MIN_SPEED, liquidAbsorbance, absorbanceOfSRGB } from '../src/vendor/extensions/bottles/index.js';
+import bottlesExtension, { BOTTLE_TIERS, BOTTLE_QUALITY, IMPACT_MIN_SPEED, liquidAbsorbance, absorbanceOfSRGB, setupBottle } from '../src/vendor/extensions/bottles/index.js';
 import { createFakePhysics } from './fake-physics.js';
 
 
@@ -33,6 +33,44 @@ function model({ shatters = true, material = 'glass' } = {}) {
 }
 
 const hit = (body, speed, extra = {}) => ({ a: body, speed, point: [0.035, 1.1, 0], normal: [1, 0, 0], surface: 'concrete', otherMass: Infinity, ...extra });
+
+const liquidInfo = overrides => ({ version: 1, n_cos: 2, n_fill: 2, lut: [[0, 0.1], [0.1, 0.2]],
+  color: [0.2, 0.08, 0.03, 1], z0: 0, z1: 0.2, carbonation: 0, foam: 0, bubble_size: 1.5, viscosity: 0.25, ...overrides });
+function liquidRoot(info = liquidInfo()) {
+  const root = new THREE.Group(), mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8), new THREE.MeshStandardMaterial());
+  mesh.name = 'Liquid'; mesh.userData.liquid = info; root.add(mesh); return root;
+}
+
+test('authored bubble size and viscosity are live controls that wake a sleeping liquid', () => {
+  const state = setupBottle(liquidRoot(), { allowSleep: true });
+  assert.equal(state.bubbleSize, 1.5);
+  assert.equal(state.uniforms.uBubbleSize.value, 1.5);
+  assert.equal(state.viscosity, 0.25);
+  for (let i = 0; i < 8; i++) state.update(1 / 60);
+  assert.equal(state.sleeping, true);
+  state.bubbleSize = 2.25;
+  assert.equal(state.uniforms.uBubbleSize.value, 2.25, 'the shader uniform changes immediately');
+  assert.equal(state.sleeping, false, 'bubble edits wake the controller');
+  for (let i = 0; i < 8; i++) state.update(1 / 60);
+  assert.equal(state.sleeping, true);
+  state.viscosity = 2;
+  assert.equal(state.viscosity, 1, 'viscosity is bounded to its documented normalized range');
+  assert.equal(state.sleeping, false, 'viscosity edits wake the controller');
+  state.bubbleSize = Number.NaN;
+  assert.equal(state.bubbleSize, 1, 'invalid bubble sizes recover to the neutral multiplier');
+});
+
+test('viscosity changes the slosh response while the neutral value preserves legacy tuning', () => {
+  const response = value => {
+    const root = liquidRoot();
+    const state = setupBottle(root, { allowSleep: false, viscosity: value });
+    root.position.x = 0.003;
+    state.update(1 / 60);
+    return state.uniforms.uRipple.value;
+  };
+  const thin = response(0), neutral = response(0.45), thick = response(1);
+  assert.ok(thin > neutral && neutral > thick, `${thin} > ${neutral} > ${thick}`);
+});
 
 test('the fake adapter implements the host physics interface and the extension loads on it', async () => {
   const { physics, api, host } = await setup();

@@ -7,17 +7,15 @@ extends Node3D
 ##   b.set_label_image("front", "C:/pics/my.png")   # path (png/jpg/webp), Image or Texture2D; works for any slot
 ##   b.set_label_tint("front", Color.ORANGE); b.set_label_visible("back", false); b.clear_label("neck")
 ## Needs bottle_liquid.gd/.gdshader/bottle_glass.gdshader (shaders/godot) in res:// root (BottleLiquid preloads them).
-## The Liquid node is driven by BottleLiquid; design liquid settings it cannot honour yet are listed in UNSUPPORTED (TODO(owner)).
+## The Liquid node is driven by BottleLiquid; remaining unsupported design settings are listed in UNSUPPORTED.
 
 const LABEL_ROUGH := {"paper_matte": 0.85, "paper_gloss": 0.25, "foil_metal": 0.28, "clear_film": 0.12, "plastic_sleeve": 0.16, "tape": 0.4, "handwritten_tag": 0.95}
 
 ## TODO(owner of bottle_liquid.*): extras.liquid keys that are stored in the design but not yet used by the shader/controller.
 const UNSUPPORTED := {
-	"viscosity": "slosh damping/stiffness are constants in BottleLiquid._apply (160 spring, 5.5 damping) -> expose as exports and scale by viscosity",
 	"opacity": "liquid shader has no opacity/transmission parameter (clear .. opaque)",
 	"tint_strength": "no absorption/Beer-Lambert strength uniform (colour is a flat albedo)",
 	"foam": "mapped to BottleLiquid.foam_capacity (head after shaking) but NO static head height / resting foam layer",
-	"bubble_size": "read from extras at setup(); no runtime setter (change by re-calling setup)",
 	"density": "not a rendering parameter; use mass_kg(fill) for gameplay",
 }
 
@@ -56,10 +54,16 @@ static func load_design(path: String, fill := -1.0, with_liquid := true, tier_na
 func set_tier(tier_name: String) -> void:
 	## rebuilds from the tier variant, keeping fill/colour state of the liquid (label swaps are lost: re-apply them)
 	var f: float = ctl.fill if ctl else -1.0
+	var had_liquid := ctl != null
+	var old_bubble_size := ctl.bubble_size if ctl else -1.0
+	var old_viscosity := ctl.viscosity if ctl else -1.0
 	for c in get_children(): c.queue_free()
 	_labels.clear()
 	ctl = null
-	_build(tier_path(_base_path, tier_name), f, ctl != null)
+	_build(tier_path(_base_path, tier_name), f, had_liquid)
+	if ctl:
+		ctl.bubble_size = old_bubble_size
+		ctl.viscosity = old_viscosity
 	tier = tier_name
 
 
@@ -115,6 +119,8 @@ func apply_liquid_settings(fill := -1.0) -> void:
 	ctl.fill = fill if fill >= 0.0 else float(liquid_info.get("fill_default", 0.6))
 	ctl.carbonation = float(liquid_info.get("carbonation", 0.0))
 	ctl.foam_capacity = float(liquid_info.get("foam", 0.0))
+	ctl.bubble_size = float(liquid_info.get("bubble_size", 1.0))
+	ctl.viscosity = clampf(float(liquid_info.get("viscosity", 0.45)), 0.0, 1.0)
 	# colour: setup() already uses extras.liquid.color; kept in sync by set_liquid_color()
 
 
