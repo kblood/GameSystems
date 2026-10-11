@@ -29,6 +29,15 @@ test('braking reaches rest without backwards jitter and reversing starts only af
 test('exact fuel boundary stops once at interval end without leaving running flag behind',()=>{
   const events=[],s=createVehicleSystem({emit:(name,data)=>events.push([name,data])});s.add('c',{fuel:createFuelStore({amountL:.00022})});s.start('c');s.step(1);assert.equal(s.state('c').running,false);near(s.state('c').fuel.amountL,0);s.step(1);assert.equal(events.filter(([name])=>name==='vehicle:stopped').length,1);
 });
+test('step observer failures finish powered motion and later vehicles before rethrowing',()=>{
+  const failure=new Error('stop observer failed');let throwOnce=true;
+  const s=createVehicleSystem({emit:event=>{if(event==='vehicle:stopped'&&throwOnce){throwOnce=false;throw failure;}}});
+  s.add('low',{fuel:createFuelStore({amountL:.00022})});s.add('second',{resourceModes:{fuel:'disabled',power:'disabled'}});
+  s.start('low');s.start('second');for(const id of ['low','second'])s.setControls(id,{throttle:1,handbrake:false});
+  assert.throws(()=>s.step(1),error=>error===failure);assert.equal(s.state('low').running,false);near(s.state('low').fuel.amountL,0);
+  assert.ok(s.state('low').distanceM>0);assert.ok(s.state('second').distanceM>0);
+  const before=s.state('second').position;s.step(.1);assert.notDeepEqual(s.state('second').position,before);
+});
 test('power exhaustion limits torque and fuel to the powered portion of an interval',()=>{
   const s=createVehicleSystem();s.add('c',{alternatorW:0,power:createBatteryStore({energyWh:.351})});s.start('c');s.setControls('c',{throttle:1,handbrake:false});s.step(1);assert.equal(s.state('c').lastStop,'power-loss');near(s.state('c').consumedL,(.00022+.0022*.25)*(.001*3600/88));assert.ok(s.state('c').speed<.2);assert.equal(s.state('c').electrics,false);
 });

@@ -99,6 +99,8 @@ The supply adapter converts L to mL and consumes only the specified fuel compone
 
 `createFuelStore` and `createBatteryStore` are the small standalone fallbacks. Disable one or both requirements explicitly with `setModes(id, { fuel: 'disabled', power: 'disabled' })`; resource values then remain unchanged. Re-enable with `'adapter'`. No silent infinite reserve is introduced when an adapter empties or is disconnected.
 
+During `step`, vehicle event callback errors are saved while all vehicles finish resource and motion updates; the first error is rethrown after the batch and the reentrancy guard is cleared. Direct `stop()` calls keep their normal synchronous notification behavior.
+
 ## Rendering and physical parts
 
 ```js

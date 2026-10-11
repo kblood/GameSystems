@@ -83,8 +83,9 @@ function move(s,seconds,force){
 }
 
 export function createVehicleSystem({ emit = () => {}, quality = 'high' } = {}) {
-  const store = registry(), bindings=new Map(),tiers = tierState(quality); let disposed = false;
+  const store = registry(), bindings=new Map(),tiers = tierState(quality); let disposed = false,stepping=false;
   function alive() { if (disposed) throw new Error('System is disposed'); }
+  function stopVehicle(s,reason,dispatch=emit){const was=s.running;s.running=false;s.rpm=0;s.lastStop=reason;if(was)dispatch('vehicle:stopped',{id:s.id,reason});}
   const api = {
     get quality() { return tiers.quality; }, setQuality: tiers.setQuality,
     registerAdapters(key,pair){alive();stateId(key,'adapter key');if(bindings.has(key))throw new Error('Duplicate adapter key');const fuel=adapter(pair.fuel,'fuel'),power=adapter(pair.power,'power');bindings.set(key,{fuel,power});},
@@ -147,7 +148,7 @@ export function createVehicleSystem({ emit = () => {}, quality = 'high' } = {}) 
       }
       s.running = true; s.lastStop = null; s.rpm = 800; emit('vehicle:started', { id }); return { started: true };
     },
-    stop(id, reason = 'ignition') { alive(); const s = store.get(id); const was = s.running; s.running = false; s.rpm = 0; s.lastStop = reason; if (was) emit('vehicle:stopped', { id, reason }); },
+    stop(id, reason = 'ignition') { alive(); stopVehicle(store.get(id),reason); },
     setLights(id, value) { alive(); store.get(id).lights = !!value; },
     setPart(id, name, fraction) {
       alive(); const s = store.get(id), part = s.parts[name]; if (!part) throw new RangeError(`Unknown vehicle part: ${name}`);
@@ -165,7 +166,9 @@ export function createVehicleSystem({ emit = () => {}, quality = 'high' } = {}) 
       if(s.running&&s.modes.fuel==='adapter'&&s.fuel.state().amountL<=0)api.stop(id,'fuel-empty');return actual;
     },
     step(dt) {
-      alive(); positive(dt, 'dt', true);if(dt>86400)throw new RangeError('Vehicle update exceeds one-day catch-up budget'); if (!dt) return;
+      alive();if(stepping)throw new Error('Vehicle step is reentrant');positive(dt, 'dt', true);if(dt>86400)throw new RangeError('Vehicle update exceeds one-day catch-up budget'); if (!dt) return;
+      stepping=true;let observerError,observerFailed=false;const report=(event,data)=>{try{emit(event,data);}catch(error){if(!observerFailed){observerError=error;observerFailed=true;}}};
+      try{
       // Resources use the whole elapsed interval. Motion is a lightweight bicycle model, not a collision solver.
       for (const s of store.entries.values()) {
         const initialSpeed=s.speed;
@@ -194,15 +197,17 @@ export function createVehicleSystem({ emit = () => {}, quality = 'high' } = {}) 
         if(s.modes.power==='adapter'){
           const p=s.power.state();if(p.enabled!==false){const charge=transfer(s.power,'charge',Math.max(0,s.alternatorW-runningW)*runningTime/3600);s.chargedWh+=charge;}
         }
-        if(wasRunning&&(runningTime<dt-1e-10||fuelLimit<=dt||powerLimit<=dt)){stopReason=stopReason??(powerLimit<fuelLimit?'power-loss':'fuel-empty');api.stop(s.id,stopReason);}
+        if(wasRunning&&(runningTime<dt-1e-10||fuelLimit<=dt||powerLimit<=dt)){stopReason=stopReason??(powerLimit<fuelLimit?'power-loss':'fuel-empty');stopVehicle(s,stopReason,report);}
         const endPower=s.power.state();s.electrics=s.modes.power==='disabled'||(s.running&&s.alternatorW>=runningW)||(endPower.enabled!==false&&endPower.energyWh>1e-10);
         move(s,runningTime,6200/s.massKg*c.throttle*c.gear);move(s,dt-runningTime,0);
         for(const[name,p]of Object.entries(s.parts)){
           if(p.locked||(Math.max(Math.abs(initialSpeed),Math.abs(s.speed))>.5&&p.target>p.fraction))continue;
-          const before=p.fraction;p.fraction+=clamp(p.target-p.fraction,-dt*1.4,dt*1.4);if(p.fraction!==before)emit('vehicle:part',{id:s.id,part:name,fraction:p.fraction});
+          const before=p.fraction;p.fraction+=clamp(p.target-p.fraction,-dt*1.4,dt*1.4);if(p.fraction!==before)report('vehicle:part',{id:s.id,part:name,fraction:p.fraction});
         }
         s.rpm = s.running ? Math.min(6500, 800 + Math.abs(s.speed) * 105 + c.throttle * 1400) : 0;
       }
+      }finally{stepping=false;}
+      if(observerFailed)throw observerError;
     },
     remove(id) { alive(); return store.remove(id); },
     capture(){
