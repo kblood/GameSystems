@@ -114,6 +114,9 @@ test('a grasp saved through the endpoint is in the grasp library a game loads (d
   const srv = await serve(join(dir, 'recorded_grasps.json'));
   try {
     for (const f of await readdir(extensionDir)) await copyFile(join(extensionDir, f), join(dir, f));
+    // Start from an empty library: the synced copy holds whatever was really recorded in the studio.
+    const synced = JSON.parse(await readFile(join(dir, 'recorded_grasps.json'), 'utf8'));
+    await writeFile(join(dir, 'recorded_grasps.json'), JSON.stringify({ ...synced, poses: [] }));
     const poses = recorded({ markDefault: true });
     assert.equal((await srv.post({ action: 'save', poses })).status, 200);
     const lib = await import(pathToFileURL(join(dir, 'index.js')).href);
