@@ -89,6 +89,17 @@ test('tools: ownership, part type and geometric insertion; one part cannot fill 
   assert.equal(s.insert('socket', { ...part, partType: 'battery' }), false); assert.equal(s.insert('socket', part), true); assert.equal(s.hold('fuse', 'left'), false); assert.equal(s.insert('other', part), false);
   assert.equal(s.removePart('socket', 'right'), 'fuse'); assert.equal(s.hold('fuse', 'left'), false); s.release('fuse', 'right'); assert.equal(s.hold('fuse', 'left'), true);
 });
+test('tools: sockets cannot start installed without a part; insert/remove preserves ownership', () => {
+  const s = createToolsSystem(); s.add('socket', { kind: 'socket', partType: 'fuse' });
+  s.hold('fuse-a', 'hand'); const before = s.state('socket');
+  assert.throws(() => s.add('phantom', { kind: 'socket', installed: true }), /only when a part is inserted/);
+  assert.throws(() => s.state('phantom')); assert.deepEqual(s.state('socket'), before);
+  assert.equal(s.insert('socket', { partId: 'fuse-a', partType: 'fuse', owner: 'hand', position: [0, 0, 0], axis: [0, 0, 1] }), true);
+  assert.deepEqual([s.state('socket').installed, s.state('socket').partId], [true, 'fuse-a']);
+  assert.equal(s.removePart('socket', 'other-hand'), 'fuse-a'); assert.equal(s.hold('fuse-a', 'hand'), false);
+  assert.equal(s.release('fuse-a', 'other-hand'), true); assert.equal(s.hold('fuse-a', 'hand'), true);
+  for (const kind of ['screw', 'nail']) { s.add(`preinstalled-${kind}`, { kind, installed: true }); assert.equal(s.state(`preinstalled-${kind}`).installed, true); }
+});
 test('tools: nail needs aligned hammer impact energy', () => {
   const events = [], s = createToolsSystem({ emit: (e, d) => events.push([e, d]) }); s.add('n', { kind: 'nail', requiredWork: 3 });
   s.use('n', { tool: 'hammer', position: [0, 0, 0], axis: [0, 0, 1], energyJ: 1 }); near(s.state('n').progress, 1 / 3); s.use('n', { tool: 'hammer', position: [0, 0, 0], axis: [0, 0, 1], energyJ: 2 }); assert.equal(s.state('n').installed, true); assert.equal(events.filter(([e]) => e === 'tools:impact').length, 2);

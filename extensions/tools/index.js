@@ -8,6 +8,7 @@ export function createToolsSystem({ emit = () => {}, quality = 'high' } = {}) {
     add(id, { kind = 'screw', position = [0, 0, 0], axis = [0, 0, 1], radius = 0.035, angleTolerance = 0.35,
       requiredWork = 2, installed = false, partType = 'fuse' } = {}) {
       if (!['screw', 'nail', 'socket'].includes(kind)) throw new Error('Unknown assembly kind');
+      if (kind === 'socket' && installed) throw new Error('Sockets become installed only when a part is inserted');
       store.add(id, { id, kind, position: vector(position), axis: unit(axis), radius: positive(radius), angleTolerance: positive(angleTolerance), requiredWork: positive(requiredWork),
         work: installed ? requiredWork : 0, installed: !!installed, partType, partId: null }); return api.state(id);
     },

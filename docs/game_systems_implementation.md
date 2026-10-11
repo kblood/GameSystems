@@ -122,6 +122,8 @@ luftstrømme eller brandspredning kontinuerligt ud fra mesh-geometri. Labben vis
 En skrue akkumulerer omgange (`rotation` er radianer); negativ rotation skruer ud. Et søm akkumulerer impactenergi.
 `hold(partId, owner)` sikrer eksklusiv ejer. `insert` kræver korrekt type, ejer, nærhed og orientering.
 En fysisk del kan kun være i én socket; den må fjernes via `removePart`, før den kan gribes igen.
+Socket-tilstand bliver installeret gennem `insert`; `add(..., {installed:true})` er kun gyldig for skruer og søm,
+så en socket aldrig kan starte installeret uden en fysisk `partId`.
 
 Labben flytter sikring og værktøj i 3D. Hammerens bevægelse estimerer impactenergi; musens hjul eller VR-vrid/trigger
 driver skruetrækkeren. Kernerne forventer faktiske kontakt-/poseinput fra værtens interaktionssystem.
