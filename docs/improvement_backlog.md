@@ -843,3 +843,22 @@ det er ikke en buildfejl.
 Hver ændring skal have en konkret begrundelse og passende verifikation. Bevar andre agenters arbejde.
 Test kerner og public API'er, og brug browserkontrol ved ændringer af synlig adfærd, input eller rendering.
 Rapportér faktisk testresultat; browserkontrol etablerer ikke headset-performance.
+
+## Vedvarende mål: fysisk VR-backpack
+
+Byg NightfallContracts-backpacken videre mod et fysisk, hurtigt og forståeligt VR-inventory
+med inspiration fra *The Walking Dead: Saints & Sinners*. Spilleren skal kunne finde og
+trække genstande fra bestemte steder på kroppen, sætte dem tilbage med tydelig taktil og
+visuel feedback og skifte våben uden at åbne en flad menu. Bevar eksisterende loadout,
+checkpoint og gear-inventory integrationer; backpacken skal være et selvstændigt lag, der
+arbejder sammen med dem.
+
+Arbejd i små, målbare trin: auditer først nuværende fysiske rig, grebs-/slotlogik, headset-
+ergonomi og persistence; vælg derefter næste konkrete fejl eller manglende spillerhandling.
+Prioritér stabile over-skulder-/hoftegreb, sikre indsæt- og udtrækszoner, kapacitets- og
+våben-fit-regler, feedback ved forkert slot/fuld taske, håndtracking-tab, checkpoint-restore
+og et fast budget for fysik/sceneopdateringer. Undgå at indføre fuld inventory-simulering,
+hvis en lille deterministisk slotmodel giver samme spiloplevelse. Verificér controller- og
+syntetiske XR-flow samt persistence; markér headsetkomfort og frame pacing som uafprøvet,
+indtil det er målt på hardware. Fortsæt med at finde og løse næste forbedring, når hvert
+backpack-delmål er reviewet og består relevante tests.
