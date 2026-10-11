@@ -64,12 +64,19 @@ func _run() -> void:
 	_check(is_equal_approx(ctl._tint_strength_value(), float(info.get("tint_strength", 1.0))), "sidecar tint_strength is resolved")
 	_check(is_equal_approx(ctl._opacity_value(), float(info.get("opacity", 1.0))), "sidecar opacity is resolved")
 	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("opacity")), ctl._opacity_value()), "sidecar opacity is applied to the liquid shader")
+	_check(not ctl._mat.shader.code.contains("ALPHA = liquid_alpha;"), "fully opaque liquid uses an opaque depth-writing shader variant")
+	var color_before_switch: Color = ctl._mat.get_shader_parameter("liquid_color")
+	var plane_before_switch: Vector4 = ctl._mat.get_shader_parameter("plane")
 	ctl._sleep()
 	ctl.opacity = 0.35
 	_check(not ctl.is_sleeping(), "runtime opacity edit wakes the controller")
 	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("opacity")), 0.35), "runtime opacity updates the shader")
+	_check(ctl._mat.shader == ctl.liquid_shader, "translucent runtime opacity selects the alpha shader")
 	ctl.opacity = 2.0
 	_check(is_equal_approx(ctl.opacity, 1.0), "runtime opacity is clamped to 0..1")
+	_check(not ctl._mat.shader.code.contains("ALPHA = liquid_alpha;"), "returning to opaque restores the depth-writing shader variant")
+	_check(ctl._mat.get_shader_parameter("liquid_color") == color_before_switch, "shader switching preserves the authored liquid color")
+	_check(ctl._mat.get_shader_parameter("plane") == plane_before_switch, "shader switching preserves the moving liquid plane")
 	ctl.tint_strength = 2.5
 	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("tint_strength")), 2.5), "runtime tint_strength updates the Beer-Lambert shader")
 	ctl.tint_strength = 8.0
