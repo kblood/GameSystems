@@ -85,6 +85,15 @@ kollisionsaliaser. Hold-records matcher removal på præcis mechanism-ID.
 Verifikation: fokuseret `new-systems`-suite **26/26**, fuld Node-suite **514/514**, Sol-review uden
 blocker. Pushet til GameSystems `main` som `7315101`.
 
+## Afsluttet camera-feed fairness-runde — 2026-10-12
+
+Et renderer-kast flytter nu round-robin-cursoren forbi det fejlede feed, før fejlen rapporteres.
+Dermed kan et konsekvent defekt kamera ikke sulte raske feeds; vellykkede renders fra samme step
+opdaterer stadig deres textures.
+
+Verifikation: fokuseret camera-suite **10/10**, fuld Node-suite **515/515**, Sol-review uden blocker.
+Pushet til GameSystems `main` som `55379ba`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
