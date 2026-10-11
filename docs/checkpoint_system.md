@@ -64,7 +64,9 @@ En observer-fejl ændrer ikke et ellers vellykket restore; den rapporteres i `ob
 `checkpoint:restored` og `checkpoint:cleanup-error` giver signaler til værten.
 
 `checkpoint/fire-scene.js` er composition gennem public API'er, ikke import af systemernes interne filer.
-Den kontrollerer også, at pool-/thermal-data er enige, og at observeret kildevæske ikke overstiger kildens ledger.
+Den kontrollerer, at pool-/thermal-data er enige, og at flaske-ejet væske i pools matcher flaskernes puddle-ledger.
+I denne composition skal alle bottle-owned puddles have en pool-owner; brug ikke fire-scene checkpointet med
+et pool-filter, der bevidst afviser nogle af flaskernes `liquid:deposit`-events.
 
 ## De enkelte ejere
 

@@ -20,14 +20,15 @@ function scalar(initial, fail = () => false) {
 function normalized(data){const copy=structuredClone(data);for(const b of copy.state.fire.bottles.bottles){delete b.lastImpactAgo;delete b.lastPourAgo;}return copy;}
 function world(){
   const scene=new THREE.Scene(),physics=createFakePhysics(),events=[];
+  let source=null;
   const thermal=createThermalSystem({autoSpread:true,emit:(event,data)=>{events.push(event);if(event==='thermal:burned')pools.burned(data.id,data.joules);}});
   thermal.addRoom('room',{volume:10,oxygen:.8,smoke:.4,temperature:35});thermal.addVent('window',{a:'room',open:.2,flow:1});
   thermal.add('wood',{roomId:'room',position:[0,.3,0],temperature:100,heaterW:0});
   thermal.add('charge',{roomId:'room',position:[2,.3,0],material:'powder',blast:{fuseSeconds:2,radius:1,strength:5}});
-  const pools=createPoolsSystem({thermal});pools.deposit({id:'diesel',roomId:'room',surfaceId:'floor',position:[-.5,.01,0],ml:20,kind:'diesel',sourceKey:'bottles'});
+  const pools=createPoolsSystem({thermal,emit:(event,data)=>{if(event==='pools:consumed')source?.consumePuddleVolume(data.sourceVolumes.bottles??0);else if(event==='pools:removed')source?.removePuddleVolume(data.sourceVolumes.bottles??0);}});pools.deposit({id:'diesel',roomId:'room',surfaceId:'floor',position:[-.5,.01,0],ml:20,kind:'diesel',sourceKey:'bottles'});
   const mechanics=createMechanicsSystem();mechanics.add('door',{kind:'hinge',max:Math.PI/2,value:.4});
   const floor=new THREE.Mesh(new THREE.BoxGeometry(4,.2,4),new THREE.MeshStandardMaterial());floor.position.y=-.1;floor.userData.materialId='floor';scene.add(floor);
-  const source=createBottleSystem({scene,physics,surfaces:[floor],audio:{play(){}}});
+  source=createBottleSystem({scene,physics,surfaces:[floor],audio:{play(){}}});
   const root=new THREE.Group(),glass=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.2,10),new THREE.MeshStandardMaterial());glass.position.y=.1;root.add(glass);
   const liquid={info:{},fill:.5,capOpen:false,uniforms:{uLiquidColor:{value:new THREE.Color(.4,.5,.2)}},agitate(){},update(){}};
   const bottle=source.adopt({id:'can',root,liquid,asset:{capacity_ml:200,height_m:.2},fill:.5,position:new THREE.Vector3(1,1,0)});bottle.checkpointId='can';bottle.liquidKind='diesel';
@@ -64,6 +65,13 @@ test('a corrupted application, room, pool attribution or bottle leaves all live 
   for(const corrupt of [s=>{s.application.waterMl=-1;},s=>{s.thermal.rooms[0].oxygen=2;},s=>{s.pools.pools[0].sources.bottles.diesel=100;},s=>{s.bottles.bottles[0].pose.quaternion=[0,0,0,0];}]){
     const w=world(),before=w.checkpoint.capture(),bad=structuredClone(before);corrupt(bad.state.fire);assert.throws(()=>w.checkpoint.restore(bad));assert.deepEqual(normalized(w.checkpoint.capture()),normalized(before));
   }
+});
+test('checkpoint rejects bottle puddle volume missing its matching pool owner atomically',()=>{
+  const w=world(),before=w.checkpoint.capture(),bad=structuredClone(before),state=bad.state.fire;
+  state.thermal.objects=state.thermal.objects.filter(object=>object.id!=='pool:diesel');
+  state.pools.pools=[];state.pools.activeOrder=[];state.pools.ledger.removedMl+=state.pools.ledger.remainingMl;state.pools.ledger.remainingMl=0;
+  assert.throws(()=>w.checkpoint.restore(bad),/Pool source volume disagrees with source world ledger/);
+  assert.deepEqual(normalized(w.checkpoint.capture()),normalized(before));
 });
 test('logical smoke, wetness, foam and hot empty pool traces survive serialized restore',()=>{
   const w=world();w.pools.cool('diesel',10);w.pools.foam('diesel',.8);w.thermal.configure('pool:diesel',{temperature:250});

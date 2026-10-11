@@ -13,7 +13,7 @@ export function createFireSceneProvider({ thermal, pools, bottles, mechanics, ap
     const app=application.prepareRestore(data.application,{thermalPlan:fire,mechanicsPlan:joints,poolRecords:liquid.records(),supplyPlan:tanks,flowPlan:stream});
     const ledger=source.ledger(),sourceKey=bottles.sourceKey;
     const tracked=liquid.records().reduce((n,p)=>n+Object.values(p.sources[sourceKey]??{}).reduce((sum,ml)=>sum+ml,0),0);
-    if(tracked>ledger.puddleMl+1e-5)throw new Error('Pool source volume exceeds source world ledger');
+    if(Math.abs(tracked-ledger.puddleMl)>1e-5)throw new Error('Pool source volume disagrees with source world ledger');
     if(stream)for(const[key,emitted]of Object.entries(stream.sourceTotals())){
       if(key===sourceKey)throw new Error('Flow and bottle owners share a liquid source key');
       const remaining=liquid.records().reduce((n,p)=>n+Object.values(p.sources[key]??{}).reduce((sum,ml)=>sum+ml,0),0);
