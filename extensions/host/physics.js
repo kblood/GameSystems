@@ -36,6 +36,7 @@
 //                                    the place to read poses and react to contacts (Godot: _physics_process)
 //   remove(handle)                   safe during a step and from listeners (deferred to the end of the step); further
 //                                    hold/release/setMass on a removed handle are ignored
+// Physics adapters reject non-finite or negative dt before changing the world; dt = 0 is a no-op.
 //
 // Vectors are world space, metres and radians. Handles are opaque; only the adapter reads them.
 // The game owns stepping (cannon adapter: step(dt)); it is not part of the interface extensions see.

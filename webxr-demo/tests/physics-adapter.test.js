@@ -90,3 +90,24 @@ test('the demo world keeps its contact material and sleep settings through the a
   assert.equal(world.defaultContactMaterial.friction, 0.55);
   assert.equal(world.defaultContactMaterial.restitution, 0.12);
 });
+
+test('invalid dt is rejected atomically and a later valid step still advances', () => {
+  const physics = createCannonPhysics();
+  const body = physics.addBody({ type: 'sphere', radius: 0.05 }, 1);
+  let stepEvents = 0;
+  physics.onStep(() => stepEvents++);
+  const accumulator = physics.world.accumulator;
+  const pose = structuredClone(physics.pose(body));
+  for (const dt of [NaN, Infinity, -Infinity, -0.01]) {
+    assert.throws(() => physics.step(dt), /finite and nonnegative/);
+    assert.equal(physics.world.accumulator, accumulator);
+    assert.deepEqual(physics.pose(body), pose);
+    assert.equal(stepEvents, 0);
+  }
+  physics.step(0);
+  assert.equal(physics.world.accumulator, accumulator, 'zero is a no-op');
+  assert.equal(stepEvents, 0);
+  physics.step(1 / 60);
+  assert.ok(physics.pose(body).position[1] < pose.position[1], 'valid step advances after rejected inputs');
+  assert.equal(stepEvents, 1);
+});

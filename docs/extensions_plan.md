@@ -139,7 +139,7 @@ Trin 2 bør også tage grab_findings 1.5 (held-drive rotation) og 2.x-punkterne 
   `ctx.on`-lyttere fjernes ved dispose), `events.js` (event-bus, `CORE_EVENTS`), `quality.js` (globalt niveau 0–3 →
   extensionens tiers ved oprunding, så niveau 0 = `off`; `setTier(id, tier)` pinner; `off` = ingen `update()`),
   `physics.js` (adapter-interface + `assertPhysicsAdapter`), `index.js` (public API).
-- `extensions/adapters/physics-cannon.js`: interfacet på en `CANNON.World` + `step(dt)` (fast trin, udskudte removals,
+- `extensions/adapters/physics-cannon.js`: interfacet på en `CANNON.World` + `step(dt)` (fast trin, afviser negativ/ikke-endelig tid før world-state ændres, nul er no-op, udskudte removals,
   kontakter leveres efter trinnet). Demoens `PhysicsWorld` bruger den til hold/release/remove/step og giver den videre som
   `ctx.physics`. Flaskerne bruger stadig cannon direkte (trin 8).
 - Demo: `src/avatar.js` er en extension (`default` = factory, tiers `off/low/high`), indlæst i `main.js` med

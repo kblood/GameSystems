@@ -146,6 +146,8 @@ export function createCannonPhysics(world = new CANNON.World({ gravity: new CANN
 
     /** Fixed-step world update; then deferred removals, then contact reports, then onStep listeners. */
     step(dt) {
+      if (!Number.isFinite(dt) || dt < 0) throw new RangeError('Physics dt must be finite and nonnegative');
+      if (dt === 0) return;
       stepping = true;
       try { world.step(cfg.fixedStep, Math.min(dt, cfg.maxDt), cfg.maxSubSteps); } finally {
         stepping = false;
