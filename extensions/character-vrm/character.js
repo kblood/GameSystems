@@ -89,8 +89,8 @@ export function createVRMCharacter(vrm, { quality = 'high', signal } = {}) {
     const H = restHeads(humanoid);
     const eyes = ['leftEye', 'rightEye'].map(n => vrm.humanoid.getRawBoneNode(n)).filter(Boolean);
     if (eyes.length && H.head) {
+      root.updateWorldMatrix(true, false);
       const toRoot = new THREE.Matrix4().copy(root.matrixWorld).invert(), p = new THREE.Vector3(), mid = new THREE.Vector3();
-      root.updateMatrixWorld(true);
       for (const e of eyes) mid.add(e.getWorldPosition(p).applyMatrix4(toRoot));
       mid.multiplyScalar(1 / eyes.length);
       return [mid.x - H.head[0], mid.y - H.head[1], mid.z - H.head[2]];

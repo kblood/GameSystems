@@ -354,6 +354,7 @@ Trin 2 bør også tage grab_findings 1.5 (held-drive rotation) og 2.x-punkterne 
   License) blev fravalgt.
 - Kvalitet: `low` = ingen spring bones, ingen expressions/blink, ingen skygger; `high` = spring bones + blink + skygger.
   Demo: spillerens tier følger skin-upgrade (Mellem/Høj → high), NPC'er low. Node-constraints kører altid (billige).
+- `eyeOffset()` returnerer øjnenes centrum relativt til karakterens rod, uafhængigt af rodens og forældrenes world-transform; metoden opdaterer selv de nødvendige world-matricer.
 - VRM0/VRM1: three-vrm omdøber VRM0-tommelfingerknoglerne til 1.0-navne ved import, så bone-mappet bruger altid
   `version: 1` (med VRM0-navne ville tommelfingeren blive forskudt ét led). VRM0 vender −Z → roden drejes π.
 - Tommelfinger-tilt: Jimmys hvile-fingre er strakte (tommelfinger-bøjning 0°), så bøjningsplanet kan ikke måles fra

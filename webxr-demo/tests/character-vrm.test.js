@@ -36,7 +36,7 @@ function fakeHeads() {
   }
   return H;
 }
-function fakeVRM({ metaVersion = '0', fingers = true } = {}) {
+function fakeVRM({ metaVersion = '0', fingers = true, eyes = false } = {}) {
   const heads = fakeHeads(), bones = {}, scene = new THREE.Group();
   const vrm0 = metaVersion === '0', toFile = p => (vrm0 ? [-p[0], p[1], -p[2]] : p); // a VRM 0.x file faces -Z
   const parentOf = { spine: 'hips', chest: 'spine', upperChest: 'chest', neck: 'upperChest', head: 'neck' };
@@ -54,6 +54,9 @@ function fakeVRM({ metaVersion = '0', fingers = true } = {}) {
     const p = parentOf[j], w = toFile(heads[j]), pw = p ? toFile(heads[p]) : [0, 0, 0];
     b.position.set(w[0] - pw[0], w[1] - pw[1], w[2] - pw[2]);
     (p ? bones[p] : scene).add(b);
+  }
+  if (eyes) for (const [name, x] of [['leftEye', -0.03], ['rightEye', 0.03]]) {
+    const eye = new THREE.Bone(); eye.name = name; eye.position.set(x, 0.02, 0.05); bones[name] = eye; bones.head.add(eye);
   }
   const mesh = new THREE.SkinnedMesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial());
   scene.add(mesh); scene.updateMatrixWorld(true); mesh.bind(new THREE.Skeleton(Object.values(bones)));
@@ -104,6 +107,16 @@ test('contract: keys, applyPose/resetPose on the raw bones, first person, tiers,
   const parent = new THREE.Group(); parent.add(c.root);
   c.dispose(); assert.equal(c.root.parent, null); assert.ok(c.disposed);
   c.applyPose({ joints: { leftLowerArm: bend } }); assert.ok(vrm.bones.leftLowerArm.quaternion.angleTo(rest) < 1e-9, 'disposed: no-op');
+});
+
+test('eye offset stays character-root-local when root and parents move without an external matrix update', () => {
+  const c = createVRMCharacter(fakeVRM({ eyes: true, metaVersion: '1' }));
+  const initial = c.eyeOffset();
+  assert.ok(initial.every((v, i) => Math.abs(v - [0, 0.02, 0.05][i]) < 1e-9), `${initial}`);
+  const parent = new THREE.Group(); parent.position.set(4, -2, 7); parent.rotation.set(0.4, -0.7, 0.2); parent.add(c.root);
+  c.root.position.set(-3, 5, 1); c.root.rotation.set(-0.3, 0.8, -0.5);
+  const moved = c.eyeOffset();
+  assert.ok(moved.every((v, i) => Math.abs(v - initial[i]) < 1e-9), `${moved} vs ${initial}`);
 });
 
 test('a VRM without finger bones runs as a mitten hand with a warning', () => {
