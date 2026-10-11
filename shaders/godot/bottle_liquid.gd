@@ -47,7 +47,9 @@ signal opened                           ## cap_open set true (BottlePour listens
 @export_range(-1.0, 1.0) var opacity := -1.0:
 	set(v):
 		opacity = clampf(v, -1.0, 1.0) if is_finite(v) else -1.0
-		if _mat: _mat.set_shader_parameter("opacity", _opacity_value())
+		if _mat:
+			_select_opacity_shader()
+			_mat.set_shader_parameter("opacity", _opacity_value())
 		wake()
 @export var carbonation := -1.0:             ## -1 = use the value baked into the GLB (soda/beer fizz)
 	set(v):
@@ -87,6 +89,7 @@ signal opened                           ## cap_open set true (BottlePour listens
 var liquid: MeshInstance3D
 var _info: Dictionary
 var _mat: ShaderMaterial
+static var _opaque_shader_cache: Dictionary = {}
 var _up_eff := Vector3.UP
 var _vel := Vector3.ZERO
 var _last_pos := Vector3.ZERO
@@ -157,7 +160,7 @@ func setup(root: Node, fill_: float = 0.6, sidecar_json := "") -> void:
 		_cap = cn
 		break
 	_mat = ShaderMaterial.new()
-	_mat.shader = liquid_shader
+	_select_opacity_shader()
 	_apply_color()
 	_compute_mouth()
 	var bnd: Dictionary = _info.get("bounds", {})
@@ -244,6 +247,24 @@ func _tint_strength_value() -> float:
 
 func _opacity_value() -> float:
 	return clampf(float(_info.get("opacity", 1.0)) if opacity < 0.0 else opacity, 0.0, 1.0)
+
+
+## Godot classifies a shader with any ALPHA write as transparent, even when the
+## runtime value is 1. Keep authored opaque liquids in the depth-writing opaque
+## pipeline and switch to the original shader only for translucent values.
+func _select_opacity_shader() -> void:
+	if _mat == null or liquid_shader == null: return
+	var desired := liquid_shader
+	if _opacity_value() >= 0.9999:
+		const alpha_write := "\tALPHA = liquid_alpha;"
+		var source := liquid_shader.code
+		if source.contains(alpha_write):
+			if not _opaque_shader_cache.has(source):
+				var opaque := Shader.new()
+				opaque.code = source.replace(alpha_write, "")
+				_opaque_shader_cache[source] = opaque
+			desired = _opaque_shader_cache[source]
+	_mat.shader = desired
 
 
 func _foam_static_value() -> float:
