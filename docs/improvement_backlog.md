@@ -129,6 +129,15 @@ state er uændret.
 Verifikation: mission-suite **6/6**, fuld Node-suite **519/519**, Sol-review uden blocker. Pushet til
 GameSystems `main` som `1be7096`.
 
+## Afsluttet humanoid skeleton-point validering — 2026-10-12
+
+Skeleton-checker og hand completion kræver nu præcis tre finite koordinater pr. joint. Tomme,
+forkortede eller ikke-finite fingerpunkter tæller korrekt som manglende grebskæde, og håndsynthese
+reparerer dem kun når wrist/underarm-ankrene selv er gyldige.
+
+Verifikation: humanoid-suite **2/2**, fuld Node-suite **521/521**, Sol-review uden blocker.
+Pushet til GameSystems `main` som `1716a40`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
