@@ -33,6 +33,9 @@ Standardregistrene tillader højst 16 feeds og 32 skærme. Der rendres kun feeds
 synlig skærm; skjulte forældre tæller også som skjult. Round-robin fordeler arbejdet mellem feeds.
 Der køres ikke catch-up-rendering af tabte billeder. Kvalitet kan ændres under drift.
 Synlighed er objektets/forældres flag, ikke en fuld frustum-/occlusiontest.
+Hvis et feed-render fejler, gendannes rendererens state, allerede rendere feeds opdaterer deres skærme,
+fejlen sendes videre, og round-robin-cursoren flyttes forbi feedet, så en vedvarende fejl ikke blokerer
+de øvrige aktive feeds på efterfølgende frames.
 
 Skærme skjules under feed-rendering, så monitorer ikke sampler deres eget aktive render target.
 Rendererens target, cube face/mip-level, viewport, scissor, autoClear og XR-flag gendannes i finally,

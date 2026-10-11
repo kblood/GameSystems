@@ -55,6 +55,22 @@ test('minimal quality limits updates and fairly services every selected feed', (
   assert.equal(api.step(.01), 0); assert.equal(calls.length, 3); assert.equal(api.feedState('a').width, 128);
   api.setQuality('high'); assert.equal(api.feedState('a').width, 1024); assert.equal(api.step(.01), 2);
 });
+test('a repeatedly failing feed advances round-robin so later healthy feeds still render', () => {
+  const { api, scene, mesh, renderer } = setup(), cameras = new Map(), screens = new Map();
+  for (const id of ['a', 'b', 'c']) {
+    const camera = new THREE.PerspectiveCamera(); cameras.set(id, camera);
+    api.addFeed(id, { camera }); const screen = mesh.clone(); scene.add(screen); screens.set(id, screen); api.addScreen(`screen-${id}`, { mesh: screen, feedId: id });
+  }
+  renderer.render = (feedScene, camera) => { if (camera === cameras.get('b')) throw new Error('bad feed'); };
+  assert.throws(() => api.step(.1), /bad feed/);
+  assert.equal(api.feedState('a').frames, 1); assert.equal(api.feedState('b').frames, 0); assert.equal(api.feedState('c').frames, 0);
+  assert.equal(screens.get('a').material.map, api.texture('a'));
+  assert.equal(api.step(.1), 2);
+  assert.equal(api.feedState('c').frames, 1); assert.equal(api.feedState('a').frames, 2);
+  assert.throws(() => api.step(.1), /bad feed/);
+  assert.equal(api.step(.1), 2);
+  assert.equal(api.feedState('c').frames, 2); assert.equal(api.feedState('b').frames, 0);
+});
 test('hidden/off monitors and disabled feeds avoid rendering and show blank', () => {
   const { api, mesh } = setup(); api.addFeed('a', { camera: new THREE.PerspectiveCamera() }); api.addScreen('s', { mesh, feedId: 'a' });
   mesh.visible = false; assert.equal(api.step(1), 0); mesh.visible = true; api.setScreenEnabled('s', false); assert.equal(api.step(1), 0);

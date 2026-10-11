@@ -86,7 +86,8 @@ export function createCameraSystem({ THREE, renderer, scene, quality = 'high', e
       for (let i = 0; i < ordered.length; i++) {
         const index = (cursor + i) % ordered.length, f = ordered[index];
         if (clock - f.lastTime + 1e-9 < 1 / budget().fps) continue;
-        draw(f); rendered++;
+        try { draw(f); } catch (error) { cursor = (index + 1) % ordered.length; if (rendered) refresh(); throw error; }
+        rendered++;
         if (rendered >= budget().perStep) { cursor = (index + 1) % ordered.length; break; }
       }
       if (rendered) refresh(); return rendered;
