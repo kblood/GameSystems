@@ -50,6 +50,15 @@ rapporteres efter begge receipt-forsøg, og den allerede bogførte levering må 
 Verifikation: flow-suite **16/16**, fuld WebXR-demo Node-suite **509/509** og Sol-review uden blocker;
 ændringen er pushet til GameSystems `main` som `73d3229`.
 
+## Afsluttet alarm-step observer-fejl-runde — 2026-10-12
+
+Alarm-systemet færdiggør nu hele det faste detector-batch, selv hvis en event-observer kaster.
+Første fejl rejses først efter notifikationerne og efter at `busy` er frigivet; disposal stopper resten
+af arbejdet uden at skjule den oprindelige observer-fejl.
+
+Verifikation: fokuseret alarm-suite **16/16**, fuld WebXR-demo Node-suite **511/511** og Sol-review
+uden blocker; uafhængig alarm-fil **11/11**. Pushet til GameSystems `main` som `1fa93d8`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
