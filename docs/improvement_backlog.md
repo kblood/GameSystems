@@ -111,6 +111,15 @@ offset. Resultatet ændres derfor ikke, når avatar eller parent flyttes/roteres
 Verifikation: character-vrm-suite **9/9**, fuld GameSystems Node-suite **517/517** og Sol-review uden
 blocker. Pushet til GameSystems `main` som `d7189dc`.
 
+## Afsluttet tools socket-ejerskabsrunde — 2026-10-12
+
+Et tomt socket kan ikke længere oprettes med `installed: true`; occupancy opstår kun gennem en
+gyldig part insertion, så ingen installeret del kan mangle `partId` og blive umulig at fjerne.
+Forudinstallerede skruer og søm er fortsat gyldige.
+
+Verifikation: fokuseret `new-systems`-suite **27/27**, fuld Node-suite **518/518** og Sol-review uden
+blocker. Pushet til GameSystems `main` som `3840d10`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
