@@ -41,6 +41,15 @@ før scenen ændres.
 Verifikation: checkpoint-suite **21/21**, fuld WebXR-demo Node-suite **507/507** og Sol-review uden
 blocker. Pushet til GameSystems `main` som `8260879`.
 
+## Afsluttet flow-callback leveringsrunde — 2026-10-12
+
+Når supply-draw og emitterens emitted/pulsed ledger er committet, forsøger flow nu både `flow:deposit`
+og `liquid:deposit`, selv hvis effekt-callbacken eller den første emitter kaster. Den første fejl
+rapporteres efter begge receipt-forsøg, og den allerede bogførte levering må ikke gentages.
+
+Verifikation: flow-suite **16/16**, fuld WebXR-demo Node-suite **509/509** og Sol-review uden blocker;
+ændringen er pushet til GameSystems `main` som `73d3229`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
