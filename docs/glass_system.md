@@ -35,6 +35,10 @@ GlassSystem.get_for(node).fire_bullet(from, dir, energy, caliber, mask, speed=-1
     # -> {hits:[{pane, point, result}], stop, energy, velocity}: every pane on the ray in order, continues with residual
 GlassSystem.track(body) / untrack / predictor_for / invalidate_all()   # thrown bodies (pane sensors auto-track too)
 ```
+
+Pane `size` is measured in metres and both dimensions must be finite and greater than zero. Invalid assignments are
+ignored, leaving the last valid dimensions in place so mesh, collision and crack-mask calculations cannot receive a
+degenerate pane size.
 The result dict contains outcome (NONE, CHIP, CRACKED, PUNCHED, SHATTERED), `outcome_name`, `pass_through`, `ricochet`,
 `residual_velocity` (world), `hole_radius`, `crater_entry/exit`, `crack_length`, `radials`, `energy`, `energy_n`, `momentum`,
 `thresholds`, `kind` (bullet, dice, punch, cobweb, collapse, shatter) and `tier`.

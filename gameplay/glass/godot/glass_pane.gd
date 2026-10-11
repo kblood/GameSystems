@@ -19,6 +19,8 @@ const MAX_HOLES := 16
 
 @export var size := Vector2(1.0, 1.2):
 	set(v):
+		if not is_finite(v.x) or not is_finite(v.y) or v.x <= 0.0 or v.y <= 0.0:
+			return
 		size = v
 		_queue_rebuild()
 @export_enum("annealed", "tempered", "laminated", "wired", "resistant") var glass_type := "annealed":

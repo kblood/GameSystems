@@ -109,6 +109,15 @@ func _init() -> void:
 		if m.data[i] > 100:
 			lit += 1
 	check(lit > 60 and lit < 400, "mask line (%d px)" % lit)
+	# Pane dimensions must stay finite and positive before mesh, collider, sensor or crack-mask math uses them.
+	var pane := GlassPane.new()
+	var original_size := pane.size
+	for invalid_size in [Vector2.ZERO, Vector2(-1, 1), Vector2(1, -1), Vector2(NAN, 1), Vector2(1, INF)]:
+		pane.size = invalid_size
+		check(pane.size == original_size, "invalid pane size is rejected: %s" % invalid_size)
+	pane.size = Vector2(2.0, 0.75)
+	check(pane.size == Vector2(2.0, 0.75), "valid pane resize is accepted")
+	pane.free()
 	# profile json round trip
 	var d := ann.to_dict()
 	var p2 := GlassProfile.new()
