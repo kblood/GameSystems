@@ -94,6 +94,18 @@ Verifikation: loadout-kontrakten **25/25** og våbenkataloget **19/19** består;
 blocker. Nightfall-runtime integration er under arbejde: fysisk stuvning/hentning, isoleret state pr.
 våben, magasinidentitet og atomisk afvisning skal stadig bestå målrettede tests og review.
 
+### Nightfall-integration — første verificerede milepæl — 2026-10-12
+
+NightfallContractsGodot har nu handlingsbaseret skift: det aktive våben skal stues i rygsækken,
+før et andet hentes. Våbnene beholder separat ammunition, chamber og magasin-tokenidentitet.
+Rygsækkens aktuelle kapacitet giver Kestrel, Morrow, Shear og én rifle ad gangen (Tern eller
+startup-valgt Rook). Multi-våben checkpointing afvises eksplicit, indtil checkpointformatet kan
+gemme alle tilstande atomisk. Ændringen er pushet til Nightfall `main` som `1737af9`.
+
+Verifikation: 5/5 fokuserede suites bestod efter sidste kodeændring; Sol kørte uafhængigt
+backpack weapon-regressionen **107/107** uden blocker. Headset-fit og XR frame pacing mangler fysisk
+headset-accept. Det samlede live-loadout-mål fortsætter med alle fem katalogvåben og checkpoint-støtte.
+
 ## Afsluttet Aster-ekstern ressource-afbrydelsesrunde — 2026-10-12
 
 Aster slukker nu motoren straks, hvis en aktiv ekstern brændstof- eller strømforsyning bliver
