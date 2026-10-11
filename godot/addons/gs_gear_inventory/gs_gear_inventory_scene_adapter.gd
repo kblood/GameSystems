@@ -59,6 +59,10 @@ func check_slot_access(requesting_hand: String, hand_tracked: bool, hand_world: 
 		var ray_excludes := exclude.duplicate()
 		for rid in _held_collision_rids(requesting_hand):
 			if not rid in ray_excludes: ray_excludes.append(rid)
+		var slotted_item := inventory.item_in_slot(slot_id)
+		if not slotted_item.is_empty():
+			for rid in _item_collision_rids(slotted_item):
+				if not rid in ray_excludes: ray_excludes.append(rid)
 		var query := PhysicsRayQueryParameters3D.create(from, to - (to - from).normalized() * 0.02, collision_mask, ray_excludes)
 		query.collide_with_areas = true
 		query.collide_with_bodies = true
@@ -286,12 +290,16 @@ func _held_collision_rids(owner: String) -> Array[RID]:
 	var rids: Array[RID] = []
 	for item_id in _items:
 		if inventory.owner_of(item_id) != owner: continue
-		var held := _item_node(item_id)
-		if held == null: continue
-		if held is CollisionObject3D:
-			rids.append((held as CollisionObject3D).get_rid())
-		for child in held.find_children("*", "CollisionObject3D", true, false):
-			if child is CollisionObject3D: rids.append((child as CollisionObject3D).get_rid())
+		rids.append_array(_item_collision_rids(item_id))
+	return rids
+
+func _item_collision_rids(item_id: String) -> Array[RID]:
+	var rids: Array[RID] = []
+	var item := _item_node(item_id)
+	if item == null: return rids
+	if item is CollisionObject3D: rids.append((item as CollisionObject3D).get_rid())
+	for child in item.find_children("*", "CollisionObject3D", true, false):
+		if child is CollisionObject3D: rids.append((child as CollisionObject3D).get_rid())
 	return rids
 
 ## Godot forbids parenting a node beneath itself or one of its descendants.
