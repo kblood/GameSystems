@@ -108,13 +108,17 @@ våben, magasinidentitet og atomisk afvisning skal stadig bestå målrettede tes
 NightfallContractsGodot har nu handlingsbaseret skift: det aktive våben skal stues i rygsækken,
 før et andet hentes. Våbnene beholder separat ammunition, chamber og magasin-tokenidentitet.
 Rygsækkens aktuelle kapacitet giver Kestrel, Morrow, Shear og én rifle ad gangen (Tern eller
-startup-valgt Rook). Multi-våben checkpointing afvises eksplicit, indtil checkpointformatet kan
-gemme alle tilstande atomisk. Skiftet er pushet til Nightfall `main` som `1737af9`; missionsbinding
-og oprydning af variant-cache fulgte i `f31bc66`.
+startup-valgt Rook). Checkpoint v2 gemmer per-våben ammunition/chamber, magasin-tokenidentitet,
+aktivt våben, inventoryplacering og drawn/holstered-tilstand. Restore validerer hele roster og
+inventory før commit og ruller sent slotkonflikt tilbage; v1 accepteres fortsat kun for én weapon
+context. Skift og missionsbinding er pushet til Nightfall `main` som `1737af9` og `f31bc66`, og
+checkpointet som `4941f3a`. GameSystems-registryens `restore_active_entry`-API blev pushet som
+`83679e8`.
 
-Verifikation: 5/5 fokuserede suites bestod efter sidste kodeændring; Sol kørte uafhængigt
-backpack weapon-regressionen **107/107** uden blocker. Headset-fit og XR frame pacing mangler fysisk
-headset-accept. Det samlede live-loadout-mål fortsætter med alle fem katalogvåben og checkpoint-støtte.
+Verifikation: sidste fokuserede våbensuite **117/117** bestod uafhængigt under Sol-review;
+implementeren rapporterede 9/9 relaterede suites, loadout-kildekontrakten **27/27** og ren addon-sync.
+Headset-fit og XR frame pacing mangler fysisk headset-accept. Fortsæt med headset-validering og nye
+forbedringer, når aktive fund er lukket.
 
 ## Afsluttet Aster-ekstern ressource-afbrydelsesrunde — 2026-10-12
 
