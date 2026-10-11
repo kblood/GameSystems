@@ -105,6 +105,7 @@ func register_item(item_id: String, node: Node3D, category: String, size: Vector
 		var anchor := _slot_node(anchor_id)
 		if anchor == node or _is_under(anchor, node): return false
 	for root in _owner_roots.values():
+		if not is_instance_valid(root) or not root is Node3D or not root.is_inside_tree(): return false
 		if root == node or _is_under(root, node): return false
 	if not _owner_roots.has(initial_owner) or not is_instance_valid(_owner_roots[initial_owner]): return false
 	if not _is_under(node, _owner_roots[initial_owner]): return false
@@ -116,7 +117,57 @@ func register_item(item_id: String, node: Node3D, category: String, size: Vector
 		var initial_body := _capture_body_state(node)
 		_initial_body_state[item_id] = initial_body
 		if initial_owner.begins_with("hand:"): _body_state[item_id] = initial_body.duplicate()
+	var on_tree_exiting := Callable(self, "_on_item_tree_exiting").bind(item_id)
+	node.tree_exiting.connect(on_tree_exiting)
 	return true
+
+## Forget an item only after its destination system has accepted it. The node
+## remains in its current scene location and the caller owns its next action.
+func unregister_item(item_id: String, expected_owner: String) -> bool:
+	if _busy or not _items.has(item_id) or inventory.owner_of(item_id) != expected_owner: return false
+	var node := _item_node(item_id)
+	if node == null: return false
+	if expected_owner == "slot":
+		var slot_id := inventory.slot_of(item_id)
+		var anchor := _slot_node(slot_id)
+		if anchor == null or not _is_under(node, anchor): return false
+	else:
+		var owner_root: Node3D = _owner_roots.get(expected_owner)
+		if not is_instance_valid(owner_root) or not _is_under(node, owner_root): return false
+	_busy = true
+	var removed := inventory.unregister_item(item_id, expected_owner)
+	if removed:
+		_disconnect_item_lifecycle(item_id, node)
+		_items.erase(item_id)
+		_body_state.erase(item_id)
+		_initial_body_state.erase(item_id)
+	_busy = false
+	return removed
+
+## External destruction (or an unannounced detach) must release both the ledger
+## claim and host references. Adapter-owned reparenting is guarded by _busy.
+func _on_item_tree_exiting(item_id: String) -> void:
+	if not _items.has(item_id): return
+	call_deferred("_reconcile_item_after_tree_exit", item_id)
+
+func _reconcile_item_after_tree_exit(item_id: String) -> void:
+	if _busy or not _items.has(item_id): return
+	var node := _item_node(item_id)
+	# tree_exiting also fires for ordinary reparenting. Let that operation finish
+	# before deciding whether the node was destroyed or permanently detached.
+	if node != null and node.is_inside_tree(): return
+	var from_owner := inventory.owner_of(item_id)
+	var slot_id := inventory.slot_of(item_id)
+	if from_owner.is_empty() or not inventory.unregister_item(item_id, from_owner): return
+	if node != null: _disconnect_item_lifecycle(item_id, node)
+	_items.erase(item_id)
+	_body_state.erase(item_id)
+	_initial_body_state.erase(item_id)
+	_emit_ownership_changed(item_id, from_owner, "disposed", slot_id)
+
+func _disconnect_item_lifecycle(item_id: String, node: Node3D) -> void:
+	var callback := Callable(self, "_on_item_tree_exiting").bind(item_id)
+	if node.tree_exiting.is_connected(callback): node.tree_exiting.disconnect(callback)
 
 func store(item_id: String, expected_owner: String, slot_id: String) -> bool:
 	if _busy or not _registered_nodes_valid(): return false
