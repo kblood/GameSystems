@@ -73,6 +73,29 @@ En ekstra Nightfall-regression dækker nu et ugyldigt valgt våben ved player-op
 til Kestrel med intakt 15-skuds state, og `firearm_load_errors` beholder den maskinlæsbare årsag. Den
 målrettede firearm-variant-suite består 75 checks; Sol har godkendt testen.
 
+## Nyt åbent delmål — selvstændigt våben-loadout og live switching
+
+`gs_weapon_loadout` er nu et host-agnostisk GameSystems-addon, der holder hvert våbens uigennemsigtige
+tilstand og præsentationsreferencer samlet. Værten godkender policy og anvender våbnet før det aktive
+ID offentliggøres; afviste valg ændrer derfor ikke aktivt loadout. Callback-mutationer og ugyldige
+boolean-resultater afvises. Addonet er committed i GameSystems `main` (`3338928`) og synkroniseret
+som arbejdskopi til NightfallContractsGodot.
+
+Verifikation: loadout-kontrakten **25/25** og våbenkataloget **19/19** består; Sol-review fandt ingen
+blocker. Nightfall-runtime integration er under arbejde: fysisk stuvning/hentning, isoleret state pr.
+våben, magasinidentitet og atomisk afvisning skal stadig bestå målrettede tests og review.
+
+## Afsluttet Aster-ekstern ressource-afbrydelsesrunde — 2026-10-12
+
+Aster slukker nu motoren straks, hvis en aktiv ekstern brændstof- eller strømforsyning bliver
+utilgængelig. Alternator-drevne lamper opdateres, før `engine_changed` udsendes, så synkrone lyttere
+ser den færdige visuelle tilstand. Den delte Blender-bil og resource-adaptere er tilføjet
+NightfallContractsGodot og pushet til `kblood/NightfallContractsGodot` (`e7ee55c`).
+
+Verifikation: målrettet Aster/shared-resource-suite **21/21**, samlet native Aster-validering
+**130 checks**, Blender 5.2.2 read-only validering og isoleret import består. Sol-review bekræftede
+regressionstesten. Aster er stadig en interaktiv asset-/panelprototype, ikke en kørebar missionsbil.
+
 ## Afsluttet inventory-root-lifecycle-runde — 2026-10-11
 
 Scene-adapteren afviser nu item-registrering sikkert, hvis et konfigureret owner-root er blevet
