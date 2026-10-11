@@ -25,8 +25,12 @@ export function createFlowSystem({supply,emit=()=>{},resolveTarget=null,acceptTa
     if(out.ml>requested+1e-7||!out.components||typeof out.components!=='object'||Array.isArray(out.components))throw new Error('Invalid source delivery');
     let sum=0;for(const[kind,ml]of Object.entries(out.components)){stateId(kind,'liquid kind');sum+=positive(ml,'component ml',true);}if(Math.abs(sum-out.ml)>1e-6)throw new Error('Source components disagree with delivered volume');
     e.target=target;e.emittedMl+=out.ml;if(pulse)e.pulsedMl+=out.ml;
-    if(out.ml){const receipt=()=>({...targetState(target),emitterId:e.id,sourceKey:e.sourceKey,ml:out.ml,components:{...out.components}});
-      apply(receipt());emit('flow:deposit',receipt());emit('liquid:deposit',receipt());
+    if(out.ml){const receipt=()=>({...targetState(target),emitterId:e.id,sourceKey:e.sourceKey,ml:out.ml,components:{...out.components}});let failure,failed=false;
+      try{apply(receipt());}catch(error){failure=error;failed=true;}
+      // The draw and history are already committed. Always deliver both receipts so a
+      // failing effect callback or first event observer cannot orphan that liquid.
+      for(const event of ['flow:deposit','liquid:deposit'])try{emit(event,receipt());}catch(error){if(!failed){failure=error;failed=true;}}
+      if(failed)throw failure;
     }return out;
   }
   const api={

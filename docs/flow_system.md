@@ -30,6 +30,9 @@ Målet indeholder `surfaceId`, `roomId`, `targetId`, `position` og valgfri `impa
 Ugyldige vektorer, intet mål eller afvist mål bruger ingen væske. targetId kan være null ved gulv-deposition.
 `flow:deposit` og `liquid:deposit` har `emitterId`, ikke et globalt pool-id, så en flyttet slange kan lave
 forskellige pytter. Effekter og begge eventtyper modtager hver deres kopi af payloaden.
+Når en gyldig levering har trukket væske og opdateret emitter-ledgeren, forsøger flow begge receipts selv hvis
+`apply` eller den første `emit`-callback kaster. Den første callback-fejl kastes videre efter begge forsøg;
+leveringen er allerede bogført og må ikke gentages.
 
 Appen bestemmer væskens effekt. I brandstationen køler kun vanddelen et objekt eller en pool.
 Alle komponenter projiceres til den relevante gulvpyt med kilde `hose`. Som i sprinklerdemoen er dette
@@ -64,7 +67,7 @@ så vandvisning, donor og emission valideres samlet; øvrige providers som sprin
 
 ## Verifikation
 
-13 nye tests dækker varighed, stop/release, to inputejere, blandinger, tom/ugyldig aim, payload-isolation,
+Tests dækker varighed, stop/release, to inputejere, blandinger, tom/ugyldig aim, payload-isolation,
 quality/frame-partition, held-input-neutralisering, staged source-validation, stop fra callback, numerik, kildeidentitet og ugyldige simple adaptorer.
 Samlet GameSystems-suite: 268/268 bestået; produktionsbuild består.
 17/17 browserchecks omfatter native mus/tastatur, annullering, fokus-tab, pause/resume, refill, save under flow,

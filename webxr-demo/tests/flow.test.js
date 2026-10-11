@@ -32,6 +32,18 @@ test('frame partition and quality do not change total emitted volume',()=>{
 test('each delivery observer receives a detached payload and cannot change saved targeting',()=>{
   let received;const w=world({apply:r=>{r.position[0]=999;r.components.water=0;},emit:(name,r)=>{if(name==='flow:deposit')r.ml=999;if(name==='liquid:deposit')received=r;}});w.flow.pulse('hose',80);near(received.ml,80);near(received.components.water,80);near(w.flow.state('hose').target.position[0],1);
 });
+test('committed flow still publishes both receipts before surfacing an apply failure',()=>{
+  const failure=new Error('effect sink failed'),events=[],w=world({apply(){throw failure;},emit:(name,data)=>events.push([name,data])});
+  assert.throws(()=>w.flow.pulse('hose',80),error=>error===failure);
+  near(w.supply.state('tank').ml,1120);near(w.flow.state('hose').emittedMl,80);near(w.flow.state('hose').pulsedMl,80);
+  assert.deepEqual(events.map(([name])=>name),['flow:deposit','liquid:deposit']);near(events[0][1].ml,80);near(events[1][1].ml,80);
+});
+test('a throwing first event emitter cannot suppress the authoritative liquid receipt',()=>{
+  const failure=new Error('first event failed'),events=[],w=world({emit:(name,data)=>{events.push([name,data]);if(name==='flow:deposit')throw failure;}});
+  assert.throws(()=>w.flow.pulse('hose',80),error=>error===failure);
+  near(w.supply.state('tank').ml,1120);near(w.flow.state('hose').emittedMl,80);near(w.flow.state('hose').pulsedMl,80);
+  assert.deepEqual(events.map(([name])=>name),['flow:deposit','liquid:deposit']);near(events[1][1].ml,80);
+});
 test('checkpoint restores liquid history while neutralizing transient held controls',()=>{
   const w=world();w.flow.start('hose');w.flow.step(.1);const saved=w.flow.capture();w.flow.step(.1);w.flow.restore(saved);assert.deepEqual(w.flow.capture(),saved);assert.equal(w.flow.state('hose').active,false);near(w.flow.state('hose').flowMlPerSecond,0);
 });
