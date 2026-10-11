@@ -25,6 +25,8 @@ timeLimit, data, reason og failureKind. Metadata er detached JSON med 16 KiB-gr�
 Restore validerer config, status, timerrelationer og fejlårsag; en kontrolperiode kan
 ikke være længere end hele opgavens elapsed. Kvalitet ændrer ikke målet. Evaluator-
 fejl afvises før timerændring. Callback-reset/dispose og nested operationer er dækket.
+`missions:started`-callbacks må ikke starte en ny mission synkront fra den aktive start;
+det afvises før den indlejrede start ændrer tilstand, og start-guard frigives også ved callback-fejl.
 
 Branddemoens start giver en frisk bygning, to brande i vest og møbler ved den faktiske
 døråbning, så døren er et brugbart middel til at beskytte øst. Let/normal/svær giver

@@ -4,7 +4,7 @@ import {jsonState,booleanState} from '../host/state.js';
 // One reusable timed objective. Gameplay evaluation is injected; simulation/storage stay with their owners.
 export function createMissionSystem({evaluate,emit=()=>{},quality='high',clearSeconds=3}={}){
   if(typeof evaluate!=='function')throw new TypeError('Mission needs an evaluator');positive(clearSeconds);if(clearSeconds>60)throw new RangeError('Clear hold exceeds budget');
-  const tiers=tierState(quality),empty=()=>({status:'idle',elapsed:0,clearElapsed:0,timeLimit:0,data:null,reason:null,failureKind:null});let run=empty(),disposed=false,busy=false,notifying=false;
+  const tiers=tierState(quality),empty=()=>({status:'idle',elapsed:0,clearElapsed:0,timeLimit:0,data:null,reason:null,failureKind:null});let run=empty(),disposed=false,busy=false,notifying=false,starting=false;
   const live=()=>{if(disposed)throw new Error('Mission is disposed');};
   const clone=s=>({...s,data:jsonState(s.data,{maxBytes:16384})});
   const publish=s=>{if(!disposed&&run===s)emit('missions:changed',clone(s));};
@@ -12,7 +12,7 @@ export function createMissionSystem({evaluate,emit=()=>{},quality='high',clearSe
   const reason=value=>{if(typeof value!=='string'||!value.trim()||value.length>256)throw new TypeError('Invalid mission failure reason');return value;};
   const api={get quality(){return tiers.quality;},setQuality:tiers.setQuality,
     state(){live();return clone(run);},
-    start({timeLimit=120,data=null}={}){live();const s={...empty(),status:'active',timeLimit:limit(timeLimit),data:jsonState(data,{maxBytes:16384})};run=s;emit('missions:started',clone(s));publish(s);return clone(s);},
+    start({timeLimit=120,data=null}={}){live();if(starting)throw new Error('Mission start is reentrant');starting=true;try{const s={...empty(),status:'active',timeLimit:limit(timeLimit),data:jsonState(data,{maxBytes:16384})};run=s;emit('missions:started',clone(s));publish(s);return clone(s);}finally{starting=false;}},
     reset(){live();run=empty();publish(run);},
     step(dt){live();if(busy||notifying)throw new Error('Mission update is reentrant');positive(dt,'dt',true);if(dt>10)throw new RangeError('Mission update exceeds budget');if(run.status!=='active')return;
       busy=true;try{const s=run,result=evaluate(clone(s)),clear=booleanState(result.clear),failed=booleanState(result.failed===undefined?false:result.failed),failureReason=failed?reason(result.reason??'condition'):null;

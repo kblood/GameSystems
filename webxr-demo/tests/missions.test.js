@@ -24,3 +24,10 @@ test('missions: callbacks may reset runs without stale completion, and recursive
   let m,completed=0;m=createMissionSystem({evaluate:()=>{m.reset();return {clear:true};},emit:e=>{if(e==='missions:completed')completed++;}});m.start();m.step(5);assert.equal(m.state().status,'idle');assert.equal(completed,0);
   let u;u=createMissionSystem({evaluate:()=>{assert.throws(()=>u.step(.1));assert.throws(()=>u.restore(u.capture()));return {clear:false};}});u.start();u.step(.1);assert.equal(u.state().elapsed,.1);u.dispose();assert.throws(()=>u.step(.1));
 });
+test('missions: started observers cannot recursively start, and the guard releases after errors',()=>{
+  let m,started=0,nestedError=null,mode='recurse';
+  m=createMissionSystem({evaluate:()=>({clear:false}),emit:event=>{if(event==='missions:started'){started++;if(mode==='recurse'){try{m.start();}catch(error){nestedError=error;}}else if(mode==='throw')throw new Error('observer failed');}}});
+  m.start({data:{run:1}});assert.equal(started,1);assert.match(nestedError.message,/start is reentrant/);assert.deepEqual(m.state().data,{run:1});
+  mode='throw';assert.throws(()=>m.start({data:{run:2}}),/observer failed/);assert.equal(started,2);
+  mode='ok';m.start({data:{run:3}});assert.equal(started,3);assert.deepEqual(m.state().data,{run:3});
+});
