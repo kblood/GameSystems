@@ -3,6 +3,16 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
+## Afsluttet væske-opacitet-runde — 2026-10-11
+
+Designfeltet `opacity` styrer nu væskens gennemskinnelighed i Three.js og Godot over samme referencevej,
+med intervallet 0–1. Skum forbliver uigennemsigtigt. Liveændringer opdaterer rendervejen og vækker
+væskedriveren; Three.js- og Godot-designhelpers bevarer indstillingen ved kvalitetstrinsskift.
+
+Verifikation: 487/487 GameSystems-WebXR unit-tests, 339/339 Contracts-WebXR tests, produktionsbuild,
+13/13 browserkontroller inklusive faktisk authored designværdi og runtime-rendering samt Godot
+liquid-controls accepttest består. Godot headset/renderhardware er ikke testet.
+
 ## Afsluttet hvileskum-runde — 2026-10-11
 
 Væskedesign kunne kun danne skum efter rystning. Et separat `foam_static`-felt giver nu en

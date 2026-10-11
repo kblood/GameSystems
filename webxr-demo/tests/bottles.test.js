@@ -79,6 +79,27 @@ test('viscosity changes the slosh response while the neutral value preserves leg
   assert.ok(thin > neutral && neutral > thick, `${thin} > ${neutral} > ${thick}`);
 });
 
+test('authored opacity controls liquid transmission and survives runtime edits', () => {
+  const root = liquidRoot(liquidInfo({ opacity: 0.72 }));
+  const state = setupBottle(root, { allowSleep: true });
+  assert.equal(state.opacity, 0.72);
+  assert.equal(state.uniforms.uOpacity.value, 0.72);
+  assert.equal(state.material.transparent, true);
+  assert.equal(state.material.depthWrite, false);
+  for (let i = 0; i < 8; i++) state.update(1 / 60);
+  assert.equal(state.sleeping, true);
+  state.opacity = 0.25;
+  assert.equal(state.uniforms.uOpacity.value, 0.25, 'opacity updates the shader uniform immediately');
+  assert.equal(state.sleeping, false, 'opacity edits wake a sleeping driver');
+  state.opacity = 1;
+  assert.equal(state.material.transparent, false, 'fully opaque liquid returns to the opaque render path');
+  assert.equal(state.material.depthWrite, true);
+  state.opacity = -1;
+  assert.equal(state.opacity, 0, 'opacity is clamped to the finite 0..1 interval');
+  state.opacity = Number.NaN;
+  assert.equal(state.opacity, 1, 'invalid opacity recovers to the opaque default');
+});
+
 test('resting foam stays visible while the liquid driver sleeps and wakes when edited', () => {
   const root = liquidRoot();
   const state = setupBottle(root, { allowSleep: true });

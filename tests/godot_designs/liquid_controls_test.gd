@@ -62,6 +62,14 @@ func _run() -> void:
 	ctl.viscosity = 1.0
 	_check(is_equal_approx(ctl._viscosity_value(), 1.0), "runtime viscosity is bounded and applied")
 	_check(is_equal_approx(ctl._tint_strength_value(), float(info.get("tint_strength", 1.0))), "sidecar tint_strength is resolved")
+	_check(is_equal_approx(ctl._opacity_value(), float(info.get("opacity", 1.0))), "sidecar opacity is resolved")
+	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("opacity")), ctl._opacity_value()), "sidecar opacity is applied to the liquid shader")
+	ctl._sleep()
+	ctl.opacity = 0.35
+	_check(not ctl.is_sleeping(), "runtime opacity edit wakes the controller")
+	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("opacity")), 0.35), "runtime opacity updates the shader")
+	ctl.opacity = 2.0
+	_check(is_equal_approx(ctl.opacity, 1.0), "runtime opacity is clamped to 0..1")
 	ctl.tint_strength = 2.5
 	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("tint_strength")), 2.5), "runtime tint_strength updates the Beer-Lambert shader")
 	ctl.tint_strength = 8.0
@@ -86,12 +94,14 @@ func _run() -> void:
 	design.ctl.bubble_size = 2.4
 	design.ctl.viscosity = 0.8
 	design.ctl.tint_strength = 2.2
+	design.ctl.opacity = 0.42
 	design.ctl.foam_static = 0.7
 	design.set_tier("low")
 	await process_frame
 	_check(is_equal_approx(design.ctl.bubble_size, 2.4), "tier swap preserves runtime bubble size")
 	_check(is_equal_approx(design.ctl.viscosity, 0.8), "tier swap preserves runtime viscosity")
 	_check(is_equal_approx(design.ctl.tint_strength, 2.2), "tier swap preserves runtime tint strength")
+	_check(is_equal_approx(design.ctl.opacity, 0.42), "tier swap preserves runtime opacity")
 	_check(is_equal_approx(design.ctl.foam_static, 0.7), "tier swap preserves runtime resting foam")
 	print("LIQUID_CONTROLS_OK bubble_size=2.25 viscosity=0..1")
 	quit()

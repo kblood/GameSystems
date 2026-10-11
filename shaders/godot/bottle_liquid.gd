@@ -43,6 +43,12 @@ signal opened                           ## cap_open set true (BottlePour listens
 		tint_strength = clampf(v, -1.0, 4.0) if is_finite(v) else -1.0
 		if _mat: _mat.set_shader_parameter("tint_strength", _tint_strength_value())
 		wake()
+## Authored opacity over the shader reference path (0 = clear, 1 = opaque); -1 uses the design sidecar.
+@export_range(-1.0, 1.0) var opacity := -1.0:
+	set(v):
+		opacity = clampf(v, -1.0, 1.0) if is_finite(v) else -1.0
+		if _mat: _mat.set_shader_parameter("opacity", _opacity_value())
+		wake()
 @export var carbonation := -1.0:             ## -1 = use the value baked into the GLB (soda/beer fizz)
 	set(v):
 		carbonation = v
@@ -161,6 +167,7 @@ func setup(root: Node, fill_: float = 0.6, sidecar_json := "") -> void:
 	_mat.set_shader_parameter("flow_pivot", Vector3(0.0, lerpf(z0, z1, 0.4), 0.0))
 	_mat.set_shader_parameter("bubble_size", _bubble_size_value())
 	_mat.set_shader_parameter("foam", _foam_static_value())
+	_mat.set_shader_parameter("opacity", _opacity_value())
 	_foam_h = float(_info.get("foam_height", 0.022))
 	_mat.set_shader_parameter("foam_height", _foam_h)
 	_mat.set_shader_parameter("flip_faces", _signed_volume(liquid.mesh) < 0.0)
@@ -233,6 +240,10 @@ func _viscosity_value() -> float:
 
 func _tint_strength_value() -> float:
 	return clampf(float(_info.get("tint_strength", 1.0)) if tint_strength < 0.0 else tint_strength, 0.0, 4.0)
+
+
+func _opacity_value() -> float:
+	return clampf(float(_info.get("opacity", 1.0)) if opacity < 0.0 else opacity, 0.0, 1.0)
 
 
 func _foam_static_value() -> float:

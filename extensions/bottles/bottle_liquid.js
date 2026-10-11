@@ -35,6 +35,7 @@ uniform vec4 uPlane;          // xyz = world up in OBJECT space, w = plane offse
 uniform vec3 uUpWorld;        // effective (slosh-bent) up in world space
 uniform vec3 uLiquidColor;    // linear; colour seen through uRefPath of liquid
 uniform float uTintStrength;  // Beer-Lambert concentration multiplier; 0 = clear, 1 = authored colour
+uniform float uOpacity;       // authored liquid opacity over the reference optical path (0 = clear, 1 = opaque)
 uniform float uRipple, uAgitation, uCarbonation, uBubbleScale, uFoam, uFoamHeight, uBubbleSize, uRise, uBaseY, uRefPath, uTime;
 uniform mat3 uFlowBasis;      // columns = flow axes in object space (column 1 = world up)
 uniform vec3 uFlowPivot;
@@ -136,7 +137,7 @@ float snoise(vec3 p) { return 0.5 + 0.25 * (sin(p.x * 1.7 + sin(p.z * 2.3)) * si
 // Runs right after clipping: discard above the plane, then computes lAlbedo / lEmit / lRough / lSpec (Godot ALBEDO,
 // EMISSION, ROUGHNESS, SPECULAR) and lSurf (true = this fragment shows the liquid surface through the cut).
 const LIQUID_FRAG = /* glsl */`
-vec3 lAlbedo, lEmit; float lRough, lSpec; bool lSurf; vec3 lSurfN;
+vec3 lAlbedo, lEmit; float lRough, lSpec, lAlpha; bool lSurf; vec3 lSurfN;
 {
   float px = length(fwidth(vObjPos));
   vec3 u = normalize(uPlane.xyz);
@@ -164,6 +165,7 @@ vec3 lAlbedo, lEmit; float lRough, lSpec; bool lSurf; vec3 lSurfN;
     if (ru > 1e-4) L = min(L, -h / ru);
     if (rd.y < -1e-4) L = min(L, (vObjPos.y - uBaseY) / -rd.y);
     L = max(L, 0.0);
+    lAlpha = 1.0 - pow(1.0 - clamp(uOpacity, 0.0, 1.0), clamp(L / uRefPath, 0.3, 3.0));
     vec3 col = exp(lc * clamp(L / uRefPath, 0.3, 3.0));
     col = mix(col, col * 1.4 + tintedColor * 0.03, ag * ag * (0.2 + 0.4 * carb));
     vec3 em = vec3(0.0);
@@ -212,6 +214,7 @@ vec3 lAlbedo, lEmit; float lRough, lSpec; bool lSurf; vec3 lSurfN;
       col = mix(col, fcol, fmask);
       em = mix(em, fcol * 0.12, fmask);
     }
+    lAlpha = mix(lAlpha, 1.0, fmask);
     float men = 1.0 - smoothstep(0.0, 0.0014, dsurf0);
     em += vec3(0.22) * men * (1.0 - fmask);
     lAlbedo = col * 0.8;
@@ -221,6 +224,7 @@ vec3 lAlbedo, lEmit; float lRough, lSpec; bool lSurf; vec3 lSurfN;
   } else {
     float vu = max(dot(vd, u), 0.03);
     float st = -h / vu;
+    lAlpha = 1.0 - pow(1.0 - clamp(uOpacity, 0.0, 1.0), clamp(st / uRefPath, 0.3, 3.0));
     vec3 ps = vObjPos + vd * st;
     vec3 qs = (ps - uFlowPivot) * F;
     vec3 col = exp(lc * clamp(st / uRefPath, 0.3, 3.0));
@@ -240,6 +244,7 @@ vec3 lAlbedo, lEmit; float lRough, lSpec; bool lSurf; vec3 lSurfN;
     float holes = smoothstep(0.25, 0.45, v2.x) * (1.0 - smoothstep(0.65, 0.95, cover + fm * 0.4));
     fcol = mix(fcol, col * 1.4 + 0.05, holes * 0.6);
     col = mix(col, fcol, cover);
+    lAlpha = mix(lAlpha, 1.0, cover);
     lAlbedo = col * 0.8;
     lEmit = col * 0.25 + col * 0.12;           // + 0.12: stands in for Godot BACKLIGHT (col * 0.5)
     lRough = mix(0.04, 0.7, cover);
@@ -253,7 +258,7 @@ export function makeLiquidMaterial(quality = HIGH) {
   const u = {
     uPlane: { value: new THREE.Vector4(0, 1, 0, 1) }, uUpWorld: { value: new THREE.Vector3(0, 1, 0) },
     uLiquidColor: { value: new THREE.Color(0.8, 0.5, 0.1) },
-    uTintStrength: { value: 1 },
+    uTintStrength: { value: 1 }, uOpacity: { value: 1 },
     uRipple: { value: 0 }, uAgitation: { value: 0 }, uCarbonation: { value: 0 }, uBubbleScale: { value: 1 },
     uFoam: { value: 0 }, uFoamHeight: { value: 0.022 }, uBubbleSize: { value: 1 }, uRise: { value: 0 },
     uBaseY: { value: 0 }, uRefPath: { value: 0.045 }, uTime: { value: 0 },
@@ -271,7 +276,7 @@ export function makeLiquidMaterial(quality = HIGH) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\n' + LIQUID_COMMON)
       .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n' + LIQUID_FRAG)
-      .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb = lAlbedo;')
+      .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb = lAlbedo; diffuseColor.a *= lAlpha;')
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = lRough;')
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
 if (lSurf) { vec3 nw = normalize(mat3(modelMatrix) * lSurfN); nw = normalize(mix(uUpWorld, nw, 0.999)); normal = normalize((viewMatrix * vec4(nw, 0.0)).xyz); }`)
@@ -362,6 +367,10 @@ export function setupBottle(root, opts = {}) {
   let viscosity = clampFinite(opts.viscosity ?? info.viscosity ?? 0.45, 0, 1, 0.45);
   let tintStrength = clampFinite(opts.tintStrength ?? info.tint_strength ?? 1, 0, 4, 1);
   U.uTintStrength.value = tintStrength;
+  let opacity = clampFinite(opts.opacity ?? info.opacity ?? 1, 0, 1, 1);
+  U.uOpacity.value = opacity;
+  mat.transparent = opacity < 0.9999;
+  mat.depthWrite = opacity >= 0.9999;
   let foamStatic = clampFinite(opts.foamStatic ?? info.foam_static ?? 0, 0, 1, 0);
   U.uFoam.value = foamStatic;
 
@@ -379,6 +388,14 @@ export function setupBottle(root, opts = {}) {
     },
     get viscosity() { return viscosity; }, set viscosity(v) { viscosity = clampFinite(v, 0, 1, 0.45); S.wake(); },
     get tintStrength() { return tintStrength; }, set tintStrength(v) { tintStrength = clampFinite(v, 0, 4, 1); U.uTintStrength.value = tintStrength; S.wake(); },
+    get opacity() { return opacity; }, set opacity(v) {
+      opacity = clampFinite(v, 0, 1, 1); U.uOpacity.value = opacity;
+      const translucent = opacity < 0.9999;
+      if (mat.transparent !== translucent || mat.depthWrite === translucent) {
+        mat.transparent = translucent; mat.depthWrite = !translucent; mat.needsUpdate = true;
+      }
+      S.wake();
+    },
     get foamStatic() { return foamStatic; }, set foamStatic(v) { foamStatic = clampFinite(v, 0, 1, 0); U.uFoam.value = Math.max(foam, foamStatic); S.wake(); },
     get carbonation() { return carbonation; }, set carbonation(v) { carbonation = v; S.wake(); },
     get capOpen() { return capOpen; }, set capOpen(v) { capOpen = v; S.wake(); },

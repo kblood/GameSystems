@@ -49,6 +49,18 @@ try {
   await page.goto('http://127.0.0.1:5293/index.html?avatar=off', { waitUntil: 'networkidle0' });
   await page.waitForFunction(() => window.__demo && document.getElementById('status').textContent.includes('beholdere'), { timeout: 30000 });
   assert.match(await page.$eval('#status', el => el.textContent), /^29 beholdere/);
+  const opacity = await page.evaluate(() => {
+    const bottle = [...window.__demo.factory.bottles].find(item => item.design === 'beer_pale');
+    if (!bottle) throw new Error('authored beer_pale bottle was not loaded');
+    const authored = bottle.liquid.info.opacity;
+    const applied = bottle.liquid.opacity;
+    bottle.liquid.opacity = 0.35;
+    window.__demo.renderer.render(window.__demo.scene, window.__demo.camera);
+    return { authored, applied, value: bottle.liquid.opacity, uniform: bottle.liquid.uniforms.uOpacity.value,
+      transparent: bottle.liquid.material.transparent, depthWrite: bottle.liquid.material.depthWrite };
+  });
+  assert.deepEqual(opacity, { authored: 0.6, applied: 0.6, value: 0.35, uniform: 0.35, transparent: true, depthWrite: false });
+  checks.push('authored design opacity reaches the rendered liquid and runtime edits select the translucent path');
   await page.evaluate(() => {
     const { pour, materials, physics } = window.__demo;
     const floor = physics.surfaces[0], position = floor.position.clone(); position.x = -3; position.z = 2; position.y = 0.5;

@@ -17,6 +17,7 @@ uniform vec4 plane = vec4(0.0, 1.0, 0.0, 1.0);   // xyz = world up in OBJECT spa
 uniform vec3 up_world = vec3(0.0, 1.0, 0.0);      // effective (slosh-bent) up in world space
 uniform vec4 liquid_color : source_color = vec4(0.8, 0.5, 0.1, 1.0);   // colour seen through ref_path of liquid
 uniform float tint_strength = 1.0; // Beer-Lambert concentration multiplier; 0 = clear, 1 = authored colour
+uniform float opacity : hint_range(0.0, 1.0) = 1.0; // authored opacity over ref_path; foam stays opaque
 uniform vec4 surface_color : source_color = vec4(0.9, 0.6, 0.15, 1.0); // unused (kept so existing callers still work)
 uniform float ripple = 0.0;
 uniform float agitation = 0.0;       // 0..1, rises when the bottle is shaken, decays over ~2-3 s
@@ -196,6 +197,7 @@ void vertex() {
 }
 
 void fragment() {
+	float liquid_alpha = clamp(opacity, 0.0, 1.0);
 	float px = length(fwidth(obj_pos));
 	vec3 u = normalize(plane.xyz);
 	float h = dot(obj_pos, u) - plane.w;
@@ -238,6 +240,7 @@ void fragment() {
 		if (ru > 1e-4) { L = min(L, -h / ru); }
 		if (rd.y < -1e-4) { L = min(L, (obj_pos.y - base_y) / -rd.y); }
 		L = max(L, 0.0);
+		liquid_alpha = 1.0 - pow(1.0 - clamp(opacity, 0.0, 1.0), clamp(L / ref_path, 0.3, 3.0));
 		vec3 col = exp(lc * clamp(L / ref_path, 0.3, 3.0));
 		// shaken: micro-bubble haze, tinted by the liquid (stays brown for cola)
 		col = mix(col, col * 1.4 + tinted_color * 0.03, ag * ag * (0.2 + 0.4 * carb));   // micro-bubble scatter, keeps the hue
@@ -309,6 +312,7 @@ void fragment() {
 			// wet lower head: bigger bubbles show the liquid through their faces
 			fcol = mix(fcol, mix(col * 1.3 + 0.03, foam_col, 0.45), wet * 0.55 * (1.0 - edge));
 			col = mix(col, fcol, fmask);
+			liquid_alpha = mix(liquid_alpha, 1.0, fmask);
 			em = mix(em, fcol * 0.12, fmask);
 		}
 		float men = 1.0 - smoothstep(0.0, 0.0014, dsurf0);
@@ -323,6 +327,7 @@ void fragment() {
 		// seen through the cut: the liquid surface, facing world up. Find where the eye ray crosses the plane.
 		float vu = max(dot(vd, u), 0.03);
 		float st = -h / vu;                       // distance from the plane down to this back-wall fragment
+		liquid_alpha = 1.0 - pow(1.0 - clamp(opacity, 0.0, 1.0), clamp(st / ref_path, 0.3, 3.0));
 		vec3 ps = obj_pos + vd * st;
 		vec3 qs = (ps - flow_pivot) * F;
 		vec3 col = exp(lc * clamp(st / ref_path, 0.3, 3.0));
@@ -348,6 +353,7 @@ void fragment() {
 		float holes = smoothstep(0.25, 0.45, v2.x) * (1.0 - smoothstep(0.65, 0.95, cover + fm * 0.4));
 		fcol = mix(fcol, col * 1.4 + 0.05, holes * 0.6);
 		col = mix(col, fcol, cover);
+		liquid_alpha = mix(liquid_alpha, 1.0, cover);
 		ALBEDO = col * 0.8;
 		BACKLIGHT = col * 0.5;
 		EMISSION = col * 0.25;
@@ -355,5 +361,6 @@ void fragment() {
 		SPECULAR = mix(0.5, 0.25, cover);
 	}
 	}
+	ALPHA = liquid_alpha;
 	METALLIC = 0.0;
 }

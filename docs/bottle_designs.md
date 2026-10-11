@@ -190,7 +190,7 @@ Guidance: author as PNG/JPG; ship as KTX2/BasisU (three.js `KTX2Loader`) or Godo
 
 Baking labels into the glass texture itself (an even lower tier) is **not implemented**. The atlas side is 512 or 1024 by content (wraps need 1024), so LOW can use MORE memory than HIGH for designs with a few small labels; prefer MEDIUM there.
 
-Runtime tier swap: Godot `bd.set_tier("low")` or `BottleDesign.load_design(path, fill, true, "low")`; three.js `d = await d.setTier('low')`. The liquid fill and live bubble-size, viscosity, tint-strength and resting-foam settings survive the swap; label edits still need to be reapplied. Helpers `tier_path()` / `tierPath()`.
+Runtime tier swap: Godot `bd.set_tier("low")` or `BottleDesign.load_design(path, fill, true, "low")`; three.js `d = await d.setTier('low')`. The liquid fill and live bubble-size, viscosity, tint-strength, opacity and resting-foam settings survive the swap; label edits still need to be reapplied. Helpers `tier_path()` / `tierPath()`.
 
 ### Draw calls and texture memory (measured from the GLBs; `export/designs/tier_stats.json`)
 
@@ -215,7 +215,7 @@ MINIMAL texture memory is 0. GLB files are 0.3-2.4 MB, mostly the liquid LUT JSO
 
 ## Liquid settings and remaining shader limitations
 
-`liquid` is written to `extras.liquid` (and `<name>.liquid.json`) like the existing bottles. Color, fill, carbonation, shake foam capacity, resting foam head, bubble size, viscosity and Beer-Lambert tint strength are honoured. Bubble size can be changed on the live Three.js controller with `bottle.bubbleSize = value` or on Godot's `BottleLiquid.bubble_size`; values are clamped to 0–4. Viscosity is normalized from 0 (thin, quick response) to 1 (thick, damped), defaults to 0.45, and can be changed at runtime through `bottle.viscosity` / `BottleLiquid.viscosity`. A viscosity of 0.45 keeps the previous slosh spring and damping constants. Tint strength is a 0–4 multiplier on Beer-Lambert absorption: 0 removes colour absorption but does not make liquid transparent; 1 uses the authored colour. It is controlled by `bottle.tintStrength` / `BottleLiquid.tint_strength`. Resting head is the optional `foam_static` field (0–1), separate from the existing `foam` shake-capacity field. Runtime changes to either new control wake the controller; a static-only head can remain visible while the liquid driver sleeps.
+`liquid` is written to `extras.liquid` (and `<name>.liquid.json`) like the existing bottles. Color, fill, carbonation, shake foam capacity, resting foam head, bubble size, viscosity, Beer-Lambert tint strength and opacity are honoured. Bubble size can be changed on the live Three.js controller with `bottle.bubbleSize = value` or on Godot's `BottleLiquid.bubble_size`; values are clamped to 0–4. Viscosity is normalized from 0 (thin, quick response) to 1 (thick, damped), defaults to 0.45, and can be changed at runtime through `bottle.viscosity` / `BottleLiquid.viscosity`. A viscosity of 0.45 keeps the previous slosh spring and damping constants. Tint strength is a 0–4 multiplier on Beer-Lambert absorption: 0 removes colour absorption but does not make liquid transparent; 1 uses the authored colour. It is controlled by `bottle.tintStrength` / `BottleLiquid.tint_strength`. Opacity is 0–1 (`bottle.opacity` / `BottleLiquid.opacity`) and describes absorption across the reference optical path; 0 is clear and 1 opaque. Foam remains opaque regardless of liquid opacity. Resting head is the optional `foam_static` field (0–1), separate from the existing `foam` shake-capacity field. Runtime changes to these visual controls wake the controller; a static-only head can remain visible while the liquid driver sleeps.
 
 Foam rendering is supported by the Three.js HIGH implementation and Godot tiers above MINIMAL; Godot MINIMAL deliberately omits foam to keep its shader inexpensive. Three.js currently implements HIGH only.
 
@@ -223,7 +223,6 @@ Still not honoured by `shaders/godot/bottle_liquid.*` / `shaders/three/bottle_li
 
 | owner | field | needed |
 |---|---|---|
-| TODO(owner) | `opacity` | liquid alpha / transmission uniform |
 | TODO(owner) | `density` | `mass_kg()` uses a water-like default |
 
 `BottleDesign.UNSUPPORTED` lists the same items.

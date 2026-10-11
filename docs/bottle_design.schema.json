@@ -25,7 +25,7 @@
       "colour": {"$ref": "#/$defs/colour"},
       "label": {"$ref": "#/$defs/labelSource", "description": "image/generate for the cap_top disc slot"}}},
     "liquid": {"type": "object",
-      "description": "Written to extras.liquid and the .liquid.json sidecar. bubble_size (0–4; default 1), normalized viscosity (0–1; default 0.45), tint_strength (0–4; default 1), and foam_static (0–1; default 0) are applied at runtime. tint_strength 0 removes Beer-Lambert colour absorption; 1 uses the authored colour. This does not make the liquid transparent. opacity is not yet applied by the visual shader/controller; density remains available to gameplay mass APIs.",
+      "description": "Written to extras.liquid and the .liquid.json sidecar. bubble_size (0–4; default 1), normalized viscosity (0–1; default 0.45), tint_strength (0–4; default 1), foam_static (0–1; default 0), and opacity (0–1; default 1) are applied at runtime. tint_strength 0 removes Beer-Lambert colour absorption; 1 uses the authored colour. Opacity is evaluated over the shader reference path; foam remains opaque. Density remains available to gameplay mass APIs.",
       "properties": {
         "color": {"$ref": "#/$defs/colour"},
         "fill": {"type": "number", "minimum": 0, "maximum": 1},
@@ -33,7 +33,7 @@
         "foam_static": {"type": "number", "minimum": 0, "maximum": 1, "description": "persistent resting foam head; 0 disables, 1 fills foam_height"},
         "bubble_size": {"type": "number", "minimum": 0, "maximum": 4, "description": "runtime bubble-radius multiplier"},
         "viscosity": {"type": "number", "minimum": 0, "maximum": 1, "description": "normalized slosh response: 0 thin, 1 thick; default 0.45"},
-        "opacity": {"type": "number"},
+        "opacity": {"type": "number", "minimum": 0, "maximum": 1, "description": "liquid opacity over the reference optical path: 0 clear, 1 opaque; foam stays opaque"},
         "tint_strength": {"type": "number", "minimum": 0, "maximum": 4, "description": "Beer-Lambert colour concentration multiplier; 0 removes colour absorption (not transparency), 1 uses the authored colour"}, "density": {"type": "number"}}},
     "labels": {"type": "array", "items": {"$ref": "#/$defs/label"}},
     "spare_slots": {"type": "array", "items": {"type": "string"},
