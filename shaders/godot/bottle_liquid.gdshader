@@ -16,6 +16,7 @@ render_mode cull_disabled;
 uniform vec4 plane = vec4(0.0, 1.0, 0.0, 1.0);   // xyz = world up in OBJECT space, w = plane offset (from the baked table)
 uniform vec3 up_world = vec3(0.0, 1.0, 0.0);      // effective (slosh-bent) up in world space
 uniform vec4 liquid_color : source_color = vec4(0.8, 0.5, 0.1, 1.0);   // colour seen through ref_path of liquid
+uniform float tint_strength = 1.0; // Beer-Lambert concentration multiplier; 0 = clear, 1 = authored colour
 uniform vec4 surface_color : source_color = vec4(0.9, 0.6, 0.15, 1.0); // unused (kept so existing callers still work)
 uniform float ripple = 0.0;
 uniform float agitation = 0.0;       // 0..1, rises when the bottle is shaken, decays over ~2-3 s
@@ -207,18 +208,20 @@ void fragment() {
 		if (!fr) {
 			NORMAL = normalize((VIEW_MATRIX * vec4(up_world, 0.0)).xyz);
 		}
-		ALBEDO = pow(liquid_color.rgb, vec3(1.4)) * (fr ? 0.8 : 0.9);   // ~ absorption through a typical path
-		EMISSION = pow(liquid_color.rgb, vec3(1.4)) * 0.2;
+		vec3 tinted_color = pow(max(liquid_color.rgb, vec3(1e-4)), vec3(clamp(tint_strength, 0.0, 4.0)));
+		ALBEDO = pow(tinted_color, vec3(1.4)) * (fr ? 0.8 : 0.9);   // ~ absorption through a typical path
+		EMISSION = pow(tinted_color, vec3(1.4)) * 0.2;
 		ROUGHNESS = fr ? 0.1 : 0.05;
 		SPECULAR = fr ? 0.12 : 0.5;
 	} else {
 	vec3 vd = normalize(cam_obj - obj_pos);   // toward the viewer, object space
-	vec3 lc = log(max(liquid_color.rgb, vec3(1e-4)));
+	vec3 tinted_color = pow(max(liquid_color.rgb, vec3(1e-4)), vec3(clamp(tint_strength, 0.0, 4.0)));
+	vec3 lc = log(max(tinted_color, vec3(1e-4)));
 	float bs = clamp(bubble_scale, 0.0, 1.0);
 	float carb = carbonation * bs;
 	float ag = agitation * bs;
 	float fm = clamp(foam * bs, 0.0, 1.0);
-	vec3 foam_col = mix(vec3(0.95, 0.93, 0.88), pow(liquid_color.rgb, vec3(0.25)), 0.35);   // cream for beer, tan for cola
+	vec3 foam_col = mix(vec3(0.95, 0.93, 0.88), pow(tinted_color, vec3(0.25)), 0.35);   // cream for beer, tan for cola
 	mat3 F = flow_basis;
 	vec3 vq = vd * F;                         // view dir in the flow frame
 
@@ -237,7 +240,7 @@ void fragment() {
 		L = max(L, 0.0);
 		vec3 col = exp(lc * clamp(L / ref_path, 0.3, 3.0));
 		// shaken: micro-bubble haze, tinted by the liquid (stays brown for cola)
-		col = mix(col, col * 1.4 + liquid_color.rgb * 0.03, ag * ag * (0.2 + 0.4 * carb));   // micro-bubble scatter, keeps the hue
+		col = mix(col, col * 1.4 + tinted_color * 0.03, ag * ag * (0.2 + 0.4 * carb));   // micro-bubble scatter, keeps the hue
 		vec3 em = vec3(0.0);
 		float dsurf0 = -h;
 
@@ -323,7 +326,7 @@ void fragment() {
 		vec3 ps = obj_pos + vd * st;
 		vec3 qs = (ps - flow_pivot) * F;
 		vec3 col = exp(lc * clamp(st / ref_path, 0.3, 3.0));
-		col = mix(col, col * 1.4 + liquid_color.rgb * 0.03, ag * ag * (0.2 + 0.4 * carb));   // micro-bubble scatter, keeps the hue
+		col = mix(col, col * 1.4 + tinted_color * 0.03, ag * ag * (0.2 + 0.4 * carb));   // micro-bubble scatter, keeps the hue
 		// ripples (normal only)
 		vec2 g = vec2(cos(qs.x * 140.0 + TIME * 7.0) + 0.6 * cos(qs.x * 90.0 + qs.z * 120.0 - TIME * 9.0),
 				cos(qs.z * 150.0 - TIME * 8.0) + 0.6 * cos(qs.x * 90.0 + qs.z * 120.0 - TIME * 9.0));

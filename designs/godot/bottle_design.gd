@@ -14,7 +14,6 @@ const LABEL_ROUGH := {"paper_matte": 0.85, "paper_gloss": 0.25, "foil_metal": 0.
 ## TODO(owner of bottle_liquid.*): extras.liquid keys that are stored in the design but not yet used by the shader/controller.
 const UNSUPPORTED := {
 	"opacity": "liquid shader has no opacity/transmission parameter (clear .. opaque)",
-	"tint_strength": "no absorption/Beer-Lambert strength uniform (colour is a flat albedo)",
 	"foam": "mapped to BottleLiquid.foam_capacity (head after shaking) but NO static head height / resting foam layer",
 	"density": "not a rendering parameter; use mass_kg(fill) for gameplay",
 }
@@ -57,6 +56,7 @@ func set_tier(tier_name: String) -> void:
 	var had_liquid := ctl != null
 	var old_bubble_size := ctl.bubble_size if ctl else -1.0
 	var old_viscosity := ctl.viscosity if ctl else -1.0
+	var old_tint_strength := ctl.tint_strength if ctl else -1.0
 	for c in get_children(): c.queue_free()
 	_labels.clear()
 	ctl = null
@@ -64,6 +64,7 @@ func set_tier(tier_name: String) -> void:
 	if ctl:
 		ctl.bubble_size = old_bubble_size
 		ctl.viscosity = old_viscosity
+		ctl.tint_strength = old_tint_strength
 	tier = tier_name
 
 
@@ -121,6 +122,7 @@ func apply_liquid_settings(fill := -1.0) -> void:
 	ctl.foam_capacity = float(liquid_info.get("foam", 0.0))
 	ctl.bubble_size = float(liquid_info.get("bubble_size", 1.0))
 	ctl.viscosity = clampf(float(liquid_info.get("viscosity", 0.45)), 0.0, 1.0)
+	ctl.tint_strength = clampf(float(liquid_info.get("tint_strength", 1.0)), 0.0, 4.0)
 	# colour: setup() already uses extras.liquid.color; kept in sync by set_liquid_color()
 
 

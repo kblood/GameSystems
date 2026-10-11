@@ -61,6 +61,11 @@ func _run() -> void:
 	_check(not ctl.is_sleeping(), "viscosity edit wakes a sleeping controller")
 	ctl.viscosity = 1.0
 	_check(is_equal_approx(ctl._viscosity_value(), 1.0), "runtime viscosity is bounded and applied")
+	_check(is_equal_approx(ctl._tint_strength_value(), float(info.get("tint_strength", 1.0))), "sidecar tint_strength is resolved")
+	ctl.tint_strength = 2.5
+	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("tint_strength")), 2.5), "runtime tint_strength updates the Beer-Lambert shader")
+	ctl.tint_strength = 8.0
+	_check(is_equal_approx(ctl.tint_strength, 4.0), "tint_strength is clamped to the documented range")
 	var thin := _response(0.0)
 	var neutral := _response(0.45)
 	var thick := _response(1.0)
@@ -71,9 +76,11 @@ func _run() -> void:
 	_check(design.ctl != null, "design creates its liquid controller in-tree")
 	design.ctl.bubble_size = 2.4
 	design.ctl.viscosity = 0.8
+	design.ctl.tint_strength = 2.2
 	design.set_tier("low")
 	await process_frame
 	_check(is_equal_approx(design.ctl.bubble_size, 2.4), "tier swap preserves runtime bubble size")
 	_check(is_equal_approx(design.ctl.viscosity, 0.8), "tier swap preserves runtime viscosity")
+	_check(is_equal_approx(design.ctl.tint_strength, 2.2), "tier swap preserves runtime tint strength")
 	print("LIQUID_CONTROLS_OK bubble_size=2.25 viscosity=0..1")
 	quit()

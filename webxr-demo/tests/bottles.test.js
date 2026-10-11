@@ -35,7 +35,7 @@ function model({ shatters = true, material = 'glass' } = {}) {
 const hit = (body, speed, extra = {}) => ({ a: body, speed, point: [0.035, 1.1, 0], normal: [1, 0, 0], surface: 'concrete', otherMass: Infinity, ...extra });
 
 const liquidInfo = overrides => ({ version: 1, n_cos: 2, n_fill: 2, lut: [[0, 0.1], [0.1, 0.2]],
-  color: [0.2, 0.08, 0.03, 1], z0: 0, z1: 0.2, carbonation: 0, foam: 0, bubble_size: 1.5, viscosity: 0.25, ...overrides });
+  color: [0.2, 0.08, 0.03, 1], z0: 0, z1: 0.2, carbonation: 0, foam: 0, bubble_size: 1.5, viscosity: 0.25, tint_strength: 1.6, ...overrides });
 function liquidRoot(info = liquidInfo()) {
   const root = new THREE.Group(), mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8), new THREE.MeshStandardMaterial());
   mesh.name = 'Liquid'; mesh.userData.liquid = info; root.add(mesh); return root;
@@ -46,6 +46,8 @@ test('authored bubble size and viscosity are live controls that wake a sleeping 
   assert.equal(state.bubbleSize, 1.5);
   assert.equal(state.uniforms.uBubbleSize.value, 1.5);
   assert.equal(state.viscosity, 0.25);
+  assert.equal(state.tintStrength, 1.6);
+  assert.equal(state.uniforms.uTintStrength.value, 1.6);
   for (let i = 0; i < 8; i++) state.update(1 / 60);
   assert.equal(state.sleeping, true);
   state.bubbleSize = 2.25;
@@ -56,6 +58,11 @@ test('authored bubble size and viscosity are live controls that wake a sleeping 
   state.viscosity = 2;
   assert.equal(state.viscosity, 1, 'viscosity is bounded to its documented normalized range');
   assert.equal(state.sleeping, false, 'viscosity edits wake the controller');
+  state.tintStrength = 2.5;
+  assert.equal(state.uniforms.uTintStrength.value, 2.5, 'tint strength immediately updates the Beer-Lambert shader uniform');
+  assert.equal(state.sleeping, false, 'tint strength edits wake the controller');
+  state.tintStrength = 8;
+  assert.equal(state.tintStrength, 4, 'tint strength is bounded to a finite shader-safe range');
   state.bubbleSize = Number.NaN;
   assert.equal(state.bubbleSize, 1, 'invalid bubble sizes recover to the neutral multiplier');
 });

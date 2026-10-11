@@ -190,7 +190,7 @@ Guidance: author as PNG/JPG; ship as KTX2/BasisU (three.js `KTX2Loader`) or Godo
 
 Baking labels into the glass texture itself (an even lower tier) is **not implemented**. The atlas side is 512 or 1024 by content (wraps need 1024), so LOW can use MORE memory than HIGH for designs with a few small labels; prefer MEDIUM there.
 
-Runtime tier swap: Godot `bd.set_tier("low")` or `BottleDesign.load_design(path, fill, true, "low")`; three.js `d = await d.setTier('low')`. The liquid fill and live bubble-size/viscosity settings survive the swap; label edits still need to be reapplied. Helpers `tier_path()` / `tierPath()`.
+Runtime tier swap: Godot `bd.set_tier("low")` or `BottleDesign.load_design(path, fill, true, "low")`; three.js `d = await d.setTier('low')`. The liquid fill and live bubble-size, viscosity and tint-strength settings survive the swap; label edits still need to be reapplied. Helpers `tier_path()` / `tierPath()`.
 
 ### Draw calls and texture memory (measured from the GLBs; `export/designs/tier_stats.json`)
 
@@ -215,14 +215,13 @@ MINIMAL texture memory is 0. GLB files are 0.3-2.4 MB, mostly the liquid LUT JSO
 
 ## Liquid settings and remaining shader limitations
 
-`liquid` is written to `extras.liquid` (and `<name>.liquid.json`) like the existing bottles. Color, fill, carbonation, foam capacity, bubble size and viscosity are honoured. Bubble size can be changed on the live Three.js controller with `bottle.bubbleSize = value` or on Godot's `BottleLiquid.bubble_size`; values are clamped to 0–4. Viscosity is normalized from 0 (thin, quick response) to 1 (thick, damped), defaults to 0.45, and can be changed at runtime through `bottle.viscosity` / `BottleLiquid.viscosity`. A viscosity of 0.45 keeps the previous slosh spring and damping constants; changing it wakes a sleeping controller.
+`liquid` is written to `extras.liquid` (and `<name>.liquid.json`) like the existing bottles. Color, fill, carbonation, foam capacity, bubble size, viscosity and Beer-Lambert tint strength are honoured. Bubble size can be changed on the live Three.js controller with `bottle.bubbleSize = value` or on Godot's `BottleLiquid.bubble_size`; values are clamped to 0–4. Viscosity is normalized from 0 (thin, quick response) to 1 (thick, damped), defaults to 0.45, and can be changed at runtime through `bottle.viscosity` / `BottleLiquid.viscosity`. A viscosity of 0.45 keeps the previous slosh spring and damping constants. Tint strength is a 0–4 multiplier on Beer-Lambert absorption: 0 removes colour absorption but does not make liquid transparent; 1 uses the authored colour. It is controlled by `bottle.tintStrength` / `BottleLiquid.tint_strength`. Changing either runtime control wakes a sleeping controller.
 
 Still not honoured by `shaders/godot/bottle_liquid.*` / `shaders/three/bottle_liquid.js`:
 
 | owner | field | needed |
 |---|---|---|
 | TODO(owner) | `opacity` | liquid alpha / transmission uniform |
-| TODO(owner) | `tint_strength` | colour mixing vs refraction strength |
 | TODO(owner) | `density` | `mass_kg()` uses a water-like default |
 | TODO(owner) | `foam` static head | foam layer height without a carbonation event |
 

@@ -37,6 +37,12 @@ signal opened                           ## cap_open set true (BottlePour listens
 	set(v):
 		viscosity = clampf(v, -1.0, 1.0) if is_finite(v) else -1.0
 		wake()
+## Beer-Lambert colour concentration multiplier; 0 = clear, 1 = authored colour; -1 uses sidecar.
+@export_range(-1.0, 4.0) var tint_strength := -1.0:
+	set(v):
+		tint_strength = clampf(v, -1.0, 4.0) if is_finite(v) else -1.0
+		if _mat: _mat.set_shader_parameter("tint_strength", _tint_strength_value())
+		wake()
 @export var carbonation := -1.0:             ## -1 = use the value baked into the GLB (soda/beer fizz)
 	set(v):
 		carbonation = v
@@ -202,6 +208,7 @@ func _apply_color() -> void:
 	var c := liquid_color()
 	_mat.set_shader_parameter("liquid_color", c)
 	_mat.set_shader_parameter("surface_color", c.lightened(0.12))
+	_mat.set_shader_parameter("tint_strength", _tint_strength_value())
 
 
 ## Interior volume in ml from the liquid sidecar (v2 tables carry the mesh-verified value).
@@ -215,6 +222,10 @@ func _bubble_size_value() -> float:
 
 func _viscosity_value() -> float:
 	return clampf(float(_info.get("viscosity", 0.45)) if viscosity < 0.0 else viscosity, 0.0, 1.0)
+
+
+func _tint_strength_value() -> float:
+	return clampf(float(_info.get("tint_strength", 1.0)) if tint_strength < 0.0 else tint_strength, 0.0, 4.0)
 
 
 ## A slosh kick from outside (liquid poured in). Wakes the controller.

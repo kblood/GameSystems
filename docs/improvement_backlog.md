@@ -3,6 +3,18 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
+## Afsluttet væskefarvekontrol-runde — 2026-10-11
+
+`tint_strength` blev gemt i designs, men blev ignoreret af shaderne. Det styrer nu Beer-Lambert-
+absorption i Three.js og Godot med samme 0–4 interval; 0 fjerner farveabsorption, 1 bevarer den
+authored farve, og eksisterende stærkere sidecar-værdier virker fortsat. Det gør ikke væsken
+transparent. Ændringer vækker
+kontrollerne, og værdien overlever tier-skift. Schema, API-dokumentation og acceptancetest er
+opdateret.
+
+Verifikation: 485/485 GameSystems-tests, 339/339 WebXR Contracts-tests, 12/12 systems-browserchecks,
+Godot-væsketest og produktionsbuild består. Sols uafhængige review fandt ingen kildefejl.
+
 ## Afsluttet rude-checkpoint-runde — 2026-10-11
 
 - Logisk rude-state (brudt/hel, skadesniveau, huller og revner) gemmes og gendannes sammen med flaskesystemets øvrige state. Fysiske skår er fortsat transient debris og genskabes ikke.

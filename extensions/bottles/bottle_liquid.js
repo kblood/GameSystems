@@ -34,6 +34,7 @@ varying vec3 vCamObj;
 uniform vec4 uPlane;          // xyz = world up in OBJECT space, w = plane offset (from the baked table)
 uniform vec3 uUpWorld;        // effective (slosh-bent) up in world space
 uniform vec3 uLiquidColor;    // linear; colour seen through uRefPath of liquid
+uniform float uTintStrength;  // Beer-Lambert concentration multiplier; 0 = clear, 1 = authored colour
 uniform float uRipple, uAgitation, uCarbonation, uBubbleScale, uFoam, uFoamHeight, uBubbleSize, uRise, uBaseY, uRefPath, uTime;
 uniform mat3 uFlowBasis;      // columns = flow axes in object space (column 1 = world up)
 uniform vec3 uFlowPivot;
@@ -143,12 +144,13 @@ vec3 lAlbedo, lEmit; float lRough, lSpec; bool lSurf; vec3 lSurfN;
   h -= uRipple * 0.0015 * sin(uTime * 9.0 + vObjPos.x * 90.0 + vObjPos.z * 70.0);
   if (h > 0.0) discard;
   vec3 vd = normalize(vCamObj - vObjPos);
-  vec3 lc = log(max(uLiquidColor, vec3(1e-4)));
+  vec3 tintedColor = pow(max(uLiquidColor, vec3(1e-4)), vec3(clamp(uTintStrength, 0.0, 4.0)));
+  vec3 lc = log(max(tintedColor, vec3(1e-4)));
   float bs = clamp(uBubbleScale, 0.0, 1.0);
   float carb = uCarbonation * bs;
   float ag = uAgitation * bs;
   float fm = clamp(uFoam * bs, 0.0, 1.0);
-  vec3 foam_col = mix(vec3(0.95, 0.93, 0.88), pow(uLiquidColor, vec3(0.25)), 0.35);
+  vec3 foam_col = mix(vec3(0.95, 0.93, 0.88), pow(tintedColor, vec3(0.25)), 0.35);
   mat3 F = uFlowBasis;
   vec3 vq = vd * F;
   lSurf = gl_FrontFacing == uFlipFaces;
@@ -163,7 +165,7 @@ vec3 lAlbedo, lEmit; float lRough, lSpec; bool lSurf; vec3 lSurfN;
     if (rd.y < -1e-4) L = min(L, (vObjPos.y - uBaseY) / -rd.y);
     L = max(L, 0.0);
     vec3 col = exp(lc * clamp(L / uRefPath, 0.3, 3.0));
-    col = mix(col, col * 1.4 + uLiquidColor * 0.03, ag * ag * (0.2 + 0.4 * carb));
+    col = mix(col, col * 1.4 + tintedColor * 0.03, ag * ag * (0.2 + 0.4 * carb));
     vec3 em = vec3(0.0);
     float dsurf0 = -h;
     if (carb + ag > 0.001) {
@@ -222,7 +224,7 @@ vec3 lAlbedo, lEmit; float lRough, lSpec; bool lSurf; vec3 lSurfN;
     vec3 ps = vObjPos + vd * st;
     vec3 qs = (ps - uFlowPivot) * F;
     vec3 col = exp(lc * clamp(st / uRefPath, 0.3, 3.0));
-    col = mix(col, col * 1.4 + uLiquidColor * 0.03, ag * ag * (0.2 + 0.4 * carb));
+    col = mix(col, col * 1.4 + tintedColor * 0.03, ag * ag * (0.2 + 0.4 * carb));
     vec2 g = vec2(cos(qs.x * 140.0 + uTime * 7.0) + 0.6 * cos(qs.x * 90.0 + qs.z * 120.0 - uTime * 9.0),
                   cos(qs.z * 150.0 - uTime * 8.0) + 0.6 * cos(qs.x * 90.0 + qs.z * 120.0 - uTime * 9.0));
     lSurfN = normalize(u + (F * vec3(g.x, 0.0, g.y)) * (0.02 + uRipple * 0.12));
@@ -251,6 +253,7 @@ export function makeLiquidMaterial(quality = HIGH) {
   const u = {
     uPlane: { value: new THREE.Vector4(0, 1, 0, 1) }, uUpWorld: { value: new THREE.Vector3(0, 1, 0) },
     uLiquidColor: { value: new THREE.Color(0.8, 0.5, 0.1) },
+    uTintStrength: { value: 1 },
     uRipple: { value: 0 }, uAgitation: { value: 0 }, uCarbonation: { value: 0 }, uBubbleScale: { value: 1 },
     uFoam: { value: 0 }, uFoamHeight: { value: 0.022 }, uBubbleSize: { value: 1 }, uRise: { value: 0 },
     uBaseY: { value: 0 }, uRefPath: { value: 0.045 }, uTime: { value: 0 },
@@ -357,6 +360,8 @@ export function setupBottle(root, opts = {}) {
   let appFill = -1, appOpen = false, memoFill = -1, memoOpen = false, foamScale = 1;
   let fill = opts.fill ?? 0.6, slosh = opts.slosh ?? true, bubbles = opts.bubbles ?? 1, carbonation = opts.carbonation ?? -1, capOpen = opts.capOpen ?? false;
   let viscosity = clampFinite(opts.viscosity ?? info.viscosity ?? 0.45, 0, 1, 0.45);
+  let tintStrength = clampFinite(opts.tintStrength ?? info.tint_strength ?? 1, 0, 4, 1);
+  U.uTintStrength.value = tintStrength;
 
   const S = {
     liquid, material: mat, uniforms: U, lut, info,
@@ -371,6 +376,7 @@ export function setupBottle(root, opts = {}) {
       bubbleSize = clampFinite(v, 0, 4, 1); U.uBubbleSize.value = bubbleSize; S.wake();
     },
     get viscosity() { return viscosity; }, set viscosity(v) { viscosity = clampFinite(v, 0, 1, 0.45); S.wake(); },
+    get tintStrength() { return tintStrength; }, set tintStrength(v) { tintStrength = clampFinite(v, 0, 4, 1); U.uTintStrength.value = tintStrength; S.wake(); },
     get carbonation() { return carbonation; }, set carbonation(v) { carbonation = v; S.wake(); },
     get capOpen() { return capOpen; }, set capOpen(v) { capOpen = v; S.wake(); },
     get sleeping() { return sleeping; },
