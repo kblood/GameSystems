@@ -59,6 +59,14 @@ af arbejdet uden at skjule den oprindelige observer-fejl.
 Verifikation: fokuseret alarm-suite **16/16**, fuld WebXR-demo Node-suite **511/511** og Sol-review
 uden blocker; uafhængig alarm-fil **11/11**. Pushet til GameSystems `main` som `1fa93d8`.
 
+## Afsluttet acoustics callback-fejl-runde — 2026-10-12
+
+Når lydleveringer er forfaldne, forsøger acoustics nu hver listener og dens `acoustics:heard`-event,
+selv om en callback fejler. Step-guard frigives, og første fejl rapporteres efter alle leveringer.
+
+Verifikation: fokuseret system-suite **25/25**, fuld WebXR-demo Node-suite **512/512** og Sol-review
+uden blocker. Pushet til GameSystems `main` som `f00a6f0`.
+
 ## Afsluttet WebXR-grenkonsolidering — 2026-10-11
 
 De seks commits fra `interaction-port` — bottle liquid controls/foam, GameSystems-syncs og
