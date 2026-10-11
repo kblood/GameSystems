@@ -24,16 +24,68 @@ func set_owner_root(owner: String, root: Node3D) -> bool:
 	_owner_roots[owner] = root
 	return true
 
-func register_slot(slot_id: String, anchor: Node3D, allowed_categories: Array[String], max_size: Vector3) -> bool:
+func register_slot(slot_id: String, anchor: Node3D, allowed_categories: Array[String], max_size: Vector3, access_hands: Array[String] = ["hand:left", "hand:right"]) -> bool:
 	if _busy or not is_instance_valid(anchor) or not anchor.is_inside_tree() or _slots.has(slot_id): return false
+	if access_hands.is_empty(): return false
+	var validated_hands: Array[String] = []
+	for hand in access_hands:
+		if not hand in ["hand:left", "hand:right"] or hand in validated_hands: return false
+		validated_hands.append(hand)
 	for existing_id in _slots:
 		if _slot_node(existing_id) == anchor: return false
 	for item_id in _items:
 		var item := _item_node(item_id)
 		if item == anchor or _is_under(anchor, item): return false
 	if not inventory.add_slot(slot_id, allowed_categories, max_size): return false
-	_slots[slot_id] = anchor
+	_slots[slot_id] = {"anchor":anchor,"access_hands":validated_hands}
 	return true
+
+## Event-driven access check for a single store/retrieve request. Call when the
+## user requests interaction; this deliberately does no per-frame candidate scan.
+## Occlusion uses one physics ray ending just before the slot anchor. Exclude the
+## player's body/colliders from the caller to avoid self-occlusion.
+func check_slot_access(requesting_hand: String, hand_tracked: bool, hand_world: Transform3D, slot_id: String, reach_m: float, exclude: Array[RID] = [], collision_mask: int = 0xFFFFFFFF) -> Dictionary:
+	var anchor := _slot_node(slot_id)
+	if anchor == null or not anchor.is_inside_tree() or not _valid_transform(anchor.global_transform): return _access_result(false, "invalid_slot")
+	if not requesting_hand in ["hand:left", "hand:right"]: return _access_result(false, "invalid_hand")
+	if requesting_hand not in _slots[slot_id].access_hands: return _access_result(false, "wrong_hand")
+	if not hand_tracked: return _access_result(false, "hand_tracking_lost")
+	if not _valid_transform(hand_world) or not is_finite(reach_m) or reach_m <= 0.0: return _access_result(false, "invalid_request")
+	var from := hand_world.origin
+	var to := anchor.global_position
+	var distance := from.distance_to(to)
+	if distance > reach_m: return _access_result(false, "out_of_reach", distance)
+	if distance > 0.025:
+		var ray_excludes := exclude.duplicate()
+		for rid in _held_collision_rids(requesting_hand):
+			if not rid in ray_excludes: ray_excludes.append(rid)
+		var query := PhysicsRayQueryParameters3D.create(from, to - (to - from).normalized() * 0.02, collision_mask, ray_excludes)
+		query.collide_with_areas = true
+		query.collide_with_bodies = true
+		var viewport := get_viewport()
+		var world: World3D = viewport.world_3d if viewport != null else null
+		if world == null: return _access_result(false, "no_physics_world", distance)
+		if not world.direct_space_state.intersect_ray(query).is_empty(): return _access_result(false, "occluded", distance)
+	return _access_result(true, "ok", distance)
+
+## Gated entry points intended for input/grab events. Direct store/retrieve remain
+## available to trusted game reset/checkpoint code that already validated access.
+func request_store(item_id: String, expected_owner: String, slot_id: String, requesting_hand: String, hand_tracked: bool, hand_world: Transform3D, reach_m: float, exclude: Array[RID] = [], collision_mask: int = 0xFFFFFFFF) -> Dictionary:
+	if requesting_hand != expected_owner: return _access_result(false, "wrong_hand")
+	var access := check_slot_access(requesting_hand, hand_tracked, hand_world, slot_id, reach_m, exclude, collision_mask)
+	if not access.allowed: return access
+	if not store(item_id, expected_owner, slot_id): return _access_result(false, "store_rejected", float(access.distance_m))
+	access.accepted = true
+	return access
+
+func request_retrieve(slot_id: String, requesting_hand: String, hand_tracked: bool, hand_world: Transform3D, reach_m: float, exclude: Array[RID] = [], collision_mask: int = 0xFFFFFFFF) -> Dictionary:
+	var access := check_slot_access(requesting_hand, hand_tracked, hand_world, slot_id, reach_m, exclude, collision_mask)
+	if not access.allowed: return access
+	var item_id := retrieve(slot_id, requesting_hand)
+	if item_id.is_empty(): return _access_result(false, "retrieve_rejected", float(access.distance_m))
+	access.accepted = true
+	access.item_id = item_id
+	return access
 
 ## Register an item where it currently lives. Its initial pose relative to the
 ## owner root is kept for reset so moving hand roots preserve natural grip fit.
@@ -209,8 +261,15 @@ func _item_node(item_id: String) -> Node3D:
 	return node if is_instance_valid(node) and node is Node3D else null
 
 func _slot_node(slot_id: String) -> Node3D:
-	var node: Variant = _slots.get(slot_id)
+	var slot: Variant = _slots.get(slot_id)
+	var node: Variant = slot.get("anchor") if slot is Dictionary else null
 	return node if is_instance_valid(node) and node is Node3D else null
+
+func _valid_transform(value: Transform3D) -> bool:
+	return value.origin.is_finite() and value.basis.x.is_finite() and value.basis.y.is_finite() and value.basis.z.is_finite()
+
+func _access_result(allowed: bool, reason: String, distance_m := -1.0) -> Dictionary:
+	return {"allowed":allowed,"accepted":false,"reason":reason,"distance_m":distance_m}
 
 func _valid_owner_root(owner: String) -> bool:
 	return _owner_roots.has(owner) and is_instance_valid(_owner_roots[owner])
@@ -222,6 +281,18 @@ func _is_under(node: Node, ancestor: Variant) -> bool:
 		if cursor == ancestor: return true
 		cursor = cursor.get_parent()
 	return false
+
+func _held_collision_rids(owner: String) -> Array[RID]:
+	var rids: Array[RID] = []
+	for item_id in _items:
+		if inventory.owner_of(item_id) != owner: continue
+		var held := _item_node(item_id)
+		if held == null: continue
+		if held is CollisionObject3D:
+			rids.append((held as CollisionObject3D).get_rid())
+		for child in held.find_children("*", "CollisionObject3D", true, false):
+			if child is CollisionObject3D: rids.append((child as CollisionObject3D).get_rid())
+	return rids
 
 ## Godot forbids parenting a node beneath itself or one of its descendants.
 ## Check before the ledger changes so a failed scene move cannot split ownership.
