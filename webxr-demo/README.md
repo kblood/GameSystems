@@ -1,11 +1,37 @@
 # Flaskedemo i WebXR
 
+De fire systemdemoer bevarer runtime ved cachet side-navigation og suspenderer rendering/simulation under skjulning.
+Se [page-lifecycle](../docs/page_lifecycle.md); browserkontrol: `npm run test:lifecycle:browser`.
+
+## Bil og kontrolrum
+
+`/vehicle.html` viser den originale Blender-bil med PBR, syv åbnelige dele, endeligt brændstof/batteri
+og skift mellem fælles systemadaptere, simple stores og deaktiverede afhængigheder.
+Se [bilens API og Blender-kilde](../docs/vehicle_system.md).
+Vehicle Lab kan også gemme kørsel, animationer og alle reservekilder til browserlager/JSON;
+se [vehicle-checkpoint](../docs/vehicle_checkpoint.md) og `npm run test:vehicle-checkpoint:browser`.
+`/security.html` demonstrerer skift mellem tre kamerafeeds på en fysisk skærm med kvalitet og endeligt demobatteri.
+Se [kamera-/skærm-system](../docs/camera_system.md).
+Browserkontroller efter build: `npm run test:vehicle:browser` og `npm run test:cameras:browser`.
+
+Brandstationen har også en selvstændig sprinkler med genopfyldelig væskeforsyning;
+se [forsyning og sprinkler](../docs/supply_sprinklers.md).
+
 ## Brandstation
+
+Skum bruger nu en endelig 600 ml-tank og [overfladedækning](../docs/coatings_system.md) efter dosis, areal og orientering.
+Browserkontrol: `npm run test:coatings:browser`.
+
+Slangen har en genopfyldelig supply-tank og en selvstændig [flow-extension](../docs/flow_system.md).
+Hold med mus/tastatur, eller brug controller-aim i XR. Release/fokus-tab/pause/load stopper input.
+Browserkontrol: `npm run test:flow:browser` (controller-events/poses simuleres; ikke fysisk headset-test).
 
 `/fire.html` demonstrerer brandspredning, materialebrændbarhed/antændelsestemperatur, røg under loftet,
 rumilt og døre/vinduer, vand/skum, vedvarende dieselpytter fra den eksisterende dunk og en abstrakt spil-ladning.
 Se [brandsystem v2](../docs/fire_system.md). Browserkontrol: `npm run build`, derefter `npm run test:fire:browser`.
 De normale væskefarver og blandinger er bevaret; brændstofkomponenter og forbrug føres separat.
+Brandstationen har nu komplette checkpoints med browserlager, filimport/-eksport og pause, også under hældning.
+Se [checkpoint-kontrakten](../docs/checkpoint_system.md); kør `npm run test:checkpoint:browser` efter et build.
 
 ## System-lab
 
@@ -52,6 +78,17 @@ WebXR kræver en kompatibel browser og en sikker kontekst. `localhost` virker no
 I VR bruges grip til at gribe/slippe, trigger til impact eller menuknapper, venstre stick til at flytte og højre stick til trinvist at dreje. Håndsporing kan bruge pinch til at gribe/slippe, hvis headset og browser sender WebXR `select`-hændelser. Den lille menu over hylderne har nulstil og kvalitet. For at hælde skal beholderen være åben og vippes over en anden beholders munding; ellers samles væsken i en pyt.
 
 ## Implementering og grænser
+
+Browserkontrollerne bruger `scripts/smoke-cleanup.mjs` til fælles oprydning. Browser og
+dedikeret testserver lukkes samtidigt. Browser.close får normalt 5 sekunder; ved timeout
+eller protocol-fejl må helperen kun kill'e den ChildProcess, Puppeteer selv lancerede,
+med bekræftet Chrome/Edge-executable og Puppeteer-temp-profil. Termination kontrolleres
+inden for 2 sekunder, og klient-disconnect har også en 2-sekunders grænse. En remote
+browser uden ChildProcess bliver kun frakoblet. Ubekræftet proces eller mislykket cleanup
+giver en eksplicit fejl frem for at kill'e andre browsere eller skjule problemet.
+`npm run test:cleanup:browser` simulerer hængende graceful close på en rigtig headless
+testbrowser og kontrollerer termination samt genbrug af serverporten. Det tester ingen
+spiladfærd eller fysisk headset-performance.
 
 - Three.js `0.170.0`, Cannon-es `0.20.0` og Vite `8.3.3` er låst i `package.json`.
 - `src/vendor/extensions` er genererede kopier af GameSystems-extensions (se "Distribution"). Væske-shaderen, LUT'en og design-helperen ligger i `../extensions/bottles` (siden extensions-trin 8; `../shaders/three/*.js` og `../designs/three/bottle_design.js` re-eksporterer dem). Kør `npm run sync` efter ændringer; build gør det også automatisk.

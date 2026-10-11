@@ -2,8 +2,18 @@
 
 ## GameSystems
 
+New interactive demos: Blender-built [vehicle](webxr-demo/vehicle.html), [cameras/screens](webxr-demo/security.html),
+and [fire station with refillable sprinklers](webxr-demo/fire.html).
+Public APIs and limits: [vehicle](docs/vehicle_system.md), [cameras](docs/camera_system.md), [supply/sprinklers](docs/supply_sprinklers.md).
+The [electricity system](docs/electricity_system.md) now includes finite network batteries, switchable wires and fuses;
+the control-room demo connects its actual camera/display loads through a visible electrical cabinet.
+The fire station also uses [pool interest](docs/pool_interest.md) to awaken retained liquid near heat without exceeding its simulation budget.
+It now includes standalone [fire alarms](docs/alarm_system.md) and a [timed firefighting challenge](docs/mission_system.md)
+with saved progress, difficulty and a protected room.
+
 Reusable gameplay extensions now live in `extensions/`: bottles/liquid, grasp, avatar/characters, mechanics, electricity,
-material reactions, thermal/fire, tools/assembly and room acoustics. The existing `host` manages lifecycle, events and quality.
+material reactions, thermal/fire, alarms, missions, supply/flow/pools, coatings, vehicles, cameras,
+tools/assembly and room acoustics. The existing `host` manages lifecycle, events and quality.
 See [new system ideas](docs/game_system_ideas.md) and [implementation/API/validation](docs/game_systems_implementation.md).
 Run `webxr-demo` and open `/systems.html` for the maintenance workshop, or `/index.html` for the bottle demo.
 Open `/fire.html` for a two-room firefighting prototype with bounded smoke, ventilation and persistent diesel pools;

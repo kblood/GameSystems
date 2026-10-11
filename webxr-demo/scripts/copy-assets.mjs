@@ -11,6 +11,7 @@ const byId = new Map(catalog.assets.map(x => [x.id, x]));
 const keys = [...SHELVES.flatMap(s => s.items), ...BAR_ITEMS].map(x => x[0]);
 const files = new Set(['catalog.json']);
 const requiredSidecars = new Set();
+for(const file of ['export/vehicles/aster_sedan.glb','export/vehicles/aster_sedan_low.glb','export/vehicles/aster_sedan.vehicle.json']){files.add(file);requiredSidecars.add(file);}
 for (const id of keys) {
   const a = byId.get(id);
   if (!a) throw new Error(`Unknown catalog item ${id}`);

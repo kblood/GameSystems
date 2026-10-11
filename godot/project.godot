@@ -1,0 +1,9 @@
+; Minimal Godot project so the gs_* addons can be tested in GameSystems without a game:
+;   godot --headless --path GameSystems/godot --script res://addons/gs_host/tests/gs_host_tests.gd
+; Games get copies through tools/sync_addons.py (SOURCE.json + --check).
+config_version=5
+
+[application]
+
+config/name="GameSystems Godot addons"
+config/features=PackedStringArray("4.7")

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="da">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GameSystems · Værksted</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23172421'/%3E%3Cpath d='M8 16h16M16 8v16' stroke='%23f2bd60' stroke-width='4'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#11191e;color:#e7eee9;font:14px system-ui,sans-serif}canvas{display:block}aside{position:absolute;top:18px;left:18px;width:300px;max-height:calc(100vh - 36px);overflow:auto;padding:22px;border:1px solid #42514a;border-radius:14px;background:#172321ed;box-shadow:0 14px 60px #0005}h1{margin:6px 0 12px;font-size:25px}h2{font-size:14px;margin:20px 0 8px;color:#e8c987}.eyebrow{color:#91ac9d;font-size:11px;letter-spacing:2px}p{color:#b8c6bd;line-height:1.5}button,select{font:inherit;color:#e6eee7;border:1px solid #52655a;background:#2e4036;border-radius:6px;padding:8px;cursor:pointer}button:hover{background:#435a48}button:disabled{opacity:.4;cursor:default}.row{display:flex;gap:6px;margin:7px 0}.row>*{flex:1}label{display:block;margin:8px 0}input[type=range]{width:100%;accent-color:#f2bd60}#readout{white-space:pre-line;font:12px/1.65 ui-monospace,monospace;background:#101b18;padding:10px;border-radius:6px}#message{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 20px;border-radius:8px;background:#18251fee;color:#ffe2a7;pointer-events:none;max-width:80vw;text-align:center}.instructions{font-size:12px}a{color:#d7c590}@media(max-width:700px){aside{width:230px;padding:14px;font-size:12px}h1{font-size:20px}}
+</style></head>
+<body><aside>
+<span class="eyebrow">GAMESYSTEMS / LAB 01</span><h1>Værkstedet</h1>
+<p>Åbn skuffen. Flyt sikringen til skabet. Drej kontakten, og åbn døren.</p>
+<h2>Mekanik og strøm</h2>
+<label>Skuffe <input id="drawer" type="range" min="0" max="1" step="0.01" value="0"></label>
+<label>Kontakt <input id="switch" type="range" min="0" max="1" step="0.01" value="0"></label>
+<label>Dør <input id="door" type="range" min="0" max="1" step="0.01" value="0"></label>
+<label>Ventil <input id="valve" type="range" min="0" max="1" step="0.01" value="0"></label>
+<div class="row"><button id="take-fuse">Tag sikring</button><button id="remove-fuse">Tag ud</button></div>
+<p class="instructions">Træk sikringen i 3D til den gule holder og slip. Træk i skuffe, kontakt, dør og ventil for at betjene dem.</p>
+<div class="row"><button id="short">Kortslut</button><button id="repair">Skift sikring</button></div>
+<h2>Overflader og varme</h2>
+<div class="row"><button id="water">Hæld vand</button><button id="wine">Spild vin</button></div>
+<div class="row"><button id="ignite">Antænd klud</button><button id="clean">Rengør</button></div>
+<h2>Værktøjer og lyd</h2>
+<div class="row"><button id="screwdriver">Skruetrækker</button><button id="hammer">Hammer</button></div>
+<p class="instructions">Træk værktøjet til markøren. Rul på musehjulet ved skruen for at skrue; træk hammeren op og ned over sømmet for at slå.</p>
+<div class="row"><button id="sound">Lav lyd</button><button id="drop-tool">Læg værktøj</button></div>
+<div id="readout" aria-live="polite"></div>
+<h2>Indstillinger</h2><div class="row"><select id="quality" aria-label="Kvalitet"><option value="0">Minimal</option><option value="1">Lav</option><option value="2" selected>Mellem</option><option value="3">Høj</option></select><button id="reset">Nulstil</button></div>
+<p class="instructions">VR: trigger vælger knapper/genstande, grip holder, slip indsætter. Bevæg hammeren fysisk; trigger ved skruen drejer værktøjet. <a href="./index.html">Flaskedemo</a></p>
+</aside><div id="message">Indlæser værksted…</div><script type="module" src="/src/systems-lab.js"></script></body></html>

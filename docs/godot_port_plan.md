@@ -1,7 +1,7 @@
 # Plan: Godot-versionen af Contracts på de fælles extensions
 
-Status (2026-10-10): **undersøgelse, ingen kode ændret.** Ingen ændringer i `NightfallContractsGodot*` eller i
-`GameSystems/extensions`. Relateret: [extensions_plan.md](extensions_plan.md) (trin 1–9), [grab_findings.md](grab_findings.md).
+Status (2026-10-11): **G0 afklaret, G1 implementeret** (se [G1-resultat](#g1-resultat-2026-10-11)). Intet er committet.
+Status (2026-10-10): undersøgelse, ingen kode ændret i `NightfallContractsGodot*` eller i `GameSystems/extensions`. Relateret: [extensions_plan.md](extensions_plan.md) (trin 1–9), [grab_findings.md](grab_findings.md).
 
 > **Ufuldstændig kortlægning.** Denne version blev skrevet, før de to baggrunds-kortlægninger var færdige: (1) Godot-koden pr.
 > system og (2) worktrees/branches og dokumenterne. Tabellen herunder bygger på filnavne, filstørrelser, `addons/game_systems/SOURCE.json`,
@@ -157,7 +157,7 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 | # | Trin | Indhold | Færdig når |
 |---|---|---|---|
 | G0 | Afklaring | Brugerens svar på spørgsmålene nedenfor. Ret kortlægningen i denne fil (fingerkonvention, worktree-status, `-blood`/`-npcai`). Vælg hvilke `r2-*`/`pkg-*` der merges først | beslutninger skrevet her |
-| G1 | `gs_host` + sync | `GameSystems/godot/addons/gs_host`, sync-script med `SOURCE.json` + `--check` (genbrug formatet fra `addons/game_systems`), `tier_for`-golden. Contracts-Godot får en `GSHost` i missionsscenen og sender core-events | headless-test: load/fejlisolering/tiers; `run_native_suite.py` grøn |
+| G1 (færdig 2026-10-11) | `gs_host` + sync | `GameSystems/godot/addons/gs_host`, sync-script med `SOURCE.json` + `--check` (genbrug formatet fra `addons/game_systems`), `tier_for`-golden. Contracts-Godot får en `GSHost` i missionsscenen og sender core-events | headless-test: load/fejlisolering/tiers; `run_native_suite.py` grøn |
 | G2 | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`. De 4 lokale ændringer bliver til options. Fysik via `GSPhysicsAdapter`, `broken`-event | `addons/game_systems` erstattet uden lokale ændringer; `--only game-systems` grøn |
 | G3 | Data ud af JS | `extensions/grasp/data/*.json` + `humanoid` bone maps som JSON. JS læser dem (efter trin 5) | JS-tests uændret grønne; golden-generator findes |
 | G4 | `gs_grasp` kerne | Port: katalog/SDF, validator (`clamp_rows`), `baked_grasps` (nearest + hysterese, `merge_poses`), held-drive, kast | golden-tests ≤ tolerance; Godot-greb uændrede i `test`-suiten |
@@ -169,6 +169,37 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 
 Det er ca. **10 trin** (G0–G9). G1 og G2 kan starte før extensions-trin 5, fordi de kun afhænger af host og bottles. G3–G7 kommer efter trin 5,
 og G6 også efter trin 4's headset-test. G8 kommer efter trin 7. Extensions-trin 8–9 (bottles i three) kan bruge G2's API som model.
+
+## G1-resultat (2026-10-11)
+
+Implementeret af Claude (Opus i stedet for Astra, jf. Godot-AGENTS.md). Intet committet.
+- **GameSystems** `godot/addons/gs_host/`: `gs_host.gd` (`GSHost`), `gs_extension.gd`, `gs_context.gd`, `gs_event_bus.gd`, `gs_quality.gd`,
+  `gs_physics_adapter.gd` (kun interface, implementeres i G2), `gs_error_trap.gd`, `data/tier_for.golden.json`, `tests/gs_host_tests.gd`, `LICENSE-NOTES.md`.
+  Desuden `godot/project.godot` (minimalt projekt til test uden spil), `godot/tools/sync_addons.py` og `godot/tools/gen_golden.mjs`.
+- **Kontrakt**: `ID`, `REQUIRES` og `QUALITY` læses med `Object.get()`, så de kan være konstanter eller properties. `init_extension(ctx)` skal returnere
+  et api, der ikke er null. `update_extension(dt)` og `set_quality(tier)` returnerer `false` ved fejl. `dispose_extension()` er valgfri. `ctx.fail(reason)` giver op eksplicit.
+  Kilden kan være et objekt, et Script, en PackedScene, en sti eller en `Callable(options)`. `init` er synkron i Godot.
+- **Fejlisolering**: GDScript har ingen exceptions, og en typet `-> int` returnerer 0 efter et crash. Derfor tæller en `Logger` (`OS.add_logger`, 4.5+)
+  script-fejl på main-tråden under hvert kald. Et crash, en returværdi `false`/null eller `ctx.fail` fjerner kun den extension, og en lytter, der crasher, bliver rapporteret.
+  En rigtig runtime-fejl er verificeret med `-- --real-crash`. Den er ikke med i suiten, fordi suiten afviser `SCRIPT ERROR`.
+  Release-eksporter rapporterer måske ikke script-fejl. Der gælder kun returværdi-reglen.
+- **Tiers**: `GSQuality.tier_for` matcher alle 728 JS-golden-cases (+ 20 `normalize_tier`). Når tier er `off`, er nodens `_process`/`_physics_process` slået fra (også hvis noden først bliver ready senere).
+- **Events**: snake_case-navne (`xr_start` osv.) og `JS_NAMES`-mapping til JS. Payloads: `grab {owner, side, body, pose_id}`, `release {owner, side, body}`,
+  `broken {body, at}`, `disconnect {owner, handedness}`, `hand_tracking_changed {owner, handedness, hand}`.
+- **Sync**: `python godot/tools/sync_addons.py <spil> [gs_x ...] [--check]` kopierer `godot/addons/gs_*` + `LICENSE` og skriver `SOURCE.json`
+  (samme nøgler som `addons/game_systems`, plus `dirty`, `generator` og `sha256_text`). Tekst hashes efter CRLF → LF (autocrlf), og Godots `*.uid`/`*.import` ignoreres.
+  `--check` fejler ved redigerede kopier, ekstra eller manglende filer, kopier bagud for GameSystems og forældet golden (`gen_golden.mjs --check`).
+  Godot-testen tjekker desuden kopiens hashes mod `SOURCE.json`.
+- **Nightfall** (`interaction-fix`): `addons/gs_host/` (synket kopi), `runtime/gs_core_events.gd` (observatør: poller `player.objects` efter spillerens
+  fysik-tick og forbinder `shattered`-signaler i missionen plus OpenXR-session-, controller- og hand-tracker-signaler), et hook på 19 linjer i
+  `runtime/game.gd` (`_attach_gs_host()` i `_start_mission`), `tests/test_gs_host.gd` (wrapper), `tests/test_gs_core_events.gd` og `tests/suites/gs.json`.
+  Ingen extensions er loadet endnu, og det globale niveau er ikke koblet til comfort-menuen.
+- **Tests** (snapshot = HEAD 4a07605 + kun G1-ændringerne, fordi andre agenters igangværende `baked_grasp_library.gd` ikke parser i working tree):
+  `gs-host` 47/47, `gs-core-events` 11/11, `fast_tests.py --tier full`: 124/127. `combat` og `review-routes` fejlede allerede ved HEAD.
+  `magazine-acquisition-budget` (1 ms realtidsbudget under 8 parallelle jobs) består alene 2/2 og bruger ikke G1-kode.
+  `run_native_suite.py --only gs-* --only smoke --only game-systems` er grøn.
+- **Næste (G2)**: `gs_bottles` med sync af assets uden for `addons/` (`EXTRAS` pr. addon), en `GSPhysicsAdapter` til Jolt i spillet,
+  `broken` fra bottle-extensionen i stedet for broens `shattered`-videresendelse for systemflasker, og det globale niveau koblet til `GSHost.set_quality`.
 
 ## Afklaringer og risici
 
