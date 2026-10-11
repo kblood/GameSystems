@@ -153,17 +153,24 @@ func _on_item_tree_exiting(item_id: String) -> void:
 func _reconcile_item_after_tree_exit(item_id: String) -> void:
 	if _busy or not _items.has(item_id): return
 	var node := _item_node(item_id)
-	# tree_exiting also fires for ordinary reparenting. Let that operation finish
-	# before deciding whether the node was destroyed or permanently detached.
-	if node != null and node.is_inside_tree(): return
 	var from_owner := inventory.owner_of(item_id)
 	var slot_id := inventory.slot_of(item_id)
+	# tree_exiting also fires for ordinary reparenting. Let that operation finish
+	# before deciding whether it still belongs to the owner recorded in the ledger.
+	if node != null and node.is_inside_tree() and _item_is_at_owner(node, from_owner, slot_id): return
 	if from_owner.is_empty() or not inventory.unregister_item(item_id, from_owner): return
 	if node != null: _disconnect_item_lifecycle(item_id, node)
 	_items.erase(item_id)
 	_body_state.erase(item_id)
 	_initial_body_state.erase(item_id)
-	_emit_ownership_changed(item_id, from_owner, "disposed", slot_id)
+	_emit_ownership_changed(item_id, from_owner, "disposed" if node == null or not node.is_inside_tree() else "detached", slot_id)
+
+func _item_is_at_owner(node: Node3D, owner: String, slot_id: String) -> bool:
+	if owner == "slot":
+		var anchor := _slot_node(slot_id)
+		return anchor != null and _is_under(node, anchor)
+	var owner_root: Node3D = _owner_roots.get(owner)
+	return is_instance_valid(owner_root) and _is_under(node, owner_root)
 
 func _disconnect_item_lifecycle(item_id: String, node: Node3D) -> void:
 	var callback := Callable(self, "_on_item_tree_exiting").bind(item_id)
