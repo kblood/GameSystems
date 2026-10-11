@@ -66,6 +66,15 @@ func _run() -> void:
 	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("tint_strength")), 2.5), "runtime tint_strength updates the Beer-Lambert shader")
 	ctl.tint_strength = 8.0
 	_check(is_equal_approx(ctl.tint_strength, 4.0), "tint_strength is clamped to the documented range")
+	_check(is_equal_approx(ctl._foam_static_value(), float(info.get("foam_static", 0.0))), "sidecar resting foam is resolved")
+	ctl._sleep()
+	_check(ctl.is_sleeping(), "controller can sleep with authored resting foam")
+	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("foam")), ctl._foam_static_value()), "sleep preserves the resting foam shader value")
+	ctl.foam_static = 0.65
+	_check(not ctl.is_sleeping(), "runtime resting foam edit wakes the controller")
+	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("foam")), 0.65), "runtime resting foam updates the shader")
+	ctl._sleep()
+	_check(is_equal_approx(float(ctl._mat.get_shader_parameter("foam")), 0.65), "sleep retains edited resting foam")
 	var thin := _response(0.0)
 	var neutral := _response(0.45)
 	var thick := _response(1.0)
@@ -77,10 +86,12 @@ func _run() -> void:
 	design.ctl.bubble_size = 2.4
 	design.ctl.viscosity = 0.8
 	design.ctl.tint_strength = 2.2
+	design.ctl.foam_static = 0.7
 	design.set_tier("low")
 	await process_frame
 	_check(is_equal_approx(design.ctl.bubble_size, 2.4), "tier swap preserves runtime bubble size")
 	_check(is_equal_approx(design.ctl.viscosity, 0.8), "tier swap preserves runtime viscosity")
 	_check(is_equal_approx(design.ctl.tint_strength, 2.2), "tier swap preserves runtime tint strength")
+	_check(is_equal_approx(design.ctl.foam_static, 0.7), "tier swap preserves runtime resting foam")
 	print("LIQUID_CONTROLS_OK bubble_size=2.25 viscosity=0..1")
 	quit()

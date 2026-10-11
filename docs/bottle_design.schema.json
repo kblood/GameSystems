@@ -25,11 +25,12 @@
       "colour": {"$ref": "#/$defs/colour"},
       "label": {"$ref": "#/$defs/labelSource", "description": "image/generate for the cap_top disc slot"}}},
     "liquid": {"type": "object",
-      "description": "Written to extras.liquid and the .liquid.json sidecar. bubble_size (0–4; default 1), normalized viscosity (0–1; default 0.45), and tint_strength (0–4; default 1) are applied at runtime. tint_strength 0 removes Beer-Lambert colour absorption; 1 uses the authored colour. This does not make the liquid transparent. opacity and foam as a static head are not yet applied by the visual shader/controller; density remains available to gameplay mass APIs.",
+      "description": "Written to extras.liquid and the .liquid.json sidecar. bubble_size (0–4; default 1), normalized viscosity (0–1; default 0.45), tint_strength (0–4; default 1), and foam_static (0–1; default 0) are applied at runtime. tint_strength 0 removes Beer-Lambert colour absorption; 1 uses the authored colour. This does not make the liquid transparent. opacity is not yet applied by the visual shader/controller; density remains available to gameplay mass APIs.",
       "properties": {
         "color": {"$ref": "#/$defs/colour"},
         "fill": {"type": "number", "minimum": 0, "maximum": 1},
         "carbonation": {"type": "number"}, "foam": {"type": "number"}, "foam_height": {"type": "number"},
+        "foam_static": {"type": "number", "minimum": 0, "maximum": 1, "description": "persistent resting foam head; 0 disables, 1 fills foam_height"},
         "bubble_size": {"type": "number", "minimum": 0, "maximum": 4, "description": "runtime bubble-radius multiplier"},
         "viscosity": {"type": "number", "minimum": 0, "maximum": 1, "description": "normalized slosh response: 0 thin, 1 thick; default 0.45"},
         "opacity": {"type": "number"},

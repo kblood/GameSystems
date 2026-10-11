@@ -362,6 +362,8 @@ export function setupBottle(root, opts = {}) {
   let viscosity = clampFinite(opts.viscosity ?? info.viscosity ?? 0.45, 0, 1, 0.45);
   let tintStrength = clampFinite(opts.tintStrength ?? info.tint_strength ?? 1, 0, 4, 1);
   U.uTintStrength.value = tintStrength;
+  let foamStatic = clampFinite(opts.foamStatic ?? info.foam_static ?? 0, 0, 1, 0);
+  U.uFoam.value = foamStatic;
 
   const S = {
     liquid, material: mat, uniforms: U, lut, info,
@@ -377,6 +379,7 @@ export function setupBottle(root, opts = {}) {
     },
     get viscosity() { return viscosity; }, set viscosity(v) { viscosity = clampFinite(v, 0, 1, 0.45); S.wake(); },
     get tintStrength() { return tintStrength; }, set tintStrength(v) { tintStrength = clampFinite(v, 0, 4, 1); U.uTintStrength.value = tintStrength; S.wake(); },
+    get foamStatic() { return foamStatic; }, set foamStatic(v) { foamStatic = clampFinite(v, 0, 1, 0); U.uFoam.value = Math.max(foam, foamStatic); S.wake(); },
     get carbonation() { return carbonation; }, set carbonation(v) { carbonation = v; S.wake(); },
     get capOpen() { return capOpen; }, set capOpen(v) { capOpen = v; S.wake(); },
     get sleeping() { return sleeping; },
@@ -408,7 +411,7 @@ export function setupBottle(root, opts = {}) {
   }
   function sleep() {
     agit = foam = kick = 0; vel.set(0, 0, 0); upEff.set(0, 1, 0);
-    U.uRipple.value = 0; U.uFoam.value = 0; U.uAgitation.value = 0; U.uUpWorld.value.set(0, 1, 0);
+    U.uRipple.value = 0; U.uFoam.value = foamStatic; U.uAgitation.value = 0; U.uUpWorld.value.set(0, 1, 0);
     sleeping = true; poll = 0;
   }
   function apply(dt) {
@@ -460,7 +463,7 @@ export function setupBottle(root, opts = {}) {
     const capF = S.foamCapacity < 0 ? (info.foam ?? 0) : S.foamCapacity;
     const ft = agit * capF;
     foam = ft > foam ? Math.min(ft, foam + 4 * dt) : foam * Math.max(0, 1 - S.foamSettle * dt);
-    U.uFoam.value = foam; U.uAgitation.value = agit;
+    U.uFoam.value = Math.max(foam, foamStatic); U.uAgitation.value = agit;
     U.uCarbonation.value = carb(); U.uBubbleScale.value = bubbles;
   }
 

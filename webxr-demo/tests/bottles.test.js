@@ -35,7 +35,7 @@ function model({ shatters = true, material = 'glass' } = {}) {
 const hit = (body, speed, extra = {}) => ({ a: body, speed, point: [0.035, 1.1, 0], normal: [1, 0, 0], surface: 'concrete', otherMass: Infinity, ...extra });
 
 const liquidInfo = overrides => ({ version: 1, n_cos: 2, n_fill: 2, lut: [[0, 0.1], [0.1, 0.2]],
-  color: [0.2, 0.08, 0.03, 1], z0: 0, z1: 0.2, carbonation: 0, foam: 0, bubble_size: 1.5, viscosity: 0.25, tint_strength: 1.6, ...overrides });
+  color: [0.2, 0.08, 0.03, 1], z0: 0, z1: 0.2, carbonation: 0, foam: 0, foam_static: 0.3, bubble_size: 1.5, viscosity: 0.25, tint_strength: 1.6, ...overrides });
 function liquidRoot(info = liquidInfo()) {
   const root = new THREE.Group(), mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8), new THREE.MeshStandardMaterial());
   mesh.name = 'Liquid'; mesh.userData.liquid = info; root.add(mesh); return root;
@@ -77,6 +77,21 @@ test('viscosity changes the slosh response while the neutral value preserves leg
   };
   const thin = response(0), neutral = response(0.45), thick = response(1);
   assert.ok(thin > neutral && neutral > thick, `${thin} > ${neutral} > ${thick}`);
+});
+
+test('resting foam stays visible while the liquid driver sleeps and wakes when edited', () => {
+  const root = liquidRoot();
+  const state = setupBottle(root, { allowSleep: true });
+  assert.equal(state.foamStatic, 0.3);
+  assert.equal(state.uniforms.uFoam.value, 0.3, 'authored resting head is applied before agitation');
+  for (let i = 0; i < 360 && !state.sleeping; i++) state.update(1 / 60);
+  assert.equal(state.sleeping, true, 'a static-only head does not keep the simulation awake');
+  assert.equal(state.uniforms.uFoam.value, 0.3, 'sleep preserves the visual foam head');
+  state.foamStatic = 0.65;
+  assert.equal(state.uniforms.uFoam.value, 0.65, 'runtime head edit updates the shader');
+  assert.equal(state.sleeping, false, 'runtime head edit wakes the controller');
+  state.foamStatic = 2;
+  assert.equal(state.foamStatic, 1, 'resting foam is bounded');
 });
 
 test('the fake adapter implements the host physics interface and the extension loads on it', async () => {

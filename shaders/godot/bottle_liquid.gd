@@ -60,6 +60,12 @@ signal opened                           ## cap_open set true (BottlePour listens
 @export var table_tier := -1
 @export var allow_sleep := true
 @export var foam_capacity := -1.0            ## -1 = use extras `foam` (how much head a shake makes, 0..1)
+## Persistent resting foam head (0..1); -1 uses the optional sidecar `foam_static` value.
+@export_range(-1.0, 1.0) var foam_static := -1.0:
+	set(v):
+		foam_static = clampf(v, -1.0, 1.0) if is_finite(v) else -1.0
+		if _mat: _mat.set_shader_parameter("foam", maxf(_foam, _foam_static_value()))
+		wake()
 @export var foam_settle := 0.18              ## foam decay rate (1/s)
 ## Realism tier: 3 HIGH, 2 MEDIUM, 1 LOW, 0 MINIMAL (see bottle_liquid.gdshader). With auto_lod the tier used is
 ## min(quality, tier_for_distance(camera distance)), so far bottles drop tiers automatically.
@@ -154,6 +160,7 @@ func setup(root: Node, fill_: float = 0.6, sidecar_json := "") -> void:
 	_mat.set_shader_parameter("base_y", z0)
 	_mat.set_shader_parameter("flow_pivot", Vector3(0.0, lerpf(z0, z1, 0.4), 0.0))
 	_mat.set_shader_parameter("bubble_size", _bubble_size_value())
+	_mat.set_shader_parameter("foam", _foam_static_value())
 	_foam_h = float(_info.get("foam_height", 0.022))
 	_mat.set_shader_parameter("foam_height", _foam_h)
 	_mat.set_shader_parameter("flip_faces", _signed_volume(liquid.mesh) < 0.0)
@@ -226,6 +233,10 @@ func _viscosity_value() -> float:
 
 func _tint_strength_value() -> float:
 	return clampf(float(_info.get("tint_strength", 1.0)) if tint_strength < 0.0 else tint_strength, 0.0, 4.0)
+
+
+func _foam_static_value() -> float:
+	return clampf(float(_info.get("foam_static", 0.0)) if foam_static < 0.0 else foam_static, 0.0, 1.0)
 
 
 ## A slosh kick from outside (liquid poured in). Wakes the controller.
@@ -391,7 +402,7 @@ func _sleep() -> void:
 	_vel = Vector3.ZERO
 	_up_eff = Vector3.UP
 	_mat.set_shader_parameter("ripple", 0.0)
-	_mat.set_shader_parameter("foam", 0.0)
+	_mat.set_shader_parameter("foam", _foam_static_value())
 	_mat.set_shader_parameter("agitation", 0.0)
 	_mat.set_shader_parameter("up_world", Vector3.UP)
 	_sleeping = true
@@ -473,7 +484,7 @@ func _apply(delta: float) -> void:
 	var cap := float(_info.get("foam", 0.0)) if foam_capacity < 0.0 else foam_capacity
 	var ft := _agit * cap
 	_foam = minf(ft, _foam + 4.0 * delta) if ft > _foam else _foam * maxf(0.0, 1.0 - foam_settle * delta)
-	_mat.set_shader_parameter("foam", _foam)
+	_mat.set_shader_parameter("foam", maxf(_foam, _foam_static_value()))
 	_mat.set_shader_parameter("agitation", _agit)
 	_mat.set_shader_parameter("carbonation", float(_info.get("carbonation", 0.0)) if carbonation < 0.0 else carbonation)
 	_mat.set_shader_parameter("bubble_scale", bubbles)

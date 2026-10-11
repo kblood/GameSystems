@@ -11,7 +11,7 @@
 // setLabelImage() returns false there (reload a higher tier first).
 //
 // TODO(owner) - liquid settings not yet honoured by the visual shader/controller:
-//   opacity, foam static head. Density remains available through BottleDesign.mass_kg().
+//   opacity. Density remains available through BottleDesign.mass_kg().
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { setupBottle } from './bottle_liquid.js';
@@ -52,7 +52,7 @@ function hasAlpha(img) {
   return false;
 }
 
-export async function loadDesign(path, { tier = 'high', fill = 0.6, slosh = true, bubbleSize, viscosity, tintStrength, withLiquid = true } = {}) {
+export async function loadDesign(path, { tier = 'high', fill = 0.6, slosh = true, bubbleSize, viscosity, tintStrength, foamStatic, withLiquid = true } = {}) {
   const gltf = await new GLTFLoader().loadAsync(tierPath(path, tier));
   const root = gltf.scene;
   const out = { root, path, tier, bottle: null, labels: {}, atlas: null };
@@ -64,7 +64,7 @@ export async function loadDesign(path, { tier = 'high', fill = 0.6, slosh = true
       out.labels[ex.slot] = o;
     } else if (o.name === 'Labels') out.atlas = o;
   });
-  if (withLiquid) out.bottle = setupBottle(root, { fill, slosh, bubbleSize, viscosity, tintStrength });
+  if (withLiquid) out.bottle = setupBottle(root, { fill, slosh, bubbleSize, viscosity, tintStrength, foamStatic });
   out.update = (dt) => out.bottle && out.bottle.update(dt);
   out.supportsSlotSwap = () => Object.keys(out.labels).length > 0;
 
@@ -98,7 +98,8 @@ export async function loadDesign(path, { tier = 'high', fill = 0.6, slosh = true
   };
   out.setTier = async (t) => {
     const next = await loadDesign(path, { tier: t, fill: out.bottle ? out.bottle.fill : fill, slosh,
-      bubbleSize: out.bottle?.bubbleSize, viscosity: out.bottle?.viscosity, tintStrength: out.bottle?.tintStrength, withLiquid });
+      bubbleSize: out.bottle?.bubbleSize, viscosity: out.bottle?.viscosity, tintStrength: out.bottle?.tintStrength,
+      foamStatic: out.bottle?.foamStatic, withLiquid });
     const parent = root.parent;
     if (parent) { next.root.position.copy(root.position); next.root.quaternion.copy(root.quaternion); next.root.scale.copy(root.scale); parent.add(next.root); parent.remove(root); }
     return next;                                                         // caller replaces its reference

@@ -3,6 +3,18 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
+## Afsluttet hvileskum-runde — 2026-10-11
+
+Væskedesign kunne kun danne skum efter rystning. Et separat `foam_static`-felt giver nu en
+vedvarende skumtop i hvile uden at tvinge væskedriveren til at køre; eksisterende `foam`
+styrer stadig mængden, som rystning kan danne. Liveændringer vækker controlleren, headet
+overlever tier-skift, og værdierne er afgrænset til 0–1.
+
+Verifikation: dedikerede Three.js- og Godot-tests for authored værdier, awake/sleep, grænser
+og tier-skift; GameSystems 486/486, WebXR Contracts 339/339, 12/12 browserchecks og production
+build består. Sol reviewede idle/sleep- og tier-adfærden uden blocker. Godot MINIMAL udelader
+fortsat skum som sin eksisterende shader-optimering.
+
 ## Afsluttet væskefarvekontrol-runde — 2026-10-11
 
 `tint_strength` blev gemt i designs, men blev ignoreret af shaderne. Det styrer nu Beer-Lambert-
@@ -12,7 +24,7 @@ transparent. Ændringer vækker
 kontrollerne, og værdien overlever tier-skift. Schema, API-dokumentation og acceptancetest er
 opdateret.
 
-Verifikation: 485/485 GameSystems-tests, 339/339 WebXR Contracts-tests, 12/12 systems-browserchecks,
+Verifikation: 486/486 GameSystems-tests, 339/339 WebXR Contracts-tests, 12/12 systems-browserchecks,
 Godot-væsketest og produktionsbuild består. Sols uafhængige review fandt ingen kildefejl.
 
 ## Afsluttet rude-checkpoint-runde — 2026-10-11
