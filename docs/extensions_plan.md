@@ -303,7 +303,9 @@ Trin 2 bør også tage grab_findings 1.5 (held-drive rotation) og 2.x-punkterne 
     `dc664c07`, MIT), `bone_maps.js` (MPFB, VRM 1 = identitet, VRM 0-tommelnavne, `boneMapFromVRM`, Mixamo med vilkårligt
     præfiks, `detectBoneMap`), `skeleton_check.js` (`checkSkeleton`: manglende led, fingre full/partial/none → vante-hånd +
     advarsel; knoer for langt fra forventet håndled-afstand/spændvidde/retning → advarsel; `completeHands` syntetiserer
-    fingerled til vante-hænder, ≤ 2 cm fra CC-hånden), `layers.js`.
+    fingerled til vante-hænder, ≤ 2 cm fra CC-hånden). Hvert joint-head valideres som præcis tre endelige koordinater;
+    tomme, for korte, for lange eller ikke-endelige fingerpunkter tæller som manglende og erstattes i en vante-hånd.
+    Syntese kræver stadig gyldige håndleds- og underarmsankre), `layers.js`.
   - `avatar` (afhænger af humanoid + én karakter-provider som parameter): VRIK, kalibrering, gang (clips), førsteperson,
     fingre/fingerInput/filtre, tracking/session, NPC-animation. `createCharacterPlugin({ scene, renderer, character, quality })`
     med kvalitetsniveauer `AVATAR_QUALITY = off | arms | full` (`low`/`high` → arms/full); `entity.setQuality()` skifter live

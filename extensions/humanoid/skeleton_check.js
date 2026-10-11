@@ -31,6 +31,7 @@ export const HAND_EXPECT = Object.freeze({
 });
 const ratioIn = (x, [a, b]) => x >= a && x <= b;
 const fmt = x => x.toFixed(2);
+const hasPoint = p => Array.isArray(p) && p.length === 3 && p.every(Number.isFinite);
 
 /**
  * Report: { ok, missing: [joints], missingRequired: [joints], fingers: 'full' | 'partial' | 'none',
@@ -40,7 +41,7 @@ const fmt = x => x.toFixed(2);
  * keep their fingers, the missing segments are folded by createHumanoid (they follow their parent).
  */
 export function checkSkeleton(heads) {
-  const has = j => Array.isArray(heads?.[j]) && heads[j].every(Number.isFinite);
+  const has = j => hasPoint(heads?.[j]);
   const missing = JOINT_NAMES.filter(j => !has(j)), missingRequired = REQUIRED.filter(j => !has(j));
   const warnings = [], hands = {};
   if (missingRequired.length) warnings.push(`rig lacks required joint(s): ${missingRequired.join(', ')}`);
@@ -87,7 +88,7 @@ function knuckleWarnings(heads, s, has) {
 export function completeHands(heads, report = checkSkeleton(heads)) {
   const out = { ...heads }, synthetic = [];
   for (const s of SIDES) {
-    if (!report.hands[s].mitten || !heads[`${s}Hand`] || !heads[`${s}LowerArm`]) continue;
+    if (!report.hands[s].mitten || !hasPoint(heads[`${s}Hand`]) || !hasPoint(heads[`${s}LowerArm`])) continue;
     const W = heads[`${s}Hand`], forearm = vSub(W, heads[`${s}LowerArm`]), k = vLen(forearm) / 0.25;
     const F = vNorm(forearm);
     let R = vSub([0, 0, 1], vScale(F, F[2]));                   // radial (thumb side): the character's front, across the hand
@@ -106,7 +107,7 @@ export function completeHands(heads, report = checkSkeleton(heads)) {
       const dir = vNorm(vAdd(vScale(F, Math.cos(spread)), vScale(R, Math.sin(spread))));
       SEGMENTS[f].forEach((g, i) => {
         const j = `${s}${f}${g}`;
-        if (!heads[j]) { out[j] = p; synthetic.push(j); }
+        if (!hasPoint(heads[j])) { out[j] = p; synthetic.push(j); }
         p = vAdd(p, vScale(dir, lens[i] * k));
       });
     }
