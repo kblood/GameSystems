@@ -13,8 +13,13 @@
 // 'clamped' is the step-2 name of 'low' and still accepted. Kinds in CLAMP_EXEMPT are raw at 'low' until refitted.
 //
 // Recorded grasps (Grasp Studio, extensions plan step 4) live in recorded_grasps.json beside the bake, written by the
-// studio's dev-server endpoint; record.js mergePoses() appends them to the library (posesFor, nearestPose, poseById,
-// defaultPose), and one marked default replaces the baked default of its kind/side/grasp. BAKED stays the bake alone.
+// studio's dev-server endpoint. They are VARIANTS: by default (setGraspVariants('baked')) the library a game uses
+// (posesFor, nearestPose, defaultPose) is the bake alone, so a recording never changes what a game had. A game opts in:
+//   setGraspVariants('recorded')        every recording joins (record.js mergePoses); one marked default ("preferred"
+//                                       in the studio) replaces the baked default of its kind/side/grasp
+//   setGraspVariants('<id>[,<id>...]')  only those recordings join, each the default of its kind/side/grasp
+// (games map ?graspvariant=... to this). poseById() finds every recording whatever the selection; graspVariants(kind,
+// side, grasp) lists the bake's default and the recordings to choose from. BAKED stays the bake alone.
 import DATA from './baked_grasps.data.json' with { type: 'json' };
 import RECORDED_DATA from './recorded_grasps.json' with { type: 'json' };
 import { qmul, qconj, rotate, add, sub, length } from './math.js';
@@ -31,13 +36,48 @@ export const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
 export const BAKED = DATA;
 /** The recorded poses in the library (valid entries of recorded_grasps.json). */
 export const RECORDED = Object.freeze(recordedPoses(RECORDED_DATA));
-/** Every pose of the library: the bake plus the recorded poses (record.js mergePoses). */
-export const POSES = mergePoses(DATA.poses, RECORDED);
-const byKindSide = new Map();
-for (const pose of POSES) {
-  const key = `${pose.kind}/${pose.side}`;
-  if (!byKindSide.has(key)) byKindSide.set(key, []);
-  byKindSide.get(key).push(pose);
+/** The poses of the active library: the bake, plus the recordings the variant selection lets in (setGraspVariants). */
+export let POSES = DATA.poses;
+let byKindSide = new Map(), variantSelection = 'baked';
+function index() {
+  byKindSide = new Map();
+  for (const pose of POSES) {
+    const key = `${pose.kind}/${pose.side}`;
+    if (!byKindSide.has(key)) byKindSide.set(key, []);
+    byKindSide.get(key).push(pose);
+  }
+}
+index();
+/** 'baked' | 'recorded' | a list of recorded ids (array or comma-separated string): see the header. */
+export function parseGraspVariants(selection) {
+  if (selection == null || selection === '' || selection === 'baked' || selection === 'off') return 'baked';
+  if (selection === 'recorded' || selection === 'all') return 'recorded';
+  const ids = (Array.isArray(selection) ? selection : String(selection).split(',')).map(s => String(s).trim()).filter(Boolean);
+  return ids.length ? ids : 'baked';
+}
+/**
+ * Choose which recorded grasps take part in the library (see the header). Unknown ids are ignored (returned in
+ * `unknown`). Returns { selection, ids: the recorded ids now in the library, unknown }.
+ */
+export function setGraspVariants(selection = 'baked', recorded = RECORDED) {
+  const sel = parseGraspVariants(selection);
+  let chosen = [], unknown = [];
+  if (sel === 'recorded') chosen = recorded;
+  else if (Array.isArray(sel)) {
+    unknown = sel.filter(id => !recorded.some(p => p.id === id));
+    chosen = recorded.filter(p => sel.includes(p.id)).map(p => ({ ...p, default: true }));
+  }
+  POSES = chosen.length ? mergePoses(DATA.poses, chosen) : DATA.poses;
+  variantSelection = sel;
+  index();
+  return { selection: sel, ids: chosen.map(p => p.id), unknown };
+}
+export const graspVariantSelection = () => variantSelection;
+/** The choices for one kind/side/grasp: the bake's default first, then every recording (newest last). */
+export function graspVariants(kind, side, grasp, recorded = RECORDED) {
+  const baked = DATA.poses.filter(p => p.kind === kind && p.side === side && (!grasp || p.grasp === grasp));
+  const base = baked.find(p => p.default) || baked[0];
+  return [...(base ? [base] : []), ...recorded.filter(p => p.kind === kind && p.side === side && (!grasp || p.grasp === grasp))];
 }
 export function posesFor(kind, side) { return byKindSide.get(`${kind}/${side}`) || []; }
 export function hasPoses(kind) { return byKindSide.has(`${kind}/left`) || byKindSide.has(`${kind}/right`); }
@@ -45,7 +85,8 @@ export function defaultPose(kind, side, grasp) {
   const list = posesFor(kind, side).filter(p => !grasp || p.grasp === grasp);
   return list.find(p => p.default) || list[0] || null;
 }
-export function poseById(id) { return POSES.find(p => p.id === id) || null; }
+/** A pose of the active library, else a recording by id (so a chosen variant can always be shown), else null. */
+export function poseById(id) { return POSES.find(p => p.id === id) || RECORDED.find(p => p.id === id) || null; }
 
 export function quatAngle(a, b) {
   const d = Math.abs(a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]);
@@ -119,6 +160,7 @@ export function fingerState(pose, t = 1) {
   FINGERS.forEach((finger, i) => {
     const a = rows.open[i], b = rows.angles[i], m = j => (a[j] + (b[j] - a[j]) * k) * D;
     out[finger] = { yaw: null, dyaw: m(0), pitch: m(1), bend1: m(2), bend2: m(3), curl: k, src: 'baked' };
+    if (i === 0 && (a.length > 4 || b.length > 4)) out[finger].twist = ((a[4] || 0) + ((b[4] || 0) - (a[4] || 0)) * k) * D;   // recorded thumb twist
   });
   return out;
 }

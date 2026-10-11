@@ -95,12 +95,12 @@ export class Badge {
 }
 
 /**
- * In-XR panel: a canvas plane with buttons pressed by poking with a fingertip (index tip of either hand that is not the
- * recording hand). buttons: [{ id, label, row, col, cols?, active? }], 4 columns x 4 rows; text: status lines below them.
+ * In-XR panel: a canvas plane with buttons pressed by poking with a fingertip (the index tip of either hand; main.js leaves
+ * out the recording hand while it is being captured). buttons: [{ id, label, row, col, cols?, active? }], 4 columns x 4 rows; text: status lines below them.
  */
 export class Panel {
-  constructor(scene, { width = 0.4, height = 0.3 } = {}) {
-    this.size = [width, height];
+  constructor(scene, { width = 0.4, height = 0.3, textRow = 2, maxLines = 5, font = 30 } = {}) {
+    this.size = [width, height]; this.textRow = textRow; this.maxLines = maxLines; this.font = font;
     this.tex = new CanvasTexture(1024, Math.round(1024 * height / width));
     this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ map: this.tex.texture, transparent: true, side: THREE.DoubleSide }));
     scene.add(this.mesh);
@@ -124,11 +124,13 @@ export class Panel {
         g.beginPath(); g.roundRect(x, y, bw, bh, 16); g.fill();
         g.fillStyle = b.disabled ? '#5d6a6d' : b.id === this.hot ? '#111' : '#f6eadb'; g.fillText(b.label, x + bw / 2, y + bh / 2);
       }
-      g.textAlign = 'left'; g.font = '30px system-ui, sans-serif'; g.fillStyle = '#e8ded0';
-      const y0 = this.rect({ row: Math.max(2, ...buttons.map(b => b.row)) + 1, col: 0 })[1] + 6;
-      lines.slice(0, 5).forEach((line, i) => g.fillText(line, 24, y0 + i * 40));
+      g.textAlign = 'left'; g.font = `${this.font}px system-ui, sans-serif`; g.fillStyle = '#e8ded0';
+      const y0 = this.rect({ row: Math.max(this.textRow, ...buttons.map(b => b.row)) + 1, col: 0 })[1] + 6;
+      lines.slice(0, this.maxLines).forEach((line, i) => g.fillText(line, 24, y0 + i * (this.font + 10), w - 48));
     });
   }
+  /** Forget pokes in progress (session start / end: a finger that was inside a button must not count as held). */
+  reset() { this.inside = new Set(); this.hot = null; this.cooldown = 0; }
   /** Fingertips (world [x,y,z]) -> the id of a button newly pressed this frame, or null. */
   poke(tips, dt) {
     this.cooldown = Math.max(0, this.cooldown - dt);
@@ -149,5 +151,35 @@ export class Panel {
     }
     this.inside = now; this.hot = [...now][0] ?? null;
     return pressed;
+  }
+}
+
+/**
+ * A short, loud result line in VR (save ok / NOT saved): a plane above the poke panel, green or red, shown for `seconds`.
+ * show(text, { ok, seconds }); update(dt, position, quaternion) every frame.
+ */
+export class Toast {
+  constructor(scene, { width = 0.4, height = 0.06 } = {}) {
+    this.tex = new CanvasTexture(1024, Math.round(1024 * height / width));
+    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ map: this.tex.texture, transparent: true, side: THREE.DoubleSide, depthTest: false }));
+    this.mesh.renderOrder = 11; this.mesh.visible = false;
+    scene.add(this.mesh);
+    this.left = 0; this.text = ''; this.ok = true;
+  }
+  show(text, { ok = true, seconds = ok ? 4 : 15 } = {}) {
+    this.text = text; this.ok = ok; this.left = seconds;
+    this.tex.draw(`${ok}${text}`, (g, w, h) => {
+      g.clearRect(0, 0, w, h);
+      g.fillStyle = ok ? '#1f6b43f0' : '#9b1c1cf2'; g.beginPath(); g.roundRect(0, 0, w, h, 24); g.fill();
+      g.fillStyle = '#ffffff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 50px system-ui, sans-serif';
+      g.fillText(text, w / 2, h / 2, w - 40);
+    });
+  }
+  hide() { this.left = 0; }
+  update(dt, position, quaternion, visible = true) {
+    this.left = Math.max(0, this.left - dt);
+    this.mesh.visible = visible && this.left > 0;
+    if (!this.mesh.visible) return;
+    this.mesh.position.copy(position); this.mesh.quaternion.copy(quaternion);
   }
 }

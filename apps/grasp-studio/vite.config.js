@@ -9,15 +9,18 @@ const projectRoot = fileURLToPath(new URL('.', import.meta.url));
 export const PORT = Number(process.env.GRASP_STUDIO_PORT) || 5180;
 
 // Save endpoint (/api/grasps): writes the recorded library into GameSystems/extensions/grasp (server/grasp_store.mjs).
-// GRASP_STUDIO_OUT=<file> writes elsewhere (tests). Loaded natively by node, not bundled into the config.
+// GRASP_STUDIO_OUT=<file> writes elsewhere (tests). Loaded natively by node, not bundled into the config; the ?t= query
+// makes a server restart (config change) load the current store code instead of node's cached module (the headset lab
+// keeps one node process for hours). The validators inside reload themselves when the extension files change.
+const fresh = file => `${pathToFileURL(resolve(projectRoot, file)).href}?t=${Date.now()}`;
 function graspStoreEndpoint() {
   return { name: 'grasp-studio-store', async configureServer(server) {
-    const { graspStore } = await import(pathToFileURL(resolve(projectRoot, 'server/grasp_store.mjs')).href);
+    const { graspStore } = await import(fresh('server/grasp_store.mjs'));
     const store = graspStore({ file: process.env.GRASP_STUDIO_OUT || undefined, log: m => server.config.logger.info(`[grasp-studio] ${m}`) });
-    server.config.logger.info(`[grasp-studio] recordings are saved to ${store.file}`);
+    server.config.logger.info(`[grasp-studio] recordings are saved to ${store.file} (refused saves: ${store.rejectFile})`);
     server.middlewares.use('/api/grasps', store);
     // Hand animations / gesture poses (/api/hand): GameSystems/extensions/avatar/recorded_hand.json (server/hand_store.mjs).
-    const { handStore } = await import(pathToFileURL(resolve(projectRoot, 'server/hand_store.mjs')).href);
+    const { handStore } = await import(fresh('server/hand_store.mjs'));
     const hands = handStore({ file: process.env.GRASP_STUDIO_HAND_OUT || undefined, log: m => server.config.logger.info(`[grasp-studio] ${m}`) });
     server.config.logger.info(`[grasp-studio] hand clips are saved to ${hands.file}`);
     server.middlewares.use('/api/hand', hands);

@@ -8,6 +8,7 @@
 // hand frame (+Z wrist -> middle knuckle, +Y back of the hand) in item space [x,y,z,w], rows [dyaw, pitch, bend1, bend2]
 // in degrees per digit thumb..little, dyaw relative to the rest spread of the hand the rows are applied to (the
 // reference hand when recorded), pitch/bend absolute in the hand frame (the plugin's chainAngles / closure fingerChain).
+// A recorded thumb row has a 5th value, its axial twist (deg; THUMB_TWIST below): baked rows have none.
 import REFERENCE from './reference_hand.json' with { type: 'json' };
 import { handGeometry, fingerChain, closeToContact, chainGaps, REFERENCE_HAND } from './closure.js';
 import { CATALOG, signedDistance } from './catalog.js';
@@ -37,6 +38,37 @@ const norm = a => { const l = length(a) || 1; return [a[0] / l, a[1] / l, a[2] /
 const reject = (v, n) => sub(v, scale(n, dot(v, n)));
 const finite = (a, n) => Array.isArray(a) && a.length === n && a.every(Number.isFinite);
 const joint = (joints, name) => (joints instanceof Map ? joints.get(name) : joints?.[name]);
+/**
+ * Thumb twist measurement (rowsFromJoints): enabled, and the bend-plane strength |n| (≈ sin bend1 + sin bend2) over which
+ * it fades in (a straight thumb has no plane). Same rule as the avatar's rigdata.thumbTwist. enabled = false records the
+ * old fixed-plane thumb (4 values).
+ */
+export const THUMB_TWIST = { enabled: true, plane: [0.15, 0.4] };
+/**
+ * Twist (rad, hand-independent via sgn) of a thumb chain v[0..2]: per bend, the angle about the parent segment from the
+ * conventional hinge (hinge made perpendicular to it, as fingerChain does) to the hinge of the plane that bend lies in,
+ * averaged weighted by the bends' sines; faded in over THUMB_TWIST.plane (a straight thumb has no plane). Exact inverse
+ * of fingerChain's twist.
+ */
+function thumbTwist(v, hinge, D, sgn) {
+  const about = (p, n, s) => {
+    let K = reject(hinge, p);
+    if (length(K) < 1e-6) K = reject(D, p);
+    K = norm(K);
+    const m = scale(n, dot(n, K) < 0 ? -1 / s : 1 / s);
+    return Math.atan2(dot(cross(K, m), p), dot(K, m));
+  };
+  const n1 = cross(v[0], v[1]), n2 = cross(v[1], v[2]), s1 = length(n1), s2 = length(n2), S = s1 + s2, [lo, hi] = THUMB_TWIST.plane;
+  const u = Math.max(0, Math.min(1, (S - lo) / (hi - lo))), w = u * u * (3 - 2 * u);
+  if (w <= 0) return 0;
+  const t = ((s1 > 1e-9 ? s1 * about(v[0], n1, s1) : 0) + (s2 > 1e-9 ? s2 * about(v[1], n2, s2) : 0)) / S;
+  return sgn * w * t;
+}
+/** v rotated by `angle` about the unit axis k (Rodrigues). */
+function turn(v, k, angle) {
+  const c = Math.cos(angle), s = Math.sin(angle), kv = cross(k, v), d = dot(k, v) * (1 - c);
+  return [v[0] * c + kv[0] * s + k[0] * d, v[1] * c + kv[1] * s + k[1] * d, v[2] * c + kv[2] * s + k[2] * d];
+}
 
 /** Quaternion [x,y,z,w] of the rotation whose columns are the orthonormal axes X, Y, Z. */
 export function quatFromBasis(X, Y, Z) {
@@ -95,7 +127,9 @@ export function restFromJoints(side, joints) {
  * Finger rows (deg, thumb..little) of tracked joints for a hand: pitch and bends absolute in the tracked hand frame,
  * dyaw = tracked spread minus the rest spread of `hand` (closure.handGeometry(); the reference hand for recordings), so
  * closure.fingerChain(hand.fingers[f], row) bends `hand` like the tracked finger. Inverse of fingerChain on the same
- * hand. Null when joints are missing.
+ * hand. The thumb row gets a 5th value, its twist (THUMB_TWIST): the bends are measured about the hinge turned by it, so
+ * an opposing (pronated) thumb keeps its bend plane instead of being projected onto the fixed one. Null when joints are
+ * missing.
  */
 export function rowsFromJoints(side, joints, hand) {
   const b = handBasis(side, joints);
@@ -106,19 +140,23 @@ export function rowsFromJoints(side, joints, hand) {
     const pts = XR_CHAINS[f].map(n => joint(joints, n));
     if (!pts.every(p => finite(p, 3))) return null;
     const P = pts.map(local), v = [0, 1, 2].map(k => norm(sub(P[k + 1], P[k])));
-    const { axes: { F, D, R }, hinge, restYaw } = hand.fingers[f];
+    const { axes: { F, D, R }, hinge, restYaw, twistSign = side === 'left' ? -1 : 1 } = hand.fingers[f];
     const vr = dot(v[0], R), vd = dot(v[0], D), vf = dot(v[0], F);
+    const twist = f === 'Thumb' && THUMB_TWIST.enabled ? thumbTwist(v, hinge, D, twistSign) : null, tw = twist ? twist * twistSign : 0;
     const bend = k => {
       const p = v[k - 1], c = v[k];
       let K = reject(hinge, p);
       if (length(K) < 1e-6) K = reject(D, p);
       K = norm(K);
+      if (tw) K = turn(K, p, tw);
       const a = reject(p, K), e = reject(c, K);
       return Math.atan2(dot(cross(a, e), K), dot(a, e));
     };
     let dyaw = Math.atan2(vr, vf) - restYaw;
     dyaw = Math.atan2(Math.sin(dyaw), Math.cos(dyaw));
-    rows.push([dyaw * R2D, Math.atan2(-vd, Math.hypot(vr, vf)) * R2D, bend(1) * R2D, bend(2) * R2D]);
+    const row = [dyaw * R2D, Math.atan2(-vd, Math.hypot(vr, vf)) * R2D, bend(1) * R2D, bend(2) * R2D];
+    if (twist !== null) row.push(twist * R2D);
+    rows.push(row);
   }
   return rows;
 }
@@ -183,7 +221,7 @@ export function mirrorPose(pose) {
 export function isPose(p) {
   return !!p && typeof p.id === 'string' && typeof p.kind === 'string' && typeof p.grasp === 'string' && (p.side === 'left' || p.side === 'right')
     && finite(p.wrist, 3) && finite(p.quat, 4) && Math.abs(Math.hypot(...p.quat) - 1) < 1e-3
-    && [p.angles, p.open].every(rows => Array.isArray(rows) && rows.length === 5 && rows.every(r => finite(r, 4)))
+    && [p.angles, p.open].every(rows => Array.isArray(rows) && rows.length === 5 && rows.every((r, i) => finite(r, 4) || (i === 0 && finite(r, 5))))
     && (p.handLength === undefined || (Number.isFinite(p.handLength) && p.handLength > 0.08 && p.handLength < 0.35));
 }
 

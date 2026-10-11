@@ -10,8 +10,8 @@
 // rendering preset is chosen when it loads (low unless loaded at high).
 import * as THREE from 'three';
 import { ccCharacters } from './character-select.js'; // ./contracts.js (CharacterCreator) or ?character=vrm (character-vrm)
-import { createCharacterPlugin, handFromGrip, grabFingerState, pourFingerState, setHandPoseQuality, handPoseQuality, HAND_POSE_QUALITY } from './vendor/extensions/avatar/index.js';
-import { defaultPose, graspPose, handGeometry, runtimeRows, CATALOG } from './vendor/extensions/grasp/index.js';
+import { createCharacterPlugin, handFromGrip, grabFingerState, pourFingerState, setHandPoseQuality, handPoseQuality, HAND_POSE_QUALITY, setHandVariants } from './vendor/extensions/avatar/index.js';
+import { defaultPose, graspPose, handGeometry, runtimeRows, CATALOG, setGraspVariants } from './vendor/extensions/grasp/index.js';
 import { DEMO_AVATAR } from './avatar-config.js';
 
 /** Demo tier -> avatar extension tier (AVATAR_QUALITY). */
@@ -112,6 +112,11 @@ async function createAvatar({ scene, renderer, camera, game, quality, assetURL }
   const interaction = game.interaction;
   const hp = typeof location === 'object' ? new URLSearchParams(location.search).get('handposes') : null;
   if (HAND_POSE_QUALITY.includes(hp)) setHandPoseQuality(hp);
+  // Grasp Studio recordings are variants (the bake / hand library stays unless picked): ?graspvariant=recorded|<id>[,<id>],
+  // ?handvariant=recorded|<name>@rec-<stamp>[,...] (grasp setGraspVariants, avatar setHandVariants).
+  const search = typeof location === 'object' ? new URLSearchParams(location.search) : null;
+  if (search?.has('graspvariant')) setGraspVariants(search.get('graspvariant'));
+  if (search?.has('handvariant')) setHandVariants(search.get('handvariant'));
   const playerQuality = quality === 'high' ? { skinUpgrade: true, shadows: false } // the plugin's 'low' preset, for the player only:
     : { cloth: false, skinUpgrade: false, hairUpgrade: false, shadows: false, hairCollision: false };
   const character = ccCharacters({ assetsURL: assetURL('avatar-assets/'),

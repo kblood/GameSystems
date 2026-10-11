@@ -176,7 +176,7 @@ function maxAngleDiff(a, b) {
   for (const f of Object.keys(a || {})) {
     const x = a[f], y = b?.[f];
     if (!x || !y) continue;
-    for (const k of ['yaw', 'dyaw', 'pitch', 'bend1', 'bend2']) if (Number.isFinite(x[k]) && Number.isFinite(y[k])) m = Math.max(m, Math.abs(x[k] - y[k]));
+    for (const k of ANGLES) if (Number.isFinite(x[k]) && Number.isFinite(y[k])) m = Math.max(m, Math.abs(x[k] - y[k]));
   }
   return m;
 }
@@ -190,7 +190,7 @@ export function relaxedFingerState(quality = handPoseQuality()) {
   for (const k of FINGER_KEYS) state[CAP[k]].curl = RELAXED_CURLS[k];
   return state;
 }
-const ANGLES = ['yaw', 'dyaw', 'pitch', 'bend1', 'bend2'];
+const ANGLES = ['yaw', 'dyaw', 'pitch', 'bend1', 'bend2', 'twist'];
 // One-Euro parameters per source: hand tracking jitters at rest (strong smoothing, little lag when moving);
 // controller channels are clean analog values (light smoothing)
 export const FINGER_FILTER = {

@@ -30,6 +30,8 @@ avatar-tvilling (referencehånden vises stadig); `$env:REQUIRE_CONTRACTS=1` gør
 
 ## Test på Quest 3
 
+Uden adb: headset-testlabbet (`GameSystems/tools/headset-lab`, skrivebordsgenvejen "GameSystems testlab") serverer studiet over HTTPS på LAN på `https://<pc-ip>:8443/studio/`, og optagelser gemmes som her; se [docs/headset_testlab.md](../../docs/headset_testlab.md).
+
 Forudsætning: Quest 3 med udviklertilstand, USB-kabel, Meta Quest Developer Hub (dens `adb.exe` bruges). Find adb:
 
 ```powershell
@@ -56,17 +58,21 @@ node $HOME\.claude\skills\quest-adb\adb.js discover
    Panelet viser tracking-sikkerhed for begge hænder (0–100 %).
 8. Hold hånden stille om flasken: en nedtælling (1 s) vises over flasken. Bevæger du dig, starter den forfra. Under
    60 % tracking-sikkerhed tælles der ikke.
-9. Efter optagelsen vises score (0–100) og validatorens fejl/advarsler på panelet. Vælg **Gem**, **Gem som standard**
+9. Efter optagelsen vises score (0–100) og validatorens fejl/advarsler på panelet. Vælg **Gem**, **Gem som foretrukken**
    eller **Kassér**. Med **Spejl: til** (standard) gemmes også den spejlede pose til den anden hånd. Flyt hånden mindst
-   4 cm væk for at optage igen. **Fortryd gem** sletter det sidst gemte.
+   4 cm væk for at optage igen. **Fortryd gem** sletter det sidst gemte. Resultatet vises som grøn "Gemt ✓" eller rød
+   "IKKE GEMT" foran dig; en afvist gemning ligger i køen (localStorage) til **Gem kø** sender den igen.
 10. Se i PC-terminalen: `[grasp-studio] save: <id>, <id>-m -> ...` og filen `GameSystems/extensions/grasp/recorded_grasps.json`.
 11. Få grebet ind i demoen: `cd GameSystems/webxr-demo; npm run sync` (eller genstart `npm run dev`). I Contracts:
-    `cd NightfallContractsWebXR-interaction; npm run sync:extensions`. Et greb gemt som standard erstatter det bagte
-    standardgreb for samme genstand/side/grebstype.
+    `cd NightfallContractsWebXR-interaction; npm run sync:extensions`. Optagelser er varianter: det bagte greb er stadig
+    standard, indtil spillet vælger optagelser med `?graspvariant=recorded` (eller `=<id>`); håndklip med
+    `?handvariant=recorded|<navn>@rec-<stamp>`. **Variant** på panelet viser originalen og optagelserne.
 12. Ryd op: `& "<adb>" reverse --remove tcp:5180`.
 
 Desktop uden headset: `http://localhost:5180/?synthetic` lader en syntetisk hånd gribe flasken (samme pipeline).
-Flere URL-valg: `?quality=0..3`, `?avatar=off`, `?side=left`, `?panel` (vis panelet uden XR).
+Flere URL-valg: `?quality=0..3`, `?avatar=off`, `?side=left`, `?panel` (vis panelet uden XR), `?avatarview=mirror|self`
+(VRIK-avatar i spejl 1,5 m foran dig / 1. person; panelknappen **Avatar** skifter, sidepanelet har Figur CC/VRM, Rå led og
+Tommel), `?character=vrm`.
 
 Det vil vi gerne vide fra første headset-test: virker håndsporing i Quest Browser med hånden om en virtuel flaske (ingen
 fysisk genstand); tracking-sikkerhed under grebet; om 1 s stillhed er for kort/lang; om poke-panelet er til at ramme;
@@ -83,12 +89,14 @@ anden håndstørrelse holder om samme sted (bagte poser uden `handLength` bruger
 
 Valget: en separat fil ved siden af `baked_grasps.data.json` i stedet for at skrive i bagningen, så en optagelse aldrig
 kan ødelægge den bagte data, og den kan fortrydes ved at slette linjer. `baked_grasps.js` fletter den ind
-(`mergePoses`): optagne poser lægges til, og en optaget standard fjerner standard-flaget fra den bagte pose med samme
-genstand/side/grebstype. `BAKED` er stadig den urørte bagning; `RECORDED` og `POSES` er nye eksporter.
+som varianter: `POSES` er bagningen, indtil `setGraspVariants('recorded' | ids)` fletter optagelser ind (`mergePoses`;
+en optaget standard tager så standard-flaget fra den bagte pose med samme genstand/side/grebstype). `graspVariants()`
+lister bagt + optagne, `poseById` finder altid en optagelse. `BAKED` er stadig den urørte bagning.
 
 Endpointet (`server/grasp_store.mjs`, monteret på `/api/grasps` af `vite.config.js`) tager kun imod POST fra samme maskine
 (Origin localhost/127.0.0.1 eller ingen) med `Content-Type: application/json`, højst 512 KB, og skriver atomisk
-(temp-fil + rename) i kø. Handlinger: `save` (poser), `default` (ids), `delete` (ids). Det findes kun i `npm run dev`.
+(temp-fil + rename) i kø. Handlinger: `save` (poser; lægger altid til, et optaget id får `-2`, `-3` …), `default` (ids), `delete` (ids). En afvist
+gemning logges og gemmes i `rejected/*.rejected.jsonl` (svaret har `kept`). Det findes kun i `npm run dev`.
 
 ## Kvalitetsniveauer
 

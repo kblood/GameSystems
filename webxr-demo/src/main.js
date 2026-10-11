@@ -158,6 +158,11 @@ async function init() {
     host.on('broken', ({ bottle }) => interaction.dropBottle(bottle)); // before the avatar's listener: hands let go first
     game.interaction = interaction;
     window.__demo = { interaction, factory, breakage, pour, bottles, physics, camera, rig, renderer, scene, host, materials: materialSystem };
+    // Headset test panel (tools/headset-lab): frame time, grab cost, hand-profile and grasp-quality buttons; only with ?testpanel.
+    if (new URLSearchParams(location.search).has('testpanel')) {
+      import('./testpanel.js').then(m => { window.__testpanel = m.installTestPanel({ host, interaction, scene, hud: toast }); })
+        .catch(error => console.error('testpanel', error));
+    }
     setQuality(2);
     const loading = populate(++generation);
     // The avatar is an optional extension (?avatar=0 or off skips it). It is loaded with a dynamic import, so a missing

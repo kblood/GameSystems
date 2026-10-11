@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex">
+  <title>GameSystems testlab</title>
+  <!-- Cloud entry page of the GameSystems headset lab (GameSystems/tools/headset-lab, deploy-hub.ps1). It reads lan.json
+       (same origin; written by the lab server when its LAN URL changes) and links to the lab on the LAN. It never
+       fetches the LAN itself: the button is a plain navigation. -->
+  <style>
+    :root { --bg: #0e1416; --panel: #162125; --line: #2f4248; --text: #eef0ea; --muted: #a9b5b2; --accent: #2b6c8f; --warn: #e0b04f; color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 19px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+    h1 { font-size: 32px; margin: 0 0 6px; }
+    h2 { font-size: 22px; margin: 28px 0 8px; }
+    p { margin: 8px 0; }
+    .muted { color: var(--muted); font-size: 17px; }
+    #go { display: block; text-align: center; margin: 22px 0 10px; padding: 26px 20px; border-radius: 18px; background: var(--accent); color: #fff;
+      font-size: 28px; font-weight: 700; text-decoration: none; min-height: 88px; }
+    #go:active { filter: brightness(1.2); }
+    #go.off { background: #333c40; color: var(--muted); pointer-events: none; }
+    #addr { word-break: break-all; }
+    .box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+    ol { padding-left: 24px; margin: 6px 0; } li { margin: 6px 0; }
+    b.k { background: #24343a; border-radius: 6px; padding: 0 6px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>GameSystems testlab</h1>
+  <p class="muted">Headset-tests til Meta Quest 3. Gem denne side som bogmærke i Quest-browseren. Den peger altid på PC'ens aktuelle adresse.</p>
+
+  <a id="go" class="off" href="#">Henter adresse …</a>
+  <p class="muted" id="addr"></p>
+
+  <div class="box">
+    <h2 style="margin-top:0">Første gang: certifikat-advarsel</h2>
+    <p>Testlabbet på PC'en bruger sit eget certifikat (WebXR kræver HTTPS). Første gang viser browseren «Din forbindelse er ikke privat».</p>
+    <ol>
+      <li>Tryk <b class="k">Avanceret</b>.</li>
+      <li>Tryk <b class="k">Fortsæt til … (usikkert)</b>.</li>
+    </ol>
+    <p>Det gælder hele labbet (demo, Grasp Studio og Contracts ligger på samme adresse). Kommer advarslen igen senere, har browseren glemt valget eller PC'en har fået ny adresse: accepter igen.</p>
+  </div>
+
+  <h2>Indlæser knappen ikke?</h2>
+  <p>Så kører testlabbet ikke på PC'en. Dobbeltklik <b>«GameSystems testlab»</b> på PC'ens skrivebord, vent til vinduet skriver «testlab kører», og tryk på knappen igen.</p>
+  <p class="muted">Quest og PC skal være på samme netværk (hjemme-wifi / LAN).</p>
+
+  <h2>Steam Frame</h2>
+  <p class="muted">Steam Frame's browser har ingen WebXR. Testene her er kun til Quest 3.</p>
+</main>
+<script>
+  // lan.json: { url, ip, port, publishedAt }. Same-origin fetch only; nothing on the LAN is contacted from here.
+  const go = document.getElementById('go'), addr = document.getElementById('addr');
+  fetch('lan.json', { cache: 'no-store' }).then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))).then(lan => {
+    if (!lan || typeof lan.url !== 'string' || !/^https:\/\/[0-9a-z.\-\[\]:]+\/$/i.test(lan.url)) throw new Error('ugyldig lan.json');
+    go.href = lan.url; go.textContent = 'Åbn testlab'; go.classList.remove('off');
+    let when = lan.publishedAt;
+    try { when = new Date(lan.publishedAt).toLocaleString('da-DK', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) {}
+    addr.textContent = 'Adresse: ' + lan.url + ' · meldt af PC’en ' + when;
+  }).catch(() => {
+    go.textContent = 'Testlabbet har ikke meldt sin adresse endnu';
+    addr.textContent = 'Start «GameSystems testlab» på PC’en, og genindlæs siden.';
+  });
+</script>
+</body>
+</html>

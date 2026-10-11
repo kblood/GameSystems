@@ -8,8 +8,11 @@
 //   yaw   = first segment toward the radial (thumb) side of the hand frame; null = keep the avatar's rest spread
 //   pitch = first segment toward the palm (flexion), bend1/bend2 = flexion of segment 2 vs 1 and 3 vs 2
 //   curl  = 0..1 summary (for UI/debug), src = 'hand' | 'controller-finger' | 'controller' | 'rest' | 'sim'
-import { FINGERS, SEGMENTS, fingerJoint, handFrame, fingerAxes, chainAngles } from './rigdata.js';
-import { clamp, vReject, vNorm, vCross, vLen, vScale, vAdd, vSub, qFromTo, qMul, qRotate, qAxisAngle, finite3 } from './qx.js';
+//   twist = Thumb only, optional: axial twist of the thumb (rigdata.thumbTwist; tracked hands, recordings). It turns the
+//           MCP/IP hinge about the metacarpal (and with it the thumb bones' roll, see thumbFrameDelta). Absent = the
+//           fixed-plane thumb of the other sources (controllers, curves, baked data).
+import { FINGERS, SEGMENTS, fingerJoint, handFrame, fingerAxes, chainAngles, twistSign, turnAbout, THUMB_AXIS } from './rigdata.js';
+import { clamp, vReject, vNorm, vCross, vLen, vScale, vAdd, vSub, qFromTo, qMul, qRotate, qAxisAngle, qAlignFrames, finite3 } from './qx.js';
 import * as PM from './pm.js';
 
 const D = Math.PI / 180;
@@ -36,8 +39,15 @@ export const LIMITS = {
   Middle: { pitch: [-25 * D, 95 * D], yaw: [-15 * D, 15 * D], bend1: [-5 * D, 115 * D], bend2: [-10 * D, 90 * D] },
   Ring: { pitch: [-25 * D, 98 * D], yaw: [-20 * D, 12 * D], bend1: [-5 * D, 115 * D], bend2: [-10 * D, 90 * D] },
   Little: { pitch: [-30 * D, 100 * D], yaw: [-30 * D, 15 * D], bend1: [-5 * D, 115 * D], bend2: [-10 * D, 90 * D] },
-  Thumb: { pitch: [-35 * D, 65 * D], yaw: [-55 * D, 30 * D], bend1: [-25 * D, 80 * D], bend2: [-25 * D, 95 * D] },
+  Thumb: { pitch: [-35 * D, 65 * D], yaw: [-55 * D, 30 * D], bend1: [-25 * D, 80 * D], bend2: [-25 * D, 95 * D], twist: [-45 * D, 45 * D] },
 };
+/** Thumb twist of a blend: lerp, a missing side counts as 0; undefined when neither side has one. */
+export function mixTwist(x, y, t) {
+  const a = Number.isFinite(x?.twist), b = Number.isFinite(y?.twist);
+  if (!a && !b) return undefined;
+  const p = a ? x.twist : 0, q = b ? y.twist : 0;
+  return p + (q - p) * t;
+}
 LIMITS.finger = LIMITS.Middle;                         // older name (tests, docs)
 const lim = f => LIMITS[f] || LIMITS.Middle;
 
@@ -101,6 +111,7 @@ export function limitFingerState(fs, restHand) {
     const val = (v, r) => (Number.isFinite(v) ? clamp(v, r[0], r[1]) : 0);
     out[f] = { ...a, pitch: val(a.pitch, L.pitch), bend1: val(a.bend1, L.bend1), bend2: val(a.bend2, L.bend2),
       yaw: a.yaw == null || !Number.isFinite(a.yaw) ? null : clamp(a.yaw, ry + L.yaw[0], ry + L.yaw[1]) };
+    if (a.twist != null) { if (L.twist && Number.isFinite(a.twist)) out[f].twist = clamp(a.twist, L.twist[0], L.twist[1]); else delete out[f].twist; }
   }
   return out;
 }
@@ -115,6 +126,8 @@ export function blendFingerStates(a, b, t) {
     const m = (p, q) => p + (q - p) * t;
     out[f] = { yaw: x.yaw == null || y.yaw == null ? (t < 0.5 ? x.yaw : y.yaw) : m(x.yaw, y.yaw), dyaw: m(x.dyaw ?? 0, y.dyaw ?? 0),
       pitch: m(x.pitch, y.pitch), bend1: m(x.bend1, y.bend1), bend2: m(x.bend2, y.bend2), curl: m(x.curl ?? 0, y.curl ?? 0), src: t < 0.5 ? x.src : y.src };
+    const tw = mixTwist(x, y, t);
+    if (tw !== undefined) out[f].twist = tw;
   }
   return out;
 }
@@ -124,14 +137,32 @@ function chainDirs(finger, hf, a) {
   const ax = fingerAxes(finger, hf);
   const v1 = vNorm(vAdd(vAdd(vScale(ax.R, Math.sin(a.yaw) * Math.cos(a.pitch)), vScale(ax.F, Math.cos(a.yaw) * Math.cos(a.pitch))), vScale(ax.D, -Math.sin(a.pitch))));
   const Kh = vNorm(vCross(ax.D, ax.F));             // hinge convention of rigdata.chainAngles
+  const tw = finger === 'Thumb' && a.twist ? a.twist * twistSign(hf) : 0;   // thumb: the hinge turned by the twist
   const next = (p, bend) => {
     let K = vReject(Kh, p);
     if (vLen(K) < 1e-6) K = vReject(ax.D, p);
-    return qRotate(qAxisAngle(vNorm(K), bend), p);
+    K = vNorm(K);
+    if (tw) K = turnAbout(K, p, tw);
+    return qRotate(qAxisAngle(K, bend), p);
   };
   const v2 = next(v1, a.bend1), v3 = next(v2, a.bend2);
   return [v1, v2, v3];
 }
+
+/** Flexion hinge of a thumb segment with direction p: the hinge convention made perpendicular to p, turned by tw. */
+function thumbHinge(p, Kh, D, tw) {
+  let K = vReject(Kh, p);
+  if (vLen(K) < 1e-6) K = vReject(D, p);
+  K = vNorm(K);
+  return tw ? turnAbout(K, p, tw) : K;
+}
+/**
+ * Thumb bone delta (THUMB_AXIS.roll): the rotation taking the bind segment c (with its untwisted hinge) to the target
+ * segment v with its (twisted) hinge, so the bone's roll follows the flexion plane. The CC body's bind thumb bones lie
+ * within ~5 deg of the untwisted hinge convention (THUMB_AXIS.tilt), so this keeps the nail facing away from the bend in
+ * every pose; a shortest swing (qFromTo) instead rolls the thumb by however far its direction moved from the bind pose.
+ */
+function thumbFrameDelta(c, v, Kh, D, tw) { return qAlignFrames(c, thumbHinge(c, Kh, D, 0), v, thumbHinge(v, Kh, D, tw)); }
 
 /**
  * World (character-frame, rest-relative) deltas of the finger joints of one hand for finger state fs.
@@ -145,12 +176,19 @@ export function fingerWorldDeltas(rigHand, side, fs, handDelta) {
     const a = fs?.[f], rest = rigHand.fingers[f];
     const names = [0, 1, 2].map(k => fingerJoint(side, f, k));
     if (!a) { for (const n of names) out[n] = handDelta; continue; }
-    const abs = { yaw: (a.yaw == null ? rest.rest.yaw : a.yaw) + (a.dyaw ?? 0), pitch: a.pitch, bend1: a.bend1, bend2: a.bend2 };
+    const abs = { yaw: (a.yaw == null ? rest.rest.yaw : a.yaw) + (a.dyaw ?? 0), pitch: a.pitch, bend1: a.bend1, bend2: a.bend2, twist: a.twist };
     const v = chainDirs(f, hf, abs);
     const c = [0, 1, 2].map(k => vNorm(vSub(rest.pts[k + 1], rest.pts[k])));
-    const W1 = qFromTo(c[0], v[0]);
-    const W2 = qMul(qFromTo(qRotate(W1, c[1]), v[1]), W1);
-    const W3 = qMul(qFromTo(qRotate(W2, c[2]), v[2]), W2);
+    let W1, W2, W3;
+    if (f === 'Thumb' && THUMB_AXIS.roll) {
+      // thumb: each bone by frame (direction + hinge), so its roll follows the bend plane (and the twist)
+      const ax = fingerAxes(f, hf), Kh = vNorm(vCross(ax.D, ax.F)), tw = Number.isFinite(a.twist) ? a.twist * twistSign(hf) : 0;
+      [W1, W2, W3] = [0, 1, 2].map(k => thumbFrameDelta(c[k], v[k], Kh, ax.D, tw));
+    } else {
+      W1 = qFromTo(c[0], v[0]);
+      W2 = qMul(qFromTo(qRotate(W1, c[1]), v[1]), W1);
+      W3 = qMul(qFromTo(qRotate(W2, c[2]), v[2]), W2);
+    }
     out[names[0]] = qMul(handDelta, W1); out[names[1]] = qMul(handDelta, W2); out[names[2]] = qMul(handDelta, W3);
   }
   return out;
@@ -168,7 +206,7 @@ export function syntheticJoints(rigHand, side, fs, handDelta, wrist, restWrist) 
   const hf = rigHand.frame;
   for (const f of FINGERS) {
     const rest = rigHand.fingers[f], a = fs?.[f];
-    const abs = a ? { yaw: (a.yaw == null ? rest.rest.yaw : a.yaw) + (a.dyaw ?? 0), pitch: a.pitch, bend1: a.bend1, bend2: a.bend2 } : rest.rest;
+    const abs = a ? { yaw: (a.yaw == null ? rest.rest.yaw : a.yaw) + (a.dyaw ?? 0), pitch: a.pitch, bend1: a.bend1, bend2: a.bend2, twist: a.twist } : rest.rest;
     const v = chainDirs(f, hf, abs);
     let p = place(rest.pts[0]);
     const names = XR_CHAINS[f];
@@ -185,7 +223,7 @@ export { FINGERS, SEGMENTS };
 
 function handCache(rigHand, side) {
   const hf = rigHand.frame;
-  const c = { names: [], axes: [], Kh: [], rest: [] };
+  const c = { names: [], axes: [], Kh: [], rest: [], sgn: twistSign(hf), restHinge: null };
   for (const f of FINGERS) {
     c.names.push([0, 1, 2].map(k => fingerJoint(side, f, k)));
     const ax = fingerAxes(f, hf);
@@ -194,12 +232,22 @@ function handCache(rigHand, side) {
     const r = rigHand.fingers[f];
     c.rest.push([0, 1, 2].map(k => vNorm(vSub(r.pts[k + 1], r.pts[k]))));
   }
+  c.restHinge = c.rest[0].map(p => thumbHinge(p, c.Kh[0], c.axes[0].D, 0));   // the thumb bones' bind hinges (thumbFrameDelta)
   return c;
 }
-function nextDirP(p, bend, Kh, D) {
+/** Pooled thumbHinge. */
+function thumbHingeP(p, Kh, D, tw) {
   let K = PM.vReject(Kh, p);
   if (PM.vLen(K) < 1e-6) K = PM.vReject(D, p);
-  return PM.qRotate(PM.qAxisAngle(PM.vNorm(K), bend), p);
+  K = PM.vNorm(K);
+  return tw ? PM.qRotate(PM.qAxisAngle(p, tw), K) : K;
+}
+function nextDirP(p, bend, Kh, D, tw = 0) {
+  let K = PM.vReject(Kh, p);
+  if (PM.vLen(K) < 1e-6) K = PM.vReject(D, p);
+  K = PM.vNorm(K);
+  if (tw) K = PM.qRotate(PM.qAxisAngle(p, tw), K);   // thumb twist (chainDirs)
+  return PM.qRotate(PM.qAxisAngle(K, bend), p);
 }
 
 /**
@@ -215,11 +263,20 @@ export function fingerWorldDeltasInto(W, rigHand, side, fs, handDelta) {
     const yaw = (a.yaw == null ? rest.rest.yaw : a.yaw) + (a.dyaw || 0), pitch = a.pitch || 0;
     const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
     const v1 = PM.vNorm(PM.v3(ax.R[0] * sy * cp + ax.F[0] * cy * cp - ax.D[0] * sp, ax.R[1] * sy * cp + ax.F[1] * cy * cp - ax.D[1] * sp, ax.R[2] * sy * cp + ax.F[2] * cy * cp - ax.D[2] * sp));
-    const v2 = nextDirP(v1, a.bend1 || 0, c.Kh[fi], ax.D), v3 = nextDirP(v2, a.bend2 || 0, c.Kh[fi], ax.D);
+    const tw = fi === 0 && Number.isFinite(a.twist) ? a.twist * c.sgn : 0;
+    const v2 = nextDirP(v1, a.bend1 || 0, c.Kh[fi], ax.D, tw), v3 = nextDirP(v2, a.bend2 || 0, c.Kh[fi], ax.D, tw);
     const r = c.rest[fi];
-    const W1 = PM.qFromTo(r[0], v1);
-    const W2 = PM.qMul(PM.qFromTo(PM.qRotate(W1, r[1]), v2), W1);
-    const W3 = PM.qMul(PM.qFromTo(PM.qRotate(W2, r[2]), v3), W2);
+    let W1, W2, W3;
+    if (fi === 0 && THUMB_AXIS.roll) {   // thumbFrameDelta, pooled
+      const h = c.restHinge, Kh = c.Kh[0];
+      W1 = PM.qAlignFrames(r[0], h[0], v1, thumbHingeP(v1, Kh, ax.D, tw));
+      W2 = PM.qAlignFrames(r[1], h[1], v2, thumbHingeP(v2, Kh, ax.D, tw));
+      W3 = PM.qAlignFrames(r[2], h[2], v3, thumbHingeP(v3, Kh, ax.D, tw));
+    } else {
+      W1 = PM.qFromTo(r[0], v1);
+      W2 = PM.qMul(PM.qFromTo(PM.qRotate(W1, r[1]), v2), W1);
+      W3 = PM.qMul(PM.qFromTo(PM.qRotate(W2, r[2]), v3), W2);
+    }
     PM.set4(W[names[0]], PM.qMul(handDelta, W1)); PM.set4(W[names[1]], PM.qMul(handDelta, W2)); PM.set4(W[names[2]], PM.qMul(handDelta, W3));
   }
 }

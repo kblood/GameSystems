@@ -10,13 +10,15 @@
 //      quality is 'raw', and closure.js clamps the rows it closes to contact, so a data error can never show a broken hand.
 //
 // Rows per digit: Thumb: dyaw = CMC abduction/adduction (+ toward the radial side), pitch = CMC flexion,
-// bend1 = MCP flexion, bend2 = IP flexion. Index..Little: dyaw = spread, pitch = MCP flexion, bend1 = PIP, bend2 = DIP.
+// bend1 = MCP flexion, bend2 = IP flexion, optional 5th value twist = axial twist of the thumb (CMC pronation, turns the
+// MCP/IP hinge about the metacarpal; recorded from tracked hands, closure.js fingerChain). Index..Little: dyaw = spread,
+// pitch = MCP flexion, bend1 = PIP, bend2 = DIP.
 // The hard ranges are the plugin's own LIMITS (src/ik/fingers.js, "common anatomical ranges"); COMFORT is the band a
 // relaxed grip stays in, tighter and used for scoring, never for rejecting.
 
 export const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
 export const HARD = {
-  Thumb: { dyaw: [-55, 30], pitch: [-35, 65], bend1: [-25, 80], bend2: [-25, 95] },
+  Thumb: { dyaw: [-55, 30], pitch: [-35, 65], bend1: [-25, 80], bend2: [-25, 95], twist: [-45, 45] },
   Index: { dyaw: [-15, 25], pitch: [-25, 95], bend1: [-5, 115], bend2: [-10, 90] },
   Middle: { dyaw: [-15, 15], pitch: [-25, 95], bend1: [-5, 115], bend2: [-10, 90] },
   Ring: { dyaw: [-20, 12], pitch: [-25, 98], bend1: [-5, 115], bend2: [-10, 90] },
@@ -38,12 +40,18 @@ export const WRIST_SOFT_DEG = 35; // forearm axis vs hand axis: ordinary wrap
 export const WRIST_HARD_DEG = 60;
 export const MAX_CONTACT_GAP_DEG = 200; // largest empty arc around the item axis between contacts (force closure with friction)
 
-const row = (rows, f) => Array.isArray(rows?.[f]) && rows[f].length === 4 && rows[f].every(Number.isFinite) ? rows[f] : null;
+/** Row length allowed for a digit: 4, or 5 for the thumb (its twist). */
+export const rowLengthOk = (f, n) => n === 4 || (n === 5 && f === 'Thumb');
+const row = (rows, f) => Array.isArray(rows?.[f]) && rowLengthOk(f, rows[f].length) && rows[f].every(Number.isFinite) ? rows[f] : null;
 
 /** Convert a plugin finger state (radians, record.fingers[side]) back to rows in degrees. */
 export function rowsFromState(state) {
   const D = 180 / Math.PI, out = {};
-  for (const f of FINGERS) { const s = state?.[f]; if (s) out[f] = [(s.dyaw ?? 0) * D, s.pitch * D, s.bend1 * D, s.bend2 * D]; }
+  for (const f of FINGERS) {
+    const s = state?.[f];
+    if (s) out[f] = [(s.dyaw ?? 0) * D, s.pitch * D, s.bend1 * D, s.bend2 * D];
+    if (s && f === 'Thumb' && Number.isFinite(s.twist)) out[f].push(s.twist * D);
+  }
   return out;
 }
 
@@ -64,6 +72,10 @@ export function validateRows(rows) {
       const c = COMFORT[f];
       cost += ((r[i] - c.centre[i]) / c.width[i]) ** 2;
     });
+    if (r.length > 4) {   // thumb twist: range only (no comfort cost: the twist follows the CMC, it is not a free choice)
+      const [lo, hi] = HARD.Thumb.twist;
+      if (r[4] < lo - 0.01 || r[4] > hi + 0.01) hard.push({ finger: f, joint: 'twist', value: r[4], range: [lo, hi], rule: 'range' });
+    }
     if (f === 'Thumb') {
       if (r[3] < HYPEREXTENSION_WARN_DEG) warn.push({ finger: f, joint: 'bend2', value: r[3], rule: 'thumb-ip-hyperextended' });
     } else if (r[2] > 20) {
@@ -78,12 +90,14 @@ export function validateRows(rows) {
   return { ok: hard.length === 0, hard, warn, cost };
 }
 
-/** Clamp rows into the hard ranges (returns a new object; non-finite entries fall back to the comfort centre). */
+/** Clamp rows into the hard ranges (returns a new object; non-finite entries fall back to the comfort centre). A thumb
+ * twist (5th value) is kept, clamped (non-finite: 0). */
 export function clampRows(rows) {
   const out = {};
   for (const f of FINGERS) {
     const r = rows?.[f] || [];
     out[f] = KEYS.map((k, i) => { const v = Number.isFinite(r[i]) ? r[i] : COMFORT[f].centre[i], [lo, hi] = HARD[f][k]; return Math.max(lo, Math.min(hi, v)); });
+    if (f === 'Thumb' && r.length > 4) { const [lo, hi] = HARD.Thumb.twist; out[f].push(Number.isFinite(r[4]) ? Math.max(lo, Math.min(hi, r[4])) : 0); }
   }
   return out;
 }

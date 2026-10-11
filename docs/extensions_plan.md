@@ -661,3 +661,9 @@ karakterens hvile-rig, verdensstørrelse = × `restHand().scale`):
 - Tommelens akse (60°) er en antagelse; overvej at lade karakteren levere den, hvis en rig ser forkert ud.
 - `GameSystems` er git-repo, men `webxr-demo` er usporet; Contracts er eget git-repo med ucommittede ændringer fra
   grebsrefittet (se grab_findings og `git status`). Commit/branch først når brugeren beder om det.
+
+## Headset-test
+
+Alle afventende Quest 3-tests (trin 4, 6, 7, 9 og 10) køres fra én side: bogmærket https://dionysus.dk/webxr/GameSystems/
+→ LAN-hubben `https://<pc-ip>:8443/` (`tools/headset-lab`, start med skrivebordsgenvejen "GameSystems testlab"; ingen adb).
+Svar gemmes i `docs/headset_results.jsonl`. Se [headset_testlab.md](headset_testlab.md).

@@ -3,6 +3,8 @@
 // frame (fingers.js chainAngles):
 //   clip  = { id, kind: 'pose' | 'animation', space: 'hand' | 'item' | 'grasp', duration?, loop?, side?, frames }
 //   frame = { t (s), wrist: { pos [3] m, quat [x,y,z,w] }, rows: { Thumb..Little: [dyaw, pitch, bend1, bend2] } (deg) }
+//           the Thumb row may carry a 5th value, its axial twist (deg, fingers.js `twist`; Grasp Studio recordings from
+//           tracked hands): rows without it are the fixed-plane thumb, a missing twist mixes as 0.
 // A pose is a one-frame clip. space 'hand': the wrist is relative to the tracked hand (gestures); 'item': the wrist is
 // in item space (grasp animations recorded on an item); 'grasp': a template for any grasp, whose frames carry `mix`
 // (0 = the grasp's `from` rows, 1 = its `to` rows; a number or per finger) instead of rows and whose wrist is an offset
@@ -38,9 +40,11 @@ export function setHandPoseQuality(q) { quality = HAND_POSE_QUALITY.includes(q) 
 export const handPoseQuality = () => quality;
 
 const D2R = Math.PI / 180, R2D = 180 / Math.PI;
-const KEYS = ['yaw', 'pitch', 'bend1', 'bend2'];
-/** Joint ranges in degrees per digit, row order [dyaw, pitch, bend1, bend2] (= fingers.js LIMITS = grasp HARD). */
-export const LIMITS_DEG = Object.freeze(Object.fromEntries(FINGERS.map(f => [f, KEYS.map(k => LIMITS[f][k].map(v => v * R2D))])));
+const KEYS = ['yaw', 'pitch', 'bend1', 'bend2', 'twist'];
+/** Joint ranges in degrees per digit, row order [dyaw, pitch, bend1, bend2] (+ twist for the thumb) (= fingers.js LIMITS = grasp HARD). */
+export const LIMITS_DEG = Object.freeze(Object.fromEntries(FINGERS.map(f => [f, KEYS.filter(k => LIMITS[f][k]).map(k => LIMITS[f][k].map(v => v * R2D))])));
+/** Row length allowed for a digit: 4, or 5 for the thumb (its twist). */
+const rowOk = (f, n) => n === 4 || (n === 5 && f === 'Thumb');
 export const IDENTITY_WRIST = Object.freeze({ pos: Object.freeze([0, 0, 0]), quat: Object.freeze([0, 0, 0, 1]) });
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
 const smooth = x => { const t = clamp(x, 0, 1); return t * t * (3 - 2 * t); };
@@ -49,7 +53,7 @@ const smooth = x => { const t = clamp(x, 0, 1); return t * t * (3 - 2 * t); };
 /** Rows as { Thumb..Little: [4] } from that object or an array of 5 rows (grasp data); missing digits -> null. Copies. */
 export function toRows(rows) {
   const out = {};
-  FINGERS.forEach((f, i) => { const r = Array.isArray(rows) ? rows[i] : rows?.[f]; out[f] = Array.isArray(r) && r.length === 4 ? r.map(Number) : null; });
+  FINGERS.forEach((f, i) => { const r = Array.isArray(rows) ? rows[i] : rows?.[f]; out[f] = Array.isArray(r) && rowOk(f, r.length) ? r.map(Number) : null; });
   return out;
 }
 /** Rows as an array of 5 rows (thumb..little), the grasp data layout. */
@@ -73,8 +77,9 @@ export function mixRows(a, b, t, out = {}) {
   for (const f of FINGERS) {
     const x = a?.[f], y = b?.[f], k = typeof t === 'number' ? t : (t?.[f] ?? 1);
     if (!x || !y) { out[f] = (x || y) ? [...(x || y)] : null; continue; }
-    const o = out[f] || (out[f] = [0, 0, 0, 0]);
-    for (let j = 0; j < 4; j++) o[j] = x[j] + (y[j] - x[j]) * k;
+    const n = Math.max(x.length, y.length), o = out[f] || (out[f] = [0, 0, 0, 0]);
+    o.length = n;
+    for (let j = 0; j < n; j++) { const p = x[j] ?? 0; o[j] = p + ((y[j] ?? 0) - p) * k; }
   }
   return out;
 }
@@ -88,6 +93,7 @@ export function stateFromRows(rows, { src = 'pose', curl = null } = {}) {
     const r = rows?.[f];
     if (!r) { out[f] = null; continue; }
     const a = { yaw: null, dyaw: r[0] * D2R, pitch: r[1] * D2R, bend1: r[2] * D2R, bend2: r[3] * D2R };
+    if (r.length > 4 && Number.isFinite(r[4])) a.twist = r[4] * D2R;
     a.curl = curl ?? curlOf(f, a);
     a.src = typeof src === 'string' ? src : (src?.[f.toLowerCase()] ?? src?.[f] ?? 'pose');
     out[f] = a;
@@ -97,13 +103,17 @@ export function stateFromRows(rows, { src = 'pose', curl = null } = {}) {
 /** Rows (deg) of a finger state (radians); yaw is ignored (dyaw is the relative spread). */
 export function rowsFromState(state) {
   const out = {};
-  for (const f of FINGERS) { const s = state?.[f]; out[f] = s ? [(s.dyaw ?? 0) * R2D, s.pitch * R2D, s.bend1 * R2D, s.bend2 * R2D] : null; }
+  for (const f of FINGERS) {
+    const s = state?.[f];
+    out[f] = s ? [(s.dyaw ?? 0) * R2D, s.pitch * R2D, s.bend1 * R2D, s.bend2 * R2D] : null;
+    if (s && f === 'Thumb' && Number.isFinite(s.twist)) out[f].push(s.twist * R2D);
+  }
   return out;
 }
 
 // ---- library ---------------------------------------------------------------------------------------------------------
 const isVec = (a, n) => Array.isArray(a) && a.length === n && a.every(Number.isFinite);
-const isRows = rows => rows && FINGERS.every(f => isVec(rows[f], 4));
+const isRows = rows => rows && FINGERS.every(f => Array.isArray(rows[f]) && rowOk(f, rows[f].length) && rows[f].every(Number.isFinite));
 /** Structural check of a clip (the endpoint and the loader use it). */
 export function isClip(c) {
   if (!c || typeof c.id !== 'string' || !c.id || !['pose', 'animation'].includes(c.kind) || !['hand', 'item', 'grasp'].includes(c.space)) return false;
@@ -116,30 +126,75 @@ export function isClip(c) {
   }
   return true;
 }
+/** Variant id of a recording: `<name>@rec-<stamp>` (Grasp Studio / server/hand_store.mjs); the name is the part before '@'. */
+export const variantName = id => String(id).split('@')[0];
+/** 'baked' | 'recorded' | a list of variant ids (array or comma-separated string): see buildLibrary. */
+export function parseHandVariants(selection) {
+  if (selection == null || selection === '' || selection === 'baked' || selection === 'off') return 'baked';
+  if (selection === 'recorded' || selection === 'all') return 'recorded';
+  const ids = (Array.isArray(selection) ? selection : String(selection).split(',')).map(x => String(x).trim()).filter(Boolean);
+  return ids.length ? ids : 'baked';
+}
 /**
- * The library: { poses: Map(id -> clip), clips: Map(id -> clip) } from a hand_poses.json document and recorded clips
- * (recorded_hand.json). A recorded clip replaces the library entry with the same id; invalid recorded clips are skipped.
- * Pose rows are clamped to LIMITS (the generator already did; recordings are clamped by processRecording too).
+ * The library: { poses: Map(id -> clip), clips: Map(id -> clip), variants: Map(name -> [recorded clip]),
+ * byVariant: Map(variant id -> clip), selection } from a hand_poses.json document and recorded clips (recorded_hand.json).
+ * Recordings are VARIANTS and never replace a library clip by themselves: each keeps its own id `<name>@rec-<stamp>`
+ * (`variantOf: name`; an old recording saved under the bare name gets `<name>@rec` + a counter) and is found by that id
+ * (handClip / handPose). The name resolves to the library clip unless `variants` chooses a recording for it:
+ *   'baked' (default)  library clips; a name the library lacks resolves to its newest recording (a new gesture)
+ *   'recorded'         every name with recordings resolves to its newest one
+ *   [variant ids]      those recordings, each for its own name
+ * Invalid recorded clips are skipped. Pose rows are clamped to LIMITS (the generator already did; recordings are clamped
+ * by processRecording too).
  */
-export function buildLibrary(base = LIBRARY, recorded = RECORDED) {
-  const poses = new Map(), clips = new Map();
-  const put = c => {
-    if (c.kind === 'pose') {
-      const frame = c.frames[0];
-      poses.set(c.id, { ...c, frames: [{ ...frame, rows: limitRows(frame.rows).rows }] });
-    } else clips.set(c.id, c);
-  };
-  for (const c of [...(base?.poses || []), ...(base?.clips || [])]) if (isClip(c)) put(c);
-  for (const c of recorded?.clips || []) if (isClip(c)) put({ ...c, recorded: c.recorded ?? true });
-  return { poses, clips, controller: base?.controller ?? LIBRARY.controller };
+export function buildLibrary(base = LIBRARY, recorded = RECORDED, { variants = 'baked' } = {}) {
+  const poses = new Map(), clips = new Map(), byVariant = new Map(), byName = new Map();
+  const norm = c => (c.kind === 'pose' ? { ...c, frames: [{ ...c.frames[0], rows: limitRows(c.frames[0].rows).rows }] } : c);
+  const put = c => (c.kind === 'pose' ? poses : clips).set(c.id, c);
+  for (const c of [...(base?.poses || []), ...(base?.clips || [])]) if (isClip(c)) put(norm(c));
+  const legacy = new Map();
+  for (const c of recorded?.clips || []) {
+    if (!isClip(c)) continue;
+    const name = c.variantOf || variantName(c.id);
+    let id = c.id;
+    if (!id.includes('@')) {   // saved under the bare name (before variants): one id per legacy clip (both sides share it)
+      const key = `${id}/${c.recorded?.date ?? c.recorded?.at ?? ''}`;
+      if (!legacy.has(key)) legacy.set(key, `${name}@rec${[...legacy.keys()].filter(k => k.startsWith(`${id}/`)).length || ''}`);
+      id = legacy.get(key);
+    }
+    const clip = norm({ ...c, id, variantOf: name, recorded: c.recorded ?? true });
+    byVariant.set(id, clip);
+    if (!byName.has(name)) byName.set(name, []);
+    const list = byName.get(name);
+    if (!list.some(x => x.id === id)) list.push(clip); else list[list.findIndex(x => x.id === id)] = clip;
+  }
+  const sel = parseHandVariants(variants);
+  const chosen = new Map();   // name -> recording
+  for (const [name, list] of byName) {
+    if (sel === 'recorded' || (!poses.has(name) && !clips.has(name))) chosen.set(name, list.at(-1));
+  }
+  if (Array.isArray(sel)) for (const id of sel) { const c = byVariant.get(id); if (c) chosen.set(c.variantOf, c); }
+  for (const [name, c] of chosen) {
+    (c.kind === 'pose' ? clips : poses).delete(name);
+    put({ ...c, id: name, variant: c.id });
+  }
+  return { poses, clips, variants: byName, byVariant, selection: sel, controller: base?.controller ?? LIBRARY.controller };
 }
 export let HAND_LIBRARY = buildLibrary();
 /** Replace the active library (tests, a game shipping its own poses); returns it. */
 export function setHandLibrary(library) { HAND_LIBRARY = library?.poses ? library : buildLibrary(); invalidate(); return HAND_LIBRARY; }
+/** Choose recorded variants for the active library (see buildLibrary; games map ?handvariant=... to this). Returns it. */
+export function setHandVariants(selection = 'baked') { return setHandLibrary(buildLibrary(LIBRARY, RECORDED, { variants: selection })); }
+/** Recorded variants of a name (newest last), or of every name when none is given: [{ id, name, kind, at }]. */
+export function handVariants(name = null, library = HAND_LIBRARY) {
+  const lists = name ? [library.variants?.get(name) || []] : [...(library.variants?.values() || [])];
+  return lists.flat().map(c => ({ id: c.id, name: c.variantOf, kind: c.kind, at: c.recorded?.at ?? c.recorded?.date ?? null }));
+}
+
 /** Rows of a named pose (relaxed, open, flat, fist, point, pinch, thumbs_up, pistol, trigger, support, ...), or null. */
-export const handPose = (id, library = HAND_LIBRARY) => library.poses.get(id)?.frames[0].rows ?? null;
-/** A named animation clip (grab, release, pour, wave, beckon, recorded ones), or null. */
-export const handClip = (id, library = HAND_LIBRARY) => library.clips.get(id) ?? library.poses.get(id) ?? null;
+export const handPose = (id, library = HAND_LIBRARY) => (library.poses.get(id) ?? (library.byVariant?.get(id)?.kind === 'pose' ? library.byVariant.get(id) : null))?.frames[0].rows ?? null;
+/** A named animation clip (grab, release, pour, wave, beckon, recorded ones by name or variant id), or null. */
+export const handClip = (id, library = HAND_LIBRARY) => library.clips.get(id) ?? library.poses.get(id) ?? library.byVariant?.get(id) ?? null;
 export const poseNames = (library = HAND_LIBRARY) => [...library.poses.keys()];
 export const clipNames = (library = HAND_LIBRARY) => [...library.clips.keys()];
 /** Finger state of a named pose (radians), or null. */
@@ -179,10 +234,11 @@ export function sampleClip(clip, time, { from = null, to = null, loop = clip.loo
     const r0 = frameRows(pa, from, to, {}), r3 = frameRows(pb, from, to, {});
     for (const f of FINGERS) {
       if (!ra[f] || !rb[f]) { rows[f] = ra[f] || rb[f] ? [...(ra[f] || rb[f])] : null; continue; }
-      const p0 = r0[f] || ra[f], p3 = r3[f] || rb[f];
-      rows[f] = ra[f].map((v, j) => {
-        const lo = Math.min(LIMITS_DEG[f][j][0], v, rb[f][j]), hi = Math.max(LIMITS_DEG[f][j][1], v, rb[f][j]);
-        return clamp(catmull(p0[j], v, rb[f][j], p3[j], u), lo, hi);
+      const p0 = r0[f] || ra[f], p3 = r3[f] || rb[f], n = Math.max(ra[f].length, rb[f].length);
+      rows[f] = Array.from({ length: n }, (_, j) => {
+        const v = ra[f][j] ?? 0, w = rb[f][j] ?? 0;
+        const lo = Math.min(LIMITS_DEG[f][j][0], v, w), hi = Math.max(LIMITS_DEG[f][j][1], v, w);
+        return clamp(catmull(p0[j] ?? v, v, w, p3[j] ?? w, u), lo, hi);
       });
     }
     const pos = a.wrist.pos.map((v, k) => catmull((pa.wrist.pos)[k], v, b.wrist.pos[k], (pb.wrist.pos)[k], u));
@@ -237,8 +293,8 @@ export function grabFingerState({ open, angles }, t, { quality: q = quality, cli
 function clampBetween(rows, from, to) {
   for (const f of FINGERS) {
     if (!rows[f]) continue;
-    for (let j = 0; j < 4; j++) {
-      const a = from[f][j], b = to[f][j];
+    for (let j = 0; j < rows[f].length; j++) {
+      const a = from[f]?.[j] ?? 0, b = to[f]?.[j] ?? 0;
       rows[f][j] = clamp(rows[f][j], Math.min(LIMITS_DEG[f][j][0], a, b), Math.max(LIMITS_DEG[f][j][1], a, b));
     }
   }
@@ -338,7 +394,7 @@ export function reduceKeyframes(frames, { toleranceDeg = RECORD_DEFAULTS.toleran
   const err = (a, b, k) => {
     const A = frames[a], B = frames[b], K = frames[k], u = (K.t - A.t) / ((B.t - A.t) || 1);
     let e = 0;
-    for (const f of FINGERS) for (let j = 0; j < 4; j++) e = Math.max(e, Math.abs(A.rows[f][j] + (B.rows[f][j] - A.rows[f][j]) * u - K.rows[f][j]) / toleranceDeg);
+    for (const f of FINGERS) for (let j = 0; j < K.rows[f].length; j++) e = Math.max(e, Math.abs((A.rows[f][j] ?? 0) + ((B.rows[f][j] ?? 0) - (A.rows[f][j] ?? 0)) * u - K.rows[f][j]) / toleranceDeg);
     for (let j = 0; j < 3; j++) e = Math.max(e, Math.abs(A.wrist.pos[j] + (B.wrist.pos[j] - A.wrist.pos[j]) * u - K.wrist.pos[j]) * 1000 / toleranceMm);
     return Math.max(e, qAngle(nlerp(A.wrist.quat, B.wrist.quat, u), K.wrist.quat) * R2D / toleranceDeg);
   };

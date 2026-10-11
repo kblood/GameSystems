@@ -19,7 +19,7 @@ import { signedDistance } from './catalog.js';
 import { HARD, clampRows } from './grasp_validator.js';
 
 const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
-const KEYS = ['dyaw', 'pitch', 'bend1', 'bend2'];
+const KEYS = ['dyaw', 'pitch', 'bend1', 'bend2', 'twist'];
 const D2R = Math.PI / 180;
 /** Thumb nail-side tilt from the back of the hand toward the thumb side (rad): the avatar's rigdata THUMB_AXIS.tilt
  * (default; a rest hand may bring its own `thumbTilt`). */
@@ -137,7 +137,7 @@ export function profileFromRest(rest, { thumbTilt = rest?.thumbTilt ?? THUMB_TIL
  * entity.restHand(side)), else profileFromRest(rest). options: scale (world metres per rig metre; default rest.scale),
  * profile (use this profile instead), thumbTilt, radii (legacy: pads as PAD_RADIUS-style fractions of the hand length,
  * replacing the profile's). Returns { side, scale, length (world m), thumbTilt, profile, fingers: { f: { base, len,
- * restYaw, radius, axes, hinge } }, palm: { center, normal, samples, width, thickness }, thenar: { a, b, radius } };
+ * restYaw, radius, axes, hinge, twistSign } }, palm: { center, normal, samples, width, thickness }, thenar: { a, b, radius } };
  * hand-local rig metres (closure frame, see the header) except `length`.
  */
 export function handGeometry(rest, { scale = rest?.scale ?? 1, thumbTilt, radii = null, profile = null } = {}) {
@@ -152,7 +152,8 @@ export function handGeometry(rest, { scale = rest?.scale ?? 1, thumbTilt, radii 
   const fingers = {};
   for (const f of FINGERS) {
     const axes = fingerAxes(f, side, tilt);
-    fingers[f] = { base: cv(p.bases[f]), len: [...p.segments[f]], axes, hinge: norm(cross(axes.D, axes.F)), restYaw: p.spread[f], radius: [...p.pad[f]] };
+    fingers[f] = { base: cv(p.bases[f]), len: [...p.segments[f]], axes, hinge: norm(cross(axes.D, axes.F)), restYaw: p.spread[f], radius: [...p.pad[f]],
+      twistSign: side === 'left' ? -1 : 1 };
   }
   const center = cv(p.palmCenter), normal = norm(cv(p.palmNormal));
   let samples = (p.palmPatch || []).filter(isV3).map(cv);
@@ -181,15 +182,22 @@ export function handFromRig(rig, side, { scale = 1, ...options } = {}) {
   return handGeometry({ side, frame: h.frame, wrist, fingers: h.fingers, profile: h.profile }, { scale, ...options });
 }
 
-/** Joint positions [knuckle, joint, joint, tip] (hand-local rig metres) of one finger for a row in degrees. */
+/**
+ * Joint positions [knuckle, joint, joint, tip] (hand-local rig metres) of one finger for a row in degrees. A thumb row's
+ * optional 5th value (twist, deg) turns the MCP/IP hinge about each parent segment (the avatar's fingers.js chainDirs):
+ * the pronation a real thumb has when it opposes. Without it the hinge is the fixed THUMB_TILT plane, as before.
+ */
 export function fingerChain(finger, row) {
   const { axes: { F, D, R }, hinge } = finger;
   const yaw = finger.restYaw + (row[0] || 0) * D2R, pitch = row[1] * D2R, cp = Math.cos(pitch);
   const v1 = norm(add(add(scl(R, Math.sin(yaw) * cp), scl(F, Math.cos(yaw) * cp)), scl(D, -Math.sin(pitch))));
+  const tw = row[4] ? row[4] * D2R * (finger.twistSign || 1) : 0;
   const next = (p, bend) => {
     let k = reject(hinge, p);
     if (len(k) < 1e-6) k = reject(D, p);
-    return turn(p, norm(k), bend * D2R);
+    k = norm(k);
+    if (tw) k = turn(k, p, tw);
+    return turn(p, k, bend * D2R);
   };
   const v2 = next(v1, row[2]), v3 = next(v2, row[3]);
   const j0 = finger.base, j1 = add(j0, scl(v1, finger.len[0])), j2 = add(j1, scl(v2, finger.len[1]));
@@ -243,9 +251,12 @@ function closeFinger(name, finger, open, closed, place, distance, s, opts) {
   const H = HARD[name], deep = -opts.squeeze, thumb = name === 'Thumb', tMax = 1 + (thumb ? opts.thumbOvershoot ?? opts.overshoot : opts.overshoot);
   const lim = opts.free ? (j, v) => v : (j, v) => Math.max(H[KEYS[j]][0], Math.min(H[KEYS[j]][1], v));
   // T[0] drives dyaw + pitch (segment 0), T[1] bend1 (segment 1), T[2] bend2 (segment 2).
+  const twisted = thumb && (open.length > 4 || closed.length > 4), tw0 = open[4] || 0, tw1 = closed[4] || 0;
   const rowAt = T => { const t0 = thumb ? Math.min(1, T[0]) : T[0];
-    return [lim(0, open[0] + (closed[0] - open[0]) * t0), lim(1, open[1] + (closed[1] - open[1]) * t0),
-      lim(2, open[2] + (closed[2] - open[2]) * T[1]), lim(3, open[3] + (closed[3] - open[3]) * T[2])]; };
+    const r = [lim(0, open[0] + (closed[0] - open[0]) * t0), lim(1, open[1] + (closed[1] - open[1]) * t0),
+      lim(2, open[2] + (closed[2] - open[2]) * T[1]), lim(3, open[3] + (closed[3] - open[3]) * T[2])];
+    if (twisted) r.push(lim(4, tw0 + (tw1 - tw0) * t0));   // thumb twist rides on the CMC, like dyaw/pitch
+    return r; };
   const gaps = [Infinity, Infinity, Infinity];
   /** Lowest segment >= from at or past `limit` (gap <= limit), else -1. */
   const reach = (T, from, limit) => {
@@ -313,7 +324,8 @@ function searchThumb(thumb, open, closed, refAngle, place, distance, s, opts) {
     dyaw = Math.max(H.dyaw[0], Math.min(H.dyaw[1], dyaw)); pitch = Math.max(H.pitch[0], Math.min(H.pitch[1], pitch));
     const key = `${dyaw},${pitch}`;
     if (tried.has(key)) return tried.get(key);
-    const r = closeFinger('Thumb', thumb, [dyaw, pitch, ...flexOpen], [dyaw, pitch, ...flexClosed], place, distance, s, opts);
+    const tw = closed.length > 4 ? [closed[4]] : [];
+    const r = closeFinger('Thumb', thumb, [dyaw, pitch, ...flexOpen, ...tw], [dyaw, pitch, ...flexClosed, ...tw], place, distance, s, opts);
     let out = null;
     if (!r.stuck && r.touching.length) {
       const opp = separation(around(place(fingerChain(thumb, r.row)[3])), refAngle) * 180 / Math.PI;

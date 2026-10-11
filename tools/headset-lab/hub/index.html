@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>GameSystems testlab</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23101619'/%3E%3Cpath d='M13 5h6v8l4 4v10H9V17l4-4z' fill='%2370b8a8'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./hub/hub.css">
+</head>
+<body>
+  <header>
+    <h1>GameSystems testlab</h1>
+    <p class="lead">Headset-tests til <b>Meta Quest 3</b>. Tryk på et link, test i VR, kom tilbage med browserens tilbage-knap og tryk <b>Virker</b>, <b>Fejl</b> eller <b>Delvist</b>.</p>
+    <p class="note">Steam Frame: dens browser har ingen WebXR, så disse tests er kun til Quest 3.</p>
+    <section id="status" aria-live="polite"><p>Henter serverstatus …</p></section>
+  </header>
+  <nav id="toc" aria-label="Grupper"></nav>
+  <main id="groups"><p>Indlæser tests …</p></main>
+  <footer>
+    <p>Svar gemmes på PC'en i <code id="results-file">docs/headset_results.jsonl</code>. Labbet kører fra <code>GameSystems/tools/headset-lab</code>.</p>
+  </footer>
+  <script type="module" src="./hub/hub.js"></script>
+</body>
+</html>

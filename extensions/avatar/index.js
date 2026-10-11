@@ -23,6 +23,7 @@ import { checkSkeleton, completeHands, poseToWorld, fkPositions, LAYERS } from '
 import { createVRIK } from './vrik.js';
 import { createHeightEstimator, solveHeight } from './calibrate.js';
 import { createFingerInput } from './fingerInput.js';
+import { mixTwist } from './fingers.js';
 import { createHandAnimator, handClip, sampleClip, clipDuration, stateFromRows, rowsFromState, handPoseQuality, HAND_POSE_QUALITY } from './handposes.js';
 import { createXRTracking, gripFromHand } from './tracking.js';
 import { createNPCAnimator, localAimPoint } from './npc-animation.js';
@@ -33,15 +34,16 @@ import { measureHandProfile, rigHandProfile, applyHandProfile } from './handprof
 import { handSkinPoints } from './handskin.js';
 
 export { handFromGrip, gripFromHand, GRIP_WRIST_OFFSET } from './tracking.js';
-export { fingerStateFromCurls, fingerStateFromJoints, syntheticJoints, limitFingerState, blendFingerStates, LIMITS, XR_JOINTS, XR_CHAINS } from './fingers.js';
-export { prepareRig, handFrame, chainAngles, fingerAxes, THUMB_AXIS, FINGERS, SEGMENTS } from './rigdata.js';
+export { fingerStateFromCurls, fingerStateFromJoints, syntheticJoints, limitFingerState, blendFingerStates, mixTwist, LIMITS, XR_JOINTS, XR_CHAINS } from './fingers.js';
+export { prepareRig, handFrame, chainAngles, fingerAxes, thumbTwist, twistSign, THUMB_AXIS, TWIST_PLANE, FINGERS, SEGMENTS } from './rigdata.js';
 export { createVRIK, VRIK_DEFAULTS } from './vrik.js';
 export { solveHeight, solveArmScale, createHeightEstimator } from './calibrate.js';
 export { createNPCAnimator, localAimPoint } from './npc-animation.js';
 export { controllerFingerState, relaxedFingerState, RELAXED_CURLS } from './fingerInput.js';
 export {
   HAND_FORMAT, HAND_POSE_QUALITY, setHandPoseQuality, handPoseQuality, LIMITS_DEG, IDENTITY_WRIST, toRows, rowsToArray, limitRows,
-  mixRows, stateFromRows, rowsFromState, isClip, buildLibrary, HAND_LIBRARY, setHandLibrary, handPose, handClip, poseNames, clipNames,
+  mixRows, stateFromRows, rowsFromState, isClip, buildLibrary, HAND_LIBRARY, setHandLibrary, setHandVariants, handVariants, parseHandVariants, variantName,
+  handPose, handClip, poseNames, clipNames,
   poseState, clipDuration, sampleClip, resolveClip, grabFingerState, pourFingerState, createHandAnimator, controllerRows, RECORD_DEFAULTS,
   reduceKeyframes, processRecording, mirrorClip,
 } from './handposes.js';
@@ -96,6 +98,8 @@ function blend(a, b, t) {
     const m = (p, q) => p + (q - p) * t;
     out[f] = { yaw: null, dyaw: m(x.dyaw ?? 0, y.dyaw ?? 0), pitch: m(x.pitch, y.pitch), bend1: m(x.bend1, y.bend1), bend2: m(x.bend2, y.bend2),
       curl: m(x.curl ?? 0, y.curl ?? 0), src: t < 0.5 ? x.src : y.src };
+    const tw = mixTwist(x, y, t);
+    if (tw !== undefined) out[f].twist = tw;
     if (x.yaw != null) out[f].yaw = x.yaw + ((y.dyaw ?? 0) - (x.dyaw ?? 0)) * t;   // tracked hand (absolute yaw): spread toward the gesture's offset
   }
   return out;

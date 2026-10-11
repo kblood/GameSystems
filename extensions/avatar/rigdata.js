@@ -31,7 +31,45 @@ export function handFrame(side, wrist, indexKnuckle, middleKnuckle, littleKnuckl
 // 60 deg: the thumb is pronated relative to the fingers, so its flexion plane points across the palm (toward the
 // little finger), not straight into it. At 45 deg a fist thumb stuck out below the fist like a thumbs-down (visual
 // review, hands_fist_3p.png); 60 deg lets it wrap across the index / middle middle phalanges (tests/fingers.test).
-export const THUMB_AXIS = { tilt: Math.PI / 3 };
+// twist: measure the thumb's axial twist (chainAngles `twist`, see thumbTwist) from tracked joints. false = the old
+// fixed-plane thumb (no twist in the finger state; the bones get no roll): a switch for tests / A-B comparison, the
+// measurement itself costs a few cross products per hand.
+// roll: pose the thumb bones by frame (segment direction + its flexion hinge, fingers.js fingerWorldDeltas) instead of
+// by the shortest swing from the bind direction. The swing alone gave the thumb a pose-dependent roll: about -25..-70 deg
+// in the relaxed hand, +60 in a thumbs-up on the CC body (its bind thumb is far from those poses), so the nail did not
+// face away from the bend plane ("the thumb is oddly twisted from the start"). false = the old swing-only thumb.
+export const THUMB_AXIS = { tilt: Math.PI / 3, twist: true, roll: true };
+/** Bend-plane strength |n| (≈ sin bend1 + sin bend2) over which the measured twist fades in (straight thumb: no plane). */
+export const TWIST_PLANE = Object.freeze([0.15, 0.4]);
+/** +1 for a right-handed hand frame (right hand), -1 for the left: makes the twist hand-independent like the bends. */
+/** v rotated by `angle` (rad) about the unit axis k (Rodrigues). */
+export function turnAbout(v, k, angle) {
+  const c = Math.cos(angle), s = Math.sin(angle), kv = vCross(k, v), d = vDot(k, v) * (1 - c);
+  return [v[0] * c + kv[0] * s + k[0] * d, v[1] * c + kv[1] * s + k[1] * d, v[2] * c + kv[2] * s + k[2] * d];
+}
+export const twistSign = hf => (vDot(vCross(hf.F, hf.R), hf.D) >= 0 ? 1 : -1);
+/**
+ * Axial twist of the thumb (rad, + = the same anatomical sense on both hands): the rotation about the metacarpal segment
+ * v[0] that takes the conventional flexion hinge (Kh made perpendicular to v[0]) to the hinge of the plane the MCP and IP
+ * bends actually lie in. A real thumb pronates as it opposes, so that plane turns with the CMC; a fixed hinge projects
+ * the bend onto the wrong plane (the reconstructed thumb tip misses, the nail does not turn). Fades to 0 while the
+ * thumb is nearly straight (TWIST_PLANE), where the plane is undefined.
+ */
+export function thumbTwist(v, Kh, D, sgn) {
+  // per bend: the angle about the parent segment from the conventional hinge to the hinge of that bend's plane,
+  // averaged weighted by the bends' sines (the exact inverse of chainDirs' twist)
+  const about = (p, n, s) => {
+    let K = vReject(Kh, p);
+    if (vLen(K) < 1e-6) K = vReject(D, p);
+    K = vNorm(K);
+    const k = vDot(n, K) < 0 ? -1 / s : 1 / s, m = [n[0] * k, n[1] * k, n[2] * k];
+    return Math.atan2(vDot(vCross(K, m), p), vDot(K, m));
+  };
+  const n1 = vCross(v[0], v[1]), n2 = vCross(v[1], v[2]), s1 = vLen(n1), s2 = vLen(n2), S = s1 + s2;
+  const u = clamp((S - TWIST_PLANE[0]) / (TWIST_PLANE[1] - TWIST_PLANE[0]), 0, 1), w = u * u * (3 - 2 * u);
+  if (w <= 0) return 0;
+  return sgn * w * ((s1 > 1e-9 ? s1 * about(v[0], n1, s1) : 0) + (s2 > 1e-9 ? s2 * about(v[1], n2, s2) : 0)) / S;
+}
 /** Reference axes of a finger: the thumb's "dorsal" is its nail side, tilted from the hand's D toward R. */
 export function fingerAxes(finger, hf) {
   if (finger !== 'Thumb') return { F: hf.F, D: hf.D, R: hf.R };
@@ -57,15 +95,20 @@ export function chainAngles(finger, hf, pts) {
   // parent segment. It stays well defined in a fist, where a segment points along -D (deriving the hinge from
   // D rejected from the segment flipped sign there and read a fist as half open).
   const Kh = vNorm(vCross(ax.D, ax.F));
+  // Thumb: the hinge turned by the measured twist about each parent segment (fingers.js chainDirs applies the same).
+  const twist = finger === 'Thumb' && THUMB_AXIS.twist ? thumbTwist(v, Kh, ax.D, twistSign(hf)) : null, tw = twist ? twist * twistSign(hf) : 0;
   const bend = k => {
     const p = v[k - 1], c = v[k];
     let K = vReject(Kh, p);
     if (vLen(K) < 1e-6) K = vReject(ax.D, p);
     K = vNorm(K);
+    if (tw) K = turnAbout(K, p, tw);
     const a = vReject(p, K), b = vReject(c, K);
     return Math.atan2(vDot(vCross(a, b), K), vDot(a, b));
   };
-  return { yaw, pitch, bend1: bend(1), bend2: bend(2) };
+  const out = { yaw, pitch, bend1: bend(1), bend2: bend(2) };
+  if (twist !== null) out.twist = twist;
+  return out;
 }
 
 /** Everything the IK needs about the current body, from rest heads. eyeOffset = eye centre - head joint (rest). */

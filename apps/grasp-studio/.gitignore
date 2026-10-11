@@ -9,3 +9,5 @@ src/vendor/extensions/
 tests/out/
 # character-vrm test model (CC0; fetched by GameSystems/extensions/character-vrm/fetch_model.mjs, synced by npm run sync)
 public/vrm-assets/
+# refused saves kept by the dev-server endpoint (server/grasp_store.mjs keepRejected): local recovery data
+rejected/

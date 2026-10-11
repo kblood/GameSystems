@@ -39,6 +39,8 @@ export const GESTURE_NAMES = Object.freeze({ gesture: ['point', 'thumbs_up', 'fi
 const qMulS = (a, b) => [a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1], a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
   a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3], a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]];
 const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
+/** Variant id of a hand recording: `<name>@rec-<YYYYMMDDTHHMMSS>` (UTC; the store adds a suffix if it is taken). */
+export const variantId = (name, at = new Date().toISOString()) => `${name}@rec-${at.replace(/[-:]/g, '').replace(/\.\d+Z?$|Z$/, '')}`;
 const other = side => (side === 'left' ? 'right' : 'left');
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
@@ -80,8 +82,12 @@ export function createStudio({ kind = KIND, side = 'right', grasp = GRASPS[kind]
       samples = frames.map(f => ({ ...f, wrist: k === 'pose' ? { pos: [0, 0, 0], quat: [0, 0, 0, 1] }
         : { pos: rotate(qi, sub(f.wrist.pos, f0.wrist.pos)), quat: qMulS(qi, f.wrist.quat) } }));
     }
-    const { clip, report } = processRecording(samples, { id: settings.clipName, kind: k, space, side: settings.side, clampRows, validateRows,
-      meta: { format: HAND_FORMAT, studio: 'grasp-studio', ...(space === 'item' ? { item: kind } : {}), date: new Date().toISOString().slice(0, 10) } });
+    // A recording is a variant of its name (handposes.js buildLibrary): its own id `<name>@rec-<stamp>`, never the bare
+    // library id, so saving one never replaces the library clip or an earlier recording.
+    const at = new Date().toISOString();
+    const { clip, report } = processRecording(samples, { id: variantId(settings.clipName, at), kind: k, space, side: settings.side, clampRows, validateRows,
+      meta: { format: HAND_FORMAT, studio: 'grasp-studio', ...(space === 'item' ? { item: kind } : {}), date: at.slice(0, 10), at } });
+    clip.variantOf = settings.clipName;
     const mirror = settings.autoMirror ? mirrorClip(clip) : null;
     return { mode: settings.mode, clip, report, mirror, frames: frames.length };
   }
@@ -119,7 +125,7 @@ export function createStudio({ kind = KIND, side = 'right', grasp = GRASPS[kind]
       if (m !== 'grasp' && !GESTURE_NAMES[m].includes(settings.clipName)) settings.clipName = GESTURE_NAMES[m][0];
       reset();
     },
-    /** Id the next hand clip is saved under (a library id replaces that clip, e.g. 'point'). */
+    /** Name the next hand clip is a variant of (e.g. 'point'; saved as point@rec-<stamp>, the library clip is kept). */
     setClipName(n) { if (typeof n !== 'string' || !/^[a-z0-9_-]{1,40}$/i.test(n)) throw new RangeError(`clip name ${n}?`); settings.clipName = n; },
     reset,
 
@@ -202,7 +208,7 @@ export function syntheticHands(t, item, { side = 'right', kind = KIND, poseId = 
   const pose = (poseId && poseById(poseId)) || defaultPose(kind, side, 'body');
   const hand = referenceHand(side), k = Math.min(1, t);
   const lift = rotate(pose.quat, [0, approach * (1 - k * k * (3 - 2 * k)), 0]);
-  const rows = pose.angles.map((row, f) => row.map((v, j) => DEFAULT_OPEN[f][j] + (v - DEFAULT_OPEN[f][j]) * k));
+  const rows = pose.angles.map((row, f) => row.map((v, j) => (DEFAULT_OPEN[f][j] ?? 0) + (v - (DEFAULT_OPEN[f][j] ?? 0)) * k));
   let joints = poseJoints({ ...pose, wrist: pose.wrist.map((v, i) => v + lift[i]) }, hand, item, rows);
   let n = seed * 9301 + Math.floor(t * 90) * 49297;
   const rand = () => { n = (n * 9301 + 49297) % 233280; return n / 233280 - 0.5; };

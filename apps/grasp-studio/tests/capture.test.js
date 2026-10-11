@@ -12,7 +12,8 @@ import {
 const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
 const item = { pos: [0.12, 0.95, -0.38], quat: [0, Math.sin(0.35), 0, Math.cos(0.35)] };
 const tipsOf = j => FINGERS.map(f => j[XR_CHAINS[f][3]]);
-const maxDiff = (a, b) => Math.max(...a.flatMap((r, i) => (Array.isArray(r) ? r.map((v, j) => Math.abs(v - b[i][j])) : [Math.abs(r - b[i])])));
+// (a recorded thumb row has a 5th value, its twist: a baked row without one compares as twist 0)
+const maxDiff = (a, b) => Math.max(...a.flatMap((r, i) => (Array.isArray(r) ? r.map((v, j) => Math.abs(v - (b[i][j] ?? 0))) : [Math.abs(r - b[i])])));
 /** Run the studio at 72 Hz over [t0, t1) with a joints function; returns the last live state. */
 function run(studio, t0, t1, hands) {
   let live = null;

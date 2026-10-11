@@ -1,6 +1,6 @@
 // GameSystems grasp extension: public API. Pure modules, no three.js and no physics engine:
 //   baked_grasps.js   baked grasp library (nearest pose + hysteresis, finger states, quality 'raw' | 'low' | 'mid' | 'high')
-//   record.js         recorded grasps (Grasp Studio): XR joints -> grasp rows, mirror, score, merge into the library
+//   record.js         recorded grasps (Grasp Studio): XR joints -> grasp rows, mirror, score; variants (setGraspVariants)
 //   closure.js        close-to-contact: fingers close along the baked shape until they touch the item, on the character's hand
 //   grasp_validator.js joint ranges, comfort, contact gates (offline fitter gate + runtime clamp)
 //   catalog.js        prop shapes, signed distance, hull points, mass properties
@@ -13,6 +13,7 @@
 export {
   BAKED, RECORDED, POSES, FINGERS, ANGLE_WEIGHT, HYSTERESIS, GRASP_QUALITY, setGraspQuality, graspQuality, runtimeRows, graspPose,
   CLAMP_EXEMPT, posesFor, hasPoses, defaultPose, poseById, quatAngle, nearestPose, toItemLocal, toWorld, fingerState, openFingerState,
+  setGraspVariants, parseGraspVariants, graspVariantSelection, graspVariants,
 } from './baked_grasps.js';
 export {
   THUMB_TILT, PAD_RADIUS, REFERENCE_HAND, CLOSURE, handGeometry, handFromRig, fingerChain, placeWrist, closeToContact, chainGaps,
@@ -20,10 +21,10 @@ export {
 } from './closure.js';
 export {
   RECORDED_SCHEMA, DEFAULT_OPEN, XR_CHAINS, XR_JOINTS, quatFromBasis, handBasis, handLengthFromJoints, restFromJoints, rowsFromJoints,
-  captureFromJoints, poseJoints, referenceHand, mirrorPose, isPose, recordedPose, scoreGrasp, recordedPoses, mergePoses, PALM_SKIN_MM,
+  captureFromJoints, poseJoints, referenceHand, mirrorPose, isPose, recordedPose, scoreGrasp, recordedPoses, mergePoses, PALM_SKIN_MM, THUMB_TWIST,
 } from './record.js';
 export {
-  HARD, COMFORT, GATES, validateRows, clampRows, rowsFromState, digitCost, wristDeviationDeg, maxContactGapDeg, verdict,
+  HARD, COMFORT, GATES, validateRows, clampRows, rowsFromState, rowLengthOk, digitCost, wristDeviationDeg, maxContactGapDeg, verdict,
 } from './grasp_validator.js';
 export { CATALOG, KINDS, DEFAULT_MASS, entry, signedDistance, surfaceNormal, hullPoints, massProperties, boundingRadius } from './catalog.js';
 export { contactMetrics, kindGeometry, MAX_PENETRATION_MM, MAX_PALM_GAP_MM, MIN_OPPOSITION_DEG, TOUCH_MM } from './contact.js';

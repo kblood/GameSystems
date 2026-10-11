@@ -1,21 +1,26 @@
 // Grasp Studio's hand-animation endpoint (dev server only; vite.config.js mounts it at /api/hand), the twin of
 // grasp_store.mjs for the animation and gesture modes (extensions plan step 7). It writes recorded hand clips (the avatar
 // extension's one frame format, handposes.js) straight into GameSystems/extensions/avatar/recorded_hand.json (or
-// GRASP_STUDIO_HAND_OUT), which handposes.js buildLibrary merges over hand_poses.json (same id = replaced); games pick it
-// up with their sync.
+// GRASP_STUDIO_HAND_OUT). Recordings are VARIANTS of their name: handposes.js buildLibrary keeps the library clip unless a
+// game picks a recording (setHandVariants, ?handvariant=...); games pick the file up with their sync.
 //
 //   GET  /api/hand                                   -> { schema, note, clips }
-//   POST /api/hand { action: 'save', clips: [...] }  add (or replace by id + side)
-//   POST /api/hand { action: 'delete', ids: [...] }  remove clips by id (both sides)
-// Same rules as grasp_store: application/json only, same-machine origins only, serialised atomic writes, 512 kB cap.
+//   POST /api/hand { action: 'save', clips: [...] }  APPEND: each clip is stored as a variant `<name>@rec-<stamp>` with
+//                                                    variantOf = <name> (a bare name gets the stamp; a taken id + side
+//                                                    gets a -2, -3 ... suffix; the clips of one save share their id)
+//   POST /api/hand { action: 'delete', ids: [...] }  remove clips by id (both sides; the only way anything is removed)
+// Same rules as grasp_store: application/json only, same-machine origins only, serialised atomic writes, 512 kB cap,
+// isClip() reloaded when handposes.js changes, refused saves kept in a .rejected.jsonl file and logged.
 import { readFile, writeFile, rename, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isClip, HAND_RECORDINGS_SCHEMA } from '../../../extensions/avatar/handposes.js';
-import { sameMachine, readBody, ActionError } from './grasp_store.mjs';
+import { isClip as staticIsClip, HAND_RECORDINGS_SCHEMA } from '../../../extensions/avatar/handposes.js';
+// The shared store code with this module's own query: vite.config.js imports both stores with ?t=<start> so a
+// restarted dev server gets current code; a plain './grasp_store.mjs' would hand back the copy node cached at start.
+const { ActionError, jsonStore, freshExport, rejectFileFor } = await import(`./grasp_store.mjs${new URL(import.meta.url).search}`);
 
 export const DEFAULT_HAND_FILE = resolve(dirname(fileURLToPath(import.meta.url)), '../../../extensions/avatar/recorded_hand.json');
-const NOTE = 'Hand poses and hand animations recorded with GameSystems/apps/grasp-studio (written by its dev-server endpoint /api/hand). Same clip format as hand_poses.json; a recorded clip replaces the library clip with the same id (handposes.js buildLibrary).';
+const NOTE = 'Hand poses and hand animations recorded with GameSystems/apps/grasp-studio (written by its dev-server endpoint /api/hand). Same clip format as hand_poses.json; each recording is a variant <name>@rec-<stamp> and never replaces the library clip unless a game picks it (handposes.js buildLibrary, setHandVariants, ?handvariant=).';
 
 export const emptyHandLibrary = () => ({ schema: HAND_RECORDINGS_SCHEMA, note: NOTE, clips: [] });
 
@@ -34,17 +39,28 @@ export function serializeHandLibrary(doc) {
 }
 
 const key = c => `${c.id}/${c.side ?? ''}`;
+const stamp = at => String(at).replace(/[-:]/g, '').replace(/\.\d+Z?$|Z$/, '');
 /** Apply an action (pure: returns { doc, changed }); throws ActionError on bad input. */
-export function applyHandAction(doc, action) {
+export function applyHandAction(doc, action, { isClip = staticIsClip, now = new Date().toISOString() } = {}) {
   const clips = doc.clips.map(c => ({ ...c })), changed = [];
   if (action?.action === 'save') {
     const list = action.clips;
     if (!Array.isArray(list) || !list.length) throw new ActionError('save: clips must be a non-empty array');
     for (const c of list) if (!isClip(c)) throw new ActionError(`save: invalid clip ${c?.id ?? '?'}`);
+    // Append only. One save (a clip + its mirror) shares one new id per incoming id; it is unique over id + side.
+    const taken = new Set(clips.map(key)), ids = new Map();
     for (const c of list) {
-      const at = clips.findIndex(q => key(q) === key(c));
-      if (at >= 0) clips[at] = { ...c }; else clips.push({ ...c });
-      changed.push(c.id);
+      const name = c.variantOf || String(c.id).split('@')[0];
+      if (!ids.has(c.id)) {
+        const base = String(c.id).includes('@') ? c.id : `${name}@rec-${stamp(c.recorded?.at ?? now)}`;
+        let id = base;
+        for (let k = 2; list.some(x => taken.has(`${id}/${x.side ?? ''}`)); k++) id = `${base}-${k}`;
+        ids.set(c.id, id);
+      }
+      const copy = { ...c, id: ids.get(c.id), variantOf: name };
+      taken.add(key(copy));
+      clips.push(copy);
+      changed.push(copy.id);
     }
   } else if (action?.action === 'delete') {
     const ids = action.ids;
@@ -56,35 +72,16 @@ export function applyHandAction(doc, action) {
   return { doc: { ...doc, clips }, changed: [...new Set(changed)] };
 }
 
+export async function writeHandLibrary(file, doc) {
+  await mkdir(dirname(file), { recursive: true });
+  const tmp = `${file}.${process.pid}.tmp`;
+  await writeFile(tmp, serializeHandLibrary(doc));
+  await rename(tmp, file);
+}
+
 /** Connect-style middleware for the hand library at `file` (mount at /api/hand). */
-export function handStore({ file = DEFAULT_HAND_FILE, log = () => {} } = {}) {
-  let queue = Promise.resolve();
-  const send = (res, status, body) => { res.statusCode = status; res.setHeader('Content-Type', 'application/json'); res.setHeader('Cache-Control', 'no-store'); res.end(JSON.stringify(body)); };
-  const middleware = async (req, res, next) => {
-    const path = (req.url || '').split('?')[0];
-    if (path !== '/' && path !== '') return next();
-    try {
-      if (req.method === 'GET') return send(res, 200, await readHandLibrary(file));
-      if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'GET or POST' });
-      if (!sameMachine(req)) return send(res, 403, { ok: false, error: 'cross-site request refused' });
-      if (!/^application\/json\b/.test(req.headers['content-type'] || '')) return send(res, 400, { ok: false, error: 'Content-Type must be application/json' });
-      const action = JSON.parse(await readBody(req));
-      const result = queue.then(async () => {
-        const { doc, changed } = applyHandAction(await readHandLibrary(file), action);
-        await mkdir(dirname(file), { recursive: true });
-        const tmp = `${file}.${process.pid}.tmp`;
-        await writeFile(tmp, serializeHandLibrary(doc));
-        await rename(tmp, file);
-        return { doc, changed };
-      });
-      queue = result.catch(() => {});
-      const { doc, changed } = await result;
-      log(`hand ${action.action}: ${changed.join(', ')} -> ${file}`);
-      return send(res, 200, { ok: true, library: doc, changed });
-    } catch (error) {
-      return send(res, error.status || (error instanceof SyntaxError ? 400 : 500), { ok: false, error: error.message });
-    }
-  };
-  middleware.file = file;
-  return middleware;
+export function handStore({ file = DEFAULT_HAND_FILE, rejectFile = rejectFileFor(file, DEFAULT_HAND_FILE), log = () => {} } = {}) {
+  const isClip = freshExport(new URL('../../../extensions/avatar/handposes.js', import.meta.url), 'isClip', staticIsClip, { log });
+  return jsonStore({ file, rejectFile, read: readHandLibrary, write: writeHandLibrary, apply: applyHandAction, log, label: 'hand ',
+    validators: async () => ({ isClip: await isClip() }) });
 }

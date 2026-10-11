@@ -1,0 +1,3 @@
+# Generated: the self-signed certificate (cert.mjs) and the lab log (serve.mjs)
+cert/
+.state/

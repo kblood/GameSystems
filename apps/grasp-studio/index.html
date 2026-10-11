@@ -19,16 +19,20 @@
     button.active { background: #3b6f5a; }
     button:disabled { opacity: .45; cursor: default; }
     #enter-xr { background: #f7c880; color: #111; font-weight: 600; }
+    #toast { display: none; margin-top: 8px; padding: 7px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+    #toast.ok { display: block; background: #1f6b43; color: #fff; }
+    #toast.fail { display: block; background: #9b1c1c; color: #fff; }
   </style>
 </head>
 <body>
   <section id="hud">
     <h1>Grasp Studio · Quest 3</h1>
-    <p>Optag greb med håndsporing på en virtuel ølflaske. Hold hånden stille om flasken i ca. 1 s; optagelsen midles, valideres og kan gemmes direkte i <code>extensions/grasp</code>.</p>
+    <p>Optag greb med håndsporing på en virtuel ølflaske. Hold hånden stille om flasken i ca. 1 s; optagelsen midles, valideres og kan gemmes direkte i <code>extensions/grasp</code>. Optagelser gemmes som nye varianter: originalerne overskrives aldrig.</p>
     <div id="top">
       <button id="enter-xr">Gå i VR</button>
       <select id="quality" aria-label="Kvalitet"><option value="3">Høj</option><option value="2">Mellem</option><option value="1">Lav</option><option value="0">Minimal</option></select>
     </div>
+    <div id="toast" role="status" aria-live="polite"></div>
     <div id="status"></div>
     <div id="actions"></div>
     <div id="library">Gemte greb: …</div>

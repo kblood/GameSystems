@@ -7,7 +7,7 @@ import { mkdtemp, readFile, writeFile, copyFile, readdir, rm } from 'node:fs/pro
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { graspStore, applyAction, readLibrary, serializeLibrary, emptyLibrary, sameMachine } from '../server/grasp_store.mjs';
+import { graspStore, applyAction, readLibrary, serializeLibrary, emptyLibrary, sameMachine, uniqueId } from '../server/grasp_store.mjs';
 import { createStudio, syntheticHands } from '../src/studio.js';
 
 const extensionDir = fileURLToPath(new URL('../src/vendor/extensions/grasp/', import.meta.url));
@@ -33,7 +33,7 @@ async function serve(file) {
   return { url, post, close: () => new Promise(ok => server.close(ok)) };
 }
 
-test('applyAction: save adds or replaces by id, one default per kind/side/grasp, default/delete need saved ids', () => {
+test('applyAction: save only appends (a taken id gets a suffix), one default per kind/side/grasp, default/delete need saved ids', () => {
   const [a, am] = recorded({ markDefault: true });
   let { doc, changed } = applyAction(emptyLibrary(), { action: 'save', poses: [a, am] });
   assert.equal(doc.poses.length, 2); assert.deepEqual(changed, [a.id, am.id]);
@@ -43,10 +43,15 @@ test('applyAction: save adds or replaces by id, one default per kind/side/grasp,
   assert.equal(doc.poses.find(p => p.id === am.id).default, true, 'the other side keeps its default');
   ({ doc } = applyAction(doc, { action: 'default', ids: [a.id] }));
   assert.deepEqual(doc.poses.filter(p => p.side === 'right' && p.default).map(p => p.id), [a.id]);
-  ({ doc } = applyAction(doc, { action: 'save', poses: [{ ...a, wrist: [0, 0, 0] }] }));
-  assert.equal(doc.poses.length, 3, 'same id replaces');
-  ({ doc } = applyAction(doc, { action: 'delete', ids: [b.id] }));
-  assert.equal(doc.poses.length, 2);
+  ({ doc, changed } = applyAction(doc, { action: 'save', poses: [{ ...a, wrist: [0, 0, 0], default: false }] }));
+  assert.equal(doc.poses.length, 4, 'a re-sent id never replaces: it is kept as another variant');
+  assert.deepEqual(changed, [`${a.id}-2`]);
+  assert.notDeepEqual(doc.poses.find(p => p.id === a.id).wrist, [0, 0, 0], 'the earlier recording is untouched');
+  assert.equal(doc.poses.find(p => p.id === a.id).default, true, 'a non-default save leaves the preferred pose alone');
+  ({ doc } = applyAction(doc, { action: 'delete', ids: [b.id, `${a.id}-2`] }));
+  assert.equal(doc.poses.length, 2, 'deleting stays explicit, by id');
+  const taken = new Set(['x', 'x-2']);
+  assert.equal(uniqueId('x', taken), 'x-3'); assert.equal(uniqueId('y', taken), 'y'); assert.ok(taken.has('x-3') && taken.has('y'));
   assert.throws(() => applyAction(doc, { action: 'save', poses: [{ ...a, quat: [1, 1, 1, 1] }] }), /invalid pose/);
   assert.throws(() => applyAction(doc, { action: 'save', poses: [] }), /non-empty/);
   assert.throws(() => applyAction(doc, { action: 'delete', ids: ['nope'] }), /no recorded pose/);
@@ -85,7 +90,15 @@ test('endpoint: GET, POST save to the file, refuses cross-site and non-JSON post
     res = await srv.post('{not json');
     assert.equal(res.status, 400);
     res = await srv.post({ action: 'save', poses: [{ id: 'x' }] });
-    assert.equal(res.status, 400); assert.match((await res.json()).error, /invalid pose/);
+    body = await res.json();
+    assert.equal(res.status, 400); assert.match(body.error, /invalid pose/);
+    assert.equal(body.kept, 'recorded_grasps.json.rejected.jsonl', 'a refused save is kept, not dropped');
+    const kept = (await readFile(`${file}.rejected.jsonl`, 'utf8')).trim().split(/\r?\n/).map(l => JSON.parse(l));
+    const last = kept.at(-1);
+    assert.match(last.error, /invalid pose/); assert.deepEqual(last.body.poses, [{ id: 'x' }]);
+    res = await srv.post({ action: 'save', poses });
+    assert.deepEqual((await res.json()).library.poses.slice(2).map(p => p.id), poses.map(p => `${p.id}-2`), 'the same save twice is two variants');
+    await srv.post({ action: 'delete', ids: poses.map(p => `${p.id}-2`) });
     const more = [1, 2, 3].map(k => poses.map(p => ({ ...p, id: `${p.id}-${k}` })));
     const all = await Promise.all(more.map(list => srv.post({ action: 'save', poses: list })));
     assert.ok(all.every(r => r.status === 200));
@@ -105,6 +118,15 @@ test('a grasp saved through the endpoint is in the grasp library a game loads (d
     assert.equal((await srv.post({ action: 'save', poses })).status, 200);
     const lib = await import(pathToFileURL(join(dir, 'index.js')).href);
     assert.equal(lib.RECORDED.length, 2);
+    // Recordings are options: the bake stays the default until a game picks them (?graspvariant=recorded or ids).
+    for (const p of poses) assert.ok(!lib.defaultPose('bottle_beer', p.side, 'body').recorded, `${p.side} default stays baked`);
+    assert.deepEqual(lib.graspVariants('bottle_beer', 'right', 'body').map(q => !!q.recorded), [false, true], 'the baked default, then the recording');
+    let sel = lib.setGraspVariants([poses[0].id]);
+    assert.deepEqual(sel.ids, [poses[0].id]);
+    assert.equal(lib.defaultPose('bottle_beer', 'right', 'body').id, poses[0].id, 'an id selection makes that recording the default');
+    assert.ok(!lib.defaultPose('bottle_beer', 'left', 'body').recorded, 'the other side keeps the bake');
+    sel = lib.setGraspVariants('recorded');
+    assert.equal(sel.selection, 'recorded');
     for (const p of poses) {
       const d = lib.defaultPose('bottle_beer', p.side, 'body');
       assert.equal(d.id, p.id, `${p.side} default is the recording`);
@@ -117,5 +139,7 @@ test('a grasp saved through the endpoint is in the grasp library a game loads (d
       assert.ok(lib.validateRows(Object.fromEntries(['Thumb', 'Index', 'Middle', 'Ring', 'Little'].map((f, i) => [f, shown.angles[i]]))).ok);
     }
     assert.equal(lib.BAKED.poses.filter(p => p.kind === 'bottle_beer' && p.grasp === 'body' && p.default).length, 2, 'the bake itself is unchanged');
+    lib.setGraspVariants('baked');
+    assert.ok(!lib.defaultPose('bottle_beer', 'right', 'body').recorded, 'back to the bake');
   } finally { await srv.close(); await rm(dir, { recursive: true }); }
 });

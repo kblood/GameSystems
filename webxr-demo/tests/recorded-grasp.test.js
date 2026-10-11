@@ -1,5 +1,5 @@
 // A grasp recorded in Grasp Studio (GameSystems/apps/grasp-studio) and saved through its dev-server endpoint is loaded
-// by the demo's grasp extension after `npm run sync`: a temp copy of src/vendor/extensions/grasp stands in for the
+// as a selectable variant by the demo's grasp extension after `npm run sync`: a temp copy of src/vendor/extensions/grasp stands in for the
 // synced copy, and the studio's endpoint writes its recorded_grasps.json (as it writes the source file in a session).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -14,7 +14,7 @@ const vendored = fileURLToPath(new URL('../src/vendor/extensions/grasp/', import
 const studioDir = fileURLToPath(new URL('../../apps/grasp-studio/', import.meta.url));
 const skip = !existsSync(join(studioDir, 'src/vendor/extensions/grasp/index.js')) && 'Grasp Studio not synced (npm run sync in apps/grasp-studio)';
 
-test('a studio recording saved through the endpoint becomes the demo default grasp and closes on the bottle', { skip }, async () => {
+test('a studio recording saved through the endpoint preserves bakes and closes on the bottle when selected', { skip }, async () => {
   const { graspStore } = await import(pathToFileURL(join(studioDir, 'server/grasp_store.mjs')).href);
   const { createStudio, syntheticHands } = await import(pathToFileURL(join(studioDir, 'src/studio.js')).href);
   const dir = await mkdtemp(join(tmpdir(), 'demo-recorded-grasp-'));
@@ -22,7 +22,8 @@ test('a studio recording saved through the endpoint becomes the demo default gra
   const server = createServer((req, res) => { req.url = req.url.replace(/^\/api\/grasps/, '') || '/'; store(req, res, () => { res.statusCode = 404; res.end(); }); });
   await new Promise(ok => server.listen(0, '127.0.0.1', ok));
   try {
-    for (const f of await readdir(vendored)) await copyFile(join(vendored, f), join(dir, f));
+    // This endpoint test owns a fresh recording store, independent of artists' existing recordings.
+    for (const f of await readdir(vendored)) if(f!=='recorded_grasps.json')await copyFile(join(vendored, f), join(dir, f));
     // "Record": the studio model with a synthetic tracked hand (25 XR joints) holding the beer bottle.
     const studio = createStudio();
     studio.setItem([0.1, 0.9, -0.4], [0, 0, 0, 1]);
@@ -35,6 +36,8 @@ test('a studio recording saved through the endpoint becomes the demo default gra
     const grasp = await import(pathToFileURL(join(dir, 'index.js')).href);
     const baked = await import('../src/vendor/extensions/grasp/index.js');
     assert.equal(grasp.RECORDED.length, 2);
+    for(const side of ['left','right'])assert.equal(grasp.defaultPose('bottle_beer',side,'body').id,baked.defaultPose('bottle_beer',side,'body').id,'saving a recording keeps the baked default');
+    assert.equal(grasp.setGraspVariants('recorded').ids.length,2,'recorded variants are enabled explicitly');
     for (const side of ['left', 'right']) {
       const pose = grasp.defaultPose('bottle_beer', side, 'body');
       assert.ok(pose.recorded && pose.id === poses.find(p => p.side === side).id, `${side}: the recording is the default`);
