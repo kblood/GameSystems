@@ -3,6 +3,11 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
+## Nye systemopgaver
+
+- **VR-rygsæk:** undersøg Nightfalls nuværende inventory/grab-kontrakter og lav en selvstændig, scene-genbrugelig rygsæk med fysisk adgang (Walking Dead VR-inspireret), stabile slots, håndinteraktion og kobling til `gs_gear_inventory`. Bevar udstyrsejerskab ved skift mellem hånd, rygsæk og verden; afgræns tracking og reach-komfort som headset-QA.
+- **Bottle API lifecycle:** håndtér ugyldige assets, fill-værdier, scene scope og disposal sikkert i `GSBottleExtension` før Nightfall-sync.
+
 ## Afsluttet sprinkler-lifecycle-runde — 2026-10-12
 
 Sprinkler callbacks kan ikke længere starte et indlejret tick, checkpoint/restore eller ændre/dispose

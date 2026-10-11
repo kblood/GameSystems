@@ -6,6 +6,11 @@ owns its own `GSBottleBreakManager` pool. A consumer can create a bottle with
 `GSBreakableBottle.create("wine", 0.6, "res://path/to/assets/")` and add it to
 its scene.
 
+`GSBottleExtension.create_bottle()` returns `null` for non-finite fill, missing
+model assets, or a parent outside the extension's scene scope. A valid parent must
+be inside the active scene so tracking, events and the scene-owned break manager
+share the same lifetime.
+
 Assets are provided by the game: `bottle_<name>.glb`, `bottle_<name>.liquid.json`
 and optional shard/broken definitions. The source project has no bottle models
 or liquid definitions in this addon.

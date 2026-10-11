@@ -55,16 +55,29 @@ func get_manager() -> GSBottleBreakManager:
 
 ## Creates an ordinary reusable bottle and adds it to `parent` (or this mission).
 func create_bottle(style: String = "wine", fill: float = 0.6, parent: Node = null) -> GSBreakableBottle:
-	if _context == null or not is_instance_valid(_scope):
+	if _context == null or not is_instance_valid(_scope) or not is_finite(fill):
+		return null
+	var target := parent if is_instance_valid(parent) else _scope
+	if not _in_scope(target) or not target.is_inside_tree():
 		return null
 	var asset_root := String(_context.options.get("asset_root", "assets/game_systems/bottles/"))
-	var bottle := GSBreakableBottle.create(style, fill, _context.asset_path(asset_root))
+	var resolved_root := _context.asset_path(asset_root)
+	var scene_path := resolved_root.path_join("bottle_%s.glb" % style)
+	# GSBreakableBottle.create asserts when its model is absent. Keep bad consumer
+	# input inside the extension boundary instead of turning it into a script error.
+	if not ResourceLoader.exists(scene_path, "PackedScene"):
+		return null
+	var bottle := GSBreakableBottle.create(style, fill, resolved_root)
+	if not is_instance_valid(bottle):
+		return null
+	target.add_child(bottle)
 	_track_bottle(bottle)
-	(parent if is_instance_valid(parent) else _scope).add_child(bottle)
 	return bottle
 
 
 func track_bottle(bottle: GSBreakableBottle) -> void:
+	if _context == null or not _in_scope(bottle) or not bottle.is_inside_tree():
+		return
 	_track_bottle(bottle)
 
 
@@ -94,6 +107,10 @@ func _scan(node: Node) -> void:
 		_track_bottle(node as GSBreakableBottle)
 	for child in node.get_children():
 		_scan(child)
+
+
+func _in_scope(node: Node) -> bool:
+	return is_instance_valid(_scope) and is_instance_valid(node) and (_scope == node or _scope.is_ancestor_of(node))
 
 
 func _on_node_added(node: Node) -> void:

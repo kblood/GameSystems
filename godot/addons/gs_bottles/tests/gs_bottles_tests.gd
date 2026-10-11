@@ -88,6 +88,19 @@ func run() -> void:
 	extension_scene.remove_child(transient)
 	check(api._tracked.size() == 1, "extension prunes bottles when they leave the scene")
 	transient.free()
+	var tracked_before_invalid: int = api._tracked.size()
+	var outside_scope := Node3D.new()
+	root.add_child(outside_scope)
+	check(api.create_bottle("wine", 0.5, outside_scope) == null
+		and api._tracked.size() == tracked_before_invalid,
+		"extension refuses to create bottles in another scene scope")
+	check(api.create_bottle("missing_style", 0.5, extension_scene) == null
+		and api._tracked.size() == tracked_before_invalid,
+		"missing bottle assets are rejected without invoking the asserting factory")
+	check(api.create_bottle("wine", NAN, extension_scene) == null
+		and api._tracked.size() == tracked_before_invalid,
+		"non-finite bottle fill is rejected before construction")
+	outside_scope.queue_free()
 	var broken_events: Array[Dictionary] = []
 	host.on(&"broken", func(data: Dictionary) -> void: broken_events.append(data))
 	sample.broke.emit(Vector3.ONE, 2.5, &"shatter")
@@ -97,6 +110,12 @@ func run() -> void:
 	check(api._tracked.is_empty(), "one-shot break event releases its tracked reference")
 	var extension_manager := api.get_manager()
 	host.dispose(&"gs_bottles")
+	var after_dispose := SilentBottle.new()
+	extension_scene.add_child(after_dispose)
+	api.track_bottle(after_dispose)
+	check(api._tracked.is_empty() and not after_dispose.broke.is_connected(api._on_broken.bind(after_dispose)),
+		"retained API references cannot reattach bottle listeners after extension disposal")
+	after_dispose.queue_free()
 	await process_frame
 	check(not is_instance_valid(extension_manager), "extension teardown frees its owned manager")
 	host.queue_free()
