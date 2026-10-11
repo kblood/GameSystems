@@ -8,6 +8,8 @@ signal ownership_changed(item_id: String, from_owner: String, to_owner: String, 
 signal reconciliation_failed(reason: String)
 
 const Inventory = preload("res://addons/gs_gear_inventory/gs_gear_inventory.gd")
+const MAX_RELEASE_SPEED_MPS := 9.0
+const MAX_RELEASE_SPIN_RAD_S := 22.0
 
 var inventory = Inventory.new()
 var _owner_roots: Dictionary = {}
@@ -167,6 +169,48 @@ func retrieve(slot_id: String, new_owner: String) -> String:
 	_busy = false
 	_emit_ownership_changed(item_id, "slot", new_owner, slot_id)
 	return item_id
+
+## Deliberate hand-to-world release. Velocities are world-space body velocities;
+## callers convert any hand/contact offset before this bounded transfer. No slot
+## is selected and stale/repeated releases cannot apply a second impulse.
+func release_to_world(item_id: String, expected_hand: String, linear: Vector3, angular: Vector3) -> bool:
+	if _busy or expected_hand not in ["hand:left", "hand:right"] or not _registered_nodes_valid(): return false
+	if not linear.is_finite() or not angular.is_finite(): return false
+	if inventory.owner_of(item_id) != expected_hand or not inventory.slot_of(item_id).is_empty(): return false
+	var node := _item_node(item_id)
+	var hand_root: Node3D = _owner_roots.get(expected_hand)
+	var world_root: Node3D = _owner_roots.get("world")
+	if node == null or not _is_under(node, hand_root) or not _can_reparent_to(node, world_root): return false
+	if not _valid_transform(node.global_transform) or not _valid_transform(world_root.global_transform): return false
+	if absf(node.global_basis.determinant()) < 0.001 or absf(world_root.global_basis.determinant()) < 0.001: return false
+	if node is RigidBody3D and not _body_state.has(item_id): return false
+	_busy = true
+	var old_parent := node.get_parent()
+	var old_global := node.global_transform
+	var held_body := _capture_body_state(node)
+	var held_linear := (node as RigidBody3D).linear_velocity if node is RigidBody3D else Vector3.ZERO
+	var held_angular := (node as RigidBody3D).angular_velocity if node is RigidBody3D else Vector3.ZERO
+	node.reparent(world_root, true)
+	node.global_transform = old_global
+	_restore_body_state(node, _body_state.get(item_id, {}))
+	if node is RigidBody3D:
+		var body := node as RigidBody3D
+		body.linear_velocity = linear.limit_length(MAX_RELEASE_SPEED_MPS) if not body.freeze else Vector3.ZERO
+		body.angular_velocity = angular.limit_length(MAX_RELEASE_SPIN_RAD_S) if not body.freeze else Vector3.ZERO
+		if not body.freeze: body.sleeping = false
+	if not inventory.transfer(item_id, expected_hand, "world"):
+		node.reparent(old_parent, false)
+		node.global_transform = old_global
+		_restore_body_state(node, held_body)
+		if node is RigidBody3D:
+			node.linear_velocity = held_linear
+			node.angular_velocity = held_angular
+		_busy = false
+		return false
+	_body_state.erase(item_id)
+	_busy = false
+	_emit_ownership_changed(item_id, expected_hand, "world", "")
+	return true
 
 ## Reset ledger and scene together. Every item returns to its registered owner
 ## root and captured spawn pose. Rejects before mutating when a node/root is gone.
