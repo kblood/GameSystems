@@ -8,6 +8,8 @@ import thermal, { createThermalSystem } from '../../extensions/thermal/index.js'
 import tools, { createToolsSystem } from '../../extensions/tools/index.js';
 import acoustics, { createAcousticsSystem } from '../../extensions/acoustics/index.js';
 import workshop from '../../extensions/workshop/index.js';
+import supply from '../../extensions/supply/index.js';
+import flow from '../../extensions/flow/index.js';
 
 const near = (a, b, eps = 1e-6) => assert.ok(Math.abs(a - b) < eps, `${a} != ${b}`);
 async function station(quality = 3) {
@@ -126,4 +128,21 @@ test('composition can unload and reload without disposing shared systems', async
   const { host, api, errors } = await station(); api.mechanics.add('external', { max: 2 }); api.sound(); host.dispose('workshop');
   assert.equal(host.get('mechanics').state('external').value, 0); assert.equal(host.get('acoustics').pendingCount, 0); assert.throws(() => host.get('mechanics').state('drawer'));
   assert.ok(await host.load(workshop)); assert.deepEqual(errors, []); host.dispose();
+});
+
+test('disposing supply unloads flow before its captured dependency API becomes invalid', async () => {
+  const errors = [], host = createHost({ onError: (e, id, phase) => errors.push([id, phase, e.message]) });
+  const source = await host.load(supply); source.add('tank', { capacityMl: 1000, components: { water: 1000 } });
+  const stream = await host.load(flow, { resolveTarget: () => ({ surfaceId: 'floor', position: [0, 0, 0] }) });
+  stream.add('nozzle', { tankId: 'tank', rateMlPerSecond: 100 }); stream.start('nozzle'); host.update(0.5);
+  assert.equal(source.state('tank').ml, 950);
+
+  host.dispose('supply');
+
+  assert.equal(host.state('flow'), 'absent');
+  assert.equal(host.state('supply'), 'absent');
+  assert.throws(() => stream.state('nozzle'), /Flow system is disposed/);
+  assert.throws(() => source.state('tank'), /System is disposed/);
+  host.update(0.5);
+  assert.deepEqual(errors, []);
 });

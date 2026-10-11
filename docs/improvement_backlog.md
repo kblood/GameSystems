@@ -659,6 +659,20 @@ udledes af headless-tests.
   kontrollér resultatet i Godot-testscener og XR/browser kun dér, hvor platformen bruger
   den samme implementation.
 
+## Afsluttet extension-lifecycle- og kamerakatalog-runde — 2026-10-11
+
+Hosten lukker nu transitive dependents ned før deres dependency fjernes, og forsinket
+async-init-success/-fejl rydder extension-ressourcer præcis én gang. Kamera-feeds har
+validerede labels, og `feedOptions(screenId)` returnerer friske snapshots af feed-id,
+label, enabled- og selected-state til monitorens valg-UI. NightfallContractsWebXR's
+genererede extension-kopier var ude af sync på source-hash/provenance og to bottle-filer;
+de er nu genskabt fra GameSystems-kilden, og separate WebXR-projekt blev bevaret.
+
+Verifikation: GameSystems Node-suite **491/491**, NightfallContractsWebXR Node-suite
+**339/339**, Vite-produktionsbuild består, Sol-review godkendte host-/kameraændringerne,
+og `git diff --check` er ren. Builden viser fortsat den eksisterende bundle-size-advarsel;
+det er ikke en buildfejl.
+
 ## Arbejdsregel
 
 Hver ændring skal have en konkret begrundelse og passende verifikation. Bevar andre agenters arbejde.
