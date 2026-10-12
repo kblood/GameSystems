@@ -18,6 +18,38 @@ func _run_tests() -> void:
 	case_result(initial.fire.burning and initial.supply.components.water == 20000.0
 		and initial.battery.energy_wh == 180.0 and not initial.fuse_blown,
 		"scene composes an active fire, finite water supply and fused battery circuit")
+	case_result(initial.diesel_puddle == {"diesel": 1200.0, "water": 600.0}
+		and initial.puddle_ledger.held_ml == 1800.0 and initial.diesel_spill_visible
+		and not initial.spill_fire_visible and initial.spill_status == "READY",
+		"scene owns a persistent visible mixed diesel/water puddle with explicit typed volume")
+	var puddle_ignition: Dictionary = demo.ignite_diesel_spill()
+	var lit_spill: Dictionary = demo.demo_state()
+	case_result(puddle_ignition.ok and puddle_ignition.kind == &"diesel"
+		and puddle_ignition.ml == 400.0 and is_equal_approx(puddle_ignition.energy_kj, 14.4)
+		and lit_spill.spill_fire.burning and lit_spill.spill_fire_visible and lit_spill.spill_status == "BURNING"
+		and lit_spill.diesel_puddle == {"diesel": 800.0, "water": 600.0}
+		and lit_spill.puddle_ledger.consumed_ml == 400.0,
+		"typed diesel receipt ignites the spill target and preserves its water component")
+	var puddle_quench: Dictionary = demo.extinguish_diesel_spill()
+	var quenched_spill: Dictionary = demo.demo_state()
+	case_result(puddle_quench.ok and puddle_quench.kind == &"water" and puddle_quench.ml == 200.0
+		and not quenched_spill.spill_fire.burning and not quenched_spill.spill_fire_visible and quenched_spill.spill_status == "WET"
+		and quenched_spill.diesel_puddle == {"diesel": 800.0, "water": 400.0}
+		and quenched_spill.puddle_ledger.consumed_ml == 600.0,
+		"typed water receipt extinguishes the diesel spill without consuming its remaining fuel")
+	var wet_relight: Dictionary = demo.ignite_diesel_spill()
+	var refused_spill: Dictionary = demo.demo_state()
+	case_result(not wet_relight.ok and refused_spill.last_puddle_result.reason == &"target_not_ignitable"
+		and refused_spill.spill_status == "WET" and refused_spill.puddle_ledger.consumed_ml == 600.0,
+		"wet spill refuses relight without consuming another fuel dose")
+	demo.puddles.withdraw(demo.diesel_puddle_id, &"diesel", 800.0)
+	demo._sync_spill_visual()
+	var water_only: Dictionary = demo.demo_state()
+	case_result(water_only.diesel_spill_visible and water_only.diesel_puddle == {"water": 400.0},
+		"persistent puddle visualization remains while typed water remains after fuel is exhausted")
+	demo.puddles.withdraw(demo.diesel_puddle_id, &"water", 400.0)
+	demo._sync_spill_visual()
+	case_result(not demo.demo_state().diesel_spill_visible, "empty puddle hides its visual")
 	var spread_demo: Node3D = DemoScene.instantiate()
 	root.add_child(spread_demo)
 	var spread_result: Dictionary = spread_demo.advance(0.3)

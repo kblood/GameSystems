@@ -56,10 +56,13 @@ per 50 ms spread tick. These headless desktop measurements are diagnostic, not a
 performance gate; profile on the target VR hardware and scene.
 
 `GSPuddleFireAdapter` composes with the existing `GSPuddleStore` through its public
-`components` and `withdraw` methods. It consumes petrol before diesel for fuel heat,
-and it accepts water or foam for extinguishing. Unknown liquids and colors never
-masquerade as either category. The store's receipt remains the authority for how
-many millilitres actually moved.
+`components` and `withdraw` methods. The runnable fire-station demo now includes a
+persistent mixed diesel/water puddle: a bounded diesel dose ignites a thermal target,
+and a typed water dose wets and extinguishes it. The adapter consumes petrol before
+diesel for fuel heat, accepts water or foam for extinguishing, and uses actual store
+receipts. Unknown liquids and colors never masquerade as either category. This is
+gameplay-scale host wiring, not autonomous pool-fire fluid dynamics; a host still owns
+the ignition conditions and per-tick decisions.
 
 ## Current limits and next work
 

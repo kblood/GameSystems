@@ -1245,8 +1245,9 @@ inkluderer nu HIGH-streamtransport, og flaske-checkpointet gemmer stream-ID pr.
 hul. Sol-review fandt og hjalp med at lukke normaliserings-, v2-payload- og
 staging-/kapacitetsfejl. Hosten skal stadig
 tage manager-/kilde-snapshots i samme paused/fixed tick, bevare flaskeidentitet og
-pose samt gendanne manageren før flaskerne. Native brandadapter er fortsat en
-separat opgave.
+pose samt gendanne manageren før flaskerne. Den receipt-baserede native brandadapter
+har nu en integreret demo-rute; automatisk pytbrand og sprinklerens visuelle
+pytdeponering er fortsat selvstændige host-opgaver.
 
 ## Afsluttet spatial fire-spread hot-path-runde
 
