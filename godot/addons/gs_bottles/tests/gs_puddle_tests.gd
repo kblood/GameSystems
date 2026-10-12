@@ -5,6 +5,9 @@ const Manager = preload("../bottle_break_manager.gd")
 const Pour = preload("../bottle_pour.gd")
 const Bottle = preload("../breakable_bottle.gd")
 const Leak = preload("../leak_stream.gd")
+const Liquid = preload("../shaders/bottle_liquid.gd")
+const Profile = preload("../bottle_break_profile.gd")
+const Lut = preload("../bottle_lut.gd")
 class PourBody extends RigidBody3D:
 	var ctl: GSBottleLiquid
 class SilentBottle extends GSBreakableBottle:
@@ -178,6 +181,46 @@ func run() -> void:
 	stream._finish()
 	manager.clear_debris()
 	manager.set_physics_process(false)
+	manager.set_quality(Manager.Quality.MINIMAL)
+	var leaky: GSBreakableBottle = SilentBottle.new()
+	leaky.free_on_break = false
+	leaky.spill_liquid_kind = &"diesel"
+	leaky.fill = 0.0
+	leaky.profile = Profile.new()
+	leaky.lut = Lut.new()
+	leaky.ctl = Liquid.new()
+	leaky.add_child(leaky.ctl)
+	leaky.model = Node3D.new()
+	leaky.add_child(leaky.model)
+	leaky.glass_node = MeshInstance3D.new()
+	leaky.glass_node.mesh = SphereMesh.new()
+	leaky.model.add_child(leaky.glass_node)
+	leaky.leaks = [
+		{"p": Vector3(-0.02, 0.0, 0.0), "n": Vector3.LEFT, "r": 0.002, "acc": 0.17,
+			"acc_kind": &"petrol", "acc_color": Color.RED, "stream": null},
+		{"p": Vector3(0.02, 0.0, 0.0), "n": Vector3.RIGHT, "r": 0.002, "acc": 0.23,
+			"acc_kind": &"petrol", "acc_color": Color.RED, "stream": null},
+	]
+	scene.add_child(leaky)
+	var leak_added_before: float = manager.liquid_ledger().added_ml
+	leaky._shatter(Vector3.ZERO, Vector3.UP, 0.0, Vector3.ZERO, 0.0, false)
+	var terminal_airborne := 0.0
+	var terminal_petrol := 0.0
+	for i in Manager.DROPLET_POOL:
+		if manager._dalive[i] == 1:
+			terminal_airborne += manager._dvol[i]
+			if manager._dkind[i] == &"petrol": terminal_petrol += manager._dvol[i]
+	check(is_equal_approx(manager.liquid_ledger().added_ml - leak_added_before, 0.4)
+		and is_equal_approx(terminal_airborne, 0.4) and is_equal_approx(terminal_petrol, 0.4)
+		and float(leaky.leaks[0].acc) == 0.0
+		and float(leaky.leaks[1].acc) == 0.0 and balanced(manager.liquid_ledger()),
+		"shatter transfers sub-threshold low-tier leak remainders into manager-owned volume exactly once")
+	leaky._shatter(Vector3.ZERO, Vector3.UP, 0.0, Vector3.ZERO, 0.0, false)
+	check(is_equal_approx(manager.liquid_ledger().added_ml - leak_added_before, 0.4)
+		and balanced(manager.liquid_ledger()), "repeated shatter cannot transfer cleared leak remainders twice")
+	leaky.free()
+	manager.clear_debris()
+	manager.set_quality(Manager.Quality.HIGH)
 	Leak.reset_ledger()
 	var moving: GSBottleLeakStream = Leak.acquire(manager, RID(), 1)
 	moving.set_physics_process(false)

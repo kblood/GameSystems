@@ -1099,3 +1099,17 @@ flow-rate. Rumspecifik varmekapacitet og `setPosition`-rumskift bevares.
 Verifikation: thermal-air, thermal-portals og thermal-numerics **38/38 tests**;
 fuld GameSystems Node-suite **559/559**, Vite-produktionsbuild og branddemoens
 synlige browserkontrol **24/24** består.
+
+## Afsluttet lavkvalitets-lækagebogføring
+
+Hvis en flaske knustes, kunne små lækagemængder, der allerede var trukket fra
+flaskens fyldning, blive stående i hullets sub-dråbe-akkumulator. Shatter-forløbet
+overfører nu hver rest én gang til managerens dråberegnskab før den resterende
+flaskefyldning splashes. Resten beholder den væsketype/farve, den blev samlet med;
+identitetsskift flusher den gamle rest før ny væske akkumuleres. Ugyldig rumlig
+overførsel går til managerens eksplicitte removal-kvittering.
+
+Verifikation: Godot puddle-suite **55/55**, fuld WebXR Node-suite **559/559**,
+Sol-review uden blocker og `git diff --check` består. Det er ikke en hel
+flaske-checkpoint: mens en intakt flaske stadig lækker, forbliver sub-dråbe-
+akkumulatoren bottle-owned og kræver fortsat en kilde-checkpoint.

@@ -85,7 +85,7 @@ do not serialize intact bottles, inventory, the pour transport or an entire game
 
 ## Verified routes and remaining accounting work
 
-`gs_puddle_tests.gd` covers 53 checks for typed merges, partial withdrawal and
+`gs_puddle_tests.gd` covers 55 checks for typed merges, partial withdrawal and
 evaporation, pool/volume/component limits, real ray-tested droplet landing,
 pour/splash identity, HIGH leak FIFO identity/geometry, same-kind source motion,
 miss-to-hit and long-to-short flight changes, captured splash doses, queue budgets, stable checkpoints,
@@ -97,7 +97,10 @@ contracts remain green (29/22/29 checks).
 Conservation claims apply to the manager-owned routes and explicit store transitions
 covered by those contracts. Neck-snap's initial spurt now debits its actual 5%
 before transferring typed volume into the manager.
-Low-tier hole accumulators still need an explicit terminal flush/source checkpoint
-before whole broken-bottle conservation can be claimed. Native fire integration
+Low-tier hole accumulators are now flushed into typed manager-owned droplets when a
+bottle shatters; the remaining-fill splash stays separate because the accumulated leak volume was
+already debited from the source. Bottle-owned sub-drop accumulators on an intact
+bottle are still outside the liquid-only checkpoint and need a source checkpoint.
+Native fire integration
 still requires a separately implemented thermal/ignition adapter. WebXR retains
 its existing separate pool/thermal implementation.

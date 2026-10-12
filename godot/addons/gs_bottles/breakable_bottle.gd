@@ -631,19 +631,26 @@ func _process_leaks(dt: float) -> void:
 		var hw := gxf * p
 		var nl: Vector3 = lk.get("n", Vector3(p.x, 0.0, p.z).normalized())
 		var vel := (bas * nl).normalized() * v_e + linear_velocity + angular_velocity.cross(hw - com_w)
+		var kind := _spill_kind()
+		var color := lut.color
 		if mgr.quality == GSBottleBreakManager.Quality.HIGH:
 			var s = lk.get("stream")
 			if s == null or not is_instance_valid(s) or (s as GSBottleLeakStream).finished:
 				s = GSBottleLeakStream.acquire(mgr, get_rid(), mgr.droplet_mask)
 				lk["stream"] = s
 			if s != null:
-				(s as GSBottleLeakStream).feed(hw, vel, q, dv_ml, lut.color, _spill_kind())
+				(s as GSBottleLeakStream).feed(hw, vel, q, dv_ml, color, kind)
 				continue
+		if float(lk["acc"]) > 0.0 and (lk.get("acc_kind", kind) != kind or lk.get("acc_color", color) != color):
+			_transfer_leak_accumulator(mgr, lk, hw, vel)
+		if float(lk["acc"]) <= 0.0:
+			lk["acc_kind"] = kind
+			lk["acc_color"] = color
 		lk["acc"] = float(lk["acc"]) + dv_ml
 		var drop := maxf(0.4, q * 1.0e6 / 60.0)
 		var k := 0
 		while float(lk["acc"]) >= drop and k < 4:
-			mgr.emit_droplet(hw, vel, drop, lut.color, _spill_kind())
+			_transfer_leak_volume(mgr, hw, vel, drop, lk["acc_color"], lk["acc_kind"])
 			lk["acc"] = float(lk["acc"]) - drop
 			k += 1
 	if f != fill:
@@ -671,6 +678,7 @@ func _shard_speed(burst_e: float, mass_kg: float) -> float:
 
 func _shatter(point: Vector3, dir: Vector3, burst_e: float, tang: Vector3, impact_e: float, bullet: bool) -> void:
 	var mgr := GSBottleBreakManager.get_for(self)
+	_flush_leak_accumulators(mgr)
 	var gxf := global_transform
 	var il := gxf.affine_inverse() * point
 	var q := mgr.quality_at(point)
@@ -702,6 +710,49 @@ func _shatter(point: Vector3, dir: Vector3, burst_e: float, tang: Vector3, impac
 	fill = 0.0
 	ctl.fill = 0.0
 	_finish_break(point, impact_e, &"shatter")
+
+
+func _transfer_leak_volume(mgr: GSBottleBreakManager, point: Vector3, velocity: Vector3, ml: float,
+		color: Color, kind: StringName) -> void:
+	if mgr == null or not is_finite(ml) or ml <= 0.0: return
+	if point.is_finite() and velocity.is_finite() and GSBottleBreakManager._valid_liquid(point, ml, color):
+		mgr.emit_droplet(point, velocity, ml, color, kind)
+	else:
+		mgr.discard_liquid(ml)
+
+
+func _transfer_leak_accumulator(mgr: GSBottleBreakManager, lk: Dictionary, point: Vector3, velocity: Vector3) -> void:
+	var ml := float(lk.get("acc", 0.0))
+	var color: Color = lk.get("acc_color", lut.color)
+	var kind := StringName(lk.get("acc_kind", _spill_kind()))
+	_transfer_leak_volume(mgr, point, velocity, ml, color, kind)
+	lk["acc"] = 0.0
+	lk["acc_kind"] = kind
+	lk["acc_color"] = color
+
+
+## Low-tier hole leaks may have already debited a sub-drop remainder from fill.
+## Transfer that source-owned remainder before the bottle stops simulating.
+func _flush_leak_accumulators(mgr: GSBottleBreakManager) -> void:
+	if mgr == null: return
+	var gxf := global_transform
+	var bas := gxf.basis.orthonormalized()
+	var com_w := gxf * center_of_mass
+	var kind := _spill_kind()
+	for lk in leaks:
+		var ml := float(lk.get("acc", 0.0))
+		if not is_finite(ml) or ml <= 0.0:
+			lk["acc"] = 0.0
+			continue
+		var local_point: Vector3 = lk.get("p", Vector3.ZERO)
+		var local_normal: Vector3 = lk.get("n", Vector3.UP)
+		var point := gxf * local_point
+		var normal := (bas * local_normal).normalized()
+		var velocity := normal * 0.5 + linear_velocity + angular_velocity.cross(point - com_w)
+		if not lk.has("acc_color") or not lk.has("acc_kind"):
+			lk["acc_color"] = lut.color
+			lk["acc_kind"] = kind
+		_transfer_leak_accumulator(mgr, lk, point, velocity)
 
 
 func _spawn_cap(mgr: GSBottleBreakManager, point: Vector3, dir: Vector3, tang: Vector3, vmag: float) -> void:
