@@ -44,9 +44,10 @@ conventions. Keep rendering, scene nodes, physics bodies, controller binding, XR
 lifecycle, hand tracking and browser permissions behind platform adapters.
 
 Before porting, define parity as observable outcomes: for example, “a grabbed object
-remains attached while tracked hand pose is valid and releases once tracking is lost,”
-not “both ports use the same class.” List intentional differences in timing, physics,
-tracking features and available hardware.
+remains attached while tracked hand pose is valid, enters a short lost-tracking grace
+state during brief occlusion, and releases if tracking does not recover before the
+configured timeout,” not “both ports use the same class.” List intentional differences
+in timing, physics, tracking features and available hardware.
 
 ## Boundary contract
 

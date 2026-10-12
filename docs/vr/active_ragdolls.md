@@ -2,9 +2,10 @@
 
 An active ragdoll combines a physical skeleton with a target pose. It should preserve
 useful collisions and weight while following animation or IK goals. It should not force
-the player's tracked hands and head to obey a body solver. For player avatars, tracking
-is authoritative at the head and hands; for NPCs, animation/AI is authoritative and
-physics provides response.
+the player's tracked camera or input poses to obey a body solver. For player avatars,
+the headset pose is camera-authoritative and tracked hands are authoritative input
+intent; visible hands may be collision-limited with clear feedback. For NPCs,
+animation/AI is authoritative and physics provides response.
 
 ## Layers
 

@@ -74,8 +74,9 @@ ambiguous state.
 
 ## Avatar scale and calibration
 
-Measure floor and height once, then let the player recenter or adjust. Store tracking
-height separately from authored character height. Choose one explicit policy per mode:
+Measure floor and height during calibration, then allow recentering and recalibration
+after a reference-space reset or a seated/standing mode change. Store tracking height
+separately from authored character height. Choose one explicit policy per mode:
 
 1. **Player-sized world:** map the user's measured proportions to the avatar, clamping
    unusual values to a comfortable playable interval.

@@ -1,9 +1,12 @@
 # VR IK and avatar design
 
 An avatar reconstructs an authored body from sparse measurements. It is an estimate,
-not a second tracker. Use the head and controller/hand poses as hard targets, then solve
-the untracked torso, shoulders, elbows, hips and feet with limits and confidence-aware
-procedural rules. The existing [`ikvr_implementation.md`](../ikvr_implementation.md)
+not a second tracker. Treat the tracked headset pose as the camera authority and tracked
+hand/controller poses as authoritative input intent. The visible hands may yield to
+collision or bounded body-reach constraints, with clear feedback when presentation no
+longer matches the tracked pose. Solve the untracked torso, shoulders, elbows, hips and
+feet with limits and confidence-aware procedural rules. The existing
+[`ikvr_implementation.md`](../ikvr_implementation.md)
 documents the JavaScript/WebXR implementation in `extensions/avatar` and
 `extensions/grasp`; it is not the native Godot implementation.
 
@@ -30,7 +33,8 @@ mass cues and comfort. Avoid per-frame scale changes and provide a clear recente
 5. Drive hands from tracked hand joints when valid; otherwise infer finger pose from
    controller actions or interaction context.
 6. Estimate legs and feet from root motion and gait; do not pretend the feet are tracked.
-7. Apply animation/secondary motion without moving hard-tracked head/hand targets.
+7. Apply animation/secondary motion without moving the tracked camera; keep hand input
+   poses authoritative while allowing collision-limited visual hand presentation.
 
 Use a confidence state for every input. During brief loss, smoothly hold or fade the
 avatar limb; after a timeout, release interactions and return to a neutral estimate.
