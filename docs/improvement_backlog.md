@@ -958,7 +958,12 @@ Kropsramme-regressionen er nu dækket i den eksisterende `review-backpack-live`-
 Den flytter det løste holster-anker gennem translation, yaw og lavere crouch-højde og
 verificerer, at samme node, lokale slot-fit og inventory-ejer består. Headless-testen
 validerer transform-/ejerskabskontrakten, ikke avataranimation eller headsetkomfort.
-Næste backpack-opgave: syntetiske controller- og tracking-skift.
+Nyt afsluttet input-deltrin: et kort tracking-tab, mens hånden aktivt trækker
+rygsækkens håndtag, annullerer trækket uden at ændre cargo-ejerskab. Tracking-
+reacquisition starter ikke det gamle træk igen, og offset falder under 2 cm.
+`review-backpack-input` er udvidet; approach, input, live og release består
+107/107 checks. Sol har godkendt testen. Næste trin dækker et reelt skift mellem
+controller- og håndtracking samt tracking-tab ved et faktisk slot-udtag.
 
 Våbenasset-validatoren kontrollerer nu de eksporterede grebsankre for afstand
 mellem primær-/støttegreb, forreste støttegreb på rifler og nærhed til våbnets
