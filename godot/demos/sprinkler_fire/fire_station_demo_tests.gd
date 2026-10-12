@@ -18,6 +18,31 @@ func _run_tests() -> void:
 	case_result(initial.fire.burning and initial.supply.components.water == 20000.0
 		and initial.battery.energy_wh == 180.0 and not initial.fuse_blown,
 		"scene composes an active fire, finite water supply and fused battery circuit")
+	var spread_demo: Node3D = DemoScene.instantiate()
+	root.add_child(spread_demo)
+	var spread_result: Dictionary = spread_demo.advance(0.3)
+	case_result(spread_result.ok and spread_result.spread_steps == 6
+		and spread_demo.demo_state().spread_fire.burning,
+		"spatial fire adapter spreads from the burning pallet to the nearby crate on fixed ticks")
+	spread_demo.queue_free()
+	var batched_demo: Node3D = DemoScene.instantiate()
+	var partitioned_demo: Node3D = DemoScene.instantiate()
+	root.add_child(batched_demo)
+	root.add_child(partitioned_demo)
+	batched_demo.trigger_head()
+	partitioned_demo.trigger_head()
+	var batched_result: Dictionary = batched_demo.advance(0.3)
+	var partitioned_ok := true
+	for _frame in 3:
+		partitioned_ok = partitioned_ok and bool(partitioned_demo.advance(0.1).ok)
+	case_result(batched_result.ok and partitioned_ok
+		and batched_demo.thermal.checkpoint() == partitioned_demo.thermal.checkpoint()
+		and batched_demo.sprinklers.checkpoint() == partitioned_demo.sprinklers.checkpoint()
+		and batched_demo.tank.checkpoint() == partitioned_demo.tank.checkpoint()
+		and batched_demo.electricity.checkpoint() == partitioned_demo.electricity.checkpoint(),
+		"thermal spread, sprinkler flow and shared grid are invariant to 0.3 s versus 3 x 0.1 s host frames")
+	batched_demo.queue_free()
+	partitioned_demo.queue_free()
 	var automatic_demo: Node3D = DemoScene.instantiate()
 	root.add_child(automatic_demo)
 	for _tick in 20:

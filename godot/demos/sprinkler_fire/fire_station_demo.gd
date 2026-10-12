@@ -2,6 +2,7 @@ extends Node3D
 ## Small runnable composition of the native thermal, supply, battery, pump and sprinkler kernels.
 
 const Thermal = preload("res://addons/gs_thermal/gs_thermal_system.gd")
+const FireSpread = preload("res://addons/gs_fire_spread/gs_spatial_fire_spread_system.gd")
 const SupplyTank = preload("res://addons/gs_resource_adapters/gs_supply_tank.gd")
 const Sprinklers = preload("res://addons/gs_sprinklers/gs_sprinkler_system.gd")
 const Electricity = preload("res://addons/gs_electricity/gs_electricity_system.gd")
@@ -9,6 +10,7 @@ const NetworkPump = preload("res://addons/gs_electricity/gs_electricity_network_
 
 const ROOM_ID := &"demo-room"
 const FIRE_ID := &"burning-pallet"
+const SPREAD_FIRE_ID := &"nearby-crate"
 const HEAD_ID := &"ceiling-head"
 const SUPPLY_ID := &"water-tank"
 const BATTERY_ID := &"pump-battery"
@@ -18,6 +20,7 @@ const FAULT_SWITCH_ID := &"fault-switch"
 const WATER_CAPACITY_ML := 20000.0
 
 var thermal: RefCounted
+var fire_spread: RefCounted
 var tank: RefCounted
 var battery: RefCounted
 var pump: RefCounted
@@ -32,6 +35,7 @@ var _status_label: Label3D
 var _spray_visual: MeshInstance3D
 var _fire_visual: MeshInstance3D
 var _fire_light: OmniLight3D
+var _spread_fire_visual: MeshInstance3D
 
 
 func _ready() -> void:
@@ -42,6 +46,12 @@ func _ready() -> void:
 	thermal.add_object(FIRE_ID, {"room_id": ROOM_ID, "position": Vector3.ZERO,
 		"temperature_c": 450.0, "ignition_c": 250.0, "heat_capacity_kj_c": 8.0,
 		"flammability": 0.9, "fuel": 300.0, "burn_rate": 2.0, "heat_kj_per_fuel": 18.0})
+	thermal.add_object(SPREAD_FIRE_ID, {"room_id": ROOM_ID, "position": Vector3(0.8, 0.0, 0.0),
+		"temperature_c": 20.0, "ignition_c": 240.0, "heat_capacity_kj_c": 0.001,
+		"flammability": 1.0, "fuel": 80.0, "burn_rate": 1.0, "heat_kj_per_fuel": 16.0})
+	fire_spread = FireSpread.new(thermal)
+	fire_spread.register_object(FIRE_ID)
+	fire_spread.register_object(SPREAD_FIRE_ID)
 	tank = SupplyTank.new(WATER_CAPACITY_ML, {"water": WATER_CAPACITY_ML})
 	electricity = Electricity.new()
 	electricity.add(BATTERY_ID, {"kind": &"battery", "a": &"battery+", "b": &"ground",
@@ -63,7 +73,7 @@ func _ready() -> void:
 	sprinklers.register_supply(SUPPLY_ID, tank)
 	sprinklers.set_power_provider(pump)
 	sprinklers.add_head(HEAD_ID, {"room_id": ROOM_ID, "supply_id": SUPPLY_ID,
-		"target_ids": [FIRE_ID], "position": Vector3(0.0, 3.0, 0.0), "flow_ml_s": 240.0,
+		"target_ids": [FIRE_ID, SPREAD_FIRE_ID], "position": Vector3(0.0, 3.0, 0.0), "flow_ml_s": 240.0,
 		"trigger_temperature_c": 70.0, "response_seconds": 1.5, "range_m": 4.0})
 	_update_status()
 
@@ -93,8 +103,32 @@ func advance(delta: float) -> Dictionary:
 	var shared_budget := minf(Thermal.MAX_FRAME_DELTA - thermal_pending,
 		Sprinklers.MAX_FRAME_DELTA - sprinkler_pending)
 	if delta > shared_budget: return {"ok": false, "reason": &"frame_budget"}
-	var fire_result: Dictionary = thermal.step(delta)
-	var sprinkler_result: Dictionary = sprinklers.step(delta)
+	var fire_result := {"ok": true, "steps": 0, "pending_seconds": thermal_pending, "events": []}
+	var sprinkler_result := {"ok": true, "steps": 0, "pending_seconds": sprinkler_pending, "events": []}
+	var spread_steps := 0
+	var remaining := delta
+	var thermal_debt := thermal_pending
+	var sprinkler_debt := sprinkler_pending
+	while remaining > 1.0e-9:
+		var slice := minf(remaining, minf(Thermal.FIXED_STEP - thermal_debt,
+			Sprinklers.FIXED_STEP - sprinkler_debt))
+		var tick: Dictionary = thermal.step(slice)
+		if not tick.get("ok", false): return {"ok": false, "reason": &"thermal_tick"}
+		fire_result.steps += int(tick.get("steps", 0))
+		fire_result.pending_seconds = float(tick.get("pending_seconds", 0.0))
+		fire_result.events.append_array(tick.get("events", []))
+		thermal_debt = fire_result.pending_seconds
+		remaining = maxf(0.0, remaining - slice)
+		if int(tick.get("steps", 0)) == 1:
+			var spread_tick: Dictionary = fire_spread.step(Thermal.FIXED_STEP)
+			if not spread_tick.get("ok", false): return {"ok": false, "reason": &"spread_tick"}
+			spread_steps += 1
+		var sprinkler_tick: Dictionary = sprinklers.step(slice)
+		if not sprinkler_tick.get("ok", false): return {"ok": false, "reason": &"sprinkler_tick"}
+		sprinkler_result.steps += int(sprinkler_tick.get("steps", 0))
+		sprinkler_result.pending_seconds = float(sprinkler_tick.get("pending_seconds", 0.0))
+		sprinkler_result.events.append_array(sprinkler_tick.get("events", []))
+		sprinkler_debt = sprinkler_result.pending_seconds
 	last_spray_ml = 0.0
 	for event: Dictionary in sprinkler_result.get("events", []):
 		if event.get("type") == &"spray": last_spray_ml += float(event.ml)
@@ -106,7 +140,7 @@ func advance(delta: float) -> Dictionary:
 	_sync_fire_visual()
 	_update_status()
 	return {"ok": fire_result.ok and sprinkler_result.ok, "thermal": fire_result,
-		"sprinklers": sprinkler_result, "spray_ml": last_spray_ml}
+		"sprinklers": sprinkler_result, "spray_ml": last_spray_ml, "spread_steps": spread_steps}
 
 
 func trigger_head() -> bool:
@@ -154,7 +188,8 @@ func refill_water() -> float:
 
 func demo_state() -> Dictionary:
 	if thermal == null or sprinklers == null: return {}
-	return {"fire": thermal.object_state(FIRE_ID), "room": thermal.room_state(ROOM_ID),
+	return {"fire": thermal.object_state(FIRE_ID), "spread_fire": thermal.object_state(SPREAD_FIRE_ID),
+		"room": thermal.room_state(ROOM_ID),
 		"supply": tank.state(), "battery": battery.state(), "pump": pump.state(),
 		"head": sprinklers.head_state(HEAD_ID), "valve_open": valve_open,
 		"main_switch_on": main_switch_on, "fault_switch_on": fault_switch_on,
@@ -170,6 +205,8 @@ func _build_scene() -> void:
 	add_child(_box(Vector3(0.2, 4.0, 8.0), Vector3(4.0, 2.0, 0.0), Color(0.29, 0.31, 0.32)))
 	_fire_visual = _sphere(0.75, Vector3(0.0, 0.8, 0.0), Color(1.0, 0.26, 0.035), true)
 	add_child(_fire_visual)
+	_spread_fire_visual = _sphere(0.38, Vector3(0.8, 0.45, 0.0), Color(1.0, 0.43, 0.04), true)
+	add_child(_spread_fire_visual)
 	_fire_light = OmniLight3D.new()
 	_fire_light.position = Vector3(0.0, 1.0, 0.0)
 	_fire_light.light_color = Color(1.0, 0.26, 0.06)
@@ -200,9 +237,11 @@ func _build_scene() -> void:
 
 func _sync_fire_visual() -> void:
 	var state: Dictionary = thermal.object_state(FIRE_ID)
+	var spread_state: Dictionary = thermal.object_state(SPREAD_FIRE_ID)
 	var burning := bool(state.get("burning", false))
 	_fire_visual.visible = burning
 	_fire_light.visible = burning
+	_spread_fire_visual.visible = bool(spread_state.get("burning", false))
 	if burning:
 		var size := 0.65 + minf(0.4, float(state.fuel) / 750.0)
 		_fire_visual.scale = Vector3.ONE * size

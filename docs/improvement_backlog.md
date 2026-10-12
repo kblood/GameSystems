@@ -8,9 +8,12 @@ flammable, fueled neighbors in the same authored room. It snapshots source state
 pass, so newly ignited targets begin spreading on the next interval, and preflights all
 target heat before any mutation. It does not trace occlusion or simulate airflow.
 
-Verification: spatial spread **6/6**; cross-room isolation, range, delayed chain spread,
-interval caps, and no-partial-update thermal preflight are covered. Heat/thermal and sprinkler
-suites remain independently green. Sol approved the guide and timing contract. Guide: [Godot thermal](godot_thermal.md).
+Verification: spatial spread **6/6**, fire-station composition **13/13**, thermal **42/42**;
+cross-room isolation, range, delayed chain spread, fixed-tick rejection, demo ignition, and
+no-partial-update thermal preflight are covered. The demo also proves one 0.3 s frame matches
+three 0.1 s frames with the sprinkler active. Sol approved the guide and timing contract;
+final demo scheduling review is pending.
+Guide: [Godot thermal](godot_thermal.md); [fire-station demo](../godot/demos/sprinkler_fire/README.md).
 
 ## Godot circuit-to-fire heat bridge — 2026-10-12
 
