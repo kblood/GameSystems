@@ -143,6 +143,71 @@ func _initialize() -> void:
 	case_result(all_objects_added and made_links == Thermal.MAX_LINKS and not overflow_object and stress_tick.ok
 		and bounded.stats().objects == Thermal.MAX_OBJECTS and bounded.stats().links == Thermal.MAX_LINKS,
 		"maximum authored population and link count execute a bounded fixed tick")
+	var checkpoint_source = Thermal.new()
+	checkpoint_source.add_room(&"checkpoint-room", {"temperature_c": 40.0, "oxygen": 0.9, "smoke": 0.2})
+	checkpoint_source.add_object(&"checkpoint-fire", {"room_id": &"checkpoint-room",
+		"position": Vector3(1.0, 2.0, 3.0), "temperature_c": 300.0, "ignition_c": 260.0,
+		"heat_capacity_kj_c": 2.0, "flammability": 0.8, "fuel": 3.0, "burn_rate": 0.2,
+		"heat_kj_per_fuel": 4.0, "wetness": 0.1})
+	checkpoint_source.add_object(&"z-fire", {"room_id": &"checkpoint-room", "temperature_c": 300.0,
+		"ignition_c": 260.0, "fuel": 1.0, "burn_rate": 0.2})
+	checkpoint_source.add_object(&"a-fire", {"room_id": &"checkpoint-room", "temperature_c": 300.0,
+		"ignition_c": 260.0, "fuel": 1.0, "burn_rate": 0.2})
+	checkpoint_source.add_object(&"far-object", {"position": Vector3(1.0e20, 0.0, 0.0), "temperature_c": 20.0})
+	checkpoint_source.step(0.025)
+	var json_checkpoint: Dictionary = JSON.parse_string(JSON.stringify(checkpoint_source.checkpoint()))
+	var checkpoint_copy = Thermal.new()
+	case_result(checkpoint_copy.restore_checkpoint(json_checkpoint)
+		and checkpoint_copy.stats().pending_seconds == checkpoint_source.stats().pending_seconds
+		and checkpoint_copy.room_state(&"checkpoint-room") == checkpoint_source.room_state(&"checkpoint-room")
+		and checkpoint_copy.object_state(&"checkpoint-fire") == checkpoint_source.object_state(&"checkpoint-fire"),
+		"thermal checkpoint survives JSON roundtrip with live fire and substep time")
+	var invalid_checkpoint: Dictionary = json_checkpoint.duplicate(true)
+	invalid_checkpoint.links = [{"a": "checkpoint-fire", "b": "missing", "conductance": 2.0}]
+	var before_invalid_restore: Dictionary = checkpoint_copy.checkpoint()
+	case_result(not checkpoint_copy.restore_checkpoint(invalid_checkpoint)
+		and checkpoint_copy.checkpoint() == before_invalid_restore,
+		"invalid thermal checkpoint fails atomically")
+	var invalid_burning_checkpoint: Dictionary = json_checkpoint.duplicate(true)
+	invalid_burning_checkpoint.objects[0].fuel = 0.0
+	case_result(not checkpoint_copy.restore_checkpoint(invalid_burning_checkpoint)
+		and checkpoint_copy.checkpoint() == before_invalid_restore,
+		"checkpoint cannot restore a burning object with exhausted fuel")
+	var invalid_flammability_checkpoint: Dictionary = json_checkpoint.duplicate(true)
+	invalid_flammability_checkpoint.objects[0].flammability = 0.0
+	case_result(not checkpoint_copy.restore_checkpoint(invalid_flammability_checkpoint)
+		and checkpoint_copy.checkpoint() == before_invalid_restore,
+		"checkpoint cannot restore a burning nonflammable object")
+	var invalid_burn_rate_checkpoint: Dictionary = json_checkpoint.duplicate(true)
+	invalid_burn_rate_checkpoint.objects[0].burn_rate = 0.0
+	case_result(not checkpoint_copy.restore_checkpoint(invalid_burn_rate_checkpoint)
+		and checkpoint_copy.checkpoint() == before_invalid_restore,
+		"checkpoint cannot restore a burning zero-rate object")
+	var invalid_wetness_checkpoint: Dictionary = json_checkpoint.duplicate(true)
+	invalid_wetness_checkpoint.objects[0].wetness = 0.8
+	case_result(not checkpoint_copy.restore_checkpoint(invalid_wetness_checkpoint)
+		and checkpoint_copy.checkpoint() == before_invalid_restore,
+		"checkpoint cannot restore an extinguished wet object as burning")
+	var invalid_foam_checkpoint: Dictionary = json_checkpoint.duplicate(true)
+	invalid_foam_checkpoint.objects[0].foam_ml = 50.0
+	case_result(not checkpoint_copy.restore_checkpoint(invalid_foam_checkpoint)
+		and checkpoint_copy.checkpoint() == before_invalid_restore,
+		"checkpoint cannot restore a foam-suppressed object as burning")
+	var invalid_room_id_checkpoint: Dictionary = json_checkpoint.duplicate(true)
+	invalid_room_id_checkpoint.objects[0].room_id = null
+	case_result(not checkpoint_copy.restore_checkpoint(invalid_room_id_checkpoint)
+		and checkpoint_copy.checkpoint() == before_invalid_restore,
+		"thermal checkpoint rejects non-string room IDs atomically")
+	var deterministic_copy = Thermal.new()
+	deterministic_copy.restore_checkpoint(json_checkpoint)
+	var source_next: Dictionary = checkpoint_source.step(Thermal.FIXED_STEP - 0.025)
+	var copy_next: Dictionary = deterministic_copy.step(Thermal.FIXED_STEP - 0.025)
+	case_result(source_next == copy_next
+		and checkpoint_source.object_state(&"checkpoint-fire") == deterministic_copy.object_state(&"checkpoint-fire")
+		and checkpoint_source.object_state(&"z-fire") == deterministic_copy.object_state(&"z-fire")
+		and checkpoint_source.object_state(&"a-fire") == deterministic_copy.object_state(&"a-fire")
+		and checkpoint_source.object_state(&"far-object") == deterministic_copy.object_state(&"far-object"),
+		"restored thermal state preserves insertion order for identical multi-fire tick results")
 
 	print("GS_THERMAL passed=%d failed=%d" % [passed, failed])
 	quit(1 if failed else 0)

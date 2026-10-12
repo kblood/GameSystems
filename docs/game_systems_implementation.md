@@ -27,7 +27,8 @@ For VR implementation, controllers, IK/avatar scale, active ragdolls, NPCs and p
 see the [VR guide index](vr/README.md).
 
 The native Godot sprinkler layer composes finite typed supplies, room fire state and an optional
-battery pump adapter. A future native power grid can implement the same provider contract; see
+battery pump adapter. Thermal, supply, battery, pump and sprinkler states expose versioned
+checkpoints which the host captures at one paused save boundary. A future native power grid can implement the same provider contract; see
 [Godot sprinklers](godot_sprinklers.md).
 
 Alle kerner har `setQuality`, `quality` og `dispose`. Alle moduler eksporterer en default extension-factory samt en navngiven

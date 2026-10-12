@@ -1,5 +1,21 @@
 # Løbende forbedringer af GameSystems
 
+## Native Godot fire/sprinkler checkpoint — 2026-10-12
+
+Thermal, liquid tank, battery, battery-pump and sprinkler kernels now expose independent,
+versioned checkpoints. Thermal restore stages the full room/object/link graph before commit;
+the other stores validate bounded mutable state atomically and require their authored adapters.
+Sprinkler restores head config/latches/time only when its registered supply IDs and optional
+power-provider presence match. Hosts pause at one save boundary; restore thermal, tanks,
+batteries, pump state, then sprinkler state. Bottle source snapshots remain host-coordinated.
+
+Verification: thermal **42/42**, resource adapters **35/35**, sprinkler **54/54**; Godot editor
+scan passes. Sol review found that provider order alone is not a cross-system transaction; the guide now requires staged preflight/atomic world swap or full rollback. A regression verifies failed staged restore leaves the active world untouched. Thermal and sprinkler checkpoints now preserve runtime insertion order; reversed-ID multi-object/head tick replay passes. Final Sol review is pending. Scene wiring,
+native grid integration, spatial spread and headset profiling remain open.
+Guides: [thermal](godot_thermal.md), [supply adapters](godot_resource_adapters.md),
+[sprinkler](godot_sprinklers.md).
+
+
 ## Native sprinkler-batteripumpe — 2026-10-12
 
 Den native Godot-sprinkler kan nu bruge den udskiftelige `power_fraction(requests, dt)`-kontrakt.
@@ -8,10 +24,8 @@ pr. fixed tick efter både pumpens ml/s-kapacitet og leveret Wh, og undlader at 
 tomt batteri. Uden provider er sprinklerflow fortsat uændret. Dette er ikke et native ledningsnet;
 et fremtidigt net kan implementere samme provider-kontrakt.
 
-Verifikation: Godot-sprinkler-suite **47/47**; thermal-regression **33/33**. Sol fandt en forskel
-mellem planlagt og faktisk withdrawn væske i power-kvitteringen; rettelsen rapporterer nu begge
-mængder korrekt. Opfølgende Sol-godkendelse afventer. Næste native trin er koordineret
-checkpoint/restore for thermal, tank, pumpe og sprinklere, derefter scene-wiring og headsetprofilering.
+Verifikation: sprinkler-pumpe-suite **47/47**, thermal **42/42**, resource-adapters **35/35**.
+Sol har godkendt pumpe-implementationen og guiden. Checkpoint-opfolgningen er dokumenteret nedenfor.
 Guide: [Godot sprinkler](godot_sprinklers.md).
 
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,

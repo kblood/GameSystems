@@ -9,6 +9,7 @@ const MAX_HEADS := 64
 const MAX_TARGETS_PER_HEAD := 16
 const MAX_FLOW_ML_S := 1000000.0
 const MAX_RANGE_M := 50.0
+const CHECKPOINT_VERSION := 1
 
 var thermal: GSThermalSystem
 var power_provider: Object
@@ -115,6 +116,75 @@ func reset_head(id: StringName) -> bool:
 func head_state(id: StringName) -> Dictionary:
 	if not _heads.has(id): return {}
 	return (_heads[id] as Dictionary).duplicate(true)
+
+
+## Captures head configuration/latches and fixed-step time; dependencies are separate snapshots.
+func checkpoint() -> Dictionary:
+	if _stepping: return {}
+	var heads: Array[Dictionary] = []
+	for id: StringName in _heads:
+		var head: Dictionary = (_heads[id] as Dictionary).duplicate(true)
+		var position: Vector3 = head.position
+		head.erase("position")
+		head.id = String(id)
+		head.room_id = String(head.room_id)
+		head.supply_id = String(head.supply_id)
+		head.kind = String(head.kind)
+		head.position_xyz = [position.x, position.y, position.z]
+		var targets: Array[String] = []
+		for target_id: StringName in head.target_ids: targets.append(String(target_id))
+		head.target_ids = targets
+		heads.append(head)
+	return {"version": CHECKPOINT_VERSION, "clock": _clock, "pending_seconds": _accumulator,
+		"powered": power_provider != null, "heads": heads}
+
+
+## Rebuilds and validates every head in isolation before committing the new head map and clock.
+func restore_checkpoint(payload: Variant) -> bool:
+	if _stepping or thermal == null or not payload is Dictionary \
+			or payload.get("version") != CHECKPOINT_VERSION \
+			or not _bounded(payload.get("clock", NAN), 0.0, INF) \
+			or not _bounded(payload.get("pending_seconds", NAN), 0.0, FIXED_STEP + 1.0e-8) \
+			or typeof(payload.get("powered")) != TYPE_BOOL \
+			or bool(payload.powered) != (power_provider != null) \
+			or not payload.get("heads") is Array or payload.heads.size() > MAX_HEADS:
+		return false
+	var candidate := GSSprinklerSystem.new(thermal)
+	candidate._supplies = _supplies.duplicate()
+	for row: Variant in payload.heads:
+		if not row is Dictionary or not row.get("id") is String or String(row.id).is_empty() \
+				or not row.get("room_id") is String or not row.get("supply_id") is String \
+				or not row.get("kind") is String \
+				or not row.get("position_xyz") is Array or row.position_xyz.size() != 3 \
+				or not row.get("target_ids") is Array or typeof(row.get("triggered")) != TYPE_BOOL \
+				or typeof(row.get("manual")) != TYPE_BOOL or typeof(row.get("valve_open")) != TYPE_BOOL \
+				or not _bounded(row.get("sensor_temperature_c", NAN), -273.15, 1000000.0):
+			return false
+		var xyz: Array = row.position_xyz
+		if not _bounded(xyz[0], -INF, INF) or not _bounded(xyz[1], -INF, INF) \
+				or not _bounded(xyz[2], -INF, INF):
+			return false
+		var targets: Array[StringName] = []
+		for target: Variant in row.target_ids:
+			if not target is String or String(target).is_empty(): return false
+			targets.append(StringName(target))
+		var values := {"room_id": StringName(row.get("room_id", "")),
+			"supply_id": StringName(row.get("supply_id", "")), "kind": StringName(row.get("kind", "")),
+			"target_ids": targets, "position": Vector3(float(xyz[0]), float(xyz[1]), float(xyz[2])),
+			"flow_ml_s": row.get("flow_ml_s", NAN),
+			"trigger_temperature_c": row.get("trigger_temperature_c", NAN),
+			"response_seconds": row.get("response_seconds", NAN), "range_m": row.get("range_m", NAN),
+			"valve_open": bool(row.valve_open)}
+		if not candidate.add_head(StringName(row.id), values): return false
+		var restored_head: Dictionary = candidate._heads[StringName(row.id)]
+		if bool(row.manual) and not bool(row.triggered): return false
+		restored_head.sensor_temperature_c = float(row.sensor_temperature_c)
+		restored_head.triggered = bool(row.triggered)
+		restored_head.manual = bool(row.manual)
+	_heads = candidate._heads
+	_clock = float(payload.clock)
+	_accumulator = float(payload.pending_seconds)
+	return true
 
 
 func step(delta: float) -> Dictionary:

@@ -38,14 +38,16 @@ many millilitres actually moved.
 
 ## Current limits and next work
 
-This slice has no spatial proximity spread, room-to-room vents, sprinkler scheduler,
-visual rendering, save/restore API or headset performance result. Host projects own
-fixed-tick scheduling and must coordinate any future world checkpoint with bottle
-sources. The next native increment is an independently testable sprinkler head and
-typed supply adapter that draws water/foam only when its trigger and optional power
-gate allow a dose. Then add spatial spread and checkpoint coordination against the
-bounded core.
+This slice has no spatial proximity spread, room-to-room vents, visual rendering or
+headset performance result. `checkpoint()` captures rooms, objects, links and pending
+fixed-step time in a versioned JSON-friendly payload. `restore_checkpoint(payload)`
+validates the whole payload in a temporary system before replacing live state. Room and object
+rows preserve runtime insertion order because that order also determines fixed-tick event order. Hosts must
+pause their world while capturing/restoring thermal, liquid-source, supply, battery, pump
+and sprinkler snapshots at the same boundary; bottle source snapshots remain separate.
+The documented provider order is not a transaction: stage/preflight every provider before
+swapping the active world, or keep rollback snapshots for every subsystem until commit.
 
 The `godot/addons/gs_thermal/tests/gs_thermal_tests.gd` contract exercises ignition, fixed-step debt, oxygen/smoke,
 quenching, typed puddle receipts, heat conservation through links, and the maximum
-object/link population: 33/33 checks pass on Godot 4.7.2.
+object/link population: 42/42 checks pass on Godot 4.7.2, including JSON roundtrip, malformed-payload atomicity and deterministic next-tick restore.

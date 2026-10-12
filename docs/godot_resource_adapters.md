@@ -14,9 +14,12 @@ car.set_resource_adapters(fuel, power)
 car.set_resource_modes("external", "external")
 ```
 
-The tank stores named liquid components. `fill(kind, ml)` and `withdraw(kind, ml)` return the actual transferred millilitres, bounded by free capacity or the named component. A petrol adapter only consumes the configured petrol component; its `refill(litres, other_kind)` can still place an incompatible liquid into the tank, where it remains distinct and unavailable to the petrol engine. State snapshots copy their component dictionary.
+The tank stores named liquid components. `fill(kind, ml)` and `withdraw(kind, ml)` return the actual transferred millilitres, bounded by free capacity or the named component. A petrol adapter only consumes the configured petrol component; its `refill(litres, other_kind)` can still place an incompatible liquid into the tank, where it remains distinct and unavailable to the petrol engine. State snapshots copy their component dictionary. `checkpoint()` captures exact contents;
+`restore_checkpoint()` validates version, matching authored capacity, component names and
+the total capacity before replacing the tank contents. Cross-system saves still require a
+paused common boundary and host-level staged preflight or rollback.
 
-The battery adapter exposes `reversible = true`, `state()`, `draw(Wh)`, and `charge(Wh)`. It validates positive finite capacity and nominal voltage, energy within capacity, reports zero voltage while empty or disabled, and returns exact partial transfers. While disabled, both `draw()` and `charge()` return zero without changing stored energy or capacity. Re-enabling resumes transfers from the preserved energy level. This matches the browser vehicle battery store, shared electricity store, and network battery adapter. A just-drawn amount can be refunded with `charge()` while the battery remains enabled and the released capacity is still free.
+The battery adapter exposes `reversible = true`, `state()`, `draw(Wh)`, and `charge(Wh)`. It validates positive finite capacity and nominal voltage, energy within capacity, reports zero voltage while empty or disabled, and returns exact partial transfers. While disabled, both `draw()` and `charge()` return zero without changing stored energy or capacity. Re-enabling resumes transfers from the preserved energy level. This matches the browser vehicle battery store, shared electricity store, and network battery adapter. A just-drawn amount can be refunded with `charge()` while the battery remains enabled and the released capacity is still free. `checkpoint()` captures charge and enabled state; restore requires matching authored capacity and nominal voltage.
 
 Neither adapter owns a scene node, starts a simulation loop, or disposes its backing store. The host owns the tank and battery lifetimes. Keep `simple`/`disabled` modes available when the host does not need shared stores. Focused test command:
 

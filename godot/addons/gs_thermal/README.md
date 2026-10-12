@@ -17,9 +17,11 @@ extinguishes only with water or foam. It never uses liquid color to infer identi
 Keep this adapter outside `gs_bottles` so the bottle/puddle addon does not depend
 on fire gameplay.
 
-This first native vertical slice does not yet provide sprinkler scheduling,
-spatial fire spread, coordinated bottle/source checkpoints, or headset profiling.
-Those are separate follow-up tasks. The shared Godot guide and validation limits are
+This native slice provides versioned thermal `checkpoint()` / `restore_checkpoint()`
+for rooms, objects, links and fixed-step time. It does not coordinate snapshots from
+liquid sources, supplies, batteries or sprinklers; the host must pause the world and
+restore those dependencies at the same save boundary. Spatial fire spread and headset
+profiling remain follow-up tasks. The shared Godot guide and validation limits are
 documented in [`docs/godot_thermal.md`](../../../docs/godot_thermal.md).
 
 Run the focused contract from the GameSystems repository:

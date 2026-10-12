@@ -60,12 +60,18 @@ work per call. Shared heads divide each tank/component's available flow proporti
 so iteration order does not give the first head the whole remaining tank. A host should
 refill through the supply tank API and treat each returned spray receipt as authoritative.
 
-This increment has no native electrical grid, persistence/checkpoint API,
-automatic spatial target discovery, game scene wiring, sound/visual effects or measured
-headset performance. Next, add native electrical-grid integration and coordinate
-thermal, supply, pump and sprinkler checkpoint providers and add an authored fire-station
-example. Stay at coarse gameplay resolution until device profiling justifies more detail.
+The core has no native electrical grid, automatic spatial target discovery, game scene
+wiring, sound/visual effects or measured headset performance. Versioned
+`checkpoint()` / `restore_checkpoint()` covers head configuration, latches and fixed-step
+time in live head iteration order; that order affects shared-supply requests and spray events.
+It requires the same registered supply IDs and the same presence/absence of a power provider. Snapshot thermal, supply tank, battery, pump and sprinkler at one paused host
+boundary. Restore in this order: thermal, supplies, batteries, pump adapter, then sprinkler.
+This order is not a cross-system transaction: preflight the complete provider graph in an
+isolated staged world and swap it in only after every restore succeeds, or retain live
+checkpoints and roll all systems back before resuming after any failure.
+Add native grid integration and an authored fire-station example next. Stay at coarse gameplay resolution until device profiling justifies more detail.
 
 The focused `gs_sprinkler_tests.gd` contract covers typed receipts, tank sharing,
 automatic/manual activation, response, valve, range, refill, reentrancy, battery energy,
-pump capacity, malformed providers and fixed-step bounds. On Godot 4.7.2, **47/47 checks pass**.
+pump capacity, malformed providers, JSON checkpoint roundtrips, atomic rejection, coordinated
+restore order, staged failure isolation, insertion-order replay and fixed-step bounds. On Godot 4.7.2, **54/54 checks pass**.

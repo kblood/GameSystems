@@ -2,6 +2,8 @@ class_name GSSprinklerBatteryPump
 extends RefCounted
 ## Optional bounded pump adapter. Energy is measured in Wh; output is a shared per-tick fraction.
 
+const CHECKPOINT_VERSION := 1
+
 var battery: Object
 var rated_power_w: float
 var capacity_flow_ml_s: float
@@ -53,6 +55,28 @@ func power_fraction(requests: Array, dt: float) -> float:
 func state() -> Dictionary:
 	return {"valid": _valid, "rated_power_w": rated_power_w, "capacity_flow_ml_s": capacity_flow_ml_s,
 		"energy_used_wh": energy_used_wh, "last_fraction": last_fraction}
+
+
+func checkpoint() -> Dictionary:
+	if not _valid: return {}
+	return {"version": CHECKPOINT_VERSION, "rated_power_w": rated_power_w,
+		"capacity_flow_ml_s": capacity_flow_ml_s, "energy_used_wh": energy_used_wh,
+		"last_fraction": last_fraction}
+
+
+func restore_checkpoint(payload: Variant) -> bool:
+	if not _valid or not payload is Dictionary or payload.get("version") != CHECKPOINT_VERSION \
+			or not _positive_finite(payload.get("rated_power_w", NAN)) \
+			or not _positive_finite(payload.get("capacity_flow_ml_s", NAN)) \
+			or not _finite_nonnegative(payload.get("energy_used_wh", NAN)) \
+			or not _finite_nonnegative(payload.get("last_fraction", NAN)) \
+			or float(payload.last_fraction) > 1.0 \
+			or not is_equal_approx(float(payload.rated_power_w), rated_power_w) \
+			or not is_equal_approx(float(payload.capacity_flow_ml_s), capacity_flow_ml_s):
+		return false
+	energy_used_wh = float(payload.energy_used_wh)
+	last_fraction = float(payload.last_fraction)
+	return true
 
 
 static func _finite_nonnegative(value: Variant) -> bool:

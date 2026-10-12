@@ -10,6 +10,7 @@ const MAX_ROOMS := 64
 const MAX_LINKS := 1024
 const MAX_FUEL := 1000000.0
 const AMBIENT_C := 20.0
+const CHECKPOINT_VERSION := 1
 
 var _rooms: Dictionary = {}
 var _objects: Dictionary = {}
@@ -269,6 +270,83 @@ func object_state(id: StringName) -> Dictionary:
 
 func room_state(id: StringName) -> Dictionary:
 	return (_rooms.get(id, {}) as Dictionary).duplicate(true)
+
+
+## JSON-friendly, versioned snapshot of all authored and live fire state.
+func checkpoint() -> Dictionary:
+	var rooms: Array[Dictionary] = []
+	for id: StringName in _rooms:
+		var row: Dictionary = (_rooms[id] as Dictionary).duplicate(true)
+		row.id = String(id)
+		rooms.append(row)
+	var objects: Array[Dictionary] = []
+	for id: StringName in _objects:
+		var item: Dictionary = (_objects[id] as Dictionary).duplicate(true)
+		var position: Vector3 = item.position
+		item.erase("position")
+		item.id = String(id)
+		item.room_id = String(item.room_id)
+		item.position_xyz = [position.x, position.y, position.z]
+		objects.append(item)
+	var links: Array[Dictionary] = []
+	for link: Dictionary in _links:
+		links.append({"a": String(link.a), "b": String(link.b), "conductance": link.conductance})
+	return {"version": CHECKPOINT_VERSION, "clock": _clock, "pending_seconds": _accumulator,
+		"rooms": rooms, "objects": objects, "links": links}
+
+
+## Validates into a temporary system and commits only after the entire checkpoint is valid.
+func restore_checkpoint(payload: Variant) -> bool:
+	if not payload is Dictionary or payload.get("version") != CHECKPOINT_VERSION \
+			or not _bounded(payload.get("clock", NAN), 0.0, INF) \
+			or not _bounded(payload.get("pending_seconds", NAN), 0.0, FIXED_STEP + 1.0e-8) \
+			or not payload.get("rooms") is Array or not payload.get("objects") is Array \
+			or not payload.get("links") is Array or payload.rooms.size() > MAX_ROOMS \
+			or payload.objects.size() > MAX_OBJECTS or payload.links.size() > MAX_LINKS:
+		return false
+	var candidate := GSThermalSystem.new()
+	for row: Variant in payload.rooms:
+		if not row is Dictionary or not row.get("id") is String or String(row.id).is_empty(): return false
+		var room_values: Dictionary = row.duplicate(true)
+		room_values.erase("id")
+		if not candidate.add_room(StringName(row.id), room_values): return false
+	for row: Variant in payload.objects:
+		if not row is Dictionary or not row.get("id") is String or String(row.id).is_empty() \
+				or not row.get("room_id", "") is String \
+				or not row.get("position_xyz") is Array or row.position_xyz.size() != 3:
+			return false
+		var xyz: Array = row.position_xyz
+		if not _bounded(xyz[0], -INF, INF) or not _bounded(xyz[1], -INF, INF) \
+				or not _bounded(xyz[2], -INF, INF) or typeof(row.get("burning")) != TYPE_BOOL \
+				or not _bounded(row.get("foam_ml", NAN), 0.0, 100000.0):
+			return false
+		var values := {"room_id": StringName(row.get("room_id", "")),
+			"position": Vector3(float(xyz[0]), float(xyz[1]), float(xyz[2])),
+			"temperature_c": row.get("temperature_c", NAN), "ignition_c": row.get("ignition_c", NAN),
+			"heat_capacity_kj_c": row.get("heat_capacity_kj_c", NAN),
+			"flammability": row.get("flammability", NAN), "fuel": row.get("fuel", NAN),
+			"burn_rate": row.get("burn_rate", NAN), "heat_kj_per_fuel": row.get("heat_kj_per_fuel", NAN),
+			"wetness": row.get("wetness", NAN)}
+		if not candidate.add_object(StringName(row.id), values): return false
+		var restored_object: Dictionary = candidate._objects[StringName(row.id)]
+		if bool(row.burning) and (float(restored_object.fuel) <= 0.0 \
+				or float(restored_object.flammability) <= 0.0 or float(restored_object.burn_rate) <= 0.0 \
+				or float(restored_object.wetness) >= 0.8 or float(row.foam_ml) >= 50.0):
+			return false
+		restored_object.foam_ml = float(row.foam_ml)
+		restored_object.burning = bool(row.burning)
+	for row: Variant in payload.links:
+		if not row is Dictionary or not row.get("a") is String or not row.get("b") is String \
+				or not _bounded(row.get("conductance", NAN), 0.0, 100.0):
+			return false
+		if not candidate.link_objects(StringName(row.a), StringName(row.b), float(row.conductance)):
+			return false
+	_rooms = candidate._rooms
+	_objects = candidate._objects
+	_links = candidate._links
+	_clock = float(payload.clock)
+	_accumulator = float(payload.pending_seconds)
+	return true
 
 
 func stats() -> Dictionary:

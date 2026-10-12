@@ -174,6 +174,11 @@ func _initialize() -> void:
 		"pump capacity limits delivered flow even with a charged battery")
 	case_result(not BatteryPump.new(full_battery, 0.0, 50.0).is_valid()
 		and not BatteryPump.new(null, 10.0, 50.0).is_valid(), "invalid pump configurations are rejected")
+	var pump_checkpoint: Dictionary = capped_pump.checkpoint()
+	capped_pump.power_fraction([{"planned_ml": 20.0}], Sprinklers.FIXED_STEP)
+	case_result(capped_pump.restore_checkpoint(pump_checkpoint)
+		and capped_pump.state().energy_used_wh == pump_checkpoint.energy_used_wh,
+		"battery pump checkpoint restores cumulative energy accounting")
 	var invalid_power_system = Sprinklers.new(thermal)
 	var invalid_power_tank = SupplyTank.new(100.0, {"water": 100.0})
 	invalid_power_system.register_supply(&"tank", invalid_power_tank)
@@ -196,6 +201,110 @@ func _initialize() -> void:
 		and underdelivered_step.events[0].requested_ml == 6.0
 		and underdelivered_step.events[0].delivered_ml == 0.0,
 		"power receipt distinguishes planned dose from actual supply withdrawal")
+	var checkpoint_supply = SupplyTank.new(500.0, {"water": 500.0})
+	var checkpoint_system = Sprinklers.new(thermal)
+	checkpoint_system.register_supply(&"saved-tank", checkpoint_supply)
+	checkpoint_system.add_head(&"saved-head", {"room_id": &"engine-room", "supply_id": &"saved-tank",
+		"target_ids": [&"fire-a"], "position": Vector3(1.0e20, 2.0, 3.0), "flow_ml_s": 120.0,
+		"trigger_temperature_c": 70.0, "response_seconds": 2.0, "range_m": 4.0, "valve_open": false})
+	checkpoint_system.trigger(&"saved-head")
+	checkpoint_system.step(0.05)
+	var sprinkler_checkpoint: Dictionary = JSON.parse_string(JSON.stringify(checkpoint_system.checkpoint()))
+	var restored_sprinklers = Sprinklers.new(thermal)
+	restored_sprinklers.register_supply(&"saved-tank", checkpoint_supply)
+	case_result(restored_sprinklers.restore_checkpoint(sprinkler_checkpoint)
+		and restored_sprinklers.head_state(&"saved-head") == checkpoint_system.head_state(&"saved-head")
+		and restored_sprinklers.stats().pending_seconds == checkpoint_system.stats().pending_seconds,
+		"sprinkler checkpoint JSON roundtrip restores head config, latch and pending time")
+	var mismatched_power_checkpoint: Dictionary = sprinkler_checkpoint.duplicate(true)
+	mismatched_power_checkpoint.powered = true
+	var before_failed_restore: Dictionary = restored_sprinklers.checkpoint()
+	case_result(not restored_sprinklers.restore_checkpoint(mismatched_power_checkpoint)
+		and restored_sprinklers.checkpoint() == before_failed_restore,
+		"sprinkler restore rejects missing power dependency atomically")
+	var invalid_supply_id_checkpoint: Dictionary = sprinkler_checkpoint.duplicate(true)
+	invalid_supply_id_checkpoint.heads[0].supply_id = null
+	case_result(not restored_sprinklers.restore_checkpoint(invalid_supply_id_checkpoint)
+		and restored_sprinklers.checkpoint() == before_failed_restore,
+		"sprinkler checkpoint rejects non-string dependency IDs atomically")
+	var order_tank = SupplyTank.new(500.0, {"water": 500.0})
+	var order_system = Sprinklers.new(thermal)
+	order_system.register_supply(&"order-tank", order_tank)
+	order_system.add_head(&"z-head", {"room_id": &"engine-room", "supply_id": &"order-tank"})
+	order_system.add_head(&"a-head", {"room_id": &"engine-room", "supply_id": &"order-tank"})
+	order_system.trigger(&"z-head")
+	order_system.trigger(&"a-head")
+	var order_system_checkpoint: Dictionary = order_system.checkpoint()
+	var order_tank_checkpoint: Dictionary = order_tank.checkpoint()
+	var source_order_step: Dictionary = order_system.step(Sprinklers.FIXED_STEP)
+	order_tank.restore_checkpoint(order_tank_checkpoint)
+	var restored_order_system = Sprinklers.new(thermal)
+	restored_order_system.register_supply(&"order-tank", order_tank)
+	var order_restore_ok: bool = restored_order_system.restore_checkpoint(order_system_checkpoint)
+	var restored_order_step: Dictionary = restored_order_system.step(Sprinklers.FIXED_STEP)
+	case_result(order_restore_ok and source_order_step == restored_order_step
+		and source_order_step.events[0].head_id == &"z-head"
+		and source_order_step.events[1].head_id == &"a-head",
+		"sprinkler checkpoint preserves authored head iteration order across shared-tank flow")
+	var coordinated_thermal = Thermal.new()
+	coordinated_thermal.add_room(&"save-room", {"temperature_c": 80.0})
+	coordinated_thermal.add_object(&"save-fire", {"room_id": &"save-room", "position": Vector3.ZERO,
+		"temperature_c": 300.0, "ignition_c": 200.0, "fuel": 4.0, "burn_rate": 0.2})
+	var coordinated_tank = SupplyTank.new(500.0, {"water": 500.0})
+	var coordinated_battery = Battery.new(1.0, 1.0, 12.0)
+	var coordinated_pump = BatteryPump.new(coordinated_battery, 36.0, 500.0)
+	var coordinated_system = Sprinklers.new(coordinated_thermal)
+	coordinated_system.register_supply(&"save-tank", coordinated_tank)
+	coordinated_system.set_power_provider(coordinated_pump)
+	coordinated_system.add_head(&"save-head", {"room_id": &"save-room", "supply_id": &"save-tank",
+		"target_ids": [&"save-fire"], "flow_ml_s": 100.0})
+	coordinated_system.trigger(&"save-head")
+	coordinated_thermal.step(0.025)
+	coordinated_system.step(0.05)
+	var thermal_save: Dictionary = coordinated_thermal.checkpoint()
+	var tank_save: Dictionary = coordinated_tank.checkpoint()
+	var battery_save: Dictionary = coordinated_battery.checkpoint()
+	var pump_save: Dictionary = coordinated_pump.checkpoint()
+	var sprinkler_save: Dictionary = coordinated_system.checkpoint()
+	coordinated_thermal.step(Thermal.FIXED_STEP)
+	coordinated_system.step(Sprinklers.FIXED_STEP)
+	var coordinated_restore_ok := coordinated_thermal.restore_checkpoint(thermal_save)
+	coordinated_restore_ok = coordinated_tank.restore_checkpoint(tank_save) and coordinated_restore_ok
+	coordinated_restore_ok = coordinated_battery.restore_checkpoint(battery_save) and coordinated_restore_ok
+	coordinated_restore_ok = coordinated_pump.restore_checkpoint(pump_save) and coordinated_restore_ok
+	coordinated_restore_ok = coordinated_system.restore_checkpoint(sprinkler_save) and coordinated_restore_ok
+	case_result(coordinated_restore_ok and coordinated_thermal.checkpoint() == thermal_save
+		and coordinated_tank.checkpoint() == tank_save and coordinated_battery.checkpoint() == battery_save
+		and coordinated_pump.checkpoint() == pump_save and coordinated_system.checkpoint() == sprinkler_save,
+		"thermal, supply, battery, pump and sprinkler snapshots restore at one host save boundary")
+	coordinated_thermal.step(Thermal.FIXED_STEP)
+	coordinated_system.step(Sprinklers.FIXED_STEP)
+	var live_thermal_before_stage: Dictionary = coordinated_thermal.checkpoint()
+	var live_tank_before_stage: Dictionary = coordinated_tank.checkpoint()
+	var live_battery_before_stage: Dictionary = coordinated_battery.checkpoint()
+	var live_pump_before_stage: Dictionary = coordinated_pump.checkpoint()
+	var live_sprinkler_before_stage: Dictionary = coordinated_system.checkpoint()
+	var staged_thermal = Thermal.new()
+	var staged_tank = SupplyTank.new(500.0, {})
+	var staged_battery = Battery.new(1.0, 0.0, 12.0, false)
+	var staged_pump = BatteryPump.new(staged_battery, 36.0, 500.0)
+	var staged_sprinklers = Sprinklers.new(staged_thermal)
+	var staging_ok := staged_thermal.restore_checkpoint(thermal_save)
+	staging_ok = staged_tank.restore_checkpoint(tank_save) and staging_ok
+	staging_ok = staged_battery.restore_checkpoint(battery_save) and staging_ok
+	staging_ok = staged_pump.restore_checkpoint(pump_save) and staging_ok
+	staged_sprinklers.register_supply(&"save-tank", staged_tank)
+	staged_sprinklers.set_power_provider(staged_pump)
+	var invalid_final_sprinkler_save: Dictionary = sprinkler_save.duplicate(true)
+	invalid_final_sprinkler_save.heads[0].flow_ml_s = 0.0
+	var final_stage_rejected := not staged_sprinklers.restore_checkpoint(invalid_final_sprinkler_save)
+	case_result(staging_ok and final_stage_rejected
+		and coordinated_thermal.checkpoint() == live_thermal_before_stage
+		and coordinated_tank.checkpoint() == live_tank_before_stage
+		and coordinated_battery.checkpoint() == live_battery_before_stage
+		and coordinated_pump.checkpoint() == live_pump_before_stage
+		and coordinated_system.checkpoint() == live_sprinkler_before_stage,
+		"host preflight rejects a late provider failure without mutating the active world")
 
 	var foam_tank = SupplyTank.new(200.0, {})
 	foam_tank.fill("foam", 100.0)

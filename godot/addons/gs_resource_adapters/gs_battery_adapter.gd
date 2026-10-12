@@ -2,6 +2,8 @@ class_name GSBatteryAdapter
 extends RefCounted
 ## Finite reversible battery API compatible with Aster's external power adapter.
 
+const CHECKPOINT_VERSION := 1
+
 var reversible := true
 var capacity_wh: float
 var energy_wh: float
@@ -26,6 +28,28 @@ func state() -> Dictionary:
 	if not _valid: return {}
 	var voltage := nominal_voltage if enabled and energy_wh > 0.0 else 0.0
 	return {"energyWh": energy_wh, "capacityWh": capacity_wh, "voltage": voltage, "enabled": enabled}
+
+
+## Captures mutable charge state; authored capacity and voltage must match on restore.
+func checkpoint() -> Dictionary:
+	if not _valid: return {}
+	return {"version": CHECKPOINT_VERSION, "capacity_wh": capacity_wh,
+		"energy_wh": energy_wh, "nominal_voltage": nominal_voltage, "enabled": enabled}
+
+
+func restore_checkpoint(payload: Variant) -> bool:
+	if not _valid or not payload is Dictionary or payload.get("version") != CHECKPOINT_VERSION \
+			or not _positive_finite(payload.get("capacity_wh", NAN)) \
+			or not _finite_nonnegative(payload.get("energy_wh", NAN)) \
+			or not _positive_finite(payload.get("nominal_voltage", NAN)) \
+			or typeof(payload.get("enabled")) != TYPE_BOOL \
+			or not is_equal_approx(float(payload.capacity_wh), capacity_wh) \
+			or not is_equal_approx(float(payload.nominal_voltage), nominal_voltage) \
+			or float(payload.energy_wh) > capacity_wh:
+		return false
+	energy_wh = float(payload.energy_wh)
+	enabled = bool(payload.enabled)
+	return true
 
 ## Actual supplied Wh. Disabled or empty batteries supply no energy.
 func draw(wh: float) -> float:

@@ -2,6 +2,8 @@ class_name GSSupplyTank
 extends RefCounted
 ## Small finite, typed liquid store. Amounts are millilitres; no fluid simulation.
 
+const CHECKPOINT_VERSION := 1
+
 var capacity_ml: float
 var _components: Dictionary = {}
 var _valid := false
@@ -35,6 +37,34 @@ func state() -> Dictionary:
 	var total := _total_ml()
 	return {"capacityMl": capacity_ml, "components": _components.duplicate(true), "ml": total,
 		"freeMl": maxf(0.0, capacity_ml - total)}
+
+
+## Captures exact typed contents. Restore requires the same authored capacity.
+func checkpoint() -> Dictionary:
+	if not _valid: return {}
+	return {"version": CHECKPOINT_VERSION, "capacity_ml": capacity_ml,
+		"components": _components.duplicate(true)}
+
+
+## Validates the full payload before replacing any contents.
+func restore_checkpoint(payload: Variant) -> bool:
+	if not _valid or not payload is Dictionary or payload.get("version") != CHECKPOINT_VERSION \
+			or not _finite_nonnegative(payload.get("capacity_ml", NAN)) \
+			or not is_equal_approx(float(payload.capacity_ml), capacity_ml) \
+			or not payload.get("components") is Dictionary:
+		return false
+	var candidate: Dictionary = {}
+	var total := 0.0
+	for key: Variant in payload.components:
+		var amount: Variant = payload.components[key]
+		if not key is String or String(key).strip_edges().is_empty() or not _finite_nonnegative(amount):
+			return false
+		if float(amount) > 0.0:
+			candidate[String(key)] = float(amount)
+			total += float(amount)
+	if not is_finite(total) or total > capacity_ml: return false
+	_components = candidate
+	return true
 
 ## Returns the actual amount withdrawn. Other components are left untouched.
 func withdraw(kind: String, amount_ml: float) -> float:

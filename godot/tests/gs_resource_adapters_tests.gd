@@ -24,6 +24,20 @@ func _initialize() -> void:
 	var fuel_state: Dictionary = fuel.state()
 	fuel_state.components = {"petrol": 999999.0}
 	case_result(is_equal_approx(fuel.state().amountL, 0.6), "state snapshots cannot mutate the tank")
+	var tank_checkpoint: Dictionary = tank.checkpoint()
+	tank.withdraw("diesel", 100.0)
+	case_result(tank.restore_checkpoint(tank_checkpoint)
+		and is_equal_approx(tank.state().components.diesel, 200.0),
+		"tank checkpoint restores exact typed contents")
+	var recreated_tank = Tank.new(1000.0, {})
+	case_result(recreated_tank.restore_checkpoint(tank_checkpoint)
+		and recreated_tank.state().components == tank.state().components,
+		"tank checkpoint restores into a fresh adapter with matching authored capacity")
+	var invalid_tank_checkpoint: Dictionary = tank.checkpoint()
+	invalid_tank_checkpoint.components = {"petrol": 900.0, "diesel": 200.0}
+	case_result(not tank.restore_checkpoint(invalid_tank_checkpoint)
+		and is_equal_approx(tank.state().components.diesel, 200.0),
+		"over-capacity tank checkpoint is rejected atomically")
 
 	var battery = Battery.new(10.0, 2.0, 12.6, true)
 	case_result(battery.is_valid() and battery.reversible, "battery exposes the reversible adapter contract")
@@ -61,6 +75,21 @@ func _initialize() -> void:
 	case_result(is_equal_approx(battery.charge(8.0), 8.0) and is_equal_approx(battery.state().voltage, 12.6),
 		"re-enabled charged battery accepts remaining capacity and restores nominal voltage")
 	case_result(is_zero_approx(battery.draw(INF)) and is_zero_approx(battery.charge(-1.0)), "invalid power transfers are rejected")
+	var battery_checkpoint: Dictionary = battery.checkpoint()
+	battery.draw(4.0)
+	battery.set_enabled(false)
+	case_result(battery.restore_checkpoint(battery_checkpoint)
+		and battery.state().enabled and is_equal_approx(battery.state().energyWh, 10.0),
+		"battery checkpoint restores charge and enabled state")
+	var recreated_battery = Battery.new(10.0, 0.0, 12.6, false)
+	case_result(recreated_battery.restore_checkpoint(battery_checkpoint)
+		and recreated_battery.state() == battery.state(),
+		"battery checkpoint restores into a fresh adapter with matching authored configuration")
+	var invalid_battery_checkpoint: Dictionary = battery.checkpoint()
+	invalid_battery_checkpoint.energy_wh = INF
+	case_result(not battery.restore_checkpoint(invalid_battery_checkpoint)
+		and is_equal_approx(battery.state().energyWh, 10.0),
+		"invalid battery checkpoint is rejected without changing live charge")
 
 	print("GS_RESOURCE_ADAPTERS passed=%d failed=%d" % [passed, failed])
 	quit(1 if failed else 0)

@@ -17,7 +17,8 @@ The optional `GSSprinklerBatteryPump` accepts any battery implementing `state()`
 capacity and delivered battery energy. A host can replace it with a future grid adapter
 through the same `power_fraction(requests, dt)` contract, or clear the provider for
 unpowered flow. It does not simulate wiring or hydraulic pressure. The host owns tank
-refill policy and must coordinate fire, supply and sprinkler checkpoints together.
+refill policy. `checkpoint()` captures head state and clock; the host must snapshot thermal,
+supply, battery, pump and sprinkler together while paused, then restore dependencies before heads.
 
 See [`docs/godot_sprinklers.md`](../../../docs/godot_sprinklers.md) and run the focused
 contract from the GameSystems root:
