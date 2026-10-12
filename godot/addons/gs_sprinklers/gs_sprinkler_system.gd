@@ -11,6 +11,7 @@ const MAX_FLOW_ML_S := 1000000.0
 const MAX_RANGE_M := 50.0
 
 var thermal: GSThermalSystem
+var power_provider: Object
 var _supplies: Dictionary = {}
 var _heads: Dictionary = {}
 var _accumulator := 0.0
@@ -38,6 +39,17 @@ func unregister_supply(id: StringName) -> bool:
 	for head: Dictionary in _heads.values():
 		if head.supply_id == id: return false
 	_supplies.erase(id)
+	return true
+
+
+## Optional adapter with power_fraction(requests, dt) -> float in [0, 1].
+func set_power_provider(provider: Object) -> bool:
+	if _stepping: return false
+	if provider == null:
+		power_provider = null
+		return true
+	if not provider.has_method("power_fraction"): return false
+	power_provider = provider
 	return true
 
 
@@ -159,17 +171,35 @@ func _tick(dt: float, events: Array[Dictionary]) -> void:
 			if not _bounded(amount, 0.0, 1.0e18): continue
 			shares[kind] = minf(1.0, float(amount) / requested) if requested > 0.0 else 0.0
 		shares_by_supply[supply_id] = shares
+	var allocated: Array[Dictionary] = []
 	for request: Dictionary in requests:
 		if not _supplies.has(request.supply_id) or not _heads.has(request.head_id) \
 				or not shares_by_supply.has(request.supply_id): continue
-		var head: Dictionary = _heads[request.head_id]
-		var supply: Object = _supplies[request.supply_id]
 		var share := float((shares_by_supply[request.supply_id] as Dictionary).get(request.kind, 0.0))
 		if share <= 0.0: continue
 		var planned := float(request.ml) * share
+		if planned > 0.0:
+			var allocation := request.duplicate(true)
+			allocation.planned_ml = planned
+			allocated.append(allocation)
+	var power_scale := 1.0
+	var actual_delivered_ml := 0.0
+	if power_provider != null and not allocated.is_empty():
+		var power_result: Variant = power_provider.call("power_fraction", allocated.duplicate(true), dt)
+		if not _bounded(power_result, 0.0, 1.0):
+			power_scale = 0.0
+			events.append({"type": &"power_fault", "reason": &"invalid_fraction"})
+		else:
+			power_scale = float(power_result)
+	for request: Dictionary in allocated:
+		var head: Dictionary = _heads[request.head_id]
+		var supply: Object = _supplies[request.supply_id]
+		var planned := float(request.planned_ml) * power_scale
+		if planned <= 0.0: continue
 		var actual_variant: Variant = supply.call("withdraw", String(request.kind), planned)
 		if not _bounded(actual_variant, 0.0, planned) or float(actual_variant) <= 0.0: continue
 		var actual := float(actual_variant)
+		actual_delivered_ml += actual
 		var affected: Array[StringName] = []
 		var thermal_applied := 0.0
 		if request.kind in [&"water", &"foam"]:
@@ -190,9 +220,13 @@ func _tick(dt: float, events: Array[Dictionary]) -> void:
 				affected = applied_targets
 		events.append({"type": &"spray", "head_id": request.head_id,
 			"supply_id": request.supply_id, "kind": request.kind, "ml": actual,
+			"power_fraction": power_scale,
 			"position": head.position, "room_id": head.room_id, "affected_targets": affected,
 			"thermal_applied_ml": thermal_applied,
 			"source": StringName("sprinkler:" + String(request.head_id))})
+	if power_provider != null and not allocated.is_empty():
+		events.append({"type": &"power", "fraction": power_scale,
+			"requested_ml": _sum_allocated(allocated), "delivered_ml": actual_delivered_ml})
 
 
 func stats() -> Dictionary:
@@ -202,7 +236,15 @@ func stats() -> Dictionary:
 		if head.triggered: triggered += 1
 		if head.triggered and head.valve_open: flowing += 1
 	return {"heads": _heads.size(), "supplies": _supplies.size(), "triggered": triggered,
-		"flowing": flowing, "clock": _clock, "pending_seconds": _accumulator}
+		"flowing": flowing, "powered": power_provider != null, "clock": _clock,
+		"pending_seconds": _accumulator}
+
+
+static func _sum_allocated(requests: Array[Dictionary]) -> float:
+	var total := 0.0
+	for request: Dictionary in requests:
+		total += float(request.planned_ml)
+	return total
 
 
 static func _bounded(value: Variant, low: float, high: float) -> bool:

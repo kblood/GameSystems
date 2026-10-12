@@ -3,6 +3,8 @@ extends SceneTree
 const Thermal = preload("res://addons/gs_thermal/gs_thermal_system.gd")
 const Sprinklers = preload("res://addons/gs_sprinklers/gs_sprinkler_system.gd")
 const SupplyTank = preload("res://addons/gs_resource_adapters/gs_supply_tank.gd")
+const Battery = preload("res://addons/gs_resource_adapters/gs_battery_adapter.gd")
+const BatteryPump = preload("res://addons/gs_sprinklers/gs_sprinkler_battery_pump.gd")
 
 class ReentrantSupply extends RefCounted:
 	var module: RefCounted
@@ -31,6 +33,17 @@ class FlakySupply extends RefCounted:
 
 	func withdraw(_kind: String, requested: float) -> float:
 		return requested
+
+class InvalidPower extends RefCounted:
+	func power_fraction(_requests: Array, _dt: float) -> float:
+		return NAN
+
+class UnderDeliveringSupply extends RefCounted:
+	func state() -> Dictionary:
+		return {"components": {"water": 100.0}}
+
+	func withdraw(_kind: String, _requested: float) -> float:
+		return 0.0
 
 var passed := 0
 var failed := 0
@@ -120,6 +133,69 @@ func _initialize() -> void:
 		"nearly empty shared tank flow is allocated proportionally between heads")
 	case_result(fair_step.events[1].affected_targets.is_empty()
 		and fair_step.events[1].thermal_applied_ml == 0.0, "out-of-range target receives no thermal effect")
+
+	var battery_tank = SupplyTank.new(500.0, {"water": 500.0})
+	var battery_system = Sprinklers.new(thermal)
+	battery_system.register_supply(&"tank", battery_tank)
+	battery_system.add_head(&"powered", {"room_id": &"engine-room", "supply_id": &"tank",
+		"flow_ml_s": 1000.0})
+	battery_system.trigger(&"powered")
+	var half_battery = Battery.new(0.0005, 0.0005, 12.0)
+	var pump = BatteryPump.new(half_battery, 36.0, 1000.0)
+	case_result(pump.is_valid() and battery_system.set_power_provider(pump),
+		"valid battery pump can be attached as an optional power provider")
+	var powered_step: Dictionary = battery_system.step(Sprinklers.FIXED_STEP)
+	case_result(powered_step.events.size() == 2 and powered_step.events[0].type == &"spray"
+		and is_equal_approx(powered_step.events[0].ml, 50.0) and powered_step.events[1].type == &"power"
+		and is_equal_approx(powered_step.events[1].delivered_ml, 50.0) and half_battery.state().energyWh == 0.0,
+		"finite battery energy scales shared sprinkler flow and is consumed in Wh")
+	case_result(battery_system.stats().powered, "sprinkler runtime reports an attached power provider")
+	var empty_step: Dictionary = battery_system.step(Sprinklers.FIXED_STEP)
+	case_result(empty_step.events.size() == 1 and empty_step.events[0].type == &"power"
+		and empty_step.events[0].fraction == 0.0 and battery_tank.state().ml == 450.0,
+		"empty battery stops flow without withdrawing liquid")
+	battery_system.set_power_provider(null)
+	var bypass_step: Dictionary = battery_system.step(Sprinklers.FIXED_STEP)
+	case_result(bypass_step.events.size() == 1 and bypass_step.events[0].type == &"spray"
+		and is_equal_approx(bypass_step.events[0].ml, 100.0),
+		"removing the optional pump restores direct unpowered flow")
+
+	var capped_system = Sprinklers.new(thermal)
+	var capped_tank = SupplyTank.new(500.0, {"water": 500.0})
+	capped_system.register_supply(&"tank", capped_tank)
+	capped_system.add_head(&"capacity", {"room_id": &"engine-room", "supply_id": &"tank", "flow_ml_s": 1000.0})
+	capped_system.trigger(&"capacity")
+	var full_battery = Battery.new(2.0, 2.0, 12.0)
+	var capped_pump = BatteryPump.new(full_battery, 36.0, 500.0)
+	capped_system.set_power_provider(capped_pump)
+	var capped_pump_step: Dictionary = capped_system.step(Sprinklers.FIXED_STEP)
+	case_result(capped_pump_step.events.size() == 2 and is_equal_approx(capped_pump_step.events[0].ml, 50.0)
+		and is_equal_approx(capped_pump.last_fraction, 0.5),
+		"pump capacity limits delivered flow even with a charged battery")
+	case_result(not BatteryPump.new(full_battery, 0.0, 50.0).is_valid()
+		and not BatteryPump.new(null, 10.0, 50.0).is_valid(), "invalid pump configurations are rejected")
+	var invalid_power_system = Sprinklers.new(thermal)
+	var invalid_power_tank = SupplyTank.new(100.0, {"water": 100.0})
+	invalid_power_system.register_supply(&"tank", invalid_power_tank)
+	invalid_power_system.add_head(&"head", {"room_id": &"engine-room", "supply_id": &"tank"})
+	invalid_power_system.trigger(&"head")
+	invalid_power_system.set_power_provider(InvalidPower.new())
+	var invalid_power_step: Dictionary = invalid_power_system.step(Sprinklers.FIXED_STEP)
+	case_result(invalid_power_step.ok and invalid_power_step.events.size() == 2
+		and invalid_power_step.events[0].type == &"power_fault"
+		and invalid_power_step.events[1].type == &"power" and invalid_power_tank.state().ml == 100.0,
+		"invalid power callback result safely consumes a no-flow tick")
+	var underdelivered_system = Sprinklers.new(thermal)
+	var underdeliver_supply = UnderDeliveringSupply.new()
+	underdelivered_system.register_supply(&"short", underdeliver_supply)
+	underdelivered_system.add_head(&"short-head", {"room_id": &"engine-room", "supply_id": &"short"})
+	underdelivered_system.trigger(&"short-head")
+	underdelivered_system.set_power_provider(BatteryPump.new(Battery.new(1.0, 1.0, 12.0), 36.0, 600.0))
+	var underdelivered_step: Dictionary = underdelivered_system.step(Sprinklers.FIXED_STEP)
+	case_result(underdelivered_step.events.size() == 1 and underdelivered_step.events[0].type == &"power"
+		and underdelivered_step.events[0].requested_ml == 6.0
+		and underdelivered_step.events[0].delivered_ml == 0.0,
+		"power receipt distinguishes planned dose from actual supply withdrawal")
 
 	var foam_tank = SupplyTank.new(200.0, {})
 	foam_tank.fill("foam", 100.0)

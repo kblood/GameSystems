@@ -26,8 +26,9 @@ spatial fire spread remain follow-up work.
 For VR implementation, controllers, IK/avatar scale, active ragdolls, NPCs and performance,
 see the [VR guide index](vr/README.md).
 
-The next native gameplay layer adds independently composed sprinklers over finite typed
-supplies and room fire state; see [Godot sprinklers](godot_sprinklers.md).
+The native Godot sprinkler layer composes finite typed supplies, room fire state and an optional
+battery pump adapter. A future native power grid can implement the same provider contract; see
+[Godot sprinklers](godot_sprinklers.md).
 
 Alle kerner har `setQuality`, `quality` og `dispose`. Alle moduler eksporterer en default extension-factory samt en navngiven
 `create…System`. Kilde: `extensions/<id>/index.js`. Kun den fælles, offentlige host-helper `extensions/host/system.js` importeres

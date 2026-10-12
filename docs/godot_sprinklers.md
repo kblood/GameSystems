@@ -20,6 +20,8 @@ initial valve state.
   release. Thermal activation is automatic from the room's temperature.
 - `reset_head` represents replacing a spent head and succeeds only after its sensor
   cools below the trip temperature.
+- `set_power_provider` optionally attaches an object implementing
+  `power_fraction(requests, dt) -> float` in `[0, 1]`; pass `null` to remove it.
 - `step(delta)` advances 100 ms fixed ticks, at most eight per call. Excessive frame
   debt is rejected without advancing the clock. Topology changes and recursive stepping
   are rejected while a tick is drawing from an external supply.
@@ -35,6 +37,16 @@ cools those objects when there is cooling headroom; foam suppresses and coats th
 change when wetness or foam is already saturated. `ml` records the full typed spray
 receipt. This is not a complete mass model for surface wetting, drainage or droplets.
 
+`GSSprinklerBatteryPump` is a separate bounded adapter for a battery implementing
+`state()` and `draw(wh)`. Configure its rated watts and maximum ml/s. Each tick it uses
+the supply-limited planned doses to calculate a common flow fraction, capped by both
+pump throughput and the Wh actually delivered by the battery. The power event reports
+planned ml separately from the actual volume withdrawn; a supply may return less than
+its earlier state advertised. Spray events carry the applied power fraction. An empty
+or disabled battery gives zero flow without withdrawing liquid. The provider can be
+replaced by a future grid adapter implementing the same method. This is a gameplay
+budget, not electrical wiring or hydraulic pressure simulation.
+
 The step returns `spray` receipts with the exact withdrawn amount, original fluid kind,
 source ID, head position, room and affected targets. Hosts can use those receipts for
 visual spray, sound, network events or a typed `GSPuddleStore` deposit. Petrol, diesel
@@ -48,12 +60,12 @@ work per call. Shared heads divide each tank/component's available flow proporti
 so iteration order does not give the first head the whole remaining tank. A host should
 refill through the supply tank API and treat each returned spray receipt as authoritative.
 
-This increment has no electrical pump or power fraction, persistence/checkpoint API,
+This increment has no native electrical grid, persistence/checkpoint API,
 automatic spatial target discovery, game scene wiring, sound/visual effects or measured
-headset performance. Next, connect pump demand to the electrical system; then coordinate
-thermal, supply and sprinkler checkpoint providers and add an authored fire-station
+headset performance. Next, add native electrical-grid integration and coordinate
+thermal, supply, pump and sprinkler checkpoint providers and add an authored fire-station
 example. Stay at coarse gameplay resolution until device profiling justifies more detail.
 
 The focused `gs_sprinkler_tests.gd` contract covers typed receipts, tank sharing,
-automatic/manual activation, response, valve, range, refill, reentrancy and fixed-step
-bounds. On Godot 4.7.2, **38/38 checks pass**.
+automatic/manual activation, response, valve, range, refill, reentrancy, battery energy,
+pump capacity, malformed providers and fixed-step bounds. On Godot 4.7.2, **47/47 checks pass**.

@@ -1,5 +1,19 @@
 # Løbende forbedringer af GameSystems
 
+## Native sprinkler-batteripumpe — 2026-10-12
+
+Den native Godot-sprinkler kan nu bruge den udskiftelige `power_fraction(requests, dt)`-kontrakt.
+`GSSprinklerBatteryPump` kobler den til det eksisterende `GSBatteryAdapter`, begrænser fælles flow
+pr. fixed tick efter både pumpens ml/s-kapacitet og leveret Wh, og undlader at trække væske ved
+tomt batteri. Uden provider er sprinklerflow fortsat uændret. Dette er ikke et native ledningsnet;
+et fremtidigt net kan implementere samme provider-kontrakt.
+
+Verifikation: Godot-sprinkler-suite **47/47**; thermal-regression **33/33**. Sol fandt en forskel
+mellem planlagt og faktisk withdrawn væske i power-kvitteringen; rettelsen rapporterer nu begge
+mængder korrekt. Opfølgende Sol-godkendelse afventer. Næste native trin er koordineret
+checkpoint/restore for thermal, tank, pumpe og sprinklere, derefter scene-wiring og headsetprofilering.
+Guide: [Godot sprinkler](godot_sprinklers.md).
+
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
@@ -70,10 +84,10 @@ Guides: [VR-indeks](vr/README.md).
 uafhængige sprinklerhoveder, automatisk temperatur-responstid, manuel test, ventil,
 proportional deling af næsten tom forsyning og typed spray-receipts. Vand køler, skum
 undertrykker, og andre væsker bevarer deres identitet i receipt, så hosten kan aflevere
-dem til pyt-systemet. Per-head mål og fixed-step-arbejde er begrænset. De 38 fokuserede
-Godot-checks består; afsluttende Sol-review afventer. Strøm/pumpe, scene/wiring,
-checkpoint-samordning og headset-profilering er fortsat næste arbejde. Guide:
-[Godot sprinkler](godot_sprinklers.md).
+dem til pyt-systemet. Per-head mål og fixed-step-arbejde er begrænset. Den fokuserede
+suite er siden udvidet til 47/47 med batteripumpe, flowbegrænsning og power-kvitteringer.
+Afsluttende Sol-review afventer. Scene/wiring, native grid, checkpoint-samordning og
+headset-profilering er fortsat næste arbejde. Guide: [Godot sprinkler](godot_sprinklers.md).
 
 ## Afsluttet gs_bottles pour-quality-runde — 2026-10-12
 
