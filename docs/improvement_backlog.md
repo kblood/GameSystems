@@ -484,15 +484,16 @@ API, afgrænsninger og brug: [checkpoint_system.md](checkpoint_system.md).
 - Udbyg strømnettet med endelige batterier, strømskabe, ledninger og sikringer samt tydelig fejl-/forsyningstilstand.
 - Genbrugeligt kamera/skærm-system med skift mellem feeds, begrænset renderfrekvens/op­løsning og korrekt oprydning.
 
-Astra-bilen er siden færdiggjort med Blender-kilde, GLB'er og køretøjsintegration; se den afsluttede bil- og kamerarunde nedenfor.
+Astra-bilens Blender-kilde, GLB'er og ønskede panel-/ressourceintegration er siden færdiggjort; se den afsluttede bil- og kamerarunde nedenfor.
 Forsyning og sprinkler er implementeret i kerne og branddemo. Genopfyldning, blandinger, endelig volumen,
 varmeudløsning, ventil, valgfri power gate og checkpoint er verificeret; detaljer i
 [supply_sprinklers.md](supply_sprinklers.md). Bilens endelige batteri- og brændstofadaptere er integreret.
 Det fysiske DC-strømskab, ledninger, endelige netbatterier og sikringer er også implementeret og driver
 kontrolrummets kamera/skærm-system; se [electricity_system.md](electricity_system.md). De oprindelige
-sprinkler-, bil-, strøm- og kameraopgaver er altså gennemført. Den seneste målrettede elnet-, sprinkler-
-og kamerakørsel består **39/39** Node-tests. Headset-performance er ikke målt; det løbende mål fortsætter
-med nye fund.
+sprinkler-, bilasset-, strøm- og kameraopgaver fra den oprindelige liste er altså gennemført. Den lette
+kørselsmodel mangler fortsat chassis-kollision og affjedring, som beskrevet i [vehicle_system.md](vehicle_system.md);
+det er et særskilt åbent køretøjsdelmål. Den seneste målrettede elnet-, sprinkler- og kamerakørsel består
+**39/39** Node-tests. Headset-performance er ikke målt; det løbende mål fortsætter med nye fund.
 
 ## Afsluttet bil- og kamerarunde
 
