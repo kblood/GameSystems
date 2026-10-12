@@ -779,8 +779,18 @@ func _neck_snap(point: Vector3, dir: Vector3, burst_e: float, tang: Vector3, imp
 	_build_shapes(open_z)
 	_update_mass()
 	# a first spurt of liquid at the break
-	mgr.splash(point, (dir * 0.3 + Vector3.UP * 0.7).normalized(), lut.capacity_ml * fill * 0.05, lut.color, burst_e * 0.05, tang, -1, _spill_kind())
+	_emit_neck_spurt(mgr, point, dir, burst_e, tang)
 	broke.emit(point, impact_e, &"neck_snap")
+
+
+func _emit_neck_spurt(mgr: GSBottleBreakManager, point: Vector3, dir: Vector3, burst_e: float, tang: Vector3) -> void:
+	var ml := lut.capacity_ml * fill * 0.05
+	if ml <= 0.0: return
+	# The splash owns actual liquid; debit before emitting or notifying observers.
+	fill *= 0.95
+	ctl.fill = fill
+	_update_mass()
+	mgr.splash(point, (dir * 0.3 + Vector3.UP * 0.7).normalized(), ml, lut.color, burst_e * 0.05, tang, -1, _spill_kind())
 
 
 ## Neck snapped: whatever is above the lowest rim point at the current tilt pours out (rate limited).

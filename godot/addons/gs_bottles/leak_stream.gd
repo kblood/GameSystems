@@ -10,12 +10,15 @@ extends MeshInstance3D
 ##    point verifies it (a third ray re-solves if the stream went over an edge). No per-frame rays.
 ##  - Volume: feed() receives the exact ml the bottle lost this tick; it is batched (FLUSH s) and delivered to the landing point
 ##    after the flight time as puddle volume (+ two small splash droplets, never fatter than the stream) through GSBottleBreakManager.
+##    Each batch captures kind/color, endpoint/normal, hit-or-miss and splash radius. Source movement flushes the previous path;
+##    MAX_BATCHES bounds pending metadata and excess emission is explicitly classified as lost volume.
 ##    Ledger: emitted_ml = landed_ml + lost_ml + in_flight_ml() (static, for tests).
 ##  - Stops when not fed for a tick (head below the hole, empty, bottle gone): the tail falls off the hole and the radius fades;
 ##    restarts if fed again. Frees itself when the tail has landed. Global cap MAX_STREAMS (callers fall back to droplets).
 
 const GRAV := 9.81
 const MAX_STREAMS := 12
+const MAX_BATCHES := 256             ## hard bound per stream; excess volume has a lost_ml receipt
 const R_MIN := 0.0005
 const R_MAX := 0.002
 const FLUSH := 0.08
@@ -55,6 +58,7 @@ var _fifo_t := PackedFloat64Array()
 var _fifo_ml := PackedFloat64Array()
 var _fifo_kind: Array[StringName] = []
 var _fifo_color: Array[Color] = []
+var _fifo_landing: Array[Dictionary] = []
 var _acc_kind: StringName = &"unknown"
 var _acc_color := Color(0.5, 0.3, 0.1)
 var _excl: Array[RID] = []
@@ -114,7 +118,11 @@ func in_flight_ml() -> float:
 ## Called by the bottle every physics tick the hole flows. p / v: hole position and exit velocity (world), q_m3s flow, ml this tick.
 func feed(p: Vector3, v: Vector3, q_m3s: float, ml: float, col: Color, kind: StringName = &"unknown") -> void:
 	var incoming := StringName(GSPuddleStore.normalize_kind(kind))
-	if _acc > 0.0 and (incoming != _acc_kind or col != _acc_color): _flush_accumulator()
+	var tol := 0.04 + 0.04 * v0.length()
+	var path_changed := not _has_path or p.distance_to(p0) > 0.002 or v.distance_to(v0) > tol
+	# Previously emitted liquid keeps its old endpoint even when the source moves
+	# before the regular flush interval. Capture before changing the cached path.
+	if _acc > 0.0 and (incoming != _acc_kind or col != _acc_color or path_changed): _flush_accumulator()
 	_acc_kind = incoming
 	_acc_color = col
 	_last_feed = Engine.get_physics_frames()
@@ -123,11 +131,10 @@ func feed(p: Vector3, v: Vector3, q_m3s: float, ml: float, col: Color, kind: Str
 		_stop_t = 0.0
 		visible = true
 	emitted_ml += ml
-	_acc += ml
 	q = q_m3s
-	var tol := 0.04 + 0.04 * v0.length()
-	if not _has_path or p.distance_to(p0) > 0.002 or v.distance_to(v0) > tol:
+	if path_changed:
 		_recompute(p, v)
+	_acc += ml
 	if absf(q - _q_set) > 0.05 * _q_set:
 		_q_set = q
 		_mat.set_shader_parameter("q", q)
@@ -210,40 +217,56 @@ func _physics_process(dt: float) -> void:
 	if _acc > 0.0 and (_acc_t >= FLUSH or stopping):
 		_flush_accumulator()
 	while _fifo_t.size() > 0 and _fifo_t[0] <= _clock:
-		_deposit(_fifo_ml[0], _fifo_kind[0], _fifo_color[0])
+		_deposit(_fifo_ml[0], _fifo_kind[0], _fifo_color[0], _fifo_landing[0])
 		_fifo_t.remove_at(0)
 		_fifo_ml.remove_at(0)
 		_fifo_kind.remove_at(0)
 		_fifo_color.remove_at(0)
+		_fifo_landing.remove_at(0)
 	if stopping and _stop_t >= t_land and _fifo_t.is_empty() and _acc <= 0.0:
 		_finish()
 
 
 func _flush_accumulator() -> void:
-	_fifo_t.append(_clock + t_land)
-	_fifo_ml.append(_acc)
-	_fifo_kind.append(_acc_kind)
-	_fifo_color.append(_acc_color)
+	if _acc <= 0.0: return
+	if _fifo_t.size() >= MAX_BATCHES:
+		lost_ml += _acc
+		_acc = 0.0
+		_acc_t = 0.0
+		return
+	# A later emission can have a shorter fall. Keep all parallel arrays ordered
+	# by arrival time so an older long flight cannot block a ready short flight.
+	var due := _clock + t_land
+	var index := _fifo_t.size()
+	while index > 0 and due < _fifo_t[index - 1]: index -= 1
+	_fifo_t.insert(index, due)
+	_fifo_ml.insert(index, _acc)
+	_fifo_kind.insert(index, _acc_kind)
+	_fifo_color.insert(index, _acc_color)
+	_fifo_landing.insert(index, {"position": land_pos, "normal": land_n, "landed": landed,
+		"splash_radius": maxf(radius_at(t_land, phase) * 0.8, 0.0012)})
 	_acc = 0.0
 	_acc_t = 0.0
 
 
-func _deposit(ml: float, kind: StringName = &"unknown", captured_color: Color = color) -> void:
-	if not landed:
+func _deposit(ml: float, kind: StringName, captured_color: Color, landing: Dictionary) -> void:
+	if not landing.landed:
 		lost_ml += ml
 		return
 	landed_ml += ml
 	var mgr := GSBottleBreakManager.get_for(self)
+	var position: Vector3 = landing.position
+	var normal: Vector3 = landing.normal
 	_splash_k += 1
 	var sml := 0.0
-	if _splash_k % 2 == 0 and land_n.y > 0.5:
-		var rd := maxf(radius_at(t_land, phase) * 0.8, 0.0012)
+	if _splash_k % 2 == 0 and normal.y > 0.5:
+		var rd: float = landing.splash_radius
 		var each := minf(ml * 0.1, rd * rd * rd * 4.18879e6)
 		for k in 2:
-			var dv := Vector3(_rng.randfn(), 0.0, _rng.randfn()) * 0.35 + land_n * _rng.randf_range(0.3, 0.8)
-			mgr.emit_droplet(land_pos + land_n * 0.004, dv, each, captured_color, kind)
+			var dv := Vector3(_rng.randfn(), 0.0, _rng.randfn()) * 0.35 + normal * _rng.randf_range(0.3, 0.8)
+			mgr.emit_droplet(position + normal * 0.004, dv, each, captured_color, kind)
 			sml += each
-	mgr.add_puddle(land_pos, land_n, ml - sml, captured_color, kind)
+	mgr.add_puddle(position, normal, ml - sml, captured_color, kind)
 
 
 func _finish() -> void:

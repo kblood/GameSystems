@@ -7,6 +7,8 @@ const Bottle = preload("../breakable_bottle.gd")
 const Leak = preload("../leak_stream.gd")
 class PourBody extends RigidBody3D:
 	var ctl: GSBottleLiquid
+class SilentBottle extends GSBreakableBottle:
+	func _ready() -> void: pass
 var checks := 0
 var failures := 0
 
@@ -174,6 +176,137 @@ func run() -> void:
 		and balanced(manager.liquid_ledger()),
 		"HIGH leak delivery preserves both queued kinds and volume")
 	stream._finish()
+	manager.clear_debris()
+	manager.set_physics_process(false)
+	Leak.reset_ledger()
+	var moving: GSBottleLeakStream = Leak.acquire(manager, RID(), 1)
+	moving.set_physics_process(false)
+	moving.feed(Vector3(-10, 1, 0), Vector3.ZERO, 0.00000001, 2.0, Color.RED, &"petrol")
+	var old_endpoint := moving.land_pos
+	var old_normal := moving.land_n
+	var old_delay := moving.t_land
+	moving.feed(Vector3(10, 3, 0), Vector3.ZERO, 0.00000001, 3.0, Color.RED, &"petrol")
+	check(moving._fifo_landing.size() == 1 and moving._fifo_landing[0].position == old_endpoint
+		and moving._fifo_landing[0].normal == old_normal and is_equal_approx(moving._fifo_t[0], old_delay),
+		"source motion flushes its previous accumulated volume with old endpoint/normal/delay")
+	moving._flush_accumulator()
+	check(moving._fifo_landing[0].position.x < -9.0 and moving._fifo_landing[1].position.x > 9.0,
+		"same-kind FIFO batches capture distinct real ray-tested landing positions")
+	var captured_radius: float = moving._fifo_landing[1].splash_radius
+	check(moving._fifo_t[1] > moving._fifo_t[0] and is_equal_approx(captured_radius, 0.0012),
+		"each batch captures its own flight delay and splash radius")
+	# The current trajectory can disappear while both previously emitted batches fall.
+	moving.landed = false
+	moving.land_pos = Vector3(35, 0, 0)
+	moving.land_n = Vector3.RIGHT
+	moving.q = 10.0
+	moving._physics_process(2.0)
+	var left_ml := 0.0
+	var right_ml := 0.0
+	var right_splash_ml := 0.0
+	for p: Dictionary in manager._puddles:
+		if absf(float(p.pos.x) - float(old_endpoint.x)) < 0.01: left_ml += float(p.vol)
+		if absf(float(p.pos.x) - 10.0) < 0.01: right_ml += float(p.vol)
+	for i in Manager.DROPLET_POOL:
+		if manager._dalive[i] == 0: continue
+		if absf(float(manager._dpos[i].x) - float(old_endpoint.x)) < 0.01: left_ml += manager._dvol[i]
+		if absf(float(manager._dpos[i].x) - 10.0) < 0.01:
+			right_ml += manager._dvol[i]
+			right_splash_ml += manager._dvol[i]
+	check(is_equal_approx(left_ml, 2.0) and is_equal_approx(right_ml, 3.0) and manager._puddles.size() == 2,
+		"earlier volume and splash land at their captured endpoints despite later path mutation")
+	check(is_equal_approx(right_splash_ml, 2.0 * captured_radius * captured_radius * captured_radius * 4.18879e6),
+		"queued splash dose uses its original source radius after later flow mutation")
+	check(Leak.emitted_ml == 5.0 and Leak.landed_ml == 5.0 and Leak.lost_ml == 0.0
+		and moving.in_flight_ml() == 0.0 and balanced(manager.liquid_ledger()), "moving-source transfer conserves stream and manager ledgers")
+	moving._finish()
+	manager.clear_debris()
+	manager.set_physics_process(false)
+	Leak.reset_ledger()
+	var missing: GSBottleLeakStream = Leak.acquire(manager, RID(), 1)
+	missing.set_physics_process(false)
+	missing.feed(Vector3(200, 1, 0), Vector3.ZERO, 0.00001, 1.0, Color.RED, &"petrol")
+	missing.feed(Vector3.ZERO + Vector3.UP, Vector3.ZERO, 0.00001, 2.0, Color.RED, &"petrol")
+	missing._flush_accumulator()
+	check(missing._fifo_landing[0].landed and not missing._fifo_landing[1].landed,
+		"miss-to-hit motion captures each batch's actual floor result")
+	var input_before: float = manager.liquid_ledger().added_ml
+	missing._physics_process(2.0)
+	check(Leak.emitted_ml == 3.0 and Leak.lost_ml == 1.0 and Leak.landed_ml == 2.0
+		and manager.liquid_ledger().added_ml - input_before == 2.0 and balanced(manager.liquid_ledger()),
+		"earlier missed batch cannot acquire a later floor and is explicitly lost")
+	missing._finish()
+	manager.clear_debris()
+	manager.set_physics_process(false)
+	Leak.reset_ledger()
+	var descending: GSBottleLeakStream = Leak.acquire(manager, RID(), 1)
+	descending.set_physics_process(false)
+	descending.feed(Vector3(-10, 3, 0), Vector3.ZERO, 0.00001, 2.0, Color.RED, &"petrol")
+	var long_delay := descending.t_land
+	descending.feed(Vector3(10, 0.2, 0), Vector3.ZERO, 0.00001, 3.0, Color.BLUE, &"water")
+	var short_delay := descending.t_land
+	descending._flush_accumulator()
+	check(short_delay < long_delay and descending._fifo_t[0] < descending._fifo_t[1]
+		and descending._fifo_kind == [&"water", &"petrol"]
+		and descending._fifo_color == [Color.BLUE, Color.RED]
+		and descending._fifo_ml[0] == 3.0 and descending._fifo_landing[0].position.x > 9.0,
+		"high-to-low source motion sorts due times together with every captured batch field")
+	input_before = manager.liquid_ledger().added_ml
+	descending._physics_process((short_delay + long_delay) * 0.5)
+	var short_id := int(manager._puddles.back().id)
+	check(manager._puddles.size() == 1 and manager.puddle_store.components(short_id) == {"water": 3.0}
+		and descending.in_flight_ml() == 2.0 and descending._fifo_kind == [&"petrol"],
+		"ready short flight lands at its own endpoint while earlier long flight stays airborne")
+	check(Leak.emitted_ml == 5.0 and Leak.landed_ml == 3.0 and Leak.lost_ml == 0.0
+		and manager.liquid_ledger().added_ml - input_before == 3.0 and balanced(manager.liquid_ledger()),
+		"partial due-time delivery preserves the stream and manager volume ledgers")
+	descending._physics_process(long_delay)
+	check(descending.in_flight_ml() == 0.0 and Leak.landed_ml == 5.0
+		and is_equal_approx(float(manager.liquid_ledger().added_ml) - input_before, 5.0) and manager._puddles.size() == 2
+		and manager.puddle_store.components(int(manager._puddles.back().id)).has("petrol")
+		and absf(float(manager._puddles.back().pos.x) + 10.0) < 0.01
+		and balanced(manager.liquid_ledger()), "later long-flight delivery retains its captured identity and volume")
+	descending._finish()
+	manager.clear_debris()
+	manager.set_physics_process(false)
+	Leak.reset_ledger()
+	var limited: GSBottleLeakStream = Leak.acquire(manager, RID(), 1)
+	limited.set_physics_process(false)
+	for i in Leak.MAX_BATCHES + 1:
+		limited.feed(Vector3.UP, Vector3.ZERO, 0.00001, 1.0, Color.RED, &"petrol")
+		limited._flush_accumulator()
+	check(limited._fifo_t.size() == Leak.MAX_BATCHES and limited._fifo_landing.size() == Leak.MAX_BATCHES
+		and Leak.lost_ml == 1.0 and limited.in_flight_ml() == float(Leak.MAX_BATCHES),
+		"pending batch geometry has a hard bound with explicit excess-volume receipt")
+	limited._physics_process(2.0)
+	check(Leak.emitted_ml == Leak.landed_ml + Leak.lost_ml + limited.in_flight_ml()
+		and balanced(manager.liquid_ledger()), "bounded FIFO delivery conserves excess, stored and recycled splash amounts")
+	limited._finish()
+	manager.clear_debris()
+	manager.set_physics_process(false)
+	var neck := SilentBottle.new()
+	neck.fill = 1.0
+	neck.spill_liquid_kind = &"diesel"
+	neck.lut = GSBottleLut.new()
+	neck.lut.capacity_ml = 500.0
+	neck.profile = GSBottleBreakProfile.new()
+	neck.profile.capacity_ml = 500.0
+	neck.ctl = GSBottleLiquid.new()
+	scene.add_child(neck)
+	input_before = manager.liquid_ledger().added_ml
+	neck._emit_neck_spurt(manager, Vector3.UP, Vector3.RIGHT, 1.0, Vector3.ZERO)
+	var emitted := float(manager.liquid_ledger().added_ml) - input_before
+	check(is_equal_approx(emitted, 25.0) and is_equal_approx(neck.fill * 500.0 + emitted, 500.0)
+		and is_equal_approx(neck.ctl.fill, neck.fill) and is_equal_approx(neck.mass, neck.profile.total_mass(neck.fill)),
+		"neck spurt debits exactly 5% and synchronizes source fill, liquid display and physical mass")
+	check(manager._dkind[manager._dnext - 1] == &"diesel" and balanced(manager.liquid_ledger()),
+		"neck spurt transfers explicitly authored identity into a balanced manager")
+	neck.fill = 0.0
+	input_before = manager.liquid_ledger().added_ml
+	neck._emit_neck_spurt(manager, Vector3.UP, Vector3.RIGHT, 1.0, Vector3.ZERO)
+	check(manager.liquid_ledger().added_ml == input_before, "empty neck source cannot mint splash liquid")
+	neck.ctl.free()
+	neck.queue_free()
 	var viewport := SubViewport.new()
 	viewport.own_world_3d = true
 	scene.add_child(viewport)

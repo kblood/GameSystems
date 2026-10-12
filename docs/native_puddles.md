@@ -56,7 +56,14 @@ added_ml = held_ml + airborne_ml + consumed_ml + evaporated_ml + removed_ml
 Droplet recycling, quality downgrade, leaving reachable ground and cleanup have
 explicit removal receipts. Droplet landing transfers volume instead of counting
 it as fresh external liquid. Pour landing captures the parcel kind, and HIGH
-hole-stream batches capture kind/color before source contents can change.
+hole-stream batches capture kind/color, endpoint/normal, hit-or-miss, flight delay
+and splash radius before source contents or its trajectory can change. Moving
+the source flushes the old accumulation before recomputing the new trajectory.
+Every captured field is inserted together in due-time order. A later short fall
+can land while an earlier long fall remains airborne; equal due times retain
+emission order.
+Pending batches are capped at 256 per stream; excess volume receives a stream
+`lost_ml` receipt and cannot turn into a later physical deposit.
 
 ## Checkpoints
 
@@ -78,16 +85,19 @@ do not serialize intact bottles, inventory, the pour transport or an entire game
 
 ## Verified routes and remaining accounting work
 
-`gs_puddle_tests.gd` covers 36 checks for typed merges, partial withdrawal and
+`gs_puddle_tests.gd` covers 53 checks for typed merges, partial withdrawal and
 evaporation, pool/volume/component limits, real ray-tested droplet landing,
-pour/splash identity, HIGH leak FIFO identity, stable checkpoints, atomic rejection
-and independent-world teardown. Existing bottle, pour-receiver and resource-adapter
+pour/splash identity, HIGH leak FIFO identity/geometry, same-kind source motion,
+miss-to-hit and long-to-short flight changes, captured splash doses, queue budgets, stable checkpoints,
+atomic rejection and independent-world teardown. The neck-spurt route additionally
+verifies source fill + emitted mL, display fill and physical mass after the debit.
+Existing bottle, pour-receiver and resource-adapter
 contracts remain green (29/22/29 checks).
 
 Conservation claims apply to the manager-owned routes and explicit store transitions
-covered by those contracts. The existing neck-snap initial spurt emits 5% of fill
-without debiting the source bottle; this is a separate source-accounting bug.
-Low-tier hole accumulators also need an explicit terminal flush/source checkpoint
+covered by those contracts. Neck-snap's initial spurt now debits its actual 5%
+before transferring typed volume into the manager.
+Low-tier hole accumulators still need an explicit terminal flush/source checkpoint
 before whole broken-bottle conservation can be claimed. Native fire integration
 still requires a separately implemented thermal/ignition adapter. WebXR retains
 its existing separate pool/thermal implementation.

@@ -3,7 +3,7 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
-## Native typede pytter: klar til uafhængigt review — 2026-10-12
+## Native typede pytter: source-/trajectory-opfølgning klar til review — 2026-10-12
 
 `GSPuddleStore` bevarer separate komponenter og stabile ID'er gennem merge,
 delvist forbrug og fordampning. Managerens dråber bevarer eksplicit identitet fra
@@ -14,14 +14,25 @@ Kvalitetsgrænser og world-lifecycle er fortsat afgrænsede. Liquid-only checkpo
 validerer og gendanner pytter og dråber atomisk; aktive HIGH hole-streams afvises,
 indtil en host-checkpoint også kan indfange deres batchede væske.
 
-Verificeret: puddle **36/36**, bottles **29/29**, pour receivers **22/22** og
-resource adapters **29/29**. Det beviser managerens og store-overgangenes ledger,
+Første runde er godkendt af Sol og pushet som `438036b`. Reviewet fandt, at HIGH
+hole-stream FIFO beholdt identitet, men brugte seneste mutable landingspunkt.
+Opfølgningen indfanger endpoint, normal, hit/miss, flight delay og splash-radius
+per batch; flytning af kilden flusher gammel accumulation før ny trajectory.
+Hver stream har højst 256 ventende batches med eksplicit lost-receipt ved overflow.
+Sols opfølgende review fandt også, at en lang tidligere flyvetid kunne blokere
+en allerede klar kort batch. Parallelle batchfelter indsættes nu samlet efter
+due time, så høj→lav-kilde-regressionen leverer den korte batch, mens den lange
+fortsat er airborne.
+Neck-snap-spurtens tidligere 5% væske-mint er rettet: source fill, visuel fill og
+fysisk masse debiteres før manageren modtager spurtens faktiske typede volumen.
+
+Verificeret opfølgning: puddle **53/53**, bottles **29/29**, pour receivers **22/22**;
+første rundes resource adapters **29/29**. Det beviser managerens og store-overgangenes ledger,
 ikke alle kilde-flaskens brudruter eller et native brandsystem.
 API og begrænsninger: [native_puddles.md](native_puddles.md).
 
-Næste konkrete accounting-opgave: `_neck_snap` udsender en initial spurt på 5% af
-fill uden at debitere flasken. Ret denne væske-mint og verificér kilde+manager som
-én ledger. Low-tier hole-accumulatorer kræver også terminal flush og checkpoint;
+Næste konkrete accounting-opgave: low-tier hole-accumulatorer kræver terminal
+flush og checkpoint;
 HIGH hole-streams mangler host-level persistence. Derefter kan et selvstændigt
 native thermal-/sprinklerlag bruge store-API'ets faktiske petrol/diesel/water/foam
 udtag. Farve må fortsat aldrig afgøre brændstof. WebXR beholder separat eksisterende
