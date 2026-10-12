@@ -1,5 +1,23 @@
 # Løbende forbedringer af GameSystems
 
+## Rumåbninger til røg og varme — 2026-10-12
+
+Tilføjet `gs_thermal_portals` som et selvstændigt, bounded adapterlag over den native
+thermal-kerne. Authorer kan forbinde eksisterende rum med døre, lemme eller ventiler og
+ændre åbningen fra lukket til fuldt åben. Adapteren udveksler røg og ilt under en
+equal-volume gameplay-antagelse og udveksler varme vægtet efter rummenes varmekapacitet.
+Den bruger en 50 ms fast tick, simultane snapshots, konservative deltas og én atomisk
+batchopdatering; den modellerer ikke luftstrøm, tryk, geometri eller CFD.
+
+Verifikation på Godot 4.7.2 headless: portaladapter **241/241**, atomisk rum-batch
+**14/14**, eksisterende thermal-kontrakt **53/53**. Ved fuld registry-størrelse
+(64 rum, 256 brændstofobjekter, 1.024 links, 128 portaler) måltes **2,589 ms mean /
+4,270 ms P95 / 5,878 ms max** pr. tick på desktop. Det er lokal desktopmåling, ikke
+headset-evidens. Nightfall har nu den genererede addon-kopi og to målrettede native suitechecks.
+Addonet er endnu ikke koblet på en spilscene; demo-wiring og headset/standalone-profilering
+er fortsatte opgaver.
+Guide: [thermal portals](../godot/addons/gs_thermal_portals/README.md).
+
 ## Typet automatisk pytantænding — 2026-10-12
 
 `GSPuddleFireAdapter` kan nu automatisk tænde en typet diesel-/benzinpyt, når en

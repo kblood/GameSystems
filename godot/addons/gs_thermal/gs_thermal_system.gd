@@ -35,19 +35,40 @@ func add_room(id: StringName, values: Dictionary = {}) -> bool:
 
 
 func configure_room(id: StringName, values: Dictionary) -> bool:
-	if not _rooms.has(id): return false
-	var current: Dictionary = _rooms[id]
-	var staged := current.duplicate(true)
-	for key: String in values:
-		if not staged.has(key): return false
-		staged[key] = values[key]
-	if not _bounded(staged.temperature_c, -273.15, 1000000.0) or not _bounded(staged.oxygen, 0.0, 1.0) \
-			or not _bounded(staged.smoke, 0.0, 1000000.0) or not _bounded(staged.ventilation, 0.0, 1.0) \
-			or not _bounded(staged.heat_capacity_kj_c, 0.1, 1.0e12): return false
-	if float(staged.temperature_c) + _room_remaining_heat(id) / float(staged.heat_capacity_kj_c) > 1000000.0:
-		return false
-	if float(staged.smoke) + _room_remaining_smoke(id) > 1000000.0: return false
-	_rooms[id] = staged
+	return configure_rooms_batch({id: values})
+
+
+## Stage every room patch before committing any. Objects, links and fixed-step time are unchanged.
+func configure_rooms_batch(patches: Dictionary) -> bool:
+	if patches.size() > MAX_ROOMS: return false
+	if patches.is_empty(): return true
+	# Aggregate reserves once; a batch must not scan all objects separately for every room.
+	var reserved_heat: Dictionary = {}
+	var reserved_smoke: Dictionary = {}
+	for item: Dictionary in _objects.values():
+		if float(item.flammability) <= 0.0 or float(item.burn_rate) <= 0.0: continue
+		var room_id: StringName = item.room_id
+		reserved_heat[room_id] = float(reserved_heat.get(room_id, 0.0)) + float(item.fuel) * float(item.heat_kj_per_fuel) * 0.3
+		reserved_smoke[room_id] = float(reserved_smoke.get(room_id, 0.0)) + float(item.fuel) * 0.002
+	var staged_rooms: Dictionary = {}
+	for raw_id: Variant in patches:
+		if not (raw_id is String or raw_id is StringName) or not patches[raw_id] is Dictionary: return false
+		var id := StringName(raw_id)
+		if not _rooms.has(id) or staged_rooms.has(id): return false
+		var current: Dictionary = _rooms[id]
+		var staged := current.duplicate(true)
+		var values: Dictionary = patches[raw_id]
+		for key: Variant in values:
+			if not (key is String or key is StringName) or not staged.has(key): return false
+			staged[key] = values[key]
+		if not _bounded(staged.temperature_c, -273.15, 1000000.0) or not _bounded(staged.oxygen, 0.0, 1.0) \
+				or not _bounded(staged.smoke, 0.0, 1000000.0) or not _bounded(staged.ventilation, 0.0, 1.0) \
+				or not _bounded(staged.heat_capacity_kj_c, 0.1, 1.0e12): return false
+		if float(staged.temperature_c) + float(reserved_heat.get(id, 0.0)) / float(staged.heat_capacity_kj_c) > 1000000.0:
+			return false
+		if float(staged.smoke) + float(reserved_smoke.get(id, 0.0)) > 1000000.0: return false
+		staged_rooms[id] = staged
+	for id: StringName in staged_rooms: _rooms[id] = staged_rooms[id]
 	return true
 
 
