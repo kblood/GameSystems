@@ -943,6 +943,21 @@ gennemgang dækker håndtracking/controller-skift, kropsrammens bevægelse, inve
 restore og feedback i rigtige VR-flow; komfort og frame pacing kræver fortsat fysisk
 Steam Frame-test.
 
+Nyt afsluttet backpack-delmål: et mislykket forsøg på at lægge en kompatibel
+genstand i en fuld indvendig lomme viser kort `FULL` på den konkrete lomme.
+Markøren vender tilbage til ledgerens `STORED`-tilstand efter 1,25 s; den fjernes
+også straks, når lommen tømmes, tasken lukkes eller inventory gendannes. En ældre
+timer kan ikke fjerne en nyere besked, og en blokeret lomme meldes ikke fejlagtigt
+som fuld. Sol-review godkendt. Fire fokuserede rygsæksuiter består med **142/142**
+checks. Headsetlæsbarhed er ikke verificeret. Næste backpack-gennemgang dækker
+fejlsignaler for inkompatible slots samt syntetiske controller-/tracking-skift.
+
+Våbenasset-validatoren kontrollerer nu de eksporterede grebsankre for afstand
+mellem primær-/støttegreb, forreste støttegreb på rifler og nærhed til våbnets
+mesh-bounds. Blender 5.2.2 validerede Morrow, Tern, Rook og Shear i isoleret
+output; GLB-kilderne i projektet blev ikke overskrevet. Sol-review godkendt.
+Det er layoutkontrol, ikke headset-måling af håndpasform.
+
 ## Afsluttet væske-/batteri-observerfejl-runde
 
 Sprinkleren færdiggør nu spraydosis, alle targets/heads og supply-notifikationer,
