@@ -21,6 +21,8 @@ Adapteren disponerer ikke net eller tank ved dispose; ejerne rydder deres egne r
 Sprinkleren fordeler en næsten tom tanks væske proportionalt mellem hovederne før power-forespørgslen.
 Requests har `id`, `tankId`, tilgængelig `ml` og det normale trins `nominalMl`.
 Power-fraktionen skal være endelig og mellem 0 og 1 og valideres, før væsken trækkes ud.
+`powerFraction` kan allerede have fremrykket sit elnet, før den returnerer eller kaster; et kast
+forbruger derfor sprinklerens fixed-step-fase og må ikke automatisk genafspille pumpearbejdet.
 
 Pumpens nødvendige arbejde skaleres med tilgængelig væske i forhold til det nominelle flow.
 Den aflæser lastens løste terminaleffekt og vælger en driftstid, der højst fylder det aktuelle sprinklertrin.

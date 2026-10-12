@@ -13,29 +13,48 @@ export function createSprinklerSystem({ supply, thermal, emit = () => {}, powere
   function targets(head, objects) {
     return objects.filter(s => s.roomId === head.roomId && s.position[1] <= head.position[1] && distance(s.position, head.position) <= head.radius);
   }
+  class RetryableTickError {
+    constructor(error) { this.error = error; }
+  }
   function tick(dt) {
     let observerFailed = false, observerError;
     const publishTickEvent = (name, payload) => {
       try { emit(name, payload); }
       catch (error) { if (!observerFailed) { observerFailed = true; observerError = error; } }
     };
-    const objects = thermal.objects(), groups = new Map();
+    const staged = [], groups = new Map(), requests = [];
+    const objects = thermal.objects();
     for (const head of heads.entries.values()) {
       const nearby = targets(head, objects);
       const sensed = Math.max(20, head.roomId === null ? 20 : thermal.roomState(head.roomId).temperature, ...nearby.map(s => s.temperature));
-      head.temperature += (sensed - head.temperature) * (1 - Math.exp(-dt / head.responseSeconds));
-      if (!head.triggered && head.temperature >= head.triggerTemperature) { head.triggered = true; publishTickEvent('sprinklers:triggered', { id: head.id }); }
-      head.flowMlPerSecond = 0;
-      if (!head.triggered || !head.open || !powered(head.id)) continue;
+      const temperature = head.temperature + (sensed - head.temperature) * (1 - Math.exp(-dt / head.responseSeconds));
+      const triggered = head.triggered || temperature >= head.triggerTemperature;
+      staged.push({ head, temperature, triggered, newlyTriggered: triggered && !head.triggered });
+      if (!triggered || !head.open) continue;
+      let hasPower;
+      try { hasPower = powered(head.id); }
+      catch (error) {
+        // Only this read-only gate is replay-safe; other providers may have
+        // advanced their own simulation or resource ledgers before throwing.
+        throw new RetryableTickError(error);
+      }
+      if (!hasPower) continue;
       if (!groups.has(head.tankId)) groups.set(head.tankId, []);
       groups.get(head.tankId).push({ head, nearby, demand: head.rateMlPerSecond * dt });
     }
-    const requests=[];
     for(const[tankId,entries]of groups){const requested=entries.reduce((n,e)=>n+e.demand,0),available=supply.state(tankId).ml;const fraction=requested?Math.min(1,available/requested):0;
       for(const entry of entries){const nominalMl=entry.demand;entry.demand*=fraction;requests.push({id:entry.head.id,tankId,ml:entry.demand,nominalMl});}
     }
+    // A pump may advance its energy ledger before this callback throws. Once
+    // invoked, consume the phase even when its result cannot be committed.
     const fraction=powerFraction===null?1:finite(powerFraction(requests,dt),'power fraction');
     if(fraction<0||fraction>1)throw new RangeError('Power fraction must be between zero and one');
+    for (const { head, temperature, triggered } of staged) {
+      head.temperature = temperature; head.triggered = triggered; head.flowMlPerSecond = 0;
+    }
+    for (const { head, newlyTriggered } of staged) {
+      if (newlyTriggered) publishTickEvent('sprinklers:triggered', { id: head.id });
+    }
     for (const [tankId, entries] of groups) {
       for(const entry of entries)entry.demand*=fraction;
       const demand = entries.reduce((n, e) => n + e.demand, 0), out = supply.draw(tankId, demand);
@@ -116,10 +135,18 @@ export function createSprinklerSystem({ supply, thermal, emit = () => {}, powere
       try {
         pending += dt;
         while (pending >= 0.1 - 1e-9) {
+          const previousPending = pending;
           pending = Math.max(0, pending - 0.1);
           // Consume the phase before invoking host callbacks. If a listener
           // throws after a supply draw, retrying this same step could debit it twice.
-          tick(0.1);
+          try { tick(0.1); }
+          catch (error) {
+            if (error instanceof RetryableTickError) {
+              pending = previousPending;
+              throw error.error;
+            }
+            throw error;
+          }
         }
       } finally { stepping = false; }
     },

@@ -144,7 +144,11 @@ export function createVehicleSystem({ emit = () => {}, quality = 'high' } = {}) 
         const p = s.power.state();
         if (p.enabled === false || p.voltage < 10.8 || p.energyWh < s.starterWh) return { started: false, reason: 'battery-flat' };
         const drawn = transfer(s.power, 'draw', s.starterWh); s.drawnWh += drawn;
-        if (drawn < s.starterWh - 1e-8) return { started: false, reason: 'starter-power' };
+        if (drawn < s.starterWh - 1e-8) {
+          const refunded = transfer(s.power, 'charge', drawn); s.drawnWh -= refunded;
+          if (refunded < drawn - 1e-10) throw new Error('Power adapter violated its reversible transfer contract');
+          return { started: false, reason: 'starter-power' };
+        }
       }
       s.running = true; s.lastStop = null; s.rpm = 800; emit('vehicle:started', { id }); return { started: true };
     },

@@ -34,6 +34,21 @@ test('vehicle: start gates fuel, compatible fluid and finite starter energy', ()
   assert.equal(s.start('car').started, true); near(before - s.state('car').power.energyWh, .35);
   s.start('car'); near(before - s.state('car').power.energyWh, .35);
 });
+test('vehicle: failed partial starter draw refunds battery and accounting exactly', () => {
+  const battery = createBatteryStore({ capacityWh: 1, energyWh: 1 });
+  const power = {
+    reversible: true,
+    state: () => battery.state(),
+    draw(wh) { return battery.draw(wh / 2); },
+    charge(wh) { return battery.charge(wh); },
+  };
+  const s = createVehicleSystem(); s.add('car', { power });
+
+  assert.deepEqual(s.start('car'), { started: false, reason: 'starter-power' });
+  near(s.state('car').power.energyWh, 1);
+  near(s.state('car').drawnWh, 0);
+  assert.equal(s.state('car').running, false);
+});
 test('vehicle: adapters must declare reversible transfers before they can be bound', () => {
   const s=createVehicleSystem();
   const fuel={state:()=>({amountL:10,capacityL:10,kind:'petrol'}),consume:()=>0,refill:()=>0};

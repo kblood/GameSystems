@@ -57,6 +57,11 @@ Fuel and battery are finite by default: 28/52 L petrol and 540/720 Wh at 12.6 V.
 
 Fuel exhaustion stops the engine and emits `vehicle:stopped`. Start failures distinguish empty or wrong fuel from insufficient starting power. Refueling returns accepted liters and requires a stationary vehicle, engine off, fuel flap at least 80% open, and compatible fuel. A closed or locked panel cannot be opened by refueling. Opening other panels above 0.5 m/s is rejected. Events also include `vehicle:started`, `vehicle:part`, and `vehicle:refueled`.
 
+If a reversible power adapter passes the reserve check but supplies only part of the starter draw,
+the vehicle returns that delivered amount before reporting `starter-power`. Its `drawnWh` counter
+records the net energy left at the adapter; a short refund violates the reversible-transfer contract
+and throws instead of hiding the loss.
+
 ## Swappable resources
 
 Adapters are synchronous, public-API objects. Each request returns the actual accepted or supplied quantity, from zero to the requested amount. Invalid negative, non-finite or over-reported transfers throw. Adapters must declare `reversible: true`: the `refill`/`charge` operation must be able to return an immediately preceding `consume`/`draw` when the other resource shortens the engine interval, while the store remains enabled and the released capacity remains available. This lets the vehicle settle fuel and power without burning fuel for an interval its power source could not support. Replacing an adapter does not copy, drain, dispose or reset either store.

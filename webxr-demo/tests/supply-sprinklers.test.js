@@ -135,11 +135,47 @@ test('sprinkler releases its step guard after callback failure and blocks invali
   const system = createSprinklerSystem({ supply, thermal,
     powerFraction: () => { if (throwOnce) { throwOnce = false; throw new Error('pump callback failed'); } return 1; } });
   system.add('head', { tankId: 'tank', roomId: 'room', rateMlPerSecond: 100 }); system.trigger('head');
+  const before = system.all();
   assert.throws(() => system.step(0.2), /pump callback failed/);
+  assert.deepEqual(system.all(), before, 'failed pump accounting cannot partially update head temperature, trigger, or flow');
   near(supply.state('tank').ml, 100);
   assert.throws(() => system.capture(), /unprocessed sprinkler steps/);
   system.step(0);
   near(supply.state('tank').ml, 90); near(system.state('head').deliveredMl, 10);
+  assert.equal(system.state('head').triggered, true);
+  near(system.capture().pending, 0);
+});
+test('sprinkler powered provider failure preserves a multi-head tick for deterministic retry', () => {
+  const supply = createSupplySystem(), thermal = createThermalSystem();
+  supply.add('tank', { capacityMl: 100, components: { water: 100 } });
+  thermal.addRoom('room', { temperature: 400 });
+  thermal.add('chair', { roomId: 'room', position: [0, 0, 0], temperature: 300, cooling: 0 });
+  const providerError = new Error('power provider failed for h2');
+  let failSecondHead = true;
+  const powerCalls = [];
+  const system = createSprinklerSystem({ supply, thermal, powered: id => {
+    powerCalls.push(id);
+    if (id === 'h2' && failSecondHead) throw providerError;
+    return true;
+  } });
+  system.add('h1', { tankId: 'tank', roomId: 'room', rateMlPerSecond: 100, responseSeconds: 0.01 });
+  system.add('h2', { tankId: 'tank', roomId: 'room', rateMlPerSecond: 100, responseSeconds: 0.01 });
+  const before = system.all();
+
+  assert.throws(() => system.step(0.1), error => error === providerError);
+  assert.deepEqual(system.all(), before, 'a provider failure cannot partially update either head');
+  near(supply.state('tank').ml, 100);
+  assert.throws(() => system.capture(), /unprocessed sprinkler steps/, 'the failed tick phase remains queued');
+
+  failSecondHead = false;
+  powerCalls.length = 0;
+  system.step(0);
+  assert.deepEqual(powerCalls, ['h1', 'h2'], 'the retained phase retries as one fixed tick');
+  near(supply.state('tank').ml, 80);
+  for (const id of ['h1', 'h2']) {
+    assert.equal(system.state(id).triggered, true);
+    near(system.state(id).deliveredMl, 10);
+  }
   near(system.capture().pending, 0);
 });
 test('sprinkler completes liquid effects before surfacing a spray observer error', () => {

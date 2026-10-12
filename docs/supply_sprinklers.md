@@ -37,9 +37,12 @@ Restore-forberedelse og commit afvises også midt i et fixed step; restore-notif
 kan ikke starte en ny step/restore. Head-ændringer og `dispose()` afvises også fra en aktiv
 step/restore-callback. `capture()` er kun tilgængelig mellem steps og afvises, mens et helt
 fixed step venter eller restore-notifikationer kører. Guard'en frigives også ved callback-fejl. Fixed-step-fasen
-forbruges før eksterne callbacks køres, så fejl efter et forsyningsudtag ikke kan få samme
-faste tick til at blive afspillet og debitere tanken igen. Host-callbacks bør validere deres
-input og undgå sideeffekter før de returnerer. Fejl fra tick-events gemmes, til alle
+forbruges normalt før eksterne callbacks køres, så fejl efter et forsyningsudtag ikke kan få samme
+faste tick til at blive afspillet og debitere tanken igen. Undtagelsen er `powered(headId)`, som
+skal være en ren boolesk gate: hvis den kaster før tick-state ændres, bevares hele fasen til retry.
+`powerFraction(requests,dt)` kan fremrykke et eksternt elnet; dens fejl forbruger fasen, selv om
+sprinklerhovederne endnu ikke er ændret. Host-callbacks bør validere input og undgå skjulte
+sideeffekter i booleske gates. Fejl fra tick-events gemmes, til alle
 spray-/depositions-events for fixed steppet er sendt, hvorefter den første fejl kastes.
 Hvis et catch-up-kald afbrydes, mens hele fixed steps stadig venter, afvises checkpoint
 capture indtil værten fortsætter med `step(0)` eller næste frame-delta og tømmer de ventende

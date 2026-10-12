@@ -33,6 +33,28 @@ før fejlen kastes. Reelle solverfejl bevares som fejl i selve evalueringen.
 Verifikation: fokuseret electricity-suite **18/18**, fuld WebXR-demo Node-suite **536/536**,
 produktionsbuild og Sol-review består.
 
+## Afsluttet sprinkler-power-provider-runde — 2026-10-12
+
+Sprinklerhovederne samler nu temperatur-, trigger- og flowændringer før commit. Hvis den rene
+`powered(headId)`-gate kaster, forbliver hele tick-fasen ventende og kan genforsøges uden delvis
+head-state eller væsketræk. Pumpefraktionen kan derimod allerede have fremrykket elnettet; dens
+fejl forbruger derfor fasen og efterlader sprinkler-state uændret, så batterienergi ikke debiteres
+igen ved retry.
+
+Verifikation: sprinkler-suite **18/18**, fuld GameSystems Node-suite **538/538**, produktionsbuild
+og Sol-review består.
+
+## Afsluttet delvist startertræk-runde — 2026-10-12
+
+Hvis et adapterbatteri består startens reservekontrol, men kun leverer en del af starterens
+energi, forsøger bilen nu at tilbageføre præcis det leverede beløb. `drawnWh` reduceres med den
+faktiske refund; en adapter, der ikke kan opfylde den reversible transfer-kontrakt, giver en
+konkret fejl i stedet for stiltiende energitab.
+
+Verifikation: vehicle-suite **18/18**, fuld GameSystems Node-suite **538/538**, produktionsbuild
+og Sol-review består. Næste særskilte auditpunkt er observerfejl, der kastes efter et batteri-
+eller væsketræk allerede har ændret adapterens egen ledger.
+
 ## Afsluttet kamera-render reentrancy-runde — 2026-10-12
 
 En scene-komponents `onBeforeRender` kunne kalde samme kamera-systems `step()` igen, mens feedets
