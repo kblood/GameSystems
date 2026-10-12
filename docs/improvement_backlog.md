@@ -964,7 +964,12 @@ reacquisition starter ikke det gamle træk igen, og offset falder under 2 cm.
 Testen beviser også, at en fulgt, fri hånd kan tage en genstand ud af en åben lomme;
 samme udtag med tabt tracking lader genstanden blive i slot og ledger. Approach,
 input, live og release består **112/112** checks. Sol har godkendt testen.
-Næste trin dækker et reelt skift mellem controller- og håndtracking.
+Næste trin dækker et reelt skift mellem controller- og håndtracking. NightfallContracts
+har nu desuden en valgfri OpenXR EXT hand-interaction-profil: håndens grasp/pinch
+føder de eksisterende grip-, trigger- og backpack-Interact-actions, og pose-actions
+genbruger de eksisterende håndankre. Frame og Touch-profilerne bevares. Det statiske
+action-map valideres headless; runtime-skift, Operations Menu, haptik og ergonomi
+med optisk håndtracking kræver stadig headset-afprøvning.
 
 Våbenasset-validatoren kontrollerer nu de eksporterede grebsankre for afstand
 mellem primær-/støttegreb, forreste støttegreb på rifler og nærhed til våbnets
