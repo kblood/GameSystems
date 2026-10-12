@@ -980,6 +980,14 @@ genbruger de eksisterende håndankre. Frame og Touch-profilerne bevares. Det sta
 action-map valideres headless; runtime-skift, Operations Menu, haptik og ergonomi
 med optisk håndtracking kræver stadig headset-afprøvning.
 
+Nyt afsluttet input-deltrin: rygsækkens Interact-kilde holdes nu adskilt fra den
+hånd, der bærer cargo og leverer trækkets pose. Det understøtter Touch og EXT
+hand-interaction-profilens venstre Interact, mens højre hånd flytter rygsækken;
+slip af den indledende knap annullerer trækket selv hvis den modsatte knap fortsat
+holdes. NightfallContracts' ni rygsæksuiter består med **374/374** kontroller.
+Sol-review godkendt. Det er syntetisk XR-verifikation; et faktisk OpenXR-
+profilskift og headset-ergonomi mangler fortsat enhedstest.
+
 Våbenasset-validatoren kontrollerer nu de eksporterede grebsankre for afstand
 mellem primær-/støttegreb, forreste støttegreb på rifler og nærhed til våbnets
 mesh-bounds. Blender 5.2.2 validerede Morrow, Tern, Rook og Shear i isoleret
