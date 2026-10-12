@@ -24,8 +24,7 @@ power-provider presence match. Hosts pause at one save boundary; restore thermal
 batteries, pump state, then sprinkler state. Bottle source snapshots remain host-coordinated.
 
 Verification: thermal **42/42**, resource adapters **35/35**, sprinkler **54/54**; Godot editor
-scan passes. Sol review found that provider order alone is not a cross-system transaction; the guide now requires staged preflight/atomic world swap or full rollback. A regression verifies failed staged restore leaves the active world untouched. Thermal and sprinkler checkpoints now preserve runtime insertion order; reversed-ID multi-object/head tick replay passes. Final Sol review is pending. Scene wiring,
-native grid integration, spatial spread and headset profiling remain open.
+scan passes. Sol review found that provider order alone is not a cross-system transaction; the guide now requires staged preflight/atomic world swap or full rollback. A regression verifies failed staged restore leaves the active world untouched. Thermal and sprinkler checkpoints now preserve runtime insertion order; reversed-ID multi-object/head tick replay passes. Sol's final checkpoint review was approved, and the authored scene wiring is now covered by the fire-station demo above. Native grid integration, spatial spread and headset profiling remain open.
 Guides: [thermal](godot_thermal.md), [supply adapters](godot_resource_adapters.md),
 [sprinkler](godot_sprinklers.md).
 
