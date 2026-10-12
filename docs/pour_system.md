@@ -1,7 +1,7 @@
 # Pour / empty system (Godot, phase 1)
 
-Source: `gameplay/godot/bottle_pour.gd` (`BottlePour`). Wired by `BottleFactory.spawn(id, {pour = true})` (default on):
-a `BottlePour` child is added to every spawned body, stored as meta `"pour"` and `BottleBinding.pour`.
+Source: `godot/addons/gs_bottles/bottle_pour.gd` (`GSBottlePour`). Bottle factories add this
+child to spawned bodies and expose it through meta `"pour"`; hosts may also attach it directly.
 Containers that are closed (capped bottles) pour nothing; they start pouring as soon as they are open
 (`ctl.cap_open = true`, Cap node hidden/removed, or `info.open` containers: tumbler, mug, flasks, jerrycan, tank).
 
@@ -16,17 +16,25 @@ Per physics tick, in liquid-node space with `u` = world up:
   `lut.spill` clamp (which drew inverted uncapped bottles as empty). Without a pour node the old behaviour is unchanged.
 
 ## Stream, receivers, puddles
-- Each tick's volume is one parcel (pos, vel, ml, colour) leaving the low lip with velocity `Q / A_jet` along the mouth
+- Each tick's volume is one parcel (pos, vel, ml, colour, authored liquid kind) leaving the low lip with velocity `Q / A_jet` along the mouth
   axis plus the rigid-body velocity at that point. Parcels integrate ballistically (SoA arrays, swap-remove).
-- Receivers: every other `BottlePour` whose container is open, mouth facing up (n.y > 0.2) and within 3 m. A parcel
-  crossing a receiver's mouth plane inside 0.97 r is delivered: `receive(ml, colour)` raises its fill by ml/capacity,
-  wakes body + liquid (agitate = slosh kick), an empty (< 0.5 ml) receiver adopts the colour, a non-empty one keeps
-  its own (no mixing). Overflow beyond capacity leaves over the receiver's low rim as a parcel (lands as puddle or in
-  yet another receiver). Signal `poured_into(receiver_body, ml)` on the pourer per delivered parcel.
-- Otherwise a ray per parcel per tick (masks 1|2|8); hit = `BottleBreakManager.add_puddle` (+ every 3rd hit 20% as 2
+- Receivers: other open `GSBottlePour` containers with upward mouths (n.y >= 0.2), and enabled host-owned
+  `GSPourReceiver` openings. Both are limited to the same `World3D`; bottle mouths are culled within
+  3 m of the source body, while external openings are culled within 3 m of each airborne segment. The
+  nearest front-to-back mouth crossing before the first solid hit wins, independent of registration order.
+  Bottle mouths use 0.97 r; external openings use their authored local disc. Bottle
+  `receive(ml, colour, source, kind)` raises fill by the accepted dose/capacity and wakes body/liquid.
+  Nearly empty (< 0.5 ml) bottles adopt colour; only genuinely empty bottles adopt a new known liquid
+  kind. Different kinds become unknown. Bottle capacity overflow leaves over its low rim in another
+  typed parcel. External openings accept a bounded amount; unaccepted volume continues flying.
+  `poured_into(receiver_body_or_endpoint, ml)` reports bottle-owned doses or external accepted doses.
+- One ray per parcel per tick (masks 1|2|8) establishes solid ordering; hit = `GSBottleBreakManager.add_puddle` (+ every 3rd hit up to 20% as 2
   splash droplets via `emit_droplet`). Steep hits drop to the floor below.
 - Ledger: `poured_ml`, `received_ml`, `delivered_ml`, `spilled_ml`, statics `world_puddle_ml`, `world_lost_ml`,
-  `in_flight_ml()`. Volume is conserved exactly (each ml lives in exactly one place).
+  `in_flight_ml()`. Transport volume is accounted for in a receiver, physical spill or explicit loss;
+  pending overflow remains owned until emitted or settled. Break emits pending overflow when mouth
+  geometry survives; unavailable geometry or source removal records it as outgoing/lost exactly once.
+  Native puddles currently retain volume/colour only: fuel identity and fire coupling are still pending.
 - Visual (HIGH): one 10x40 tube mesh bent along `p0 + v0 t + g t^2/2` in the vertex shader (radius from flow
   continuity `sqrt(Q / (pi v))`, twist-free frame, small travelling waves, glug pulse). Opaque (transparent tube
   self-sorts badly). Tail falls away after the stream stops.
@@ -35,6 +43,8 @@ Per physics tick, in liquid-node space with `u` = world up:
 `_physics_process` runs only while the body/liquid is awake, pouring, or parcels/overflow are in flight. Sleeping or
 capped and at rest: 0 (verified: 3 resting containers, 0 pour nodes processing). Pouring: one LUT lookup pair, 16-strip
 sum, one ray per parcel (~ 15-30 parcels for a 0.3 s flight) and one receivers scan per tick.
+The same-world/3 m segment cull keeps distant external openings out of each parcel's geometry checks,
+without changing airborne transport when the source container is carried or dropped elsewhere.
 
 ## Tiers
 `quality` (3 high .. 0 minimal) is a per-pour ceiling. The active stream uses the lower of that value and the
@@ -42,6 +52,32 @@ liquid shader's current distance tier. Cached tube meshes use 10×40, 8×28, 6×
 all tiers retain the parabolic tube, exact per-tick parcel volume, receiver hits and puddle accounting. The
 volume-carrying landing splash cadence stays constant across tiers so visual LOD cannot change where liquid ends up.
 Quality changes tube geometry while preserving liquid transfer and puddle volume.
+
+## Typed external openings (native Godot)
+
+`gs_bottles/GSPourReceiver` is a `Node3D` opening with a local disc `radius`,
+front-facing `normal` and host-owned `accept_ml(ml, liquid_kind, source)` callback.
+The callback transfers liquid into its backing store and returns the exact
+accepted millilitres. Add the receiver at an authored mouth/filler marker;
+removal unregisters it automatically. The receiver owns no tank or car.
+
+`GSBottlePour.liquid_kind` defaults to `unknown`; hosts explicitly author
+`petrol`, `water`, etc. Existing bottle styles, shaders and colours do not imply
+fuel identity. Each emitted parcel captures its kind. Empty bottle receivers
+adopt an incoming kind; unlike or unknown contents become `unknown`. Rim
+overflow preserves the incoming kind independently of the retained contents.
+
+Parcels select the nearest opening before the nearest solid ray hit, only within
+their source's `World3D`. Partial/rejected receipts leave remaining volume flying
+until it lands or reaches the lost-volume ledger. Broken sources still advance
+previously emitted parcels; removal settles remaining volume exactly once,
+including removal from a receiver callback. Virtual openings create no airborne
+puddle. Source physics contract (22 checks):
+
+`godot --headless --path GameSystems/godot --script res://addons/gs_bottles/tests/gs_pour_receiver_tests.gd`.
+
+The checks cover identity, partial transfer/spill, nearest-hit/wall ordering,
+scaled discs, backface/cross-world rejection and callback interruption.
 
 ## Tests
 `tests/pour_proj/pour_test.gd` (`-- --numeric` headless, `-- --shots <dir>` windowed). Results 2026-10-04: all 10 checks

@@ -28,3 +28,12 @@ directly; a second physics implementation would duplicate engine collision handl
 The `shaders/` directory must remain adjacent to these scripts. This addon does
 not include the bench harness, which is a source-project tool rather than a
 runtime dependency.
+
+`GSPourReceiver` adds host-owned spatial openings without bottle geometry. Set a
+local disc radius/normal and `accept_ml(ml, liquid_kind, source)` callback; the
+callback returns the actual accepted mL. Pouring selects the nearest unobstructed
+opening in the same `World3D`, and rejected volume continues its real flight.
+`GSBottlePour.liquid_kind` defaults to `unknown` and is captured per parcel;
+mixed unlike contents become unknown. Hosts explicitly author fuel identity.
+No bottle style or colour is automatically fuel. The independent physics suite
+is `tests/gs_pour_receiver_tests.gd`; API details are in `docs/pour_system.md`.

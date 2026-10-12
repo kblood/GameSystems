@@ -3,6 +3,18 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
+## Næste native væske-/brandopgave: typede permanente pytter
+
+Den nye Godot-pourtransport bevarer et eksplicit `liquid_kind` frem til flasker og
+eksterne modtagere. `GSBottleBreakManager`-pytter og splash-dråber gemmer stadig kun
+volumen og farve; spildt benzin/diesel kan derfor endnu ikke drive native antændelse
+eller sprinkler-slukning. Næste konkrete opgave er at bevare komponent-identitet og
+volumen gennem puddle-merge, splash-transport, budget/dvale og persistence, med en
+public bridge til et selvstændigt native brandsystem. Farve må ikke afgøre brændstof.
+Verificér blandinger, delvis fordampning/fuel-forbrug, slukningsdoser og restore med
+samlet ledger, inden der hævdes native fuel-fire-integration. WebXR har allerede
+sin separate pool-/thermal-integration; genbrug dens kontrakter som reference.
+
 ## Afsluttet gs_bottles pour-quality-runde — 2026-10-12
 
 Pour-strålen følger nu flaskens aktive distance-LOD og per-pour quality ceiling. De fire

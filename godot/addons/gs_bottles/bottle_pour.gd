@@ -32,6 +32,8 @@ static var world_lost_ml := 0.0                 ## parcels that flew past max_fl
 @export var max_flight := 1.6                   ## s; parcels older than this are dropped (counted in world_lost_ml)
 @export_flags_3d_physics var ray_mask := 1 | 2 | 8
 @export var can_receive := true
+## Authored identity, never inferred from appearance. Different/unknown mixtures stay unknown.
+@export var liquid_kind: StringName = &"unknown"
 @export_range(MINIMAL, HIGH, 1) var quality := HIGH
 
 var body: RigidBody3D
@@ -54,8 +56,12 @@ var _pv := PackedVector3Array()
 var _pvol := PackedFloat64Array()
 var _page := PackedFloat32Array()
 var _pcol := PackedColorArray()
+var _pkind: Array[StringName] = []
 var _np := 0
+var _stepping_parcels := false
+var _interrupted_during_step := false
 var _overflow_ml := 0.0
+var _overflow_kind: StringName = &"unknown"
 var _plugged := false
 var _q_vis := 0.0                               ## smoothed flow for the tube radius (m3/s)
 var _t_land := 0.4
@@ -80,6 +86,22 @@ func _enter_tree() -> void:
 
 func _exit_tree() -> void:
 	registry.erase(self)
+	if _stepping_parcels:
+		# Receiver/host signals may remove this source during receipt settlement.
+		_interrupted_during_step = true
+		return
+	_settle_interrupted_flight()
+
+
+func _settle_interrupted_flight() -> void:
+	# Scene removal interrupts transport, not its ledger. No parcel may vanish unaccounted.
+	var interrupted_ml := in_flight_ml()
+	# Rim overflow belongs to this node but only becomes outgoing when emitted/settled.
+	poured_ml += _overflow_ml
+	world_lost_ml += interrupted_ml
+	spilled_ml += interrupted_ml
+	_np = 0
+	_overflow_ml = 0.0
 
 
 func _ready() -> void:
@@ -173,9 +195,25 @@ static func _stream_mesh_for_quality(mode: int) -> ArrayMesh:
 
 
 func _physics_process(dt: float) -> void:
-	if not _ready_ctl() or body.state != &"intact":
+	var ready := _ready_ctl()
+	if not ready or body.state != &"intact":
+		if _overflow_ml > 0.0:
+			if ready:
+				# A shatter may occur after receiving a full-bottle dose but before
+				# its next tick. Release the already-owned overflow from its rim.
+				_emit_overflow()
+			else:
+				# No mouth geometry remains. Record this dose as explicit loss,
+				# while allowing previously emitted parcels to finish flying.
+				poured_ml += _overflow_ml
+				spilled_ml += _overflow_ml
+				world_lost_ml += _overflow_ml
+				_overflow_ml = 0.0
+		# Previously emitted liquid still flies after the source is closed or broken.
+		if _np > 0:
+			_step_parcels(dt)
+		_set_pouring(false)
 		if _np == 0:
-			_set_pouring(false)
 			_deactivate()
 		return
 	var flowed := 0.0
@@ -267,7 +305,7 @@ func _drain(dt: float) -> float:
 
 # ------------------------------------------------------------------ parcels
 
-func _add_parcel(p: Vector3, v: Vector3, ml: float, col: Color) -> void:
+func _add_parcel(p: Vector3, v: Vector3, ml: float, col: Color, kind: StringName = &"") -> void:
 	if _np >= _pp.size():
 		var n := maxi(32, _pp.size() * 2)
 		_pp.resize(n)
@@ -275,11 +313,13 @@ func _add_parcel(p: Vector3, v: Vector3, ml: float, col: Color) -> void:
 		_pvol.resize(n)
 		_page.resize(n)
 		_pcol.resize(n)
+		_pkind.resize(n)
 	_pp[_np] = p
 	_pv[_np] = v
 	_pvol[_np] = ml
 	_page[_np] = 0.0
 	_pcol[_np] = col
+	_pkind[_np] = _normalized_kind(liquid_kind if kind == &"" else kind)
 	_np += 1
 
 
@@ -290,13 +330,16 @@ func _remove_parcel(i: int) -> void:
 	_pvol[i] = _pvol[_np]
 	_page[i] = _page[_np]
 	_pcol[i] = _pcol[_np]
+	_pkind[i] = _pkind[_np]
 
 
 ## Open, upright-ish receiver mouths in world space: [pour, centre, normal, radius]. Built once per tick while parcels fly.
 func _receivers() -> Array:
 	var out := []
 	for rp in registry:
-		if rp == self or not rp.can_receive or not rp._ready_ctl() or not is_instance_valid(rp.body) or rp.body.state != &"intact":
+		if rp == self or not is_instance_valid(rp.body) or not rp.body.is_inside_tree() \
+			or rp.body.is_queued_for_deletion() or rp.body.get_world_3d() != body.get_world_3d() \
+			or not rp.can_receive or not rp._ready_ctl() or rp.body.state != &"intact":
 			continue
 		if not rp._ctl.is_open():
 			continue
@@ -308,10 +351,18 @@ func _receivers() -> Array:
 		if cw.distance_squared_to(body.global_position) > 9.0:
 			continue
 		out.append([rp, cw, n, rp._ctl.mouth_radius * lxf.basis.get_scale().x])
+	for endpoint in GSPourReceiver.registry:
+		if endpoint.enabled and not endpoint.is_queued_for_deletion() \
+			and endpoint.get_world_3d() == body.get_world_3d():
+			out.append([endpoint])
 	return out
 
 
 func _step_parcels(dt: float) -> void:
+	if _stepping_parcels:
+		return
+	_stepping_parcels = true
+	_interrupted_during_step = false
 	var recv := _receivers()
 	var space := body.get_world_3d().direct_space_state
 	var excl: Array[RID] = [body.get_rid()]
@@ -324,39 +375,89 @@ func _step_parcels(dt: float) -> void:
 		var p1 := p + (v + v1) * 0.5 * dt
 		_page[i] += dt
 		var done := false
+		# A solid hit limits all candidate mouths. Registration order cannot bypass a wall
+		# or select an opening behind another opening in the same physics segment.
+		var q := PhysicsRayQueryParameters3D.create(p, p1, ray_mask, excl)
+		var hit := space.intersect_ray(q)
+		var solid_fraction := 1.0
+		if not hit.is_empty():
+			solid_fraction = p.distance_to(hit["position"]) / maxf(p.distance_to(p1), 0.000001)
+		var nearest: Array = []
+		var nearest_fraction := solid_fraction
 		for rc in recv:
+			if not is_instance_valid(rc[0]) or rc[0].is_queued_for_deletion():
+				continue
+			if rc[0] is GSPourReceiver:
+				# Airborne parcels no longer follow their container. Cull against the
+				# travelled segment so dropping/carrying the source cannot redirect liquid.
+				var closest := Geometry3D.get_closest_point_to_segment(rc[0].global_position, p, p1)
+				if closest.distance_squared_to(rc[0].global_position) > 9.0:
+					continue
+				var fraction: float = rc[0].segment_fraction(p, p1)
+				if fraction >= 0.0 and fraction < nearest_fraction:
+					nearest_fraction = fraction
+					nearest = rc
+				continue
 			var cw: Vector3 = rc[1]
 			var n: Vector3 = rc[2]
 			var s0 := (p - cw).dot(n)
 			var s1 := (p1 - cw).dot(n)
 			if s0 >= 0.0 and s1 < 0.0:
-				var x := p.lerp(p1, s0 / (s0 - s1))
-				if x.distance_to(cw) < float(rc[3]) * 0.97:
-					var ml := _pvol[i]
-					(rc[0] as GSBottlePour).receive(ml, _pcol[i], self)
-					delivered_ml += ml
-					last_land = x
-					_t_land = lerpf(_t_land, _page[i], 0.3)
-					poured_into.emit((rc[0] as GSBottlePour).body, ml)
-					done = true
-					break
+				var fraction := s0 / (s0 - s1)
+				var x := p.lerp(p1, fraction)
+				if fraction < nearest_fraction and x.distance_to(cw) < float(rc[3]) * 0.97:
+					nearest_fraction = fraction
+					nearest = rc
+		if not nearest.is_empty():
+			var x := p.lerp(p1, nearest_fraction)
+			var ml := _pvol[i]
+			if nearest[0] is GSPourReceiver:
+				var endpoint: GSPourReceiver = nearest[0]
+				var accepted := endpoint.receive(ml, _pkind[i], self)
+				delivered_ml += accepted
+				# A virtual opening is not a floor. Rejected volume continues on the
+				# same physical trajectory and may hit a solid later in this segment.
+				_pvol[i] = ml - accepted
+				done = accepted >= ml
+				if accepted > 0.0 and is_instance_valid(endpoint):
+					poured_into.emit(endpoint, accepted)
+			else:
+				var target: GSBottlePour = nearest[0]
+				target.receive(ml, _pcol[i], self, _pkind[i])
+				# Bottle receivers own all arriving liquid, including their rim overflow.
+				_pvol[i] = 0.0
+				delivered_ml += ml
+				poured_into.emit(target.body, ml)
+				done = true
+			last_land = x
+			_t_land = lerpf(_t_land, _page[i], 0.3)
+		if _interrupted_during_step:
+			_settle_interrupted_flight()
+			_stepping_parcels = false
+			return
 		if not done:
-			var q := PhysicsRayQueryParameters3D.create(p, p1, ray_mask, excl)
-			var hit := space.intersect_ray(q)
 			if not hit.is_empty():
-				_land(hit["position"], hit["normal"], _pvol[i], _pcol[i], space, excl, _page[i])
+				var remaining_ml := _pvol[i]
+				_pvol[i] = 0.0
+				_land(hit["position"], hit["normal"], remaining_ml, _pcol[i], space, excl, _page[i])
 				_t_land = lerpf(_t_land, _page[i], 0.3)
 				done = true
 			elif _page[i] > max_flight or p1.y < -50.0:
 				world_lost_ml += _pvol[i]
 				spilled_ml += _pvol[i]
+				_pvol[i] = 0.0
 				done = true
+		if _interrupted_during_step:
+			_settle_interrupted_flight()
+			_stepping_parcels = false
+			return
 		if done:
 			_remove_parcel(i)
 			continue
 		_pp[i] = p1
 		_pv[i] = v1
 		i += 1
+	_stepping_parcels = false
 
 
 ## World landing: puddle (+ a few splash droplets carrying part of the volume). Steep hits drop straight down to the floor.
@@ -389,7 +490,7 @@ func _land(pos: Vector3, n: Vector3, ml: float, col: Color, space: PhysicsDirect
 # ------------------------------------------------------------------ receiving
 
 ## Liquid arriving from another pourer. Returns the accepted ml; the rest overflows over this container's rim.
-func receive(ml: float, col: Color, _from: GSBottlePour = null) -> float:
+func receive(ml: float, col: Color, _from: GSBottlePour = null, kind: StringName = &"unknown") -> float:
 	if not _ready_ctl():
 		return 0.0
 	var cap := _ctl.capacity_ml()
@@ -397,14 +498,30 @@ func receive(ml: float, col: Color, _from: GSBottlePour = null) -> float:
 	if have < 0.5:
 		_ctl.set_liquid_color(col)
 	var acc := clampf(cap - have, 0.0, ml)
+	var incoming_kind := _normalized_kind(kind)
+	if acc > 0.0:
+		liquid_kind = _mixed_kind(liquid_kind, have, incoming_kind)
 	body.fill = clampf((have + acc) / cap, 0.0, 1.0)
 	received_ml += acc
-	_overflow_ml += ml - acc
+	if ml > acc:
+		_overflow_kind = _mixed_kind(_overflow_kind, _overflow_ml, incoming_kind)
+		_overflow_ml += ml - acc
 	_ctl.agitate(clampf(ml * 0.02, 0.0, 0.3))
 	if body.sleeping:
 		body.sleeping = false
 	activate()
 	return acc
+
+
+static func _normalized_kind(kind: StringName) -> StringName:
+	var text := String(kind).strip_edges()
+	return StringName(text) if not text.is_empty() else &"unknown"
+
+
+static func _mixed_kind(previous: StringName, previous_ml: float, incoming: StringName) -> StringName:
+	if previous_ml <= 0.000001:
+		return incoming
+	return incoming if _normalized_kind(previous) == incoming else &"unknown"
 
 
 ## Volume that did not fit leaves over the low side of the rim as parcels (they land as puddle / in another receiver).
@@ -423,7 +540,7 @@ func _emit_overflow() -> void:
 	var r := _ctl.mouth_radius * 1.05
 	var p := lxf * (_ctl.mouth_centre + e * r)
 	var ew := (bas * e).normalized()
-	_add_parcel(p, ew * 0.25 + body.linear_velocity, _overflow_ml, _ctl.liquid_color())
+	_add_parcel(p, ew * 0.25 + body.linear_velocity, _overflow_ml, _ctl.liquid_color(), _overflow_kind)
 	poured_ml += _overflow_ml
 	_overflow_ml = 0.0
 
