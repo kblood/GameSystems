@@ -10,7 +10,14 @@ The component does not own inventory, scene nodes, collision queries, audio,
 haptics, or a bag model. Pair it with `gs_gear_inventory` for item ownership and
 let the game decide when to query visibility or play feedback.
 
-`GSBackpackInteraction` composes this policy with the scene adapter's gated
+`GSBackpackHandlePull` is the deterministic local-space gesture policy for
+pulling a worn bag outward to inspect it. It validates the active hand/action,
+ignores lateral and inward movement, applies a 3.5 cm deadzone, caps travel at
+20 cm, eases motion, and returns after cancellation. The host remains
+responsible for tracking, collision-limited movement, the worn anchor and
+scene presentation.
+
+`GSBackpackInteraction` composes `GSBackpackApproach` with the scene adapter's gated
 `request_retrieve()` API. By default, the `back` slot requires the deliberate
 approach; other slots use the adapter's normal tracking, reach and occlusion
 checks. The bridge never changes ownership or reparents an item itself, so it
@@ -26,6 +33,7 @@ if result.allowed:
 ```
 
 Reset a side on tracking loss, hand ownership changes, teleport, or pack reset.
-The tests cover both mirrored hands, tracking loss, jumps, hitches, expiry and
-body-crossing rejection. `gs_backpack_interaction_tests.gd` verifies the
+The tests cover mirrored shoulder approaches, tracking loss, jumps, hitches,
+expiry, body-crossing rejection, and bounded handle-pull behavior.
+`gs_backpack_interaction_tests.gd` verifies the
 composition and confirms rejected reaches never call the host adapter.

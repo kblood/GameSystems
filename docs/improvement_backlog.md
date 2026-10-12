@@ -969,6 +969,13 @@ gennemgang dækker håndtracking/controller-skift, kropsrammens bevægelse, inve
 restore og feedback i rigtige VR-flow; komfort og frame pacing kræver fortsat fysisk
 Steam Frame-test.
 
+Nyt afsluttet genbrugsdeltrin: den deterministiske lokale håndtagstrækmodel er nu en del af
+`gs_backpack` som `GSBackpackHandlePull`. Den deler hånd-/handlingsejerskab, 3,5 cm dødzone,
+20 cm loft, udjævning og retur ved tracking-tab mellem værtsprojekter; Nightfall beholder
+rumlige sweep-forespørgsler, kropsankring og visning i sin scene-adapter. GameSystems-kontrakten
+består nu 34 checks og interaktionsbroen 10; Nightfalls ni målrettede rygsækprocesser plus
+`game-systems` består 10/10. Dette er stadig syntetisk/headless-validering, ikke headsetaccept.
+
 Nyt afsluttet backpack-delmål: mislykkede lagringsforsøg ved en åben indvendig
 lomme får lokal `FULL`, `WRONG ITEM`, `TOO LARGE` eller `INVALID SIZE` feedback.
 Inventory-ledgeren afgør fortsat ejerskab og kapacitet; afvisninger ændrer hverken

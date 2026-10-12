@@ -20,6 +20,11 @@ and WebXR game each track their own `main`; old duplicate Godot branches were ve
 as ancestors of kblood's Godot `main` and cleaned up. See
 [`improvement_backlog.md`](improvement_backlog.md) for the current per-task record.
 
+`gs_backpack` now also provides reusable approach validation, the gated inventory
+interaction bridge, and the bounded local-space handle-pull policy. Its source contracts
+pass 34 handle/approach checks and 10 bridge checks; Nightfall keeps collision sweeps,
+body anchors, presentation, and XR input in its host adapter.
+
 Status (2026-10-12): **G0 afklaret, G1 og G2 implementeret og versioneret**; næste planlagte porttrin er G3 (fælles grebs-/skeletdata).
 Status (2026-10-10): undersøgelse, ingen kode ændret i `NightfallContractsGodot*` eller i `GameSystems/extensions`. Relateret: [extensions_plan.md](extensions_plan.md) (trin 1–9), [grab_findings.md](grab_findings.md).
 

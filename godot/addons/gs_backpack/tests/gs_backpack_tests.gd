@@ -1,6 +1,7 @@
 extends SceneTree
 ## Contract checks for the portable over-shoulder approach policy.
 const Approach = preload("res://addons/gs_backpack/gs_backpack_approach.gd")
+const HandlePull = preload("res://addons/gs_backpack/gs_backpack_handle_pull.gd")
 const SHOULDER_Y := 0.35
 var checks := 0
 var failures: Array[String] = []
@@ -89,5 +90,46 @@ func run() -> void:
 	valid_right(approach)
 	for _i in range(9): approach.observe("right", true, Vector3(0.18, 0.40, 0.15), SHOULDER_Y, 0.15)
 	check(approach.check("right", Vector3(0.18, 0.40, 0.15), SHOULDER_Y).reason == "back_approach_expired", "approach history expires within a bounded lifetime")
+	var pull := HandlePull.new()
+	check(not pull.begin(Vector3.ZERO,"middle") and not pull.begin(Vector3(INF,0.0,0.0),"right"),
+		"handle pull rejects unknown sides and non-finite hand positions")
+	check(not pull.begin(Vector3.ZERO,"right","click") and pull.begin(Vector3.ZERO,"right","interact"),
+		"handle pull accepts explicit grip/interact actions only")
+	check(pull.input_kind == "interact" and not pull.begin(Vector3.ZERO,"left"),
+		"one active pull retains its source action and rejects a second hand")
+	pull.step(Vector3(0.2,0.0,-0.02),true,0.1)
+	check(pull.target_m == 0.0 and pull.offset_m == 0.0,
+		"sideways motion and sub-deadzone travel do not pull the bag")
+	pull.step(Vector3(0.0,0.0,-0.10),true,0.1)
+	check(is_equal_approx(pull.target_m,0.065) and pull.offset_m > 0.0 and pull.offset_m < pull.target_m,
+		"outward travel beyond the deadzone eases toward a local-space target")
+	pull.step(Vector3(0.0,0.0,-2.0),true,0.1)
+	check(pull.target_m == HandlePull.MAX_PULL_M,
+		"handle pull saturates at its fixed 20 cm travel bound")
+	var before_invalid_dt := pull.offset_m
+	pull.step(Vector3(0.0,0.0,-0.1),true,NAN)
+	check(pull.offset_m == before_invalid_dt and pull.active,
+		"invalid frame time cannot corrupt an active pull offset")
+	pull.step(Vector3.ZERO,false,0.1)
+	check(not pull.active and pull.target_m == 0.0 and pull.offset_m < HandlePull.MAX_PULL_M,
+		"tracking loss cancels the gesture and begins a smoothed return")
+	for _i in range(60): pull.step(Vector3.ZERO,true,1.0/72.0)
+	check(pull.offset_m == 0.0 and pull.side.is_empty(),
+		"cancelled handle pull settles fully back to its worn anchor")
+	pull.begin(Vector3.ZERO,"left")
+	pull.step(Vector3(0.0,0.0,-0.15),true,0.1)
+	var active_offset := pull.offset_m
+	pull.step(Vector3(NAN,0.0,0.0),true,0.1)
+	check(not pull.active and pull.offset_m < active_offset,
+		"a non-finite tracked hand cancels the active pull without jumping the bag")
+	for _i in range(60): pull.step(Vector3.ZERO,true,1.0/72.0)
+	pull.begin(Vector3.ZERO,"right","interact")
+	pull.step(Vector3(0.0,0.0,-0.15),true,0.1)
+	var cancelled_offset := pull.offset_m
+	pull.cancel()
+	check(not pull.active and pull.target_m == 0.0 and pull.offset_m == cancelled_offset,
+		"explicit cancellation preserves only the current eased offset for a smooth return")
+	for _i in range(60): pull.step(Vector3.ZERO,true,1.0/72.0)
+	check(pull.offset_m == 0.0, "explicitly cancelled pull eventually settles back to zero")
 	print("GS_BACKPACK checks=%d failures=%d" % [checks, failures.size()])
 	quit(1 if not failures.is_empty() else 0)
