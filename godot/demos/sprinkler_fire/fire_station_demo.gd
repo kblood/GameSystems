@@ -42,14 +42,14 @@ var valve_open := true
 var main_switch_on := true
 var fault_switch_on := false
 var last_spray_ml := 0.0
-var last_spray_kind: StringName = &""
 var last_puddle_result: Dictionary = {}
 var sprinkler_source_receipts: Dictionary = {}
 var _puddle_id_by_sprinkler_source: Dictionary = {}
 var _spill_spread_registered := false
-var _spray_linger_seconds := 0.0
+var _spray_linger_by_source: Dictionary = {}
+var _spray_visual_by_source: Dictionary = {}
+var _spray_sources_this_frame: Dictionary = {}
 var _status_label: Label3D
-var _spray_visual: MeshInstance3D
 var _fire_visual: MeshInstance3D
 var _fire_light: OmniLight3D
 var _spread_fire_visual: MeshInstance3D
@@ -178,20 +178,16 @@ func advance(delta: float) -> Dictionary:
 		sprinkler_result.events.append_array(sprinkler_tick.get("events", []))
 		sprinkler_debt = sprinkler_result.pending_seconds
 	last_spray_ml = 0.0
-	last_spray_kind = &""
+	_spray_sources_this_frame.clear()
 	for event: Dictionary in sprinkler_result.get("events", []):
 		if event.get("type") != &"spray": continue
 		last_spray_ml += float(event.ml)
-		last_spray_kind = StringName(event.get("kind", &"unknown"))
 		_receive_sprinkler_spray(event)
-	if last_spray_ml > 0.0:
-		_spray_linger_seconds = 0.18
-	else:
-		_spray_linger_seconds = maxf(0.0, _spray_linger_seconds - delta)
-	_spray_visual.visible = _spray_linger_seconds > 0.0
-	var spray_material := _spray_visual.material_override as StandardMaterial3D
-	if spray_material != null and last_spray_kind != &"":
-		spray_material.albedo_color = _liquid_color(last_spray_kind)
+	for source_variant: Variant in _spray_visual_by_source.keys():
+		var source := StringName(source_variant)
+		var linger := 0.18 if _spray_sources_this_frame.has(source) else maxf(0.0, float(_spray_linger_by_source.get(source, 0.0)) - delta)
+		_spray_linger_by_source[source] = linger
+		(_spray_visual_by_source[source] as MeshInstance3D).visible = linger > 0.0
 	_sync_fire_visual()
 	_update_status()
 	return {"ok": fire_result.ok and sprinkler_result.ok, "thermal": fire_result,
@@ -236,6 +232,7 @@ func _receive_sprinkler_spray(event: Dictionary) -> Dictionary:
 	if source == &"" or kind == &"" or not is_finite(emitted) or emitted < 0.0 \
 			or not is_finite(thermally_applied) or thermally_applied < 0.0 or thermally_applied > emitted + 1.0e-6:
 		return {"ok": false, "source": source, "kind": kind, "ml": 0.0}
+	_show_spray_for_event(source, kind, event)
 	var runoff := maxf(0.0, emitted - thermally_applied)
 	var puddle_id := int(_puddle_id_by_sprinkler_source.get(source, -1))
 	var deposited := 0.0
@@ -258,6 +255,40 @@ func _receive_sprinkler_spray(event: Dictionary) -> Dictionary:
 	return {"ok": true, "source": source, "kind": kind, "emitted_ml": emitted,
 		"thermal_applied_ml": thermally_applied, "runoff_ml": runoff,
 		"puddle_ml": deposited, "removed_ml": runoff - deposited}
+
+
+func _show_spray_for_event(source: StringName, kind: StringName, event: Dictionary) -> void:
+	var visual := _spray_visual_by_source.get(source) as MeshInstance3D
+	if visual == null:
+		var head_position: Vector3 = event.get("position", Vector3.ZERO)
+		visual = _cylinder(0.36, 2.3, head_position - Vector3(0.0, 0.58, 0.0), _liquid_color(kind))
+		add_child(visual)
+		_spray_visual_by_source[source] = visual
+	else:
+		var head_position: Vector3 = event.get("position", Vector3.ZERO)
+		visual.position = head_position - Vector3(0.0, 0.58, 0.0)
+		var material := visual.material_override as StandardMaterial3D
+		if material != null: material.albedo_color = _liquid_color(kind)
+	visual.visible = true
+	_spray_sources_this_frame[source] = true
+
+
+func _has_visible_spray() -> bool:
+	for visual_variant: Variant in _spray_visual_by_source.values():
+		if (visual_variant as MeshInstance3D).visible: return true
+	return false
+
+
+func _spray_visual_state() -> Dictionary:
+	var state := {}
+	for source_variant: Variant in _spray_visual_by_source.keys():
+		var source := StringName(source_variant)
+		var visual := _spray_visual_by_source[source] as MeshInstance3D
+		var material := visual.material_override as StandardMaterial3D
+		state[source] = {"visible": visual.visible,
+			"color": material.albedo_color if material != null else Color.TRANSPARENT,
+			"linger_seconds": float(_spray_linger_by_source.get(source, 0.0))}
+	return state
 
 
 func set_battery_enabled(enabled: bool) -> void:
@@ -327,7 +358,8 @@ func demo_state() -> Dictionary:
 		"diesel_head": sprinklers.head_state(DIESEL_HEAD_ID), "fuel_valve_open": fuel_valve_open,
 		"main_switch_on": main_switch_on, "fault_switch_on": fault_switch_on,
 		"fuse_blown": electricity.state(FUSE_ID).blown,
-		"last_spray_ml": last_spray_ml, "spray_visible": _spray_visual.visible,
+		"last_spray_ml": last_spray_ml, "spray_visible": _has_visible_spray(),
+		"spray_visuals": _spray_visual_state(),
 		"diesel_puddle": puddles.components(diesel_puddle_id), "puddle_ledger": puddles.ledger(),
 		"sprinkler_water_puddle": puddles.components(sprinkler_water_puddle_id),
 		"sprinkler_source_receipts": sprinkler_source_receipts.duplicate(true),
@@ -376,9 +408,6 @@ func _build_scene() -> void:
 	var head := _sphere(0.16, Vector3(0.0, 3.72, 0.0), Color(0.72, 0.78, 0.82))
 	add_child(head)
 	add_child(_sphere(0.13, Vector3(0.8, 3.72, 0.0), Color(0.82, 0.84, 0.86)))
-	_spray_visual = _cylinder(0.65, 2.3, Vector3(0.0, 2.42, 0.0), Color(0.2, 0.62, 1.0, 0.32))
-	_spray_visual.visible = false
-	add_child(_spray_visual)
 	var camera := Camera3D.new()
 	camera.position = Vector3(7.5, 5.8, 9.0)
 	camera.current = true

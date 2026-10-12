@@ -28,6 +28,7 @@ Controls: **F** triggers the thermal-targeting water head, **V** opens/closes it
 **G** opens/closes its fuel valve. **B** enables/disables the finite pump battery, **S**
 opens/closes the circuit switch, **X** connects an overload branch, **C** replaces the fuse,
 **R** refills the finite water tank, **I** ignites the spill with a typed diesel receipt, and
-**E** consumes water from the spill to cool/extinguish it. Spray visualization follows the
-liquid kind and lingers briefly between simulation ticks. The demo does not model pool-fire
+**E** consumes water from the spill to cool/extinguish it. Each active head gets its own
+liquid-colored spray visual, so simultaneous water and diesel sprays remain distinguishable;
+each visual lingers briefly between simulation ticks. The demo does not model pool-fire
 fluid dynamics, plumbing pressure, airflow, or headset performance.

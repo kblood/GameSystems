@@ -59,6 +59,29 @@ func _run_tests() -> void:
 		and diesel_state.diesel_spill_visible,
 		"diesel-head flow debits its finite typed tank and joins the persistent diesel puddle")
 	runoff_demo.queue_free()
+	var mixed_spray_demo: Node3D = DemoScene.instantiate()
+	root.add_child(mixed_spray_demo)
+	mixed_spray_demo.set_fuel_valve(true)
+	mixed_spray_demo.trigger_runoff_head()
+	mixed_spray_demo.trigger_diesel_head()
+	var mixed_spray_tick: Dictionary = mixed_spray_demo.advance(0.1)
+	var mixed_spray_state: Dictionary = mixed_spray_demo.demo_state()
+	var concurrent_visuals: Dictionary = mixed_spray_state.spray_visuals
+	case_result(mixed_spray_tick.ok and concurrent_visuals.has(&"sprinkler:floor-head")
+		and concurrent_visuals.has(&"sprinkler:diesel-head")
+		and concurrent_visuals[&"sprinkler:floor-head"].visible
+		and concurrent_visuals[&"sprinkler:diesel-head"].visible
+		and concurrent_visuals[&"sprinkler:floor-head"].color == mixed_spray_demo._liquid_color(&"water")
+		and concurrent_visuals[&"sprinkler:diesel-head"].color == mixed_spray_demo._liquid_color(&"diesel"),
+		"concurrent water and diesel heads retain separate visuals with their exact liquid colors")
+	mixed_spray_demo.set_fuel_valve(false)
+	mixed_spray_demo.advance(0.1)
+	mixed_spray_demo.advance(0.1)
+	var isolated_linger: Dictionary = mixed_spray_demo.demo_state().spray_visuals
+	case_result(isolated_linger[&"sprinkler:floor-head"].visible
+		and not isolated_linger[&"sprinkler:diesel-head"].visible,
+		"active water spray refreshes its own linger while the stopped diesel spray expires")
+	mixed_spray_demo.queue_free()
 	var puddle_ignition: Dictionary = demo.ignite_diesel_spill()
 	var lit_spill: Dictionary = demo.demo_state()
 	case_result(puddle_ignition.ok and puddle_ignition.kind == &"diesel"
