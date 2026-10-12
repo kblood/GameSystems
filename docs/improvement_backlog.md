@@ -3,10 +3,13 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
-## Nye systemopgaver
+## Afsluttet bottle-factory lifecycle — 2026-10-12
 
-- **VR-rygsæk:** undersøg Nightfalls nuværende inventory/grab-kontrakter og lav en selvstændig, scene-genbrugelig rygsæk med fysisk adgang (Walking Dead VR-inspireret), stabile slots, håndinteraktion og kobling til `gs_gear_inventory`. Bevar udstyrsejerskab ved skift mellem hånd, rygsæk og verden; afgræns tracking og reach-komfort som headset-QA.
-- **Bottle API lifecycle:** håndtér ugyldige assets, fill-værdier, scene scope og disposal sikkert i `GSBottleExtension` før Nightfall-sync.
+`GSBottleExtension.create_bottle()` afviser nu ikke-finite fyldniveau, manglende modelressource
+og forældre uden for extensionens aktive scene, før den asserting bottle factory kaldes. Flasker
+tilføjes til scenen før tracking, og beholdte API-referencer kan ikke genoprette listeners efter
+disposal. Kilde-suite **21/21**, Nightfall integration **25/25**; Sol review uden blocker.
+Pushet som GameSystems `6ec987d` og synkroniseret/pushet til Nightfall `105873a`.
 
 ## Afsluttet sprinkler-lifecycle-runde — 2026-10-12
 
