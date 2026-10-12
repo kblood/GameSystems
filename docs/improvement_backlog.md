@@ -13,6 +13,16 @@ på den nye. Samme root er et sikkert no-op; root-skift er tilladt, når owneren
 Verifikation: GameSystems scene-adapter **82/82**; Nightfall rygsæk-/inventory-udsnit
 **13/13 processer, 502 checks**; sync `--check` består. Sol-review uden blocker.
 
+## Afsluttet flow-emitter-batch-runde — 2026-10-12
+
+Flow gennemfører nu alle aktive emittere, også når en effekt-, flow- eller supply-observer
+kaster efter et væsketræk. Begge receipts og emitter-ledgeren bevares; første fejl rejses
+efter batchen. Genindtrædende `step()` afvises, og pulser tælles ikke fejlagtigt med i den
+holdte dyserate.
+
+Verifikation: flow-suite **20/20**, fuld WebXR-demo Node-suite **534/534**, flow-browser-smoke
+**17/17**, produktionsbuild består; Sol-review uden blocker.
+
 ## Afsluttet kamera-render reentrancy-runde — 2026-10-12
 
 En scene-komponents `onBeforeRender` kunne kalde samme kamera-systems `step()` igen, mens feedets

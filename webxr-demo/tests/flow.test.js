@@ -44,6 +44,57 @@ test('a throwing first event emitter cannot suppress the authoritative liquid re
   near(w.supply.state('tank').ml,1120);near(w.flow.state('hose').emittedMl,80);near(w.flow.state('hose').pulsedMl,80);
   assert.deepEqual(events.map(([name])=>name),['flow:deposit','liquid:deposit']);near(events[1][1].ml,80);
 });
+test('step finishes later emitters after one committed delivery callback fails, then rethrows',()=>{
+  const failure=new Error('first emitter observer failed'),events=[];let thrown=false;
+  const supply=createSupplySystem();supply.add('tank',{capacityMl:300,components:{water:300}});
+  const flow=createFlowSystem({supply,emit:(name,data)=>{events.push([name,data]);if(!thrown&&name==='flow:deposit'){thrown=true;throw failure;}}});
+  flow.add('a',{tankId:'tank',sourceKey:'hose-a',rateMlPerSecond:100,target});
+  flow.add('b',{tankId:'tank',sourceKey:'hose-b',rateMlPerSecond:100,target});flow.start('a');flow.start('b');
+  assert.throws(()=>flow.step(1),error=>error===failure);
+  near(supply.state('tank').ml,100);near(flow.state('a').emittedMl,100);near(flow.state('b').emittedMl,100);
+  near(flow.state('a').flowMlPerSecond,100);near(flow.state('b').flowMlPerSecond,100);
+  assert.deepEqual(events.map(([name,data])=>[name,data.emitterId]),[
+    ['flow:deposit','a'],['liquid:deposit','a'],['flow:deposit','b'],['liquid:deposit','b'],
+  ]);
+  supply.dispose();flow.dispose();
+});
+test('throwing supply change observers cannot orphan committed flow deliveries',()=>{
+  const failure=new Error('supply observer failed'),events=[];let armed=false,thrown=false;
+  const supply=createSupplySystem({emit:name=>{if(armed&&!thrown&&name==='supply:changed'){thrown=true;throw failure;}}});
+  supply.add('tank',{capacityMl:300,components:{water:300}});armed=true;
+  const flow=createFlowSystem({supply,emit:(name,data)=>events.push([name,data])});
+  flow.add('a',{tankId:'tank',sourceKey:'hose-a',rateMlPerSecond:100,target});
+  flow.add('b',{tankId:'tank',sourceKey:'hose-b',rateMlPerSecond:100,target});flow.start('a');flow.start('b');
+  assert.throws(()=>flow.step(1),error=>error===failure);
+  near(supply.state('tank').ml,100);near(supply.state('tank').drawnMl,200);
+  near(flow.state('a').emittedMl,100);near(flow.state('b').emittedMl,100);
+  assert.deepEqual(events.map(([name,data])=>[name,data.emitterId]),[
+    ['flow:deposit','a'],['liquid:deposit','a'],['flow:deposit','b'],['liquid:deposit','b'],
+  ]);
+  supply.dispose();flow.dispose();
+});
+test('held-flow rate excludes a nested pulse committed before an observer throws',()=>{
+  const failure=new Error('outer observer failed');let flow,nested=false;
+  const supply=createSupplySystem();supply.add('tank',{capacityMl:300,components:{water:300}});
+  flow=createFlowSystem({supply,emit:(name,data)=>{if(!nested&&name==='flow:deposit'&&data.emitterId==='a'){nested=true;flow.pulse('a',50);throw failure;}}});
+  flow.add('a',{tankId:'tank',sourceKey:'hose-a',rateMlPerSecond:100,target});
+  flow.add('b',{tankId:'tank',sourceKey:'hose-b',rateMlPerSecond:100,target});flow.start('a');flow.start('b');
+  assert.throws(()=>flow.step(1),error=>error===failure);
+  near(supply.state('tank').ml,50);near(flow.state('a').emittedMl,150);near(flow.state('a').pulsedMl,50);
+  near(flow.state('a').flowMlPerSecond,100);near(flow.state('b').emittedMl,100);near(flow.state('b').flowMlPerSecond,100);
+  supply.dispose();flow.dispose();
+});
+test('nested held-flow steps are rejected without duplicating the outer batch',()=>{
+  let flow,attempted=false;const supply=createSupplySystem();supply.add('tank',{capacityMl:300,components:{water:300}});
+  flow=createFlowSystem({supply,apply:()=>{if(!attempted){attempted=true;flow.step(.5);}}});
+  flow.add('a',{tankId:'tank',sourceKey:'hose-a',rateMlPerSecond:100,target});
+  flow.add('b',{tankId:'tank',sourceKey:'hose-b',rateMlPerSecond:100,target});flow.start('a');flow.start('b');
+  assert.throws(()=>flow.step(1),/Flow step is not reentrant/);
+  near(supply.state('tank').ml,100);near(flow.state('a').emittedMl,100);near(flow.state('b').emittedMl,100);
+  near(flow.state('a').flowMlPerSecond,100);near(flow.state('b').flowMlPerSecond,100);
+  flow.step(.5);near(supply.state('tank').ml,0);near(flow.state('a').flowMlPerSecond,100);near(flow.state('b').flowMlPerSecond,100);
+  supply.dispose();flow.dispose();
+});
 test('checkpoint restores liquid history while neutralizing transient held controls',()=>{
   const w=world();w.flow.start('hose');w.flow.step(.1);const saved=w.flow.capture();w.flow.step(.1);w.flow.restore(saved);assert.deepEqual(w.flow.capture(),saved);assert.equal(w.flow.state('hose').active,false);near(w.flow.state('hose').flowMlPerSecond,0);
 });

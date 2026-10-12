@@ -16,22 +16,30 @@ export function createFlowSystem({supply,emit=()=>{},resolveTarget=null,acceptTa
   if(!Number.isSafeInteger(maxEmitters)||maxEmitters<1)throw new RangeError('Invalid emitter budget');
   if(resolveTarget!==null&&typeof resolveTarget!=='function')throw new TypeError('Invalid target resolver');
   if(typeof acceptTarget!=='function'||typeof apply!=='function')throw new TypeError('Flow callbacks must be functions');
-  const store=registry(),tiers=tierState(quality);let disposed=false;
+  const store=registry(),tiers=tierState(quality);let disposed=false,stepping=false;
   function live(){if(disposed)throw new Error('Flow system is disposed');}
   function deliver(e,requested,pulse=false,explicitTarget=undefined){
     const raw=explicitTarget===undefined?(resolveTarget?resolveTarget(e.id):e.target):explicitTarget,target=targetState(raw);
     if(!target||!acceptTarget(target,e.id))return {ml:0,components:{}};
-    const out=supply.draw(e.tankId,requested);positive(out?.ml,'delivered ml',true);
+    const batchable=typeof supply.beginBatch==='function'&&typeof supply.flush==='function';
+    const supplyBatch=batchable?supply.beginBatch():null;
+    let out;
+    try{out=supply.draw(e.tankId,requested);}
+    catch(error){if(batchable)try{supply.flush(supplyBatch);}catch{}throw error;}
+    let failure,failed=false;
+    if(batchable)try{supply.flush(supplyBatch);}catch(error){failure=error;failed=true;}
+    positive(out?.ml,'delivered ml',true);
     if(out.ml>requested+1e-7||!out.components||typeof out.components!=='object'||Array.isArray(out.components))throw new Error('Invalid source delivery');
     let sum=0;for(const[kind,ml]of Object.entries(out.components)){stateId(kind,'liquid kind');sum+=positive(ml,'component ml',true);}if(Math.abs(sum-out.ml)>1e-6)throw new Error('Source components disagree with delivered volume');
     e.target=target;e.emittedMl+=out.ml;if(pulse)e.pulsedMl+=out.ml;
-    if(out.ml){const receipt=()=>({...targetState(target),emitterId:e.id,sourceKey:e.sourceKey,ml:out.ml,components:{...out.components}});let failure,failed=false;
-      try{apply(receipt());}catch(error){failure=error;failed=true;}
+    if(out.ml){const receipt=()=>({...targetState(target),emitterId:e.id,sourceKey:e.sourceKey,ml:out.ml,components:{...out.components}});
+      try{apply(receipt());}catch(error){if(!failed){failure=error;failed=true;}}
       // The draw and history are already committed. Always deliver both receipts so a
       // failing effect callback or first event observer cannot orphan that liquid.
       for(const event of ['flow:deposit','liquid:deposit'])try{emit(event,receipt());}catch(error){if(!failed){failure=error;failed=true;}}
-      if(failed)throw failure;
-    }return out;
+    }
+    if(failed)throw failure;
+    return out;
   }
   const api={
     get quality(){return tiers.quality;},setQuality:tiers.setQuality,
@@ -46,7 +54,19 @@ export function createFlowSystem({supply,emit=()=>{},resolveTarget=null,acceptTa
     setTarget(id,target){live();store.get(id).target=targetState(target);},
     pulse(id,ml,target=undefined){live();positive(ml,'ml',true);return deliver(store.get(id),ml,true,target);},
     step(dt){live();positive(dt,'dt',true);if(dt>10)throw new RangeError('Flow update exceeds catch-up budget');
-      for(const e of store.entries.values()){e.flowMlPerSecond=0;if(e.owners.size&&dt>0){const out=deliver(e,e.rateMlPerSecond*dt);e.flowMlPerSecond=e.owners.size?out.ml/dt:0;}}
+      if(stepping)throw new Error('Flow step is not reentrant');
+      stepping=true;
+      try{
+        let failure,failed=false;
+        for(const e of store.entries.values()){
+          e.flowMlPerSecond=0;
+          if(!e.owners.size||dt<=0)continue;
+          const before=e.emittedMl,beforePulsed=e.pulsedMl;
+          try{const out=deliver(e,e.rateMlPerSecond*dt);e.flowMlPerSecond=e.owners.size?out.ml/dt:0;}
+          catch(error){if(!failed){failure=error;failed=true;}const committed=e.emittedMl-before-(e.pulsedMl-beforePulsed);e.flowMlPerSecond=e.owners.size?Math.max(0,committed)/dt:0;}
+        }
+        if(failed)throw failure;
+      }finally{stepping=false;}
     },
     capture(){live();return {schema:'gamesystems.flow.v1',emitters:[...store.entries.keys()].map(id=>{const {active,owners,flowMlPerSecond,...saved}=api.state(id);return saved;})};},
     prepareRestore(raw,{supplyPlan=null}={}){

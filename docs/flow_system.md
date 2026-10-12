@@ -33,6 +33,12 @@ forskellige pytter. Effekter og begge eventtyper modtager hver deres kopi af pay
 Når en gyldig levering har trukket væske og opdateret emitter-ledgeren, forsøger flow begge receipts selv hvis
 `apply` eller den første `emit`-callback kaster. Den første callback-fejl kastes videre efter begge forsøg;
 leveringen er allerede bogført og må ikke gentages.
+Under `step(dt)` færdiggør systemet også resten af den aktive emitter-batch, selv hvis én levering kaster.
+Flow forsøger de senere emittere, bevarer flowrater ud fra faktisk bogførte træk og kaster derefter den
+første fejl efter batchen.
+Når supply-API'et tilbyder `beginBatch`/`flush`, leverer flow hver tankændring under en batch, så en
+synkron supply-observerfejl først kommer efter det faktiske træk er returneret; fejl fra den flush følger
+samme receipt- og batchregel.
 
 Appen bestemmer væskens effekt. I brandstationen køler kun vanddelen et objekt eller en pool.
 Alle komponenter projiceres til den relevante gulvpyt med kilde `hose`. Som i sprinklerdemoen er dette
