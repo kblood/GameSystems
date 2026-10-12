@@ -10,8 +10,28 @@ boundary: browser JavaScript is reference material, not a native runtime depende
 Port behavior and data formats; do not import a sibling project's runtime implementation
 to avoid designing the native contract.
 
-Godot provides a `WebXRInterface` for Web exports; see the
-[Godot WebXR interface](https://docs.godotengine.org/en/4.7/classes/class_webxrinterface.html).
+Godot provides a `WebXRInterface` only in Web exports. Godot 4.7 Web exports use WebGL 2
+with the Compatibility renderer; Forward+ and Mobile are not supported on Web. See
+[Godot's WebXR interface](https://docs.godotengine.org/en/4.7/classes/class_webxrinterface.html)
+and [Web export renderer requirements](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html).
+The browser exposes WebXR only in a secure context: deploy over HTTPS, with localhost
+available for local development. Starting an immersive session also requires a recent user
+gesture, so call `initialize()` directly from an explicit “Enter VR” button handler rather
+than from startup or a later timer/callback. See the [WebXR security and activation rules](https://www.w3.org/TR/webxr/).
+
+Godot's WebXR lifecycle is asynchronous. Connect `session_supported`, `session_started`,
+`session_ended` and `session_failed` before requesting support or initializing. Check
+`is_session_supported("immersive-vr")` through its `session_supported` signal; configure
+`session_mode`, reference spaces and required/optional features before `initialize()`. A
+true return from `initialize()` only means the request could be made: wait for
+`session_started` before setting `get_viewport().use_xr = true`, show a useful fallback on
+`session_failed`, and set `use_xr = false` on `session_ended`. Test browser exit and failed
+feature negotiation as normal lifecycle paths. Godot Web exports that enable thread support
+or GDExtensions require cross-origin isolation. Godot 4.7 supports this through COOP/COEP
+response headers or its documented PWA service-worker workaround; basic WebXR alone does
+not require it. See the Web export guide's [thread and extension support](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#thread-and-extension-support)
+and [serving the files](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#serving-the-files) sections.
+
 Godot 4.7's XR action map is currently part of its OpenXR module, so do not assume that
 OpenXR bindings automatically cover a Godot WebXR export. Verify its input path on the
 exact Godot release and target browser.

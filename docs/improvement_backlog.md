@@ -1,5 +1,17 @@
 # Løbende forbedringer af GameSystems
 
+## VR performance guide: Steam Frame execution paths — 2026-10-12
+
+Clarified that PCVR streamed from a host and games running directly on Steam Frame are
+separate profiling targets. The guide now names Windows/Linux PC, ARM64 Linux and Android
+APK execution paths and links Valve's current recommendation, so teams choose a build path
+from their renderer and workload rather than inferring it from the headset CPU. Sol review
+also found missing Godot WebXR startup requirements and a physics-rate caveat. The guides now
+cover secure-context/user-gesture startup, async session signals and failure/end handling,
+WebGL2/Compatibility, cross-origin isolation options, plus physics tick-rate profiling.
+All VR guide relative links resolve; `git diff --check` passes.
+Guides: [VR performance](vr/performance_vr.md); [Godot/WebXR porting](vr/godot_webxr_porting.md).
+
 ## Optional Godot spatial fire spread — 2026-10-12
 
 Added `gs_fire_spread` as a separate, bounded composition adapter. It registers up to 256
