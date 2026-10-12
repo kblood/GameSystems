@@ -26,6 +26,11 @@ Valve-specific hardware; Meta's [controller input](https://developers.meta.com/v
 and [hand interaction](https://developers.meta.com/vr/documentation/unity/unity-handtracking-interactions/)
 pages are useful device references, though their Unity APIs do not define Godot bindings.
 
+In Godot's OpenXR action map, use `Float` actions for analog trigger and grip inputs
+when gameplay needs a consistent press threshold; read the value and apply explicit
+press/release hysteresis in the game. Binding those inputs as `Bool` leaves the
+conversion threshold to the XR runtime. See the [Godot 4.7 action map guidance](https://docs.godotengine.org/en/4.7/tutorials/xr/xr_action_map.html).
+
 ## Locomotion and turning
 
 Offer a consistent primary path and explicit comfort options:

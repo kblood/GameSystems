@@ -26,7 +26,7 @@ The player can physically move hands faster and farther than a plausible body ca
 follow. Do not use the torso to pull tracked hands back. Instead, let the avatar body
 stretch within a designed limit, soften the body response, or fade to a tracked-hand
 representation. Avoid camera motion from body collision or ragdoll correction. The
-player's physical head remains the camera authority.
+tracked headset pose remains the camera authority.
 
 For NPCs, attacks and reactions must stay legible in the headset. Keep collision near
 the face bounded, avoid sudden knockback toward the camera, and do not let a solver push
