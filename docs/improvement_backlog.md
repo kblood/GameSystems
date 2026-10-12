@@ -37,6 +37,16 @@ Verifikation på Godot 4.7.2: thermal/fire **53/53**, typed pytter **66/66**,
 sprinklerkerne **54/54** og fire-station-integration **27/27**. Nye regressioner dækker
 ændret måltemperatur inde i både brændstof- og vandwithdraw.
 
+## Native kamera-feed: pixelverifikation — 2026-10-12
+
+Kamera-addonets kontrakt er nu en del af `godot/tests/README.md`, så kildeprojektets
+samlede native suite dækker API- og schedulingkontrakten. Godot 4.7.2
+består **552 checks fordelt på 14 scripts**, når `gs_cameras` headless-suiten køres
+sammen med de øvrige 13 scripts. En separat graphics-enabled Vulkan-kørsel på RTX 3080 Ti
+består kameraets **79/79** checks og verificerer feedets scenegeometri og environment-
+baggrund samt de samme center-/hjørnepixels på den registrerede monitor. Det er desktop-
+GPU-evidens, ikke headset-framepacing eller XR-compositoracceptance.
+
 ## VR performance guide: Steam Frame execution paths — 2026-10-12
 
 Clarified that PCVR streamed from a host and games running directly on Steam Frame are
