@@ -1,0 +1,29 @@
+# gs_thermal
+
+Bounded, engine-independent gameplay heat and fire state for Godot projects. The
+system owns rooms, authored thermal objects, explicit heat links and a capped 20 Hz
+fixed-step clock. It does not simulate airflow, pressure, voxel heat transfer or
+real material chemistry.
+
+Objects can warm and ignite from authored energy, burn a finite fuel budget, heat
+their room, consume normalized room oxygen and add room smoke. Cooling, water and
+foam provide simple gameplay extinguishing. All material, rate and energy values
+are authored gameplay units; `heat_kj_per_fuel`, `PETROL_KJ_PER_ML` and
+`DIESEL_KJ_PER_ML` are not real-world fuel specifications.
+
+`GSPuddleFireAdapter` optionally accepts a store implementing `components(id)` and
+`withdraw(id, kind, ml)`. It burns only explicitly typed petrol or diesel, and
+extinguishes only with water or foam. It never uses liquid color to infer identity.
+Keep this adapter outside `gs_bottles` so the bottle/puddle addon does not depend
+on fire gameplay.
+
+This first native vertical slice does not yet provide sprinkler scheduling,
+spatial fire spread, coordinated bottle/source checkpoints, or headset profiling.
+Those are separate follow-up tasks. The shared Godot guide and validation limits are
+documented in [`docs/godot_thermal.md`](../../../docs/godot_thermal.md).
+
+Run the focused contract from the GameSystems repository:
+
+```powershell
+godot --headless --path godot --script res://addons/gs_thermal/tests/gs_thermal_tests.gd
+```

@@ -3,7 +3,7 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
-## Native typede pytter: HIGH-stream host-checkpoint i review — 2026-10-12
+## Afsluttet native typede pytter: HIGH-stream host-checkpoint — 2026-10-12
 
 `GSPuddleStore` bevarer separate komponenter og stabile ID'er gennem merge,
 delvist forbrug og fordampning. Managerens dråber bevarer eksplicit identitet fra
@@ -37,9 +37,22 @@ Low-tier hole-accumulatorer flushes nu ved terminal flaske-break, og intakte
 flasker kan checkpoint/restore kildefyldning, typed sub-drop-mængde, farve og hul-
 topologi atomisk. HIGH-stream persistence er implementeret i manager- og
 flaskesnapshots; 66-check integrationssuite passeret, afsluttende Sol-review godkendt. Næste selvstændige
-systemopgave efter review er et native thermal-/sprinklerlag over store-API'ets
-faktiske petrol/diesel/water/foam-udtag. Farve må fortsat aldrig afgøre brændstof.
-WebXR beholder separat eksisterende pool-/thermal-integration.
+WebXR beholder sit separate pool-/thermal-/sprinklersystem. Se næste afsnit for
+den native Godot-fire/thermal-kerne. Næste opgaver er sprinklerstyring og supply,
+derefter spatial brandspredning og koordinerede flaske-checkpoints.
+
+## Native Godot thermal/fire — første vertikale snit — 2026-10-12
+
+`gs_thermal` er et selvstændigt bounded Godot-addon med rum, temperatur, oxygen,
+røg, finite brændstof, authored varmeforbindelser og 20 Hz fixed steps. Den valgfrie
+`GSPuddleFireAdapter` bruger kun faktiske store-receipts: petrol/diesel giver
+gameplay-varme, mens vand/skum slukker. Runtime varme holdes inden for den dokumenterede
+tilstandsgrænse, også når rum, forbrænding eller forbindelser leverer varme. Alle budgets
+og retningslinjer er beskrevet i [Godot thermal-guiden](godot_thermal.md); de 33 fokuserede
+checks består.
+Sol har reviewet både koden og guiden uden resterende blockers. Det er ikke endnu
+samme feature-scope som WebXR: sprinklerplanlægning, spatial spredning,
+checkpoint-koordinering og headsetmålinger mangler fortsat.
 
 ## Afsluttet gs_bottles pour-quality-runde — 2026-10-12
 

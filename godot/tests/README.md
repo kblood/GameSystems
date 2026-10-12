@@ -7,6 +7,7 @@ godot --headless --path godot --script res://addons/gs_host/tests/gs_host_tests.
 godot --headless --path godot --script res://tests/gs_gear_inventory_tests.gd
 godot --headless --path godot --script res://tests/gs_gear_inventory_scene_adapter_tests.gd
 godot --headless --path godot --script res://tests/gs_resource_adapters_tests.gd
+godot --headless --path godot --script res://addons/gs_thermal/tests/gs_thermal_tests.gd
 godot --headless --path godot --script res://tests/gs_weapon_catalog_tests.gd
 godot --headless --path godot --script res://tests/gs_weapon_loadout_tests.gd
 godot --headless --path godot --script res://addons/gs_backpack/tests/gs_backpack_tests.gd

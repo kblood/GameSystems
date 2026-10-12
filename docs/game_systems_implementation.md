@@ -18,6 +18,11 @@ beskriver fundamentet fra første implementation.
 | `tools` | `add`, `state`, `hold`, `release`, `use`, `insert`, `removePart`, `forgetPart`, `releaseAll`, `remove` | `tools:changed`, `tools:installed`, `tools:removed`, `tools:impact` |
 | `acoustics` | `addRoom`, `addPortal`, `setPortal`, `addListener`, `moveListener`, `path`, `sound`, `step`, `removeRoom`, `removePortal`, `removeListener` | `acoustics:heard`, `acoustics:dropped` |
 
+Godot also has native bottle/liquid storage and a first bounded fire/thermal vertical slice;
+see [native puddles](native_puddles.md) and [Godot thermal](godot_thermal.md). The native
+kernel is intentionally smaller than the WebXR thermal extension; sprinkler scheduling and
+spatial fire spread remain follow-up work.
+
 Alle kerner har `setQuality`, `quality` og `dispose`. Alle moduler eksporterer en default extension-factory samt en navngiven
 `create…System`. Kilde: `extensions/<id>/index.js`. Kun den fælles, offentlige host-helper `extensions/host/system.js` importeres
 af kernerne; de importerer ingen rendering- eller physics-engine og ingen søstersystems interne filer.

@@ -102,7 +102,7 @@ checkpoint.
 
 ## Verified routes and remaining accounting work
 
-`gs_puddle_tests.gd` covers 65 checks for typed merges, partial withdrawal and
+`gs_puddle_tests.gd` covers 66 checks for typed merges, partial withdrawal and
 evaporation, pool/volume/component limits, real ray-tested droplet landing,
 pour/splash identity, HIGH leak FIFO identity/geometry and JSON persistence,
 source-to-stream rebinding, same-kind source motion,
@@ -121,6 +121,6 @@ leak volume was already debited from the source. Intact bottles can now capture
 and restore those pending amounts with source fill and typed identity. This is a
 source-level contract only; the host still owns whole-bottle identity, pose and
 coordination with the manager's liquid checkpoint.
-Native fire integration
-still requires a separately implemented thermal/ignition adapter. WebXR retains
-its existing separate pool/thermal implementation.
+The native typed store now has an optional receipt-based fire bridge; see
+[`godot_thermal.md`](godot_thermal.md). Native sprinkler host wiring and WebXR's
+separate pool/thermal implementation remain distinct.
