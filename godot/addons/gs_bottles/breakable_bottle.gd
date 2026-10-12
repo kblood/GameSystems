@@ -126,6 +126,155 @@ func wake_leaks() -> void:
 		set_physics_process(true)
 
 
+## Captures liquid still owned by a low-tier bottle leak source. HIGH stream
+## batches have independent transport state and are deliberately refused here.
+## The host must checkpoint this alongside its bottle identity and world pose.
+func capture_leak_checkpoint() -> Dictionary:
+	if not _built or state != &"intact" or not is_finite(fill) or fill < 0.0 or fill > 1.0 \
+			or lut == null or not is_finite(lut.capacity_ml) or lut.capacity_ml <= 0.0 or leaks.size() > 3:
+		return {}
+	var entries: Array[Dictionary] = []
+	for leak in leaks:
+		var stream: Object = leak.get("stream")
+		if is_instance_valid(stream) and not bool(stream.get("finished")):
+			return {}
+		var position: Vector3 = leak.get("p", Vector3.ZERO)
+		var normal: Vector3 = leak.get("n", Vector3.UP)
+		var radius: float = leak.get("r", 0.0)
+		var accumulated: float = leak.get("acc", 0.0)
+		var color: Color = leak.get("acc_color", lut.color)
+		var liquid_kind := StringName(GSPuddleStore.normalize_kind(StringName(leak.get("acc_kind", _spill_kind()))))
+		if not position.is_finite() or not _valid_normal(normal) \
+				or not _valid_hole_pose(position, radius) or not is_finite(radius) or radius <= 0.0 or not is_finite(accumulated) \
+				or accumulated < 0.0 or accumulated > GSPuddleStore.MAX_VOLUME_ML or not _finite_color(color):
+			return {}
+		entries.append({"position": _vector_array(position), "normal": _vector_array(normal), "radius": radius,
+			"accumulated_ml": accumulated, "liquid_kind": String(liquid_kind),
+			"color": [color.r, color.g, color.b, color.a]})
+	var marks: Array[Dictionary] = []
+	for mark in hole_marks:
+		if not is_instance_valid(mark): continue
+		var mark_position: Variant = mark.get_meta("hole_p", null)
+		var mark_normal: Variant = mark.get_meta("hole_n", null)
+		var tint: Variant = mark.get_instance_shader_parameter("tint")
+		var seed: Variant = mark.get_instance_shader_parameter("seed")
+		if not mark_position is Vector3 or not mark_normal is Vector3 or not tint is Color \
+				or not mark_position.is_finite() or not _valid_normal(mark_normal) \
+				or not _finite_color(tint) or not _finite_number(seed) or float(seed) < 0.0 or float(seed) > TAU:
+			return {}
+		var radius := float(mark.get_meta("hole_radius", 0.0))
+		if not _valid_hole_pose(mark_position, radius) or radius <= 0.0 or not is_finite(radius): return {}
+		marks.append({"position": _vector_array(mark_position), "normal": _vector_array(mark_normal),
+			"radius": radius, "exit": bool(mark.get_meta("exit", false)), "tint": [tint.r, tint.g, tint.b, tint.a], "seed": float(seed)})
+	return {"version": 1, "bottle": bottle_name, "capacity_ml": lut.capacity_ml,
+		"fill": fill, "leaks": entries, "marks": marks}
+
+
+## Validates the entire source checkpoint before changing fill or any hole. The
+## caller restores this with its matching bottle/world checkpoint as one commit.
+func restore_leak_checkpoint(raw: Dictionary) -> bool:
+	if not _built or state != &"intact" or lut == null or ctl == null or profile == null \
+			or raw.get("version") != 1 \
+			or raw.get("bottle") != bottle_name or not _finite_number(raw.get("capacity_ml")) \
+			or not is_equal_approx(float(raw.capacity_ml), lut.capacity_ml) \
+			or not _finite_number(raw.get("fill")) or float(raw.fill) < 0.0 or float(raw.fill) > 1.0 \
+			or not raw.get("leaks") is Array or raw.leaks.size() > 3 \
+			or not raw.get("marks") is Array or raw.marks.size() > GSBottleBulletHoleMark.MAX_PER_BOTTLE:
+		return false
+	var staged_leaks: Array[Dictionary] = []
+	for saved: Variant in raw.leaks:
+		if not saved is Dictionary or not saved.get("position") is Array or not saved.get("normal") is Array \
+				or not saved.get("color") is Array or saved.color.size() != 4:
+			return false
+		var position := _vector_from_array(saved.position)
+		var normal := _vector_from_array(saved.normal)
+		if not position.is_finite() or not _valid_normal(normal) \
+				or not _finite_number(saved.get("radius")) or not _valid_hole_pose(position, float(saved.radius)) or float(saved.radius) <= 0.0 \
+				or not _finite_number(saved.get("accumulated_ml")) or float(saved.accumulated_ml) < 0.0 \
+				or float(saved.accumulated_ml) > GSPuddleStore.MAX_VOLUME_ML \
+				or not saved.get("liquid_kind") is String \
+				or saved.liquid_kind != GSPuddleStore.normalize_kind(StringName(saved.liquid_kind)):
+			return false
+		var components: Array = saved.color
+		for component in components:
+			if not _finite_number(component): return false
+		var acc_color := Color(float(components[0]), float(components[1]), float(components[2]), float(components[3]))
+		if not _finite_color(acc_color): return false
+		normal = normal.normalized()
+		staged_leaks.append({"p": position, "n": normal, "r": float(saved.radius),
+			"acc": float(saved.accumulated_ml), "acc_kind": StringName(saved.liquid_kind),
+			"acc_color": acc_color,
+			"stream": null})
+	var staged_marks: Array[Dictionary] = []
+	for saved: Variant in raw.marks:
+		if not saved is Dictionary or not saved.get("position") is Array or not saved.get("normal") is Array \
+				or not saved.get("tint") is Array or saved.tint.size() != 4 \
+				or not _finite_number(saved.get("radius")) or float(saved.radius) <= 0.0 \
+				or typeof(saved.get("exit")) != TYPE_BOOL or not _finite_number(saved.get("seed")) \
+				or float(saved.seed) < 0.0 or float(saved.seed) > TAU:
+			return false
+		var position := _vector_from_array(saved.position)
+		var normal := _vector_from_array(saved.normal)
+		if not position.is_finite() or not _valid_normal(normal) \
+				or not _valid_hole_pose(position, float(saved.radius)): return false
+		var tint_components: Array = saved.tint
+		for component in tint_components:
+			if not _finite_number(component): return false
+		var tint := Color(float(tint_components[0]), float(tint_components[1]), float(tint_components[2]), float(tint_components[3]))
+		if not _finite_color(tint): return false
+		normal = normal.normalized()
+		staged_marks.append({"p": position, "n": normal, "r": float(saved.radius), "exit": saved.exit,
+			"tint": tint,
+			"seed": float(saved.seed)})
+	for current in leaks:
+		var stream: Object = current.get("stream")
+		if is_instance_valid(stream) and not bool(stream.get("finished")): return false
+	# No operation below can fail after the staged validation.
+	set_fill(float(raw.fill))
+	leaks = staged_leaks
+	for mark in hole_marks:
+		if is_instance_valid(mark): mark.free()
+	hole_marks.clear()
+	for mark in staged_marks:
+		GSBottleBulletHoleMark.add(self, hole_marks, mark.p, mark.n, mark.r, mark.exit, mark.tint, mark.seed)
+	leak_flowing = false
+	wake_leaks()
+	return true
+
+
+static func _finite_number(value: Variant) -> bool:
+	return typeof(value) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(value))
+
+
+static func _finite_color(value: Color) -> bool:
+	return is_finite(value.r) and is_finite(value.g) and is_finite(value.b) and is_finite(value.a)
+
+
+static func _valid_normal(value: Vector3) -> bool:
+	if not value.is_finite(): return false
+	var magnitude_squared := value.length_squared()
+	return is_finite(magnitude_squared) and magnitude_squared >= 0.25 and magnitude_squared <= 4.0
+
+
+func _valid_hole_pose(position: Vector3, radius: float) -> bool:
+	if not position.is_finite() or not is_finite(radius) or radius <= 0.0 or profile == null:
+		return false
+	if position.y < -0.01 or position.y > profile.height + 0.01 or radius > 0.02:
+		return false
+	return Vector2(position.x, position.z).length() <= _radius_at(position.y) + 0.01
+
+
+static func _vector_array(value: Vector3) -> Array[float]:
+	return [value.x, value.y, value.z]
+
+
+static func _vector_from_array(value: Array) -> Vector3:
+	if value.size() != 3: return Vector3(NAN, NAN, NAN)
+	for component in value:
+		if not _finite_number(component): return Vector3(NAN, NAN, NAN)
+	return Vector3(float(value[0]), float(value[1]), float(value[2]))
+
+
 func _update_mass() -> void:
 	mass = profile.total_mass(fill)
 

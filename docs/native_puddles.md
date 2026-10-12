@@ -83,9 +83,21 @@ exists. That stream has its own batched in-flight amount; a host-level bottle/st
 checkpoint must capture it before whole-scene saving can be promised. These APIs
 do not serialize intact bottles, inventory, the pour transport or an entire game.
 
+An intact bottle also exposes `capture_leak_checkpoint()` and
+`restore_leak_checkpoint(state)` for low-tier sub-drop amounts already debited
+from its fill. The versioned JSON state includes source fill, capacity and each
+hole's local geometry, pending mL, liquid kind and color. Restore validates every
+hole and value before mutating anything. Its dedicated source test covers JSON
+round-trip, restored source fill and pending doses, malformed topology/value,
+unsafe normal/seed rejection, numeric overflow after Color conversion, and refusal
+with a live stream. A live HIGH stream makes both operations refuse the checkpoint
+rather than silently omit its independently batched transport. Hosts must commit
+this state with matching bottle identity and world pose; it is not a full bottle
+or scene checkpoint.
+
 ## Verified routes and remaining accounting work
 
-`gs_puddle_tests.gd` covers 55 checks for typed merges, partial withdrawal and
+`gs_puddle_tests.gd` covers 57 checks for typed merges, partial withdrawal and
 evaporation, pool/volume/component limits, real ray-tested droplet landing,
 pour/splash identity, HIGH leak FIFO identity/geometry, same-kind source motion,
 miss-to-hit and long-to-short flight changes, captured splash doses, queue budgets, stable checkpoints,
@@ -97,10 +109,12 @@ contracts remain green (29/22/29 checks).
 Conservation claims apply to the manager-owned routes and explicit store transitions
 covered by those contracts. Neck-snap's initial spurt now debits its actual 5%
 before transferring typed volume into the manager.
-Low-tier hole accumulators are now flushed into typed manager-owned droplets when a
-bottle shatters; the remaining-fill splash stays separate because the accumulated leak volume was
-already debited from the source. Bottle-owned sub-drop accumulators on an intact
-bottle are still outside the liquid-only checkpoint and need a source checkpoint.
+Low-tier hole accumulators are flushed into typed manager-owned droplets when a
+bottle shatters; the remaining-fill splash stays separate because the accumulated
+leak volume was already debited from the source. Intact bottles can now capture
+and restore those pending amounts with source fill and typed identity. This is a
+source-level contract only; the host still owns whole-bottle identity, pose and
+coordination with the manager's liquid checkpoint.
 Native fire integration
 still requires a separately implemented thermal/ignition adapter. WebXR retains
 its existing separate pool/thermal implementation.

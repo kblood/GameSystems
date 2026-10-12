@@ -185,9 +185,14 @@ func run() -> void:
 	var leaky: GSBreakableBottle = SilentBottle.new()
 	leaky.free_on_break = false
 	leaky.spill_liquid_kind = &"diesel"
-	leaky.fill = 0.0
+	leaky.fill = 0.6
 	leaky.profile = Profile.new()
 	leaky.lut = Lut.new()
+	leaky.lut.capacity_ml = 500.0
+	for ci in leaky.lut.n_cos:
+		var row: Array[float] = []
+		for fi in leaky.lut.n_fill: row.append(float(fi) / float(leaky.lut.n_fill - 1))
+		leaky.lut.lut.append(row)
 	leaky.ctl = Liquid.new()
 	leaky.add_child(leaky.ctl)
 	leaky.model = Node3D.new()
@@ -196,27 +201,41 @@ func run() -> void:
 	leaky.glass_node.mesh = SphereMesh.new()
 	leaky.model.add_child(leaky.glass_node)
 	leaky.leaks = [
-		{"p": Vector3(-0.02, 0.0, 0.0), "n": Vector3.LEFT, "r": 0.002, "acc": 0.17,
-			"acc_kind": &"petrol", "acc_color": Color.RED, "stream": null},
-		{"p": Vector3(0.02, 0.0, 0.0), "n": Vector3.RIGHT, "r": 0.002, "acc": 0.23,
-			"acc_kind": &"petrol", "acc_color": Color.RED, "stream": null},
+		{"p": Vector3(-0.02, 0.0, 0.0), "n": Vector3.LEFT, "r": 0.002, "acc": 0.0, "stream": null},
+		{"p": Vector3(0.02, 0.0, 0.0), "n": Vector3.RIGHT, "r": 0.002, "acc": 0.0, "stream": null},
 	]
 	scene.add_child(leaky)
 	var leak_added_before: float = manager.liquid_ledger().added_ml
+	leaky._process_leaks(0.005)
+	var debited_before_switch := (0.6 - leaky.fill) * leaky.lut.capacity_ml
+	var old_acc := float(leaky.leaks[0].acc) + float(leaky.leaks[1].acc)
+	check(old_acc > 0.0 and old_acc < 0.8 and is_equal_approx(old_acc, debited_before_switch)
+		and is_equal_approx(manager.liquid_ledger().added_ml, leak_added_before),
+		"low-tier leak debits source fill before its sub-threshold dose reaches the manager")
+	var refill_identity: GSBottlePour = Pour.new()
+	refill_identity.liquid_kind = &"petrol"
+	leaky.add_child(refill_identity)
+	leaky._process_leaks(0.005)
+	var diesel_transferred := 0.0
+	for i in Manager.DROPLET_POOL:
+		if manager._dalive[i] == 1 and manager._dkind[i] == &"diesel": diesel_transferred += manager._dvol[i]
+	check(is_equal_approx(diesel_transferred, old_acc)
+		and leaky.leaks[0].acc_kind == &"petrol" and leaky.leaks[1].acc_kind == &"petrol",
+		"source liquid identity change flushes the captured old dose before accumulating the new one")
 	leaky._shatter(Vector3.ZERO, Vector3.UP, 0.0, Vector3.ZERO, 0.0, false)
-	var terminal_airborne := 0.0
+	var terminal_diesel := 0.0
 	var terminal_petrol := 0.0
 	for i in Manager.DROPLET_POOL:
 		if manager._dalive[i] == 1:
-			terminal_airborne += manager._dvol[i]
+			if manager._dkind[i] == &"diesel": terminal_diesel += manager._dvol[i]
 			if manager._dkind[i] == &"petrol": terminal_petrol += manager._dvol[i]
-	check(is_equal_approx(manager.liquid_ledger().added_ml - leak_added_before, 0.4)
-		and is_equal_approx(terminal_airborne, 0.4) and is_equal_approx(terminal_petrol, 0.4)
+	var added_after_shatter: float = manager.liquid_ledger().added_ml
+	check(is_equal_approx(terminal_diesel, old_acc) and terminal_petrol > 0.0 and leaky.fill == 0.0
 		and float(leaky.leaks[0].acc) == 0.0
 		and float(leaky.leaks[1].acc) == 0.0 and balanced(manager.liquid_ledger()),
-		"shatter transfers sub-threshold low-tier leak remainders into manager-owned volume exactly once")
+		"shatter transfers typed sub-threshold leak remainder before the separate remaining-fill splash")
 	leaky._shatter(Vector3.ZERO, Vector3.UP, 0.0, Vector3.ZERO, 0.0, false)
-	check(is_equal_approx(manager.liquid_ledger().added_ml - leak_added_before, 0.4)
+	check(is_equal_approx(manager.liquid_ledger().added_ml, added_after_shatter)
 		and balanced(manager.liquid_ledger()), "repeated shatter cannot transfer cleared leak remainders twice")
 	leaky.free()
 	manager.clear_debris()

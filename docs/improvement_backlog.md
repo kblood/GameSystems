@@ -31,12 +31,13 @@ første rundes resource adapters **29/29**. Det beviser managerens og store-over
 ikke alle kilde-flaskens brudruter eller et native brandsystem.
 API og begrænsninger: [native_puddles.md](native_puddles.md).
 
-Næste konkrete accounting-opgave: low-tier hole-accumulatorer kræver terminal
-flush og checkpoint;
-HIGH hole-streams mangler host-level persistence. Derefter kan et selvstændigt
-native thermal-/sprinklerlag bruge store-API'ets faktiske petrol/diesel/water/foam
-udtag. Farve må fortsat aldrig afgøre brændstof. WebXR beholder separat eksisterende
-pool-/thermal-integration.
+Low-tier hole-accumulatorer flushes nu ved terminal flaske-break, og intakte
+flasker kan checkpoint/restore kildefyldning, typed sub-drop-mængde, farve og hul-
+topologi atomisk. HIGH hole-streams mangler stadig host-level persistence.
+Næste konkrete accounting-opgave er at inkludere disse streams i host-checkpointen.
+Derefter kan et selvstændigt native thermal-/sprinklerlag bruge store-API'ets
+faktiske petrol/diesel/water/foam-udtag. Farve må fortsat aldrig afgøre brændstof.
+WebXR beholder separat eksisterende pool-/thermal-integration.
 
 ## Afsluttet gs_bottles pour-quality-runde — 2026-10-12
 
@@ -1109,7 +1110,8 @@ flaskefyldning splashes. Resten beholder den væsketype/farve, den blev samlet m
 identitetsskift flusher den gamle rest før ny væske akkumuleres. Ugyldig rumlig
 overførsel går til managerens eksplicitte removal-kvittering.
 
-Verifikation: Godot puddle-suite **55/55**, fuld WebXR Node-suite **559/559**,
-Sol-review uden blocker og `git diff --check` består. Det er ikke en hel
-flaske-checkpoint: mens en intakt flaske stadig lækker, forbliver sub-dråbe-
-akkumulatoren bottle-owned og kræver fortsat en kilde-checkpoint.
+Verifikation: Godot puddle-suite **57/57**, bottle source-checkpoint suite **14/14**,
+Nightfall bottle-cap/physics suites **257/257**, fuld WebXR Node-suite **559/559**.
+Sol-review af checkpoint-ændringen afventer. Dette dækker flaske-ejet
+lavkvalitetsvæske; hosten skal stadig koordinere source-state med flaskeidentitet,
+pose og managerens checkpoint. HIGH-stream host-persistence er fortsat åben.

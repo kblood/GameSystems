@@ -52,6 +52,7 @@ static func add(bottle: Node3D, marks: Array, p: Vector3, n: Vector3, r_hole: fl
 	mi.transform = Transform3D(b, p + nn * LIFT)
 	mi.set_meta("hole_p", p)
 	mi.set_meta("hole_n", nn)
+	mi.set_meta("hole_radius", r_hole)
 	mi.set_meta("exit", is_exit)
 	bottle.add_child(mi)
 	mi.set_instance_shader_parameter("tint", tint)
