@@ -64,6 +64,17 @@ mellem Steam Frame standalone og PCVR er tydeliggjort med aktuelle officielle re
 Sol reviewede alle guides; lokale links og de sidste rettelser er godkendt.
 Guides: [VR-indeks](vr/README.md).
 
+## Native Godot sprinkler — første selvstændige kerne — 2026-10-12
+
+`gs_sprinklers` forbinder den eksisterende typed supply-tank med thermal-rum gennem
+uafhængige sprinklerhoveder, automatisk temperatur-responstid, manuel test, ventil,
+proportional deling af næsten tom forsyning og typed spray-receipts. Vand køler, skum
+undertrykker, og andre væsker bevarer deres identitet i receipt, så hosten kan aflevere
+dem til pyt-systemet. Per-head mål og fixed-step-arbejde er begrænset. De 38 fokuserede
+Godot-checks består; afsluttende Sol-review afventer. Strøm/pumpe, scene/wiring,
+checkpoint-samordning og headset-profilering er fortsat næste arbejde. Guide:
+[Godot sprinkler](godot_sprinklers.md).
+
 ## Afsluttet gs_bottles pour-quality-runde — 2026-10-12
 
 Pour-strålen følger nu flaskens aktive distance-LOD og per-pour quality ceiling. De fire
