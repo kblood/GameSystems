@@ -159,9 +159,13 @@ the center pixel:
 ```powershell
 godot --headless --xr-mode off --path godot --script res://addons/gs_cameras/tests/gs_camera_system_tests.gd
 godot --xr-mode off --path godot --script res://addons/gs_cameras/tests/gs_camera_system_tests.gd
+godot --rendering-method mobile --xr-mode off --path godot --script res://addons/gs_cameras/tests/gs_camera_system_tests.gd
 ```
 
-The graphics check verifies that one requested draw reaches the borrowed feed texture
-and that its center pixel matches a flat camera environment color. It does not verify
-lit geometry, scene-specific culling/materials, the monitor's appearance in the main
-viewport, XR compositor behavior, headset performance, or target-device GPU cost.
+Graphics-enabled runs verify that one requested draw reaches the borrowed feed texture,
+the feed center pixel matches a flat camera environment color, and a registered quad
+displays that color at the center of the main viewport. The fixture puts the quad in the
+feed camera's view, so the environment pixel also checks that the reserved screen layer
+keeps the quad out of recursive feed capture. It does not verify lit geometry,
+scene-specific culling/materials, arbitrary monitor layouts, XR compositor behavior,
+headset performance, or target-device GPU cost.

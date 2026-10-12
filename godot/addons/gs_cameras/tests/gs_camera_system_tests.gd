@@ -5,6 +5,11 @@ extends SceneTree
 const CameraSystem = preload("res://addons/gs_cameras/gs_camera_system.gd")
 const Host = preload("res://addons/gs_host/gs_host.gd")
 
+class DrawLatch extends RefCounted:
+	var fired := false
+	func mark() -> void:
+		fired = true
+
 var passed := 0
 var failed := 0
 var world_root: Node3D
@@ -245,18 +250,26 @@ func pixel_verification() -> void:
 	root.add_child(pixel_world)
 	var camera := Camera3D.new()
 	camera.name = "PixelFeedCamera"
+	camera.position = Vector3(0, 0, 3)
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
 	environment.background_color = Color(0.04, 0.82, 0.06)
 	camera.environment = environment
 	pixel_world.add_child(camera)
+	var display_camera := Camera3D.new()
+	display_camera.name = "PixelDisplayCamera"
+	display_camera.position = Vector3(0, 0, 3)
+	display_camera.current = true
+	pixel_world.add_child(display_camera)
 	var pixel_system = CameraSystem.new()
 	pixel_system.auto_update = false
 	root.add_child(pixel_system)
 	check(pixel_system.configure({"quality": "minimal", "screen_layer": 1}), "pixel fixture configures a minimal render target")
 	check(pixel_system.add_feed(&"pixel", {"camera": camera, "aspect": 1.0}), "pixel fixture registers its feed")
 	var screen := MeshInstance3D.new()
-	screen.mesh = PlaneMesh.new()
+	var quad := QuadMesh.new()
+	quad.size = Vector2(2, 2)
+	screen.mesh = quad
 	pixel_world.add_child(screen)
 	check(pixel_system.add_screen(&"pixel_screen", {"mesh": screen, "feed_id": &"pixel"}), "pixel fixture selects its feed through a screen")
 	var scheduled: Dictionary = pixel_system.step(0.5)
@@ -279,6 +292,28 @@ func pixel_verification() -> void:
 			print("GS_CAMERAS_PIXEL size=%s frames=%d center=(%.3f, %.3f, %.3f, %.3f)" % [image.get_size(), pixel_system.feed_state(&"pixel").frames, pixel.r, pixel.g, pixel.b, pixel.a])
 	else:
 		check(false, "SubViewport returned nonempty image data in graphics mode")
+	check(root.get_camera_3d() == display_camera, "main viewport keeps its own active display camera")
+	var draw_latch := DrawLatch.new()
+	var draw_callback := Callable(draw_latch, "mark")
+	RenderingServer.frame_post_draw.connect(draw_callback, CONNECT_ONE_SHOT)
+	for _frame in 2:
+		RenderingServer.force_draw()
+		await process_frame
+		if draw_latch.fired: break
+	if RenderingServer.frame_post_draw.is_connected(draw_callback):
+		RenderingServer.frame_post_draw.disconnect(draw_callback)
+	check(draw_latch.fired, "main viewport emits frame_post_draw within the bounded wait after feed assignment")
+	var screen_image: Image = root.get_texture().get_image()
+	if screen_image != null and not screen_image.is_empty():
+		var screen_pixel: Color = screen_image.get_pixel(screen_image.get_width() / 2, screen_image.get_height() / 2)
+		var presented: bool = absf(screen_pixel.r - 0.04) < 0.2 and absf(screen_pixel.g - 0.82) < 0.2 and absf(screen_pixel.b - 0.06) < 0.2
+		check(presented, "main viewport pixel samples the registered screen's camera feed (%.3f, %.3f, %.3f)" % [screen_pixel.r, screen_pixel.g, screen_pixel.b])
+		if presented:
+			print("GS_CAMERAS_SCREEN_PIXEL size=%s center=(%.3f, %.3f, %.3f, %.3f) layer=%d" % [screen_image.get_size(), screen_pixel.r, screen_pixel.g, screen_pixel.b, screen_pixel.a, screen.layers])
+	else:
+		check(false, "main viewport returned nonempty image data in graphics mode")
+	check(image != null and not image.is_empty() and absf(image.get_pixel(image.get_width() / 2, image.get_height() / 2).g - 0.82) < 0.12,
+		"registered screen layer keeps its mesh out of recursive feed capture")
 	pixel_system.dispose()
 	pixel_system.queue_free()
 	pixel_world.queue_free()
