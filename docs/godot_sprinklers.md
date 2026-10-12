@@ -74,7 +74,7 @@ This order is not a cross-system transaction: preflight the complete provider gr
 isolated staged world and swap it in only after every restore succeeds, or retain live
 checkpoints and roll all systems back before resuming after any failure.
 A runnable authored fire-station scene is available at
-[`godot/demos/sprinkler_fire`](../godot/demos/sprinkler_fire/README.md). Native electrical-grid integration is next. Stay at coarse gameplay resolution until device profiling justifies more detail.
+[`godot/demos/sprinkler_fire`](../godot/demos/sprinkler_fire/README.md); it composes the native electrical grid and routes typed spray receipts into persistent puddles. Stay at coarse gameplay resolution until device profiling justifies more detail; next work should measure representative host/device costs and improve plumbing or runoff composition without moving those responsibilities into the sprinkler core.
 
 The focused `gs_sprinkler_tests.gd` contract covers typed receipts, tank sharing,
 automatic/manual activation, response, valve, range, refill, reentrancy, battery energy,

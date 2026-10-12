@@ -22,6 +22,43 @@ func _run_tests() -> void:
 		and initial.puddle_ledger.held_ml == 1800.0 and initial.diesel_spill_visible
 		and not initial.spill_fire_visible and initial.spill_status == "READY",
 		"scene owns a persistent visible mixed diesel/water puddle with explicit typed volume")
+	var runoff_demo: Node3D = DemoScene.instantiate()
+	root.add_child(runoff_demo)
+	var water_before: float = runoff_demo.demo_state().supply.components.water
+	case_result(runoff_demo.trigger_runoff_head(), "manual floor-runoff head can be triggered")
+	var runoff_tick: Dictionary = runoff_demo.advance(0.1)
+	var runoff_state: Dictionary = runoff_demo.demo_state()
+	var water_receipt: Dictionary = runoff_state.sprinkler_source_receipts.get(&"sprinkler:floor-head", {})
+	case_result(runoff_tick.ok and runoff_state.last_spray_ml > 0.0
+		and water_receipt.get("kind", &"") == &"water"
+		and is_equal_approx(float(water_receipt.get("runoff_ml", -1.0)), float(water_receipt.get("emitted_ml", -2.0)))
+		and is_equal_approx(float(water_receipt.get("puddle_ml", -1.0)), float(water_receipt.get("emitted_ml", -2.0)))
+		and is_equal_approx(float(water_before - runoff_state.supply.components.water), float(water_receipt.get("emitted_ml", -3.0)))
+		and runoff_state.sprinkler_water_puddle.water == float(water_receipt.get("puddle_ml", -4.0))
+		and runoff_state.sprinkler_runoff_visible,
+		"floor-head water is conserved from finite supply into a visible typed puddle with source receipt")
+	var diesel_before: float = runoff_state.diesel_supply.components.diesel
+	var diesel_puddle_before: float = runoff_state.diesel_puddle.get("diesel", 0.0)
+	var closed_valve_triggered: bool = runoff_demo.trigger_diesel_head()
+	var closed_valve_tick: Dictionary = runoff_demo.advance(0.1)
+	var closed_valve_state: Dictionary = runoff_demo.demo_state()
+	case_result(closed_valve_triggered and closed_valve_tick.ok
+		and closed_valve_state.diesel_supply.components.diesel == diesel_before
+		and not closed_valve_state.sprinkler_source_receipts.has(&"sprinkler:diesel-head"),
+		"closed diesel valve blocks flow from an activated head")
+	runoff_demo.set_fuel_valve(true)
+	var diesel_tick: Dictionary = runoff_demo.advance(0.1)
+	var diesel_state: Dictionary = runoff_demo.demo_state()
+	var diesel_receipt: Dictionary = diesel_state.sprinkler_source_receipts.get(&"sprinkler:diesel-head", {})
+	runoff_demo.set_fuel_valve(false)
+	case_result(diesel_tick.ok and diesel_receipt.get("kind", &"") == &"diesel"
+		and is_equal_approx(float(diesel_receipt.get("thermal_applied_ml", -1.0)), 0.0)
+		and float(diesel_receipt.get("puddle_ml", 0.0)) > 0.0
+		and is_equal_approx(float(diesel_before - diesel_state.diesel_supply.components.diesel), float(diesel_receipt.get("emitted_ml", -1.0)))
+		and is_equal_approx(float(diesel_state.diesel_puddle.get("diesel", 0.0) - diesel_puddle_before), float(diesel_receipt.get("puddle_ml", -1.0)))
+		and diesel_state.diesel_spill_visible,
+		"diesel-head flow debits its finite typed tank and joins the persistent diesel puddle")
+	runoff_demo.queue_free()
 	var puddle_ignition: Dictionary = demo.ignite_diesel_spill()
 	var lit_spill: Dictionary = demo.demo_state()
 	case_result(puddle_ignition.ok and puddle_ignition.kind == &"diesel"

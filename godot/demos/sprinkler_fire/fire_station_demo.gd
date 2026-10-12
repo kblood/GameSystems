@@ -15,7 +15,10 @@ const FIRE_ID := &"burning-pallet"
 const SPREAD_FIRE_ID := &"nearby-crate"
 const SPILL_FIRE_ID := &"diesel-spill-fire"
 const HEAD_ID := &"ceiling-head"
+const RUNOFF_HEAD_ID := &"floor-head"
+const DIESEL_HEAD_ID := &"diesel-head"
 const SUPPLY_ID := &"water-tank"
+const DIESEL_SUPPLY_ID := &"diesel-tank"
 const BATTERY_ID := &"pump-battery"
 const FUSE_ID := &"pump-fuse"
 const MAIN_SWITCH_ID := &"main-switch"
@@ -25,6 +28,7 @@ const WATER_CAPACITY_ML := 20000.0
 var thermal: RefCounted
 var fire_spread: RefCounted
 var tank: RefCounted
+var diesel_tank: RefCounted
 var battery: RefCounted
 var pump: RefCounted
 var electricity: RefCounted
@@ -32,11 +36,16 @@ var sprinklers: RefCounted
 var puddles: RefCounted
 var puddle_fire: RefCounted
 var diesel_puddle_id := -1
+var sprinkler_water_puddle_id := -1
+var fuel_valve_open := false
 var valve_open := true
 var main_switch_on := true
 var fault_switch_on := false
 var last_spray_ml := 0.0
+var last_spray_kind: StringName = &""
 var last_puddle_result: Dictionary = {}
+var sprinkler_source_receipts: Dictionary = {}
+var _puddle_id_by_sprinkler_source: Dictionary = {}
 var _spill_spread_registered := false
 var _spray_linger_seconds := 0.0
 var _status_label: Label3D
@@ -46,6 +55,7 @@ var _fire_light: OmniLight3D
 var _spread_fire_visual: MeshInstance3D
 var _spill_fire_visual: MeshInstance3D
 var _spill_visual: MeshInstance3D
+var _sprinkler_runoff_visual: MeshInstance3D
 
 
 func _ready() -> void:
@@ -69,9 +79,14 @@ func _ready() -> void:
 	diesel_puddle_id = puddles.create()
 	puddles.deposit(diesel_puddle_id, &"diesel", 1200.0)
 	puddles.deposit(diesel_puddle_id, &"water", 600.0)
+	sprinkler_water_puddle_id = puddles.create()
+	_puddle_id_by_sprinkler_source[StringName("sprinkler:" + String(HEAD_ID))] = sprinkler_water_puddle_id
+	_puddle_id_by_sprinkler_source[StringName("sprinkler:" + String(RUNOFF_HEAD_ID))] = sprinkler_water_puddle_id
+	_puddle_id_by_sprinkler_source[StringName("sprinkler:" + String(DIESEL_HEAD_ID))] = diesel_puddle_id
 	puddle_fire = PuddleFire.new(thermal)
 	_sync_spill_visual()
 	tank = SupplyTank.new(WATER_CAPACITY_ML, {"water": WATER_CAPACITY_ML})
+	diesel_tank = SupplyTank.new(2000.0, {"diesel": 2000.0})
 	electricity = Electricity.new()
 	electricity.add(BATTERY_ID, {"kind": &"battery", "a": &"battery+", "b": &"ground",
 		"capacity_wh": 180.0, "energy_wh": 180.0, "voltage": 12.0, "resistance": 0.08})
@@ -90,10 +105,18 @@ func _ready() -> void:
 	pump = NetworkPump.new(electricity, &"pump-load", 120.0)
 	sprinklers = Sprinklers.new(thermal)
 	sprinklers.register_supply(SUPPLY_ID, tank)
+	sprinklers.register_supply(DIESEL_SUPPLY_ID, diesel_tank)
 	sprinklers.set_power_provider(pump)
 	sprinklers.add_head(HEAD_ID, {"room_id": ROOM_ID, "supply_id": SUPPLY_ID,
 		"target_ids": [FIRE_ID, SPREAD_FIRE_ID], "position": Vector3(0.0, 3.0, 0.0), "flow_ml_s": 240.0,
 		"trigger_temperature_c": 70.0, "response_seconds": 1.5, "range_m": 4.0})
+	sprinklers.add_head(RUNOFF_HEAD_ID, {"room_id": ROOM_ID, "supply_id": SUPPLY_ID,
+		"target_ids": [], "position": Vector3(0.8, 3.0, 0.0), "flow_ml_s": 600.0,
+		"trigger_temperature_c": 1000.0, "response_seconds": 60.0, "range_m": 2.0})
+	sprinklers.add_head(DIESEL_HEAD_ID, {"room_id": ROOM_ID, "supply_id": DIESEL_SUPPLY_ID,
+		"kind": &"diesel", "target_ids": [], "position": Vector3(-1.35, 3.0, 0.0),
+		"flow_ml_s": 600.0, "trigger_temperature_c": 1000.0, "response_seconds": 60.0,
+		"range_m": 2.0, "valve_open": false})
 	_sync_fire_visual()
 	_update_status()
 
@@ -114,6 +137,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_R: refill_water()
 		KEY_I: ignite_diesel_spill()
 		KEY_E: extinguish_diesel_spill()
+		KEY_T: trigger_runoff_head()
+		KEY_D: trigger_diesel_head()
+		KEY_G: set_fuel_valve(not fuel_valve_open)
 
 
 ## Testable host tick; each kernel applies its own fixed-step budget.
@@ -152,13 +178,20 @@ func advance(delta: float) -> Dictionary:
 		sprinkler_result.events.append_array(sprinkler_tick.get("events", []))
 		sprinkler_debt = sprinkler_result.pending_seconds
 	last_spray_ml = 0.0
+	last_spray_kind = &""
 	for event: Dictionary in sprinkler_result.get("events", []):
-		if event.get("type") == &"spray": last_spray_ml += float(event.ml)
+		if event.get("type") != &"spray": continue
+		last_spray_ml += float(event.ml)
+		last_spray_kind = StringName(event.get("kind", &"unknown"))
+		_receive_sprinkler_spray(event)
 	if last_spray_ml > 0.0:
 		_spray_linger_seconds = 0.18
 	else:
 		_spray_linger_seconds = maxf(0.0, _spray_linger_seconds - delta)
 	_spray_visual.visible = _spray_linger_seconds > 0.0
+	var spray_material := _spray_visual.material_override as StandardMaterial3D
+	if spray_material != null and last_spray_kind != &"":
+		spray_material.albedo_color = _liquid_color(last_spray_kind)
 	_sync_fire_visual()
 	_update_status()
 	return {"ok": fire_result.ok and sprinkler_result.ok, "thermal": fire_result,
@@ -170,12 +203,61 @@ func trigger_head() -> bool:
 	return sprinklers.trigger(HEAD_ID)
 
 
+func trigger_diesel_head() -> bool:
+	if sprinklers == null: return false
+	return sprinklers.trigger(DIESEL_HEAD_ID)
+
+
+func trigger_runoff_head() -> bool:
+	if sprinklers == null: return false
+	return sprinklers.trigger(RUNOFF_HEAD_ID)
+
+
 func set_valve(open: bool) -> bool:
 	if sprinklers == null: return false
 	if not sprinklers.set_valve_open(HEAD_ID, open): return false
 	valve_open = open
 	_update_status()
 	return true
+
+
+func set_fuel_valve(open: bool) -> bool:
+	if sprinklers == null or not sprinklers.set_valve_open(DIESEL_HEAD_ID, open): return false
+	fuel_valve_open = open
+	_update_status()
+	return true
+
+
+func _receive_sprinkler_spray(event: Dictionary) -> Dictionary:
+	var source := StringName(event.get("source", &""))
+	var kind := StringName(event.get("kind", &"unknown"))
+	var emitted := float(event.get("ml", NAN))
+	var thermally_applied := float(event.get("thermal_applied_ml", NAN))
+	if source == &"" or kind == &"" or not is_finite(emitted) or emitted < 0.0 \
+			or not is_finite(thermally_applied) or thermally_applied < 0.0 or thermally_applied > emitted + 1.0e-6:
+		return {"ok": false, "source": source, "kind": kind, "ml": 0.0}
+	var runoff := maxf(0.0, emitted - thermally_applied)
+	var puddle_id := int(_puddle_id_by_sprinkler_source.get(source, -1))
+	var deposited := 0.0
+	if runoff > 0.0 and puddles != null:
+		deposited = puddles.deposit(puddle_id, kind, runoff)
+	var receipt: Dictionary = sprinkler_source_receipts.get(source, {
+		"source": source, "kind": kind, "emitted_ml": 0.0, "thermal_applied_ml": 0.0,
+		"runoff_ml": 0.0, "puddle_ml": 0.0, "removed_ml": 0.0})
+	receipt.emitted_ml += emitted
+	receipt.thermal_applied_ml += thermally_applied
+	receipt.runoff_ml += runoff
+	receipt.puddle_ml += deposited
+	receipt.removed_ml += runoff - deposited
+	receipt.kind = kind
+	sprinkler_source_receipts[source] = receipt
+	if puddle_id == diesel_puddle_id:
+		_sync_spill_visual()
+	elif puddle_id == sprinkler_water_puddle_id:
+		_sync_sprinkler_puddle_visual()
+	return {"ok": true, "source": source, "kind": kind, "emitted_ml": emitted,
+		"thermal_applied_ml": thermally_applied, "runoff_ml": runoff,
+		"puddle_ml": deposited, "removed_ml": runoff - deposited}
 
 
 func set_battery_enabled(enabled: bool) -> void:
@@ -241,11 +323,17 @@ func demo_state() -> Dictionary:
 		"room": thermal.room_state(ROOM_ID),
 		"supply": tank.state(), "battery": battery.state(), "pump": pump.state(),
 		"head": sprinklers.head_state(HEAD_ID), "valve_open": valve_open,
+		"runoff_head": sprinklers.head_state(RUNOFF_HEAD_ID),
+		"diesel_head": sprinklers.head_state(DIESEL_HEAD_ID), "fuel_valve_open": fuel_valve_open,
 		"main_switch_on": main_switch_on, "fault_switch_on": fault_switch_on,
 		"fuse_blown": electricity.state(FUSE_ID).blown,
 		"last_spray_ml": last_spray_ml, "spray_visible": _spray_visual.visible,
 		"diesel_puddle": puddles.components(diesel_puddle_id), "puddle_ledger": puddles.ledger(),
+		"sprinkler_water_puddle": puddles.components(sprinkler_water_puddle_id),
+		"sprinkler_source_receipts": sprinkler_source_receipts.duplicate(true),
+		"diesel_supply": diesel_tank.state(),
 		"diesel_spill_visible": _spill_visual.visible, "spill_fire_visible": _spill_fire_visual.visible,
+		"sprinkler_runoff_visible": _sprinkler_runoff_visual.visible,
 		"spill_status": _spill_status(),
 		"last_puddle_result": last_puddle_result.duplicate(true)}
 
@@ -271,6 +359,14 @@ func _build_scene() -> void:
 	add_child(_spill_visual)
 	_spill_fire_visual = _sphere(0.42, Vector3(-1.35, 0.52, 0.0), Color(1.0, 0.34, 0.025), true)
 	add_child(_spill_fire_visual)
+	_sprinkler_runoff_visual = MeshInstance3D.new()
+	var runoff_mesh := PlaneMesh.new()
+	runoff_mesh.size = Vector2(0.8, 0.8)
+	_sprinkler_runoff_visual.mesh = runoff_mesh
+	_sprinkler_runoff_visual.position = Vector3(0.8, 0.014, 0.0)
+	_sprinkler_runoff_visual.visible = false
+	_sprinkler_runoff_visual.material_override = _material(_liquid_color(&"water"))
+	add_child(_sprinkler_runoff_visual)
 	_fire_light = OmniLight3D.new()
 	_fire_light.position = Vector3(0.0, 1.0, 0.0)
 	_fire_light.light_color = Color(1.0, 0.26, 0.06)
@@ -279,6 +375,7 @@ func _build_scene() -> void:
 	add_child(_fire_light)
 	var head := _sphere(0.16, Vector3(0.0, 3.72, 0.0), Color(0.72, 0.78, 0.82))
 	add_child(head)
+	add_child(_sphere(0.13, Vector3(0.8, 3.72, 0.0), Color(0.82, 0.84, 0.86)))
 	_spray_visual = _cylinder(0.65, 2.3, Vector3(0.0, 2.42, 0.0), Color(0.2, 0.62, 1.0, 0.32))
 	_spray_visual.visible = false
 	add_child(_spray_visual)
@@ -328,6 +425,27 @@ func _sync_spill_visual() -> void:
 		_spill_fire_visual.visible = bool(thermal.object_state(SPILL_FIRE_ID).get("burning", false))
 
 
+func _sync_sprinkler_puddle_visual() -> void:
+	if not is_instance_valid(_sprinkler_runoff_visual) or puddles == null or sprinkler_water_puddle_id < 0: return
+	var volume_ml: float = puddles.volume(sprinkler_water_puddle_id)
+	_sprinkler_runoff_visual.visible = volume_ml > 0.0
+	if volume_ml <= 0.0: return
+	var scale_factor := sqrt(clampf(volume_ml / 1000.0, 0.0, 1.0))
+	_sprinkler_runoff_visual.scale = Vector3(scale_factor, 1.0, scale_factor)
+	var components: Dictionary = puddles.components(sprinkler_water_puddle_id)
+	var liquid_kind := StringName(components.keys()[0]) if not components.is_empty() else &"water"
+	var runoff_material := _sprinkler_runoff_visual.material_override as StandardMaterial3D
+	if runoff_material != null: runoff_material.albedo_color = _liquid_color(liquid_kind)
+
+
+func _liquid_color(kind: StringName) -> Color:
+	match kind:
+		&"water": return Color(0.16, 0.48, 0.92, 0.76)
+		&"foam": return Color(0.88, 0.92, 0.98, 0.82)
+		&"diesel", &"petrol", &"oil": return Color(0.09, 0.075, 0.045, 0.92)
+		_: return Color(0.48, 0.32, 0.18, 0.78)
+
+
 func _spill_status() -> String:
 	if thermal == null or puddles == null: return "UNAVAILABLE"
 	var state: Dictionary = thermal.object_state(SPILL_FIRE_ID)
@@ -344,12 +462,17 @@ func _update_status() -> void:
 	var battery_state: Dictionary = battery.state()
 	var water_ml := float(tank.state().components.get("water", 0.0))
 	var spill_components: Dictionary = puddles.components(diesel_puddle_id) if puddles != null and diesel_puddle_id >= 0 else {}
-	_status_label.text = "F trigger | V valve | B battery | S switch | X fault | C fuse | R refill | I ignite spill | E cool spill\nHead: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Smoke: %.2f  Diesel spill: %.0f mL (%s)" % [
+	var runoff_total_ml := 0.0
+	for receipt: Dictionary in sprinkler_source_receipts.values():
+		runoff_total_ml += float(receipt.get("puddle_ml", 0.0))
+	_status_label.text = "F water head | T floor runoff | V valve | D diesel head | G fuel valve | B battery | S switch | X fault | C fuse | R refill\nI ignite spill | E cool spill | Head: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Smoke: %.2f  Fuel puddle: %.0f mL (%s)  Tank: %.0f mL  Deposited: %.0f mL" % [
 		"ON" if head.get("triggered", false) else "standby", "OPEN" if valve_open else "CLOSED",
 		"ON" if main_switch_on else "OFF", "BLOWN" if electricity != null and electricity.state(FUSE_ID).blown else "OK",
 		water_ml, float(battery_state.energy_wh), float(battery_state.capacity_wh),
 		float(thermal.room_state(ROOM_ID).get("smoke", 0.0)) if thermal != null else 0.0,
-		float(spill_components.get("diesel", 0.0)), _spill_status()]
+		float(spill_components.get("diesel", 0.0)), _spill_status(),
+		float(diesel_tank.state().components.get("diesel", 0.0)) if diesel_tank != null else 0.0,
+		runoff_total_ml]
 
 
 func _box(size: Vector3, location: Vector3, color: Color) -> MeshInstance3D:

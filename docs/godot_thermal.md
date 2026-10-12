@@ -52,8 +52,9 @@ Run `godot --headless --path godot --script res://tools/benchmark_spatial_fire_s
 or replace `dense` with `sparse` to measure 128 burning sources plus 128 targets over 200
 measured ticks after 20 warmups. On Windows with Godot 4.7.2 and a Ryzen 7 5700G, one local
 run measured dense average/P95/max **5.15/6.23/7.97 ms** and sparse **2.63/3.93/6.36 ms**
-per 50 ms spread tick. These headless desktop measurements are diagnostic, not a headset
-performance gate; profile on the target VR hardware and scene.
+per 50 ms spread tick in the recorded local run. Treat these headless desktop measurements
+as historical diagnostics, not a headset performance gate; rerun the benchmark for current
+hardware comparisons and profile on the target VR hardware and scene.
 
 `GSPuddleFireAdapter` composes with the existing `GSPuddleStore` through its public
 `components` and `withdraw` methods. The runnable fire-station demo now includes a
