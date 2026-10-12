@@ -1318,9 +1318,12 @@ inkluderer nu HIGH-streamtransport, og flaske-checkpointet gemmer stream-ID pr.
 hul. Sol-review fandt og hjalp med at lukke normaliserings-, v2-payload- og
 staging-/kapacitetsfejl. Hosten skal stadig
 tage manager-/kilde-snapshots i samme paused/fixed tick, bevare flaskeidentitet og
-pose samt gendanne manageren før flaskerne. Den receipt-baserede native brandadapter
-har nu en integreret demo-rute; automatisk pytbrand og sprinklerens visuelle
-pytdeponering er fortsat selvstændige host-opgaver.
+pose samt gendanne manageren før flaskerne. Den native brandstationsdemo integrerer
+nu også automatisk pytantænding fra en nærliggende varm palle og sprinklerens typed
+spray-kvitteringer til vedvarende, synlige vand-/dieselpytter. Demoen kontrollerer
+kvitteringernes runoff- og volumenregnskab. Verifikation på Godot 4.7.2: demo
+**32/32**, thermal/fire **53/53**, sprinklere **54/54**. Headset-/standalone-
+profilering af den sammensatte scene er fortsat åben.
 
 ## Afsluttet spatial fire-spread hot-path-runde
 
