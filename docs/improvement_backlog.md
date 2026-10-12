@@ -1,5 +1,17 @@
 # Løbende forbedringer af GameSystems
 
+## Optional Godot spatial fire spread — 2026-10-12
+
+Added `gs_fire_spread` as a separate, bounded composition adapter. It registers up to 256
+thermal objects and transfers distance-falloff heat from burning objects only to dry,
+flammable, fueled neighbors in the same authored room. It snapshots source state before the
+pass, so newly ignited targets begin spreading on the next interval, and preflights all
+target heat before any mutation. It does not trace occlusion or simulate airflow.
+
+Verification: spatial spread **6/6**; cross-room isolation, range, delayed chain spread,
+interval caps, and no-partial-update thermal preflight are covered. Heat/thermal and sprinkler
+suites remain independently green. Sol approved the guide and timing contract. Guide: [Godot thermal](godot_thermal.md).
+
 ## Godot circuit-to-fire heat bridge — 2026-10-12
 
 Added a standalone `gs_electricity_thermal` composition adapter. Hosts bind passive circuit

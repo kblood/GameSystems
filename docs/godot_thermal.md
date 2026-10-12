@@ -30,6 +30,23 @@ Both use authored gameplay constants, not real-world material or fuel data. Runt
 object and room temperatures are clamped to the documented 1,000,000 °C state ceiling,
 including heat from combustion, room coupling and authored links.
 
+## Optional spatial spread
+
+`godot/addons/gs_fire_spread` adds bounded proximity spread without adding per-pair work
+to the thermal kernel. Register the thermal objects a host wants included, then call
+`GSSpatialFireSpreadSystem.step(0.05)` once after each successful `thermal.step(0.05)` call
+that reports exactly one step. Interleave
+the calls; do not advance several thermal ticks in one call and apply spread only afterward,
+because newly ignited objects need to become sources between ticks. The spread adapter rejects
+any interval other than 50 ms. Burning objects heat dry, fueled, flammable neighbors in the
+same non-empty room. The default is a 1.5 m
+radius and 4 kJ/s source rate with squared linear distance falloff; newly ignited objects
+only spread on the next interval. The adapter snapshots participants and preflights summed
+heat before changing targets. It caps at 256 registered objects and one 50 ms tick per call.
+Room IDs are authored spread barriers; this is not line-of-sight, airflow, or a fire-code
+simulation. Hosts should include only objects in each fire zone and avoid registering
+unrelated world props.
+
 `GSPuddleFireAdapter` composes with the existing `GSPuddleStore` through its public
 `components` and `withdraw` methods. It consumes petrol before diesel for fuel heat,
 and it accepts water or foam for extinguishing. Unknown liquids and colors never
@@ -38,8 +55,8 @@ many millilitres actually moved.
 
 ## Current limits and next work
 
-This slice has no spatial proximity spread, room-to-room vents, visual rendering or
-headset performance result. `checkpoint()` captures rooms, objects, links and pending
+The optional spread adapter does not include room-to-room vents, visual rendering or
+headset performance results. `checkpoint()` captures rooms, objects, links and pending
 fixed-step time in a versioned JSON-friendly payload. `restore_checkpoint(payload)`
 validates the whole payload in a temporary system before replacing live state. Room and object
 rows preserve runtime insertion order because that order also determines fixed-tick event order. Hosts must
