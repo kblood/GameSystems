@@ -61,10 +61,10 @@ the controller or tracked hand.
 
 ## Device checks
 
-The active installed-device acceptance matrix lives in
-[`NightfallContractsGodot/docs/STEAM_FRAME_TESTING.md`](../../../NightfallContractsGodot/docs/STEAM_FRAME_TESTING.md);
-its README links the final sections and labels older evidence historical. Use that matrix
-for Steam Frame evidence, and the target project's own README for its build/export setup.
+The Steam Frame [device evidence and pending acceptance log](../../../NightfallContractsGodot/docs/STEAM_FRAME_TESTING.md)
+records builds and test runs chronologically; its latest entries do not establish headset
+rendering, controller feel, comfort or frame-time acceptance. Use the latest dated section
+for current evidence, and the target project's own configuration for its build/export setup.
 At minimum test: startup with runtime available/unavailable; left/right bindings;
 controller↔hand transitions if supported; tracking loss and recovery; floor/recenter;
 seated reach; every export target; and actual headset performance. Godot documents fixed/dynamic foveation and related options

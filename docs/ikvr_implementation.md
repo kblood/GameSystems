@@ -5,6 +5,8 @@ Noter om hvordan avatarens VR-IK og fingre er bygget i GameSystems, og hvad der 
 og Grasp Studio får synkede kopier; ret altid i GameSystems og synk bagefter (`npm run sync:extensions` i Contracts,
 `scripts/sync-helpers.mjs` i demoen, `scripts/sync.mjs` i studiet).
 
+**Historisk evidens:** daterede Quest-noter, testtal og TODO'er nedenfor er snapshots fra deres angivne kørsel, ikke aktuel native Nightfall- eller headset-acceptance. Kontrollér den aktuelle kilde og projektspecifikke device-log, før du bruger dem som status.
+
 ## Overblik
 
 | Del | Fil | Hvad den gør |

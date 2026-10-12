@@ -1,10 +1,10 @@
 # Porting between Godot OpenXR, Godot WebXR export and browser WebXR
 
-There are two different WebXR targets in this workspace: a Godot project exported to
-the browser through Godot's `WebXRInterface`, and the separate browser-JavaScript /
-Three.js project. They do not share the same runtime or input implementation. Treat
-Godot/Steam Frame, a Godot WebXR export and the standalone Three.js WebXR project as
-distinct targets with an explicit shared behavior contract. The
+The workspace has a native Godot/OpenXR project and a separate browser-JavaScript /
+Three.js WebXR project; a Godot WebXR export is a planned target described here. These
+targets do not share the same runtime or input implementation. Treat Godot/Steam Frame,
+a Godot WebXR export and the standalone Three.js WebXR project as distinct targets with
+an explicit shared behavior contract. The
 [Godot port plan](../godot_port_plan.md) and project `AGENTS.md` define the current
 boundary: browser JavaScript is reference material, not a native runtime dependency.
 Port behavior and data formats; do not import a sibling project's runtime implementation
