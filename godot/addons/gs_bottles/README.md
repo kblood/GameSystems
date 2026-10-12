@@ -37,3 +37,12 @@ opening in the same `World3D`, and rejected volume continues its real flight.
 mixed unlike contents become unknown. Hosts explicitly author fuel identity.
 No bottle style or colour is automatically fuel. The independent physics suite
 is `tests/gs_pour_receiver_tests.gd`; API details are in `docs/pour_system.md`.
+
+`GSPuddleStore` now preserves explicitly authored component amounts through
+puddle merges, ballistic splash delivery, consumption, evaporation and bounded
+cleanup. Fuel/foam can persist beyond the legacy water/wine fade. The manager
+offers liquid-only atomic checkpoints including airborne droplets; live HIGH
+hole streams require a host checkpoint and are explicitly refused. The typed
+withdrawal API is the future fire/sprinkler integration seam. Focused contracts:
+`tests/gs_puddle_tests.gd`; details and source-accounting limits:
+`docs/native_puddles.md` in GameSystems.

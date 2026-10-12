@@ -17,6 +17,7 @@ signal leaked(hole_world: Vector3)                         ## plastic: a bullet 
 enum ImpactSource { HISTORY, IMPULSE, MAX }
 
 @export var bottle_name := "wine"
+@export var spill_liquid_kind: StringName = &"unknown"     ## explicit identity when no pour adapter is attached
 @export_range(0.0, 1.0) var fill := 0.6: set = set_fill
 @export var asset_dir := "res://"                          ## folder with bottle_<name>.glb / .liquid.json (+ shards/broken/break.json)
 @export var profile: GSBottleBreakProfile
@@ -636,13 +637,13 @@ func _process_leaks(dt: float) -> void:
 				s = GSBottleLeakStream.acquire(mgr, get_rid(), mgr.droplet_mask)
 				lk["stream"] = s
 			if s != null:
-				(s as GSBottleLeakStream).feed(hw, vel, q, dv_ml, lut.color)
+				(s as GSBottleLeakStream).feed(hw, vel, q, dv_ml, lut.color, _spill_kind())
 				continue
 		lk["acc"] = float(lk["acc"]) + dv_ml
 		var drop := maxf(0.4, q * 1.0e6 / 60.0)
 		var k := 0
 		while float(lk["acc"]) >= drop and k < 4:
-			mgr.emit_droplet(hw, vel, drop, lut.color)
+			mgr.emit_droplet(hw, vel, drop, lut.color, _spill_kind())
 			lk["acc"] = float(lk["acc"]) - drop
 			k += 1
 	if f != fill:
@@ -697,7 +698,7 @@ func _shatter(point: Vector3, dir: Vector3, burst_e: float, tang: Vector3, impac
 	if frac > 0.0:
 		_spawn_cap(mgr, point, dir, tang, vmag)
 	var ml := lut.capacity_ml * fill
-	mgr.splash(point, (dir * 0.5 + Vector3.UP * 0.5).normalized() if not bullet else dir, ml, lut.color, burst_e * 0.1, tang, q)
+	mgr.splash(point, (dir * 0.5 + Vector3.UP * 0.5).normalized() if not bullet else dir, ml, lut.color, burst_e * 0.1, tang, q, _spill_kind())
 	fill = 0.0
 	ctl.fill = 0.0
 	_finish_break(point, impact_e, &"shatter")
@@ -778,7 +779,7 @@ func _neck_snap(point: Vector3, dir: Vector3, burst_e: float, tang: Vector3, imp
 	_build_shapes(open_z)
 	_update_mass()
 	# a first spurt of liquid at the break
-	mgr.splash(point, (dir * 0.3 + Vector3.UP * 0.7).normalized(), lut.capacity_ml * fill * 0.05, lut.color, burst_e * 0.05, tang)
+	mgr.splash(point, (dir * 0.3 + Vector3.UP * 0.7).normalized(), lut.capacity_ml * fill * 0.05, lut.color, burst_e * 0.05, tang, -1, _spill_kind())
 	broke.emit(point, impact_e, &"neck_snap")
 
 
@@ -799,10 +800,16 @@ func _process_spill(dt: float) -> void:
 	var n := clampi(int(spill_ml / 3.0) + 1, 1, 4)
 	for i in n:
 		mgr.emit_droplet(wp + Vector3(_rng.randfn(), 0, _rng.randfn()) * 0.003, outv + linear_velocity * 0.9
-			+ Vector3(_rng.randfn(), 0, _rng.randfn()) * 0.15, spill_ml / n, lut.color)
+			+ Vector3(_rng.randfn(), 0, _rng.randfn()) * 0.15, spill_ml / n, lut.color, _spill_kind())
 	fill = maxf(fill - spill_ml / lut.capacity_ml, 0.0)
 	ctl.fill = fill
 	_update_mass()
+
+
+func _spill_kind() -> StringName:
+	for child in get_children():
+		if child is GSBottlePour: return child.liquid_kind
+	return StringName(GSPuddleStore.normalize_kind(spill_liquid_kind))
 
 
 func _physics_process(dt: float) -> void:

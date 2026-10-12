@@ -3,17 +3,29 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
-## Næste native væske-/brandopgave: typede permanente pytter
+## Native typede pytter: klar til uafhængigt review — 2026-10-12
 
-Den nye Godot-pourtransport bevarer et eksplicit `liquid_kind` frem til flasker og
-eksterne modtagere. `GSBottleBreakManager`-pytter og splash-dråber gemmer stadig kun
-volumen og farve; spildt benzin/diesel kan derfor endnu ikke drive native antændelse
-eller sprinkler-slukning. Næste konkrete opgave er at bevare komponent-identitet og
-volumen gennem puddle-merge, splash-transport, budget/dvale og persistence, med en
-public bridge til et selvstændigt native brandsystem. Farve må ikke afgøre brændstof.
-Verificér blandinger, delvis fordampning/fuel-forbrug, slukningsdoser og restore med
-samlet ledger, inden der hævdes native fuel-fire-integration. WebXR har allerede
-sin separate pool-/thermal-integration; genbrug dens kontrakter som reference.
+`GSPuddleStore` bevarer separate komponenter og stabile ID'er gennem merge,
+delvist forbrug og fordampning. Managerens dråber bevarer eksplicit identitet fra
+pour-parcels, splash og HIGH hole-stream FIFO. Benzin/diesel/foam består indtil
+eksplicit forbrug, fordampning, cleanup eller bogført budget-eviction; legacy
+water/wine/unknown beholder visuel levetid med faktisk bogført fordampning.
+Kvalitetsgrænser og world-lifecycle er fortsat afgrænsede. Liquid-only checkpoint
+validerer og gendanner pytter og dråber atomisk; aktive HIGH hole-streams afvises,
+indtil en host-checkpoint også kan indfange deres batchede væske.
+
+Verificeret: puddle **36/36**, bottles **29/29**, pour receivers **22/22** og
+resource adapters **29/29**. Det beviser managerens og store-overgangenes ledger,
+ikke alle kilde-flaskens brudruter eller et native brandsystem.
+API og begrænsninger: [native_puddles.md](native_puddles.md).
+
+Næste konkrete accounting-opgave: `_neck_snap` udsender en initial spurt på 5% af
+fill uden at debitere flasken. Ret denne væske-mint og verificér kilde+manager som
+én ledger. Low-tier hole-accumulatorer kræver også terminal flush og checkpoint;
+HIGH hole-streams mangler host-level persistence. Derefter kan et selvstændigt
+native thermal-/sprinklerlag bruge store-API'ets faktiske petrol/diesel/water/foam
+udtag. Farve må fortsat aldrig afgøre brændstof. WebXR beholder separat eksisterende
+pool-/thermal-integration.
 
 ## Afsluttet gs_bottles pour-quality-runde — 2026-10-12
 

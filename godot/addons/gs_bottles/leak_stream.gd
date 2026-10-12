@@ -53,6 +53,10 @@ var _acc_t := 0.0
 var _clock := 0.0
 var _fifo_t := PackedFloat64Array()
 var _fifo_ml := PackedFloat64Array()
+var _fifo_kind: Array[StringName] = []
+var _fifo_color: Array[Color] = []
+var _acc_kind: StringName = &"unknown"
+var _acc_color := Color(0.5, 0.3, 0.1)
 var _excl: Array[RID] = []
 var _mask := 1
 var _mat: ShaderMaterial
@@ -108,7 +112,11 @@ func in_flight_ml() -> float:
 
 
 ## Called by the bottle every physics tick the hole flows. p / v: hole position and exit velocity (world), q_m3s flow, ml this tick.
-func feed(p: Vector3, v: Vector3, q_m3s: float, ml: float, col: Color) -> void:
+func feed(p: Vector3, v: Vector3, q_m3s: float, ml: float, col: Color, kind: StringName = &"unknown") -> void:
+	var incoming := StringName(GSPuddleStore.normalize_kind(kind))
+	if _acc > 0.0 and (incoming != _acc_kind or col != _acc_color): _flush_accumulator()
+	_acc_kind = incoming
+	_acc_color = col
 	_last_feed = Engine.get_physics_frames()
 	if stopping:
 		stopping = false
@@ -200,19 +208,27 @@ func _physics_process(dt: float) -> void:
 	_mat.set_shader_parameter("fade", fade)
 	_acc_t += dt
 	if _acc > 0.0 and (_acc_t >= FLUSH or stopping):
-		_fifo_t.append(_clock + t_land)
-		_fifo_ml.append(_acc)
-		_acc = 0.0
-		_acc_t = 0.0
+		_flush_accumulator()
 	while _fifo_t.size() > 0 and _fifo_t[0] <= _clock:
-		_deposit(_fifo_ml[0])
+		_deposit(_fifo_ml[0], _fifo_kind[0], _fifo_color[0])
 		_fifo_t.remove_at(0)
 		_fifo_ml.remove_at(0)
+		_fifo_kind.remove_at(0)
+		_fifo_color.remove_at(0)
 	if stopping and _stop_t >= t_land and _fifo_t.is_empty() and _acc <= 0.0:
 		_finish()
 
 
-func _deposit(ml: float) -> void:
+func _flush_accumulator() -> void:
+	_fifo_t.append(_clock + t_land)
+	_fifo_ml.append(_acc)
+	_fifo_kind.append(_acc_kind)
+	_fifo_color.append(_acc_color)
+	_acc = 0.0
+	_acc_t = 0.0
+
+
+func _deposit(ml: float, kind: StringName = &"unknown", captured_color: Color = color) -> void:
 	if not landed:
 		lost_ml += ml
 		return
@@ -225,9 +241,9 @@ func _deposit(ml: float) -> void:
 		var each := minf(ml * 0.1, rd * rd * rd * 4.18879e6)
 		for k in 2:
 			var dv := Vector3(_rng.randfn(), 0.0, _rng.randfn()) * 0.35 + land_n * _rng.randf_range(0.3, 0.8)
-			mgr.emit_droplet(land_pos + land_n * 0.004, dv, each, color)
+			mgr.emit_droplet(land_pos + land_n * 0.004, dv, each, captured_color, kind)
 			sml += each
-	mgr.add_puddle(land_pos, land_n, ml - sml, color)
+	mgr.add_puddle(land_pos, land_n, ml - sml, captured_color, kind)
 
 
 func _finish() -> void:

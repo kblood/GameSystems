@@ -439,7 +439,7 @@ func _step_parcels(dt: float) -> void:
 			if not hit.is_empty():
 				var remaining_ml := _pvol[i]
 				_pvol[i] = 0.0
-				_land(hit["position"], hit["normal"], remaining_ml, _pcol[i], space, excl, _page[i])
+				_land(hit["position"], hit["normal"], remaining_ml, _pcol[i], space, excl, _page[i], _pkind[i])
 				_t_land = lerpf(_t_land, _page[i], 0.3)
 				done = true
 			elif _page[i] > max_flight or p1.y < -50.0:
@@ -461,17 +461,19 @@ func _step_parcels(dt: float) -> void:
 
 
 ## World landing: puddle (+ a few splash droplets carrying part of the volume). Steep hits drop straight down to the floor.
-func _land(pos: Vector3, n: Vector3, ml: float, col: Color, space: PhysicsDirectSpaceState3D, excl: Array[RID], age := 1.0) -> void:
+func _land(pos: Vector3, n: Vector3, ml: float, col: Color, space: PhysicsDirectSpaceState3D, excl: Array[RID], age := 1.0, kind: StringName = &"unknown") -> void:
 	spilled_ml += ml
-	world_puddle_ml += ml
 	last_land = pos
 	var mgr := GSBottleBreakManager.get_for(self)
 	if n.y < 0.5:
 		var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(pos + n * 0.01, pos + Vector3.DOWN * 6.0, ray_mask, excl))
 		if hit.is_empty():
+			world_lost_ml += ml
+			mgr.discard_liquid(ml)
 			return
 		pos = hit["position"]
 		n = hit["normal"]
+	world_puddle_ml += ml
 	_splash_k += 1
 	var sml := 0.0
 	# splash beads: never fatter than the stream tube at the landing point (a bead bigger than the tube reads as a row of balls),
@@ -483,8 +485,8 @@ func _land(pos: Vector3, n: Vector3, ml: float, col: Color, space: PhysicsDirect
 		sml = each * 2.0
 		for k in 2:
 			var dv := Vector3(_rng.randfn(), 0.0, _rng.randfn()) * 0.5 + n * _rng.randf_range(0.4, 1.0)
-			mgr.emit_droplet(pos + n * 0.01, dv, each, col)
-	mgr.add_puddle(pos, n, ml - sml, col)
+			mgr.emit_droplet(pos + n * 0.01, dv, each, col, kind)
+	mgr.add_puddle(pos, n, ml - sml, col, kind)
 
 
 # ------------------------------------------------------------------ receiving

@@ -58,11 +58,15 @@ var _free: Array[Dictionary] = []
 var _dmm: MultiMesh
 var _dpos := PackedVector3Array()
 var _dvel := PackedVector3Array()
-var _dvol := PackedFloat32Array()
+var _dvol := PackedFloat64Array()
+var _dkind: Array[StringName] = []
 var _dsize := PackedFloat32Array()
 var _dalive := PackedByteArray()
 var _dnext := 0
 var _puddles: Array[Dictionary] = []
+var puddle_store := GSPuddleStore.new()
+var _liquid_added_ml := 0.0
+var _transport_removed_ml := 0.0
 var _puddle_shader: Shader
 var _puddle_tex: ImageTexture        ## HIGH decal mask, built once on first use
 var _puddle_orm: ImageTexture
@@ -93,12 +97,17 @@ static func find_for(node: Node) -> GSBottleBreakManager:
 	var scope := _scope_for(node, tree)
 	for candidate in tree.get_nodes_in_group("bottle_break_manager"):
 		var manager := candidate as GSBottleBreakManager
-		if is_instance_valid(manager) and (manager == scope or scope.is_ancestor_of(manager)):
+		if is_instance_valid(manager) and manager.get_viewport().world_3d == node.get_viewport().world_3d \
+			and (manager == scope or scope.is_ancestor_of(manager)):
 			return manager
 	return null
 
 
 static func _scope_for(node: Node, tree: SceneTree) -> Node:
+	# A viewport with its own World3D owns an independent liquid/debris pool.
+	var viewport := node.get_viewport()
+	if viewport != tree.root and viewport.world_3d != tree.root.world_3d:
+		return viewport
 	var scope := tree.current_scene
 	if scope != null and (node == scope or scope.is_ancestor_of(node)):
 		return scope
@@ -124,8 +133,8 @@ func set_quality(q: int) -> void:
 		_retire(_active.pop_front())
 	puddle_decals = t.get("decal", false)
 	while _puddles.size() > max_puddles:
-		(_puddles[0]["node"] as Node).queue_free()
-		_puddles.remove_at(0)
+		_remove_puddle(0)
+	puddle_store.limit = maxi(1, max_puddles)
 	for i in DROPLET_POOL:
 		if i >= _dcap and _dalive.size() > i and _dalive[i] == 1:
 			_kill_droplet(i)
@@ -183,6 +192,8 @@ func _ready() -> void:
 	_dpos.resize(DROPLET_POOL)
 	_dvel.resize(DROPLET_POOL)
 	_dvol.resize(DROPLET_POOL)
+	_dkind.resize(DROPLET_POOL)
+	_dkind.fill(&"unknown")
 	_dsize.resize(DROPLET_POOL)
 	_dalive.resize(DROPLET_POOL)
 	for i in DROPLET_POOL:
@@ -298,13 +309,17 @@ func clear_debris() -> void:
 	for s in _active:
 		_retire(s)
 	_active.clear()
+	_clear_liquid()
+
+
+func _clear_liquid() -> void:
 	for i in DROPLET_POOL:
-		_dalive[i] = 0
-		_dmm.set_instance_transform(i, Transform3D(Basis.IDENTITY.scaled(Vector3.ZERO), Vector3.ZERO))
-	for p in _puddles:
-		(p["node"] as Node).queue_free()
-	_puddles.clear()
-	live_droplets = 0
+		if _dalive[i] == 1: _kill_droplet(i)
+	while not _puddles.is_empty(): _remove_puddle(0)
+
+
+func _exit_tree() -> void:
+	if _dmm != null: _clear_liquid()
 
 
 func _physics_process(dt: float) -> void:
@@ -341,16 +356,20 @@ func _physics_process(dt: float) -> void:
 
 # ------------------------------------------------------------------ droplets
 
-func emit_droplet(pos: Vector3, vel: Vector3, vol_ml: float, color: Color) -> void:
+func emit_droplet(pos: Vector3, vel: Vector3, vol_ml: float, color: Color, kind: StringName = &"unknown") -> void:
+	if not _valid_liquid(pos, vol_ml, color) or not vel.is_finite(): return
+	_liquid_added_ml += vol_ml
 	var i := _dnext
 	_dnext = (_dnext + 1) % _dcap
 	set_physics_process(true)
+	if _dalive[i] == 1: _kill_droplet(i)
 	if _dalive[i] == 0:
 		live_droplets += 1
 	_dalive[i] = 1
 	_dpos[i] = pos
 	_dvel[i] = vel
 	_dvol[i] = vol_ml
+	_dkind[i] = StringName(GSPuddleStore.normalize_kind(kind))
 	_dsize[i] = clampf(pow(3.0 * vol_ml * 1.0e-6 / (4.0 * PI), 1.0 / 3.0), 0.0025, 0.009)
 	_dmm.set_instance_color(i, color)
 	_write_droplet(i)
@@ -381,7 +400,8 @@ func _step_droplets(dt: float) -> void:
 		if not hit.is_empty():
 			var n: Vector3 = hit["normal"]
 			if n.y > 0.5:
-				add_puddle(hit["position"], n, _dvol[i], _dmm.get_instance_color(i))
+				add_puddle(hit["position"], n, _dvol[i], _dmm.get_instance_color(i), _dkind[i], false)
+				_dvol[i] = 0.0  # transferred into storage; retirement must not also remove it
 			_kill_droplet(i)
 		elif p1.y < -100.0:
 			_kill_droplet(i)
@@ -391,14 +411,17 @@ func _step_droplets(dt: float) -> void:
 
 
 func _kill_droplet(i: int) -> void:
+	if _dalive[i] == 0: return
+	_transport_removed_ml += _dvol[i]
+	_dvol[i] = 0.0
 	_dalive[i] = 0
 	live_droplets -= 1
 	_dmm.set_instance_transform(i, Transform3D(Basis.IDENTITY.scaled(Vector3.ZERO), Vector3.ZERO))
 
 
 ## Burst of droplets from a shattered/pierced container. dir = main splash direction (world).
-func splash(pos: Vector3, dir: Vector3, volume_ml: float, color: Color, energy: float, base_vel := Vector3.ZERO, tier := -1) -> void:
-	if volume_ml <= 1.0:
+func splash(pos: Vector3, dir: Vector3, volume_ml: float, color: Color, energy: float, base_vel := Vector3.ZERO, tier := -1, kind: StringName = &"unknown") -> void:
+	if not _valid_liquid(pos, volume_ml, color):
 		return
 	var sc := splash_scale if tier < 0 else minf(splash_scale, float(TIERS[tier]["splash"]))
 	var n := maxi(int(clampi(int(volume_ml / 14.0), 10, 64) * sc), 6 if sc >= 0.2 else 4)
@@ -407,12 +430,14 @@ func splash(pos: Vector3, dir: Vector3, volume_ml: float, color: Color, energy: 
 	var speed := clampf(0.8 + sqrt(maxf(energy, 0.0)) * 0.35, 1.0, 8.0)
 	for k in n:
 		var d := (dir + Vector3(_rng.randfn(), _rng.randfn(), _rng.randfn()) * 0.7).normalized()
-		emit_droplet(pos, base_vel * 0.5 + d * speed * _rng.randf_range(0.3, 1.0), vol_each, color)
+		emit_droplet(pos, base_vel * 0.5 + d * speed * _rng.randf_range(0.3, 1.0), vol_each, color, kind)
 	# the rest of the volume lands straight below as a puddle
 	var space := get_viewport().world_3d.direct_space_state
 	var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(pos, pos + Vector3.DOWN * 6.0, droplet_mask))
 	if not hit.is_empty():
-		add_puddle(hit["position"], hit["normal"], volume_ml * 0.55, color)
+		add_puddle(hit["position"], hit["normal"], volume_ml * 0.55, color, kind)
+	else:
+		discard_liquid(volume_ml * 0.55)
 
 
 # ------------------------------------------------------------------ puddles
@@ -435,22 +460,35 @@ func decals_supported() -> bool:
 	return m != "gl_compatibility"
 
 
-func add_puddle(pos: Vector3, normal: Vector3, vol_ml: float, color: Color) -> void:
+func add_puddle(pos: Vector3, normal: Vector3, vol_ml: float, color: Color, kind: StringName = &"unknown", external := true) -> int:
+	if not _valid_liquid(pos, vol_ml, color) or not normal.is_finite() or normal.length_squared() < 0.000001: return -1
+	if external: _liquid_added_ml += vol_ml
 	for p in _puddles:
 		var c: Vector3 = p["pos"]
 		if c.distance_to(pos) < float(p["r"]) * 1.1 + 0.07 and p["normal"].dot(normal) > 0.9:
-			p["vol"] += vol_ml
+			puddle_store.deposit(p.id, kind, vol_ml)
+			p["vol"] = puddle_store.volume(p.id)
 			p["age"] = minf(p["age"], 0.0)
-			return
+			p["evap_fraction"] = 0.0
+			return int(p.id)
 	if max_puddles <= 0:
-		return
+		_transport_removed_ml += vol_ml
+		return -1
 	while _puddles.size() >= max_puddles:
-		(_puddles[0]["node"] as Node).queue_free()
-		_puddles.remove_at(0)
+		_remove_puddle(0)
+	var id := puddle_store.create()
+	puddle_store.deposit(id, kind, vol_ml)
+	_draw_puddle(id, pos, normal, color)
+	return id
+
+
+func _draw_puddle(id: int, pos: Vector3, normal: Vector3, color: Color) -> void:
+	var vol_ml := puddle_store.volume(id)
 	var up := normal.normalized()
 	var x := up.cross(Vector3.FORWARD if absf(up.dot(Vector3.FORWARD)) < 0.9 else Vector3.RIGHT).normalized()
 	var basis := Basis(x, up, x.cross(up))
-	var p := {"pos": pos, "normal": up, "vol": vol_ml, "r": 0.01, "age": 0.0, "rc": 0.0,
+	var p := {"id": id, "pos": pos, "normal": up, "vol": puddle_store.volume(id), "r": 0.01, "age": 0.0, "rc": 0.0,
+		"evap_fraction": 0.0, "source_color": color,
 		"poly": PackedVector2Array(), "mat": null, "decal": false, "rays": 0}
 	var col := Color(color.r * 0.55, color.g * 0.55, color.b * 0.55, 0.85)
 	if puddle_decals and decals_supported():
@@ -491,6 +529,124 @@ func add_puddle(pos: Vector3, normal: Vector3, vol_ml: float, color: Color) -> v
 		_fit_puddle(p, _target_radius(vol_ml))
 	set_physics_process(true)
 	_puddles.append(p)
+
+
+func _remove_puddle(index: int) -> void:
+	var p := _puddles[index]
+	puddle_store.remove(p.id)
+	(p.node as Node).queue_free()
+	_puddles.remove_at(index)
+
+
+## Physical transport with no reachable floor is an explicit removal sink.
+func discard_liquid(ml: float) -> void:
+	if not GSPuddleStore._amount(ml) or ml <= 0.0: return
+	_liquid_added_ml += ml
+	_transport_removed_ml += ml
+
+
+func liquid_ledger() -> Dictionary:
+	var state := puddle_store.ledger()
+	state.added_ml = _liquid_added_ml
+	state.removed_ml += _transport_removed_ml
+	state["airborne_ml"] = 0.0
+	for i in DROPLET_POOL:
+		if _dalive[i] == 1: state.airborne_ml += _dvol[i]
+	return state
+
+
+static func _valid_liquid(pos: Vector3, ml: float, color: Color) -> bool:
+	return pos.is_finite() and is_finite(ml) and ml > 0.0 and ml <= GSPuddleStore.MAX_VOLUME_ML \
+		and is_finite(color.r) and is_finite(color.g) and is_finite(color.b) and is_finite(color.a)
+
+
+## Liquid-only checkpoint. Live HIGH hole streams require their own host checkpoint;
+## refuse capture/restore rather than omit their batched in-flight volume.
+func capture_liquid() -> Dictionary:
+	if _has_live_leak_stream(): return {}
+	var puddles := []
+	for p in _puddles:
+		puddles.append({"id": p.id, "position": _vector_array(p.pos), "normal": _vector_array(p.normal),
+			"color": _color_array(p.source_color), "age": p.age, "evap_fraction": p.evap_fraction, "radius": p.r})
+	var droplets := []
+	for i in DROPLET_POOL:
+		if _dalive[i] == 1:
+			droplets.append({"position": _vector_array(_dpos[i]), "velocity": _vector_array(_dvel[i]),
+				"ml": _dvol[i], "kind": String(_dkind[i]), "color": _color_array(_dmm.get_instance_color(i))})
+	return {"version": 1, "store": puddle_store.snapshot(), "puddles": puddles, "droplets": droplets,
+		"added_ml": _liquid_added_ml, "transport_removed_ml": _transport_removed_ml}
+
+
+func restore_liquid(state: Dictionary) -> bool:
+	if _has_live_leak_stream() or state.get("version") != 1 or not state.get("store") is Dictionary \
+		or not state.get("puddles") is Array or not state.get("droplets") is Array \
+		or not GSPuddleStore._amount(state.get("added_ml")) or not GSPuddleStore._amount(state.get("transport_removed_ml")):
+		return false
+	var staged := GSPuddleStore.new()
+	staged.limit = maxi(1, max_puddles)
+	if not staged.restore(state.store) or state.puddles.size() > max_puddles or state.droplets.size() > _dcap: return false
+	var ids := {}
+	for p: Variant in state.puddles:
+		if not p is Dictionary or not GSPuddleStore._integer(p.get("id")) \
+			or not _finite_array(p.get("position"), 3) or not _finite_array(p.get("normal"), 3) \
+			or not _finite_array(p.get("color"), 4) or not GSPuddleStore._amount(p.get("age")) \
+			or not GSPuddleStore._amount(p.get("evap_fraction")) or float(p.evap_fraction) > 1.0 \
+			or not GSPuddleStore._amount(p.get("radius")) or float(p.radius) > 0.7:
+			return false
+		var id := int(p.id)
+		if not staged.contains(id) or ids.has(id) or _array_vector(p.normal).length_squared() < 0.000001: return false
+		ids[id] = true
+	if ids.size() != staged.snapshot().records.size(): return false
+	var airborne := 0.0
+	for d: Variant in state.droplets:
+		if not d is Dictionary or not _finite_array(d.get("position"), 3) or not _finite_array(d.get("velocity"), 3) \
+			or not _finite_array(d.get("color"), 4) or not GSPuddleStore._amount(d.get("ml")) \
+			or float(d.ml) <= 0.0 or float(d.ml) > GSPuddleStore.MAX_VOLUME_ML \
+			or not d.get("kind") is String or d.kind != GSPuddleStore.normalize_kind(StringName(d.kind)):
+			return false
+		airborne += float(d.ml)
+	var ledger := staged.ledger()
+	# Storage adds only liquid that landed; manager adds external airborne emission too.
+	var expected := float(ledger.added_ml) + airborne + float(state.transport_removed_ml)
+	if absf(float(state.added_ml) - expected) > maxf(0.000001, expected * 0.00000001): return false
+	_clear_liquid()
+	puddle_store = staged
+	for p: Dictionary in state.puddles:
+		_draw_puddle(int(p.id), _array_vector(p.position), _array_vector(p.normal), _array_color(p.color))
+		var drawn := _puddles.back()
+		drawn.age = float(p.age)
+		drawn.evap_fraction = float(p.evap_fraction)
+		drawn.r = float(p.radius)
+	for d: Dictionary in state.droplets:
+		emit_droplet(_array_vector(d.position), _array_vector(d.velocity), float(d.ml), _array_color(d.color), StringName(d.kind))
+	_liquid_added_ml = float(state.added_ml)
+	_transport_removed_ml = float(state.transport_removed_ml)
+	return true
+
+
+func _has_live_leak_stream() -> bool:
+	for child in get_children():
+		if child is GSBottleLeakStream and not child.finished: return true
+	return false
+
+
+static func _finite_array(value: Variant, size: int) -> bool:
+	if not value is Array or value.size() != size: return false
+	for number: Variant in value:
+		if typeof(number) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(number)): return false
+	return true
+
+static func _vector_array(value: Vector3) -> Array:
+	return [value.x, value.y, value.z]
+
+static func _color_array(value: Color) -> Array:
+	return [value.r, value.g, value.b, value.a]
+
+static func _array_vector(value: Array) -> Vector3:
+	return Vector3(float(value[0]), float(value[1]), float(value[2]))
+
+static func _array_color(value: Array) -> Color:
+	return Color(float(value[0]), float(value[1]), float(value[2]), float(value[3]))
 
 
 func _target_radius(vol_ml: float) -> float:
@@ -683,16 +839,25 @@ func _step_puddles(dt: float) -> void:
 	while i < _puddles.size():
 		var p := _puddles[i]
 		p["age"] += dt
-		var vol: float = p["vol"]
 		var fade := 1.0
 		if p["age"] > puddle_life:
-			var e: float = (p["age"] - puddle_life) / puddle_evaporate_time
-			if e >= 1.0:
-				(p["node"] as Node).queue_free()
-				_puddles.remove_at(i)
-				continue
-			vol *= 1.0 - e
+			var e := clampf((float(p.age) - puddle_life) / maxf(puddle_evaporate_time, 0.000001), 0.0, 1.0)
+			var previous: float = p.evap_fraction
+			var fraction := clampf((e - previous) / maxf(1.0 - previous, 0.000001), 0.0, 1.0)
+			var remaining := puddle_store.components(p.id)
+			# The legacy cosmetic liquids evaporate explicitly; authored fuel/foam
+			# persists until its host consumes, evaporates or clears actual volume.
+			for key: String in ["unknown", "water", "wine"]:
+				puddle_store.evaporate(p.id, StringName(key), float(remaining.get(key, 0.0)) * fraction)
+			p.evap_fraction = e
 			fade = 1.0 - e * e
+			for key: String in puddle_store.components(p.id):
+				if key not in ["unknown", "water", "wine"]: fade = 1.0
+		var vol := puddle_store.volume(p.id)
+		p.vol = vol
+		if vol <= 0.0:
+			_remove_puddle(i)
+			continue
 		var target := _target_radius(vol)
 		var r: float = p["r"]
 		r = lerpf(r, target, minf(1.0, 3.0 * dt)) if (target > r and animate_puddles) else target
