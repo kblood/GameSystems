@@ -961,9 +961,10 @@ validerer transform-/ejerskabskontrakten, ikke avataranimation eller headsetkomf
 Nyt afsluttet input-deltrin: et kort tracking-tab, mens hånden aktivt trækker
 rygsækkens håndtag, annullerer trækket uden at ændre cargo-ejerskab. Tracking-
 reacquisition starter ikke det gamle træk igen, og offset falder under 2 cm.
-`review-backpack-input` er udvidet; approach, input, live og release består
-107/107 checks. Sol har godkendt testen. Næste trin dækker et reelt skift mellem
-controller- og håndtracking samt tracking-tab ved et faktisk slot-udtag.
+Testen beviser også, at en fulgt, fri hånd kan tage en genstand ud af en åben lomme;
+samme udtag med tabt tracking lader genstanden blive i slot og ledger. Approach,
+input, live og release består **112/112** checks. Sol har godkendt testen.
+Næste trin dækker et reelt skift mellem controller- og håndtracking.
 
 Våbenasset-validatoren kontrollerer nu de eksporterede grebsankre for afstand
 mellem primær-/støttegreb, forreste støttegreb på rifler og nærhed til våbnets
