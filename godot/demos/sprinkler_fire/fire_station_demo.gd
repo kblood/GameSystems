@@ -171,6 +171,7 @@ func advance(delta: float) -> Dictionary:
 			var spread_tick: Dictionary = fire_spread.step(Thermal.FIXED_STEP)
 			if not spread_tick.get("ok", false): return {"ok": false, "reason": &"spread_tick"}
 			spread_steps += 1
+			_try_auto_ignite_spill()
 		var sprinkler_tick: Dictionary = sprinklers.step(slice)
 		if not sprinkler_tick.get("ok", false): return {"ok": false, "reason": &"sprinkler_tick"}
 		sprinkler_result.steps += int(sprinkler_tick.get("steps", 0))
@@ -324,7 +325,8 @@ func refill_water() -> float:
 func ignite_diesel_spill() -> Dictionary:
 	if thermal == null or puddles == null or puddle_fire == null: return {"ok": false}
 	var state: Dictionary = thermal.object_state(SPILL_FIRE_ID)
-	if state.is_empty() or bool(state.burning) or float(state.wetness) >= 0.8:
+	if state.is_empty() or bool(state.burning) \
+			or float(state.wetness) > PuddleFire.AUTO_REIGNITION_MAX_WETNESS:
 		last_puddle_result = {"ok": false, "reason": &"target_not_ignitable",
 			"kind": &"", "ml": 0.0, "energy_kj": 0.0}
 		_sync_spill_visual()
@@ -336,6 +338,18 @@ func ignite_diesel_spill() -> Dictionary:
 	_sync_spill_visual()
 	_update_status()
 	return last_puddle_result
+
+
+func _try_auto_ignite_spill() -> Dictionary:
+	if thermal == null or puddles == null or puddle_fire == null or fire_spread == null:
+		return {"ok": false, "ignited": false, "reason": &"unavailable"}
+	var receipt: Dictionary = puddle_fire.try_auto_ignite_from_hot_source(
+		puddles, diesel_puddle_id, FIRE_ID, SPILL_FIRE_ID, 400.0, 2.0)
+	if receipt.get("ignited", false):
+		last_puddle_result = receipt
+		if not _spill_spread_registered:
+			_spill_spread_registered = fire_spread.register_object(SPILL_FIRE_ID)
+	return receipt
 
 
 func extinguish_diesel_spill() -> Dictionary:
@@ -480,7 +494,7 @@ func _spill_status() -> String:
 	var state: Dictionary = thermal.object_state(SPILL_FIRE_ID)
 	if state.is_empty(): return "UNAVAILABLE"
 	if bool(state.burning): return "BURNING"
-	if float(state.wetness) >= 0.8: return "WET"
+	if float(state.wetness) > PuddleFire.AUTO_REIGNITION_MAX_WETNESS: return "WET"
 	if float(puddles.components(diesel_puddle_id).get("diesel", 0.0)) <= 0.0: return "EMPTY"
 	return "READY"
 

@@ -22,6 +22,17 @@ func _run_tests() -> void:
 		and initial.puddle_ledger.held_ml == 1800.0 and initial.diesel_spill_visible
 		and not initial.spill_fire_visible and initial.spill_status == "READY",
 		"scene owns a persistent visible mixed diesel/water puddle with explicit typed volume")
+	var auto_demo: Node3D = DemoScene.instantiate()
+	root.add_child(auto_demo)
+	var auto_tick: Dictionary = auto_demo.advance(0.05)
+	var auto_state: Dictionary = auto_demo.demo_state()
+	case_result(auto_tick.ok and auto_state.spill_fire.burning
+		and auto_state.last_puddle_result.ignited
+		and auto_state.last_puddle_result.kind == &"diesel"
+		and auto_state.diesel_puddle == {"diesel": 800.0, "water": 600.0}
+		and auto_state.spill_fire_visible,
+		"nearby hot pallet automatically ignites a typed diesel puddle and preserves its water component")
+	auto_demo.queue_free()
 	var runoff_demo: Node3D = DemoScene.instantiate()
 	root.add_child(runoff_demo)
 	var water_before: float = runoff_demo.demo_state().supply.components.water
@@ -102,6 +113,13 @@ func _run_tests() -> void:
 	case_result(not wet_relight.ok and refused_spill.last_puddle_result.reason == &"target_not_ignitable"
 		and refused_spill.spill_status == "WET" and refused_spill.puddle_ledger.consumed_ml == 600.0,
 		"wet spill refuses relight without consuming another fuel dose")
+	var after_quench_tick: Dictionary = demo.advance(0.05)
+	var after_quench_state: Dictionary = demo.demo_state()
+	case_result(after_quench_tick.ok and not after_quench_state.spill_fire.burning
+		and after_quench_state.diesel_puddle.diesel == 800.0
+		and after_quench_state.spill_fire.wetness > 0.05
+		and after_quench_state.spill_status == "WET",
+		"automatic ignition hysteresis prevents immediate hot-source relight after water quenching")
 	demo.puddles.withdraw(demo.diesel_puddle_id, &"diesel", 800.0)
 	demo._sync_spill_visual()
 	var water_only: Dictionary = demo.demo_state()

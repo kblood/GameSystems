@@ -4,8 +4,10 @@ Runnable 3D composition of the native `gs_thermal`, `gs_resource_adapters`,
 `gs_electricity`, `gs_fire_spread`, `gs_sprinklers` and `gs_bottles` typed-puddle store.
 The burning pallet can ignite a nearby crate through the room-bounded spread adapter; the
 sprinkler targets both. A persistent mixed diesel/water spill demonstrates receipt-based
-fuel ignition and water quenching through `GSPuddleFireAdapter`. A targetless floor head
-routes water runoff into a visible water puddle, while a separately valved diesel head draws
+fuel ignition and water quenching through `GSPuddleFireAdapter`. The nearby burning pallet
+automatically ignites the diesel spill once its authored gameplay threshold is met. Manual
+ignition with **I** stays inhibited until the thermal target dries enough after quenching. A
+targetless floor head routes water runoff into a visible water puddle, while a separately valved diesel head draws
 from its own finite tank and adds typed diesel to the spill. Per-source receipts distinguish
 thermal-applied volume from floor runoff deposited in persistent puddles.
 

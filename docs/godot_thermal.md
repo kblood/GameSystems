@@ -61,9 +61,16 @@ hardware comparisons and profile on the target VR hardware and scene.
 persistent mixed diesel/water puddle: a bounded diesel dose ignites a thermal target,
 and a typed water dose wets and extinguishes it. The adapter consumes petrol before
 diesel for fuel heat, accepts water or foam for extinguishing, and uses actual store
-receipts. Unknown liquids and colors never masquerade as either category. This is
-gameplay-scale host wiring, not autonomous pool-fire fluid dynamics; a host still owns
-the ignition conditions and per-tick decisions.
+receipts. Its optional `try_auto_ignite_from_hot_source` checks same-room distance,
+typed petrol/diesel auto-ignition thresholds, oxygen and target wetness before spending a
+receipt. The fire-station host calls it on thermal fixed ticks, so the nearby hot pallet can
+ignite the spill without a manual command. It requires a rollback-capable store; if a generic
+store returns less fuel than planned, the adapter restores that receipt before changing heat.
+Auto-ignition and manual ignition both stay inhibited while target wetness exceeds the small
+dry threshold, so the persistent hot pallet cannot immediately relight a freshly quenched
+spill. Thresholds are authored gameplay values, not real fuel specifications; unknown liquids
+and colors never masquerade as fuel. This remains coarse host wiring, not a continuous
+pool-fire or vapor model.
 
 ## Current limits and next work
 
@@ -79,4 +86,8 @@ swapping the active world, or keep rollback snapshots for every subsystem until 
 
 The `godot/addons/gs_thermal/tests/gs_thermal_tests.gd` contract exercises ignition, fixed-step debt, oxygen/smoke,
 quenching, typed puddle receipts, heat conservation through links, and the maximum
-object/link population: 42/42 checks pass on Godot 4.7.2, including JSON roundtrip, malformed-payload atomicity and deterministic next-tick restore.
+object/link population. The core checkpoint suite passed 42/42 on Godot 4.7.2 in its
+last recorded run, including JSON roundtrip, malformed-payload atomicity and deterministic
+next-tick restore. Adapter regressions since then extend the same script; the current
+thermal/fire contract now passes 51/51 on Godot 4.7.2, including refunding a generic
+fuel withdrawal when its callback changes room oxygen before heat is committed.

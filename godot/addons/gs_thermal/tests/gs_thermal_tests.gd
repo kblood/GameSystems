@@ -3,6 +3,31 @@ extends SceneTree
 const Thermal = preload("res://addons/gs_thermal/gs_thermal_system.gd")
 const Adapter = preload("res://addons/gs_thermal/gs_puddle_fire_adapter.gd")
 const Puddles = preload("res://addons/gs_bottles/gs_puddle_store.gd")
+
+class PartialFuelStore extends RefCounted:
+	var diesel_ml := 200.0
+	var max_take := 1.0
+	var overdraw_ml := 0.0
+	var reject_deposit := false
+	var mutate_thermal: Object
+	var mutate_room: StringName = &""
+
+	func components(_id: int) -> Dictionary:
+		return {"diesel": diesel_ml}
+
+	func withdraw(_id: int, kind: StringName, requested_ml: float) -> float:
+		if kind != &"diesel": return 0.0
+		var actual := requested_ml + overdraw_ml if overdraw_ml > 0.0 else minf(requested_ml, max_take)
+		diesel_ml -= actual
+		if mutate_thermal != null:
+			mutate_thermal.call("configure_room", mutate_room, {"oxygen": 0.0})
+		return actual
+
+	func deposit(_id: int, kind: StringName, ml: float) -> float:
+		if kind != &"diesel" or reject_deposit: return 0.0
+		diesel_ml += ml
+		return ml
+
 var passed := 0
 var failed := 0
 
@@ -85,6 +110,100 @@ func _initialize() -> void:
 		"typed fuel cannot satisfy an extinguishing request")
 	case_result(not bridge.burn_fuel_puddle(store, puddle_id, &"missing", 10.0).ok
 		and is_equal_approx(store.components(puddle_id).diesel, 20.0), "invalid heat target is rejected before liquid withdrawal")
+	var auto_store = Puddles.new()
+	var auto_puddle: int = auto_store.create()
+	auto_store.deposit(auto_puddle, &"diesel", 200.0)
+	auto_store.deposit(auto_puddle, &"water", 50.0)
+	var auto_thermal = Thermal.new()
+	auto_thermal.add_object(&"hot-source", {"temperature_c": 100.0, "ignition_c": 1000.0})
+	auto_thermal.add_object(&"pool-fire", {"temperature_c": 20.0, "ignition_c": 25.0,
+		"heat_capacity_kj_c": 1.0, "fuel": 10.0, "burn_rate": 1.0, "heat_kj_per_fuel": 1.0})
+	var auto_bridge = Adapter.new(auto_thermal)
+	var cold_rejected: Dictionary = auto_bridge.try_auto_ignite_from_hot_source(
+		auto_store, auto_puddle, &"hot-source", &"pool-fire", 200.0)
+	case_result(not cold_rejected.ignited and cold_rejected.reason == &"fuel_below_auto_ignition"
+		and auto_store.components(auto_puddle).diesel == 200.0,
+		"typed diesel remains untouched below its authored auto-ignition temperature")
+	auto_thermal.add_heat(&"hot-source", 200.0)
+	var undersized_auto_dose: Dictionary = auto_bridge.try_auto_ignite_from_hot_source(
+		auto_store, auto_puddle, &"hot-source", &"pool-fire", 1.0)
+	case_result(not undersized_auto_dose.ignited and undersized_auto_dose.reason == &"ignition_dose_too_small"
+		and auto_store.components(auto_puddle).diesel == 200.0,
+		"auto-ignition preflights enough fuel energy before withdrawing a dose")
+	var auto_ignition: Dictionary = auto_bridge.try_auto_ignite_from_hot_source(
+		auto_store, auto_puddle, &"hot-source", &"pool-fire", 200.0)
+	case_result(auto_ignition.ignited and auto_ignition.kind == &"diesel"
+		and auto_thermal.object_state(&"pool-fire").burning
+		and auto_store.components(auto_puddle) == {"water": 50.0},
+		"nearby hot source ignites the typed diesel pool through an actual liquid receipt")
+	var repeated_auto_ignition: Dictionary = auto_bridge.try_auto_ignite_from_hot_source(
+		auto_store, auto_puddle, &"hot-source", &"pool-fire", 200.0)
+	case_result(repeated_auto_ignition.reason == &"already_burning"
+		and auto_store.components(auto_puddle) == {"water": 50.0},
+		"automatic ignition does not withdraw another dose from an already-burning target")
+	var partial_store := PartialFuelStore.new()
+	var partial_thermal = Thermal.new()
+	partial_thermal.add_object(&"hot", {"temperature_c": 300.0, "ignition_c": 1000.0})
+	partial_thermal.add_object(&"fire", {"temperature_c": 20.0, "ignition_c": 25.0,
+		"heat_capacity_kj_c": 1.0, "fuel": 10.0, "burn_rate": 1.0, "heat_kj_per_fuel": 1.0})
+	var partial_receipt: Dictionary = Adapter.new(partial_thermal).try_auto_ignite_from_hot_source(
+		partial_store, 1, &"hot", &"fire", 200.0)
+	case_result(partial_receipt.reason == &"withdrawal_under_delivered"
+		and partial_receipt.withdrawn_ml == 1.0 and partial_receipt.refunded_ml == 1.0
+		and partial_store.diesel_ml == 200.0 and partial_thermal.object_state(&"fire").temperature_c == 20.0,
+		"partial generic withdrawal is refunded before any target heat is committed")
+	var room_change_thermal = Thermal.new()
+	room_change_thermal.add_room(&"sealed", {"oxygen": 1.0})
+	room_change_thermal.add_object(&"hot", {"room_id": &"sealed", "temperature_c": 300.0, "ignition_c": 1000.0})
+	room_change_thermal.add_object(&"fire", {"room_id": &"sealed", "temperature_c": 20.0, "ignition_c": 25.0,
+		"heat_capacity_kj_c": 1.0, "fuel": 10.0, "burn_rate": 1.0, "heat_kj_per_fuel": 1.0})
+	var room_mutating_store := PartialFuelStore.new()
+	room_mutating_store.max_take = 200.0
+	room_mutating_store.mutate_thermal = room_change_thermal
+	room_mutating_store.mutate_room = &"sealed"
+	var room_change_receipt: Dictionary = Adapter.new(room_change_thermal).try_auto_ignite_from_hot_source(
+		room_mutating_store, 1, &"hot", &"fire", 200.0)
+	case_result(room_change_receipt.reason == &"world_state_changed_refunded"
+		and room_change_receipt.refunded_ml == 200.0 and room_mutating_store.diesel_ml == 200.0
+		and room_change_thermal.object_state(&"fire").temperature_c == 20.0
+		and room_change_thermal.room_state(&"sealed").oxygen == 0.0,
+		"a fuel callback that changes room oxygen is refunded before heat is committed")
+	var broken_refund_store := PartialFuelStore.new()
+	broken_refund_store.overdraw_ml = 1.0
+	broken_refund_store.reject_deposit = true
+	var broken_refund_receipt: Dictionary = Adapter.new(partial_thermal).try_auto_ignite_from_hot_source(
+		broken_refund_store, 1, &"hot", &"fire", 200.0)
+	case_result(broken_refund_receipt.reason == &"rollback_incomplete"
+		and broken_refund_receipt.withdrawn_ml == 201.0 and broken_refund_receipt.refunded_ml == 0.0,
+		"invalid over-withdrawal with rejected refund is reported as an incomplete rollback")
+	var near_store = Puddles.new()
+	var near_puddle: int = near_store.create()
+	var near_amount_ml := (5.0 - 5.0e-10) / Adapter.DIESEL_KJ_PER_ML
+	near_store.deposit(near_puddle, &"diesel", near_amount_ml)
+	var near_thermal = Thermal.new()
+	near_thermal.add_object(&"near-hot", {"temperature_c": 300.0, "ignition_c": 1000.0})
+	near_thermal.add_object(&"near-fire", {"temperature_c": 20.0, "ignition_c": 25.0,
+		"heat_capacity_kj_c": 1.0, "fuel": 10.0, "burn_rate": 1.0, "heat_kj_per_fuel": 1.0})
+	var near_before: float = near_store.components(near_puddle).diesel
+	var near_receipt: Dictionary = Adapter.new(near_thermal).try_auto_ignite_from_hot_source(
+		near_store, near_puddle, &"near-hot", &"near-fire", near_amount_ml)
+	case_result(not near_receipt.ignited and near_receipt.reason == &"ignition_dose_too_small"
+		and near_store.components(near_puddle).diesel == near_before
+		and near_thermal.object_state(&"near-fire").temperature_c == 20.0,
+		"even a sub-nanokJ ignition shortfall is rejected before fuel or target heat changes")
+	var mixed_auto_store = Puddles.new()
+	var mixed_auto_puddle: int = mixed_auto_store.create()
+	mixed_auto_store.deposit(mixed_auto_puddle, &"petrol", 1.0)
+	mixed_auto_store.deposit(mixed_auto_puddle, &"diesel", 200.0)
+	var mixed_auto_thermal = Thermal.new()
+	mixed_auto_thermal.add_object(&"warm-source", {"temperature_c": 300.0, "ignition_c": 1000.0})
+	mixed_auto_thermal.add_object(&"mixed-pool-fire", {"temperature_c": 20.0, "ignition_c": 25.0,
+		"heat_capacity_kj_c": 1.0, "fuel": 10.0, "burn_rate": 1.0, "heat_kj_per_fuel": 1.0})
+	var mixed_auto: Dictionary = Adapter.new(mixed_auto_thermal).try_auto_ignite_from_hot_source(
+		mixed_auto_store, mixed_auto_puddle, &"warm-source", &"mixed-pool-fire", 200.0)
+	case_result(mixed_auto.ignited and mixed_auto.kind == &"diesel"
+		and mixed_auto_store.components(mixed_auto_puddle) == {"petrol": 1.0},
+		"mixed fuel skips an insufficient petrol trace and ignites from sufficient typed diesel")
 	case_result(system.configure_room(&"kitchen", {"oxygen": 0.0, "ventilation": 0.0})
 		and system.room_state(&"kitchen").oxygen == 0.0, "host can close and control a room's oxygen state")
 	var room_before_bad_config: Dictionary = system.room_state(&"kitchen")

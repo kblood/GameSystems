@@ -1,5 +1,29 @@
 # Løbende forbedringer af GameSystems
 
+## Typet automatisk pytantænding — 2026-10-12
+
+`GSPuddleFireAdapter` kan nu automatisk tænde en typet diesel-/benzinpyt, når en
+varmekilde i samme authored rum ligger inden for værtens radius og overstiger
+væsketypens gameplay-autoantændingstærskel. Adapteren kontrollerer ilt, vådhed,
+skum, brændstoftilstand og at kvitteringen indeholder nok energi til at nå
+brandmålets antændelsestemperatur, før væske trækkes. En allerede brændende mål-
+proxy kan ikke bruge en ekstra pytteportion. Fire-station-demoen tænder nu den
+blandede diesel/vand-pyt fra den nærliggende varme palle; vandet bliver tilbage.
+Tærsklerne er spilværdier, ikke kemiske eller sikkerhedsmæssige specifikationer.
+
+Autoantændingen er hysteret på targetets vådhed, så den varme kilde ikke antænder
+igen på næste fixed tick efter vandkvælning. Ved generiske supply-adapters kræves
+nu `deposit`-rollback: en underlevering tilbageføres, før targetets varme ændres;
+afvist rollback rapporteres eksplicit. Præcist utilstrækkelig energi afvises uden
+epsilon. For blandinger prøves næste brændstoftype, hvis den første ikke kan levere nok
+energi til at nå targetets antændelsestemperatur.
+
+Verifikation på Godot 4.7.2: thermal/fire **51/51**, typed pytter **66/66**,
+sprinklerkerne **54/54** og fire-station-integration **27/27**. Regressionen for en
+supply-callback, der ændrer rummets ilt under withdraw, bekræfter fuld refundering
+uden varmeændring på brandmålet. Mere detaljeret fordampning, damptænding og
+væskedynamik er fortsat særskilt arbejde.
+
 ## VR performance guide: Steam Frame execution paths — 2026-10-12
 
 Clarified that PCVR streamed from a host and games running directly on Steam Frame are
