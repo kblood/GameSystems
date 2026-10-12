@@ -943,14 +943,14 @@ gennemgang dækker håndtracking/controller-skift, kropsrammens bevægelse, inve
 restore og feedback i rigtige VR-flow; komfort og frame pacing kræver fortsat fysisk
 Steam Frame-test.
 
-Nyt afsluttet backpack-delmål: et mislykket forsøg på at lægge en kompatibel
-genstand i en fuld indvendig lomme viser kort `FULL` på den konkrete lomme.
-Markøren vender tilbage til ledgerens `STORED`-tilstand efter 1,25 s; den fjernes
-også straks, når lommen tømmes, tasken lukkes eller inventory gendannes. En ældre
-timer kan ikke fjerne en nyere besked, og en blokeret lomme meldes ikke fejlagtigt
-som fuld. Sol-review godkendt. Fire fokuserede rygsæksuiter består med **142/142**
-checks. Headsetlæsbarhed er ikke verificeret. Næste backpack-gennemgang dækker
-fejlsignaler for inkompatible slots samt syntetiske controller-/tracking-skift.
+Nyt afsluttet backpack-delmål: mislykkede lagringsforsøg ved en åben indvendig
+lomme får lokal `FULL`, `WRONG ITEM`, `TOO LARGE` eller `INVALID SIZE` feedback.
+Inventory-ledgeren afgør fortsat ejerskab og kapacitet; afvisninger ændrer hverken
+genstandens placering eller ledger. Varslerne udløber efter 1,25 s, forældes straks
+ved lukning, restore eller relevant ejerskift, og ældre timere kan ikke fjerne nyere
+varsler. Fire fokuserede rygsæksuiter består med **148/148** checks. Headsetlæsbarhed
+er ikke verificeret. Næste backpack-gennemgang dækker syntetiske controller- og
+tracking-skift samt persistence i skiftende kropsramme.
 
 Våbenasset-validatoren kontrollerer nu de eksporterede grebsankre for afstand
 mellem primær-/støttegreb, forreste støttegreb på rifler og nærhed til våbnets
