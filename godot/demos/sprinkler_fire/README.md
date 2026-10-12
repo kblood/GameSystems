@@ -30,6 +30,22 @@ Open `fire_station_demo.tscn` from the GameSystems Godot project, or run it with
 godot --path godot res://demos/sprinkler_fire/fire_station_demo.tscn
 ```
 
+Run the bounded integrated host benchmark from the GameSystems root with:
+
+```powershell
+godot --headless --xr-mode off --path godot --script res://demos/sprinkler_fire/benchmark_fire_station.gd
+```
+
+It warms up for 20 ticks, then measures 200 calls to the composed host at 50 ms each,
+including thermal propagation, spatial fire spread, sprinkler/grid work, typed runoff,
+and demo state/visual updates. It fills the fire-spread adapter to its 256-object limit
+and prints average, P95 and maximum wall time. This headless desktop diagnostic excludes
+rendering and headset/runtime costs; it is useful for regression comparisons, not a device
+performance claim. The benchmark fails unless the measured window includes sprinkler spray
+and newly deposited floor-head runoff. A local Godot 4.7.2 run on a Ryzen 7 5700G measured
+6,717 ml of spray and 4,812 ml of floor runoff, with 1.73 ms average, 1.99 ms P95 and
+2.86 ms maximum per tick.
+
 Controls: **H** opens/closes the compartment door, **F** triggers the thermal-targeting
 water head, **V** opens/closes its valve,
 **T** triggers the targetless floor-runoff water head, **D** triggers the diesel head, and

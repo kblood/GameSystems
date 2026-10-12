@@ -76,6 +76,13 @@ checkpoints and roll all systems back before resuming after any failure.
 A runnable authored fire-station scene is available at
 [`godot/demos/sprinkler_fire`](../godot/demos/sprinkler_fire/README.md); it composes the native electrical grid and routes typed spray receipts into persistent puddles. Stay at coarse gameplay resolution until device profiling justifies more detail; next work should measure representative host/device costs and improve plumbing or runoff composition without moving those responsibilities into the sprinkler core.
 
+The demo's opt-in integrated host benchmark is `godot/demos/sprinkler_fire/benchmark_fire_station.gd`.
+Run it with `godot --headless --xr-mode off --path godot --script
+res://demos/sprinkler_fire/benchmark_fire_station.gd` from the GameSystems root. It measures
+the composed simulation at the 256-object spread bound and reports average/P95/max tick time.
+This excludes rendering and VR runtime work; it is a desktop regression baseline, not a
+substitute for profiling on Steam Frame or another target headset.
+
 The focused `gs_sprinkler_tests.gd` contract covers typed receipts, tank sharing,
 automatic/manual activation, response, valve, range, refill, reentrancy, battery energy,
 pump capacity, malformed providers, JSON checkpoint roundtrips, atomic rejection, coordinated

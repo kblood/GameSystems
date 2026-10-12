@@ -1335,5 +1335,10 @@ integrationstest **13/13**, og addon-sync-check består.
 
 Samme maskine (Godot 4.7.2, Ryzen 7 5700G, 256 objekter, 200 ticks) målte tæt scenarie
 fra **5195/6468 µs avg/p95** til **4323/4631 µs**; spredt scenarie fra **2193/2384 µs**
-til **1909/2032 µs**. Det er desktop-syntetiske mikrobenchmarks; Steam Frame og
-integreret scene-frame-budget er fortsat umålt.
+til **1909/2032 µs**. Det er desktop-syntetiske mikrobenchmarks. En ny headless måling af
+den sammensatte brandstations-host med 256 spread-objekter bruger 20 warmup- og 200
+måleticks og kræver, at spray og runoff faktisk sker. En gentagelse målte 6.717 ml spray,
+4.812 ml runoff og **1733/1987/2858 µs avg/p95/max** på samme Ryzen 7 5700G. Målingen
+inkluderer simulation og demo-stateopdateringer, men ingen rendering; Steam Frame og
+headset-framebudget er fortsat umålt. Gentag med
+`godot/demos/sprinkler_fire/benchmark_fire_station.gd`.
