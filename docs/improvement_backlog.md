@@ -490,10 +490,11 @@ varmeudløsning, ventil, valgfri power gate og checkpoint er verificeret; detalj
 [supply_sprinklers.md](supply_sprinklers.md). Bilens endelige batteri- og brændstofadaptere er integreret.
 Det fysiske DC-strømskab, ledninger, endelige netbatterier og sikringer er også implementeret og driver
 kontrolrummets kamera/skærm-system; se [electricity_system.md](electricity_system.md). De oprindelige
-sprinkler-, bilasset-, strøm- og kameraopgaver fra den oprindelige liste er altså gennemført. Den lette
-kørselsmodel mangler fortsat chassis-kollision og affjedring, som beskrevet i [vehicle_system.md](vehicle_system.md);
-det er et særskilt åbent køretøjsdelmål. Den seneste målrettede elnet-, sprinkler- og kamerakørsel består
-**39/39** Node-tests. Headset-performance er ikke målt; det løbende mål fortsætter med nye fund.
+sprinkler-, bilasset-, strøm- og kameraopgaver fra den oprindelige liste er altså gennemført. Køretøjet har nu
+en valgfri, motoruafhængig adapter til chassis-sweep og fire dæmpede hjulkontakter, men den stationære lab og
+drivlinjen anvender den endnu ikke som samlet kørselsmodel. Integration med et aktivt terræn-/fysikmiljø og
+headsetmålinger er fortsat åbne delmål. `webxr-demo`-suiten består **554/554** Node-tests.
+Headset-performance er ikke målt; det løbende mål fortsætter med nye fund.
 
 ## Afsluttet bil- og kamerarunde
 
@@ -505,7 +506,9 @@ det er et særskilt åbent køretøjsdelmål. Den seneste målrettede elnet-, sp
 - 201/201 GameSystems-tests, produktionsbuild, 8/8 bil- og 9/9 kamera-browserchecks består.
 - Bil: [vehicle_system.md](vehicle_system.md). Kamera: [camera_system.md](camera_system.md).
 
-Bilens chassis har endnu ikke fysisk collision/suspension; checkpoint-provider er nu implementeret.
+Bilens checkpoint-provider er implementeret. Den valgfrie `createVehiclePhysicsAdapter()` tilbyder nu
+chassis-sweep, collision-skin, fire hjulraycasts og dæmpet compression/heave/pitch/roll; fuld lab- og
+terrænintegration mangler stadig.
 Strømskab, ledninger, endelige netbatterier og sikringer er nu implementeret og koblet til skærmen.
 13 nye kerne-/integrationschecks, 15/15 kamera-/strømskab-browserchecks og 12/12 eksisterende værkstedschecks består.
 Samlet GameSystems-suite: 214/214; produktionsbuild består.

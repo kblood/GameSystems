@@ -1,5 +1,6 @@
 import { registry, positive, finite, clamp, vector, extension, tierState } from '../host/system.js';
 import {jsonState,booleanState,stateId} from '../host/state.js';
+export { createVehiclePhysicsAdapter, VEHICLE_COLLISION_BOUNDS } from './physics.js';
 
 // Engine-independent, finite-resource vehicle gameplay. Distance m, time s, fuel L, energy Wh.
 export const VEHICLE_PARTS = Object.freeze({
