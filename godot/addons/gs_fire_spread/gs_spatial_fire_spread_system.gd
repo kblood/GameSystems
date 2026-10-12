@@ -6,6 +6,8 @@ const MAX_OBJECTS := 256
 const FIXED_STEP := 0.05
 const MAX_RADIUS_M := 10.0
 const MAX_HEAT_KJ_S := 1000.0
+# Missing-cell buckets are shared lookups; never append to this fallback array.
+const EMPTY_BUCKET: Array = []
 
 var thermal: Object
 var radius_m := 1.5
@@ -84,16 +86,18 @@ func step(delta: float) -> Dictionary:
 	for _target_index in range(target_ids.size()): heat_by_target.append(0.0)
 	var pairs := 0
 	var radius_squared := radius_m * radius_m
+	var empty_room_grid: Dictionary = {}
 	for source_index in range(source_ids.size()):
-		var room_cells: Dictionary = target_grid.get(source_rooms[source_index], {})
-		var source_cell := _cell(source_positions[source_index])
+		var room_cells: Dictionary = target_grid.get(source_rooms[source_index], empty_room_grid)
+		var source_position: Vector3 = source_positions[source_index]
+		var source_cell := _cell(source_position)
 		for x in range(-1, 2):
 			for y in range(-1, 2):
 				for z in range(-1, 2):
-					var bucket: Array = room_cells.get(source_cell + Vector3i(x, y, z), [])
+					var bucket: Array = room_cells.get(source_cell + Vector3i(x, y, z), EMPTY_BUCKET)
 					for target_index: int in bucket:
 						pairs += 1
-						var distance_squared := source_positions[source_index].distance_squared_to(target_positions[target_index])
+						var distance_squared := source_position.distance_squared_to(target_positions[target_index])
 						if distance_squared >= radius_squared: continue
 						var falloff := 1.0 - sqrt(distance_squared) / radius_m
 						var energy_kj := heat_kj_per_second * delta * falloff * falloff

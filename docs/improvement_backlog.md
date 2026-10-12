@@ -1247,3 +1247,16 @@ staging-/kapacitetsfejl. Hosten skal stadig
 tage manager-/kilde-snapshots i samme paused/fixed tick, bevare flaskeidentitet og
 pose samt gendanne manageren før flaskerne. Native brandadapter er fortsat en
 separat opgave.
+
+## Afsluttet spatial fire-spread hot-path-runde
+
+Den faste nabo-gennemgang genbruger nu et read-only tomt bucket-/room-grid-fallback,
+og hvert kildeobjekts position læses én gang pr. spread-tick. Kilde-/målrækkefølge,
+parakkumulering og varmeberegning er uændret. Sol reviewede ændringen og bekræftede,
+at fallback-arrays kun læses. Fire-spread-suite består **7/7**, sprinklerdemoens
+integrationstest **13/13**, og addon-sync-check består.
+
+Samme maskine (Godot 4.7.2, Ryzen 7 5700G, 256 objekter, 200 ticks) målte tæt scenarie
+fra **5195/6468 µs avg/p95** til **4323/4631 µs**; spredt scenarie fra **2193/2384 µs**
+til **1909/2032 µs**. Det er desktop-syntetiske mikrobenchmarks; Steam Frame og
+integreret scene-frame-budget er fortsat umålt.
