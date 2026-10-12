@@ -54,6 +54,16 @@ Sol har reviewet både koden og guiden uden resterende blockers. Det er ikke end
 samme feature-scope som WebXR: sprinklerplanlægning, spatial spredning,
 checkpoint-koordinering og headsetmålinger mangler fortsat.
 
+## Afsluttet VR-vejledninger — 2026-10-12
+
+`docs/vr/` samler ni guides og et indeks om AI-agenters arbejdsgang, Godot/OpenXR,
+portering mellem Godot OpenXR, Godot WebXR-export og den separate Three.js/WebXR-app,
+VR-kontroller og interaktion, IK/avatarstørrelse, active ragdolls, NPC-adfærd samt
+VR- og generel spilperformance. Godot 4.7-start, Steam Frame/Index input og adskillelsen
+mellem Steam Frame standalone og PCVR er tydeliggjort med aktuelle officielle referencer.
+Sol reviewede alle guides; lokale links og de sidste rettelser er godkendt.
+Guides: [VR-indeks](vr/README.md).
+
 ## Afsluttet gs_bottles pour-quality-runde — 2026-10-12
 
 Pour-strålen følger nu flaskens aktive distance-LOD og per-pour quality ceiling. De fire

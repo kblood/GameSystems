@@ -23,6 +23,9 @@ see [native puddles](native_puddles.md) and [Godot thermal](godot_thermal.md). T
 kernel is intentionally smaller than the WebXR thermal extension; sprinkler scheduling and
 spatial fire spread remain follow-up work.
 
+For VR implementation, controllers, IK/avatar scale, active ragdolls, NPCs and performance,
+see the [VR guide index](vr/README.md).
+
 Alle kerner har `setQuality`, `quality` og `dispose`. Alle moduler eksporterer en default extension-factory samt en navngiven
 `create…System`. Kilde: `extensions/<id>/index.js`. Kun den fælles, offentlige host-helper `extensions/host/system.js` importeres
 af kernerne; de importerer ingen rendering- eller physics-engine og ingen søstersystems interne filer.
