@@ -67,6 +67,33 @@ test('checkpoint commit restores solved voltages silently before observers run',
   const events=[],s=createElectricitySystem({emit:(name,data)=>events.push([name,data])});s.add('b',{kind:'battery',a:'p',b:'g',resistance:1});s.add('l',{a:'p',b:'g',resistance:11});s.evaluate();const saved=s.capture();
   s.setEnabled('l',false);s.evaluate();const plan=s.prepareRestore(saved);events.length=0;plan.commit();near(s.state('l').volts,11);assert.equal(events.length,0);plan.notify();assert.ok(events.length>0);
 });
+test('step charges solved loads before surfacing solve-notification observer errors',()=>{
+  const failure=new Error('solve observer failed'),energyFailure=new Error('energy receipt observer failed'),events=[];let armed=true,throwEnergy=false;
+  const make=emit=>{const s=createElectricitySystem({emit});s.add('battery',{kind:'battery',a:'p',b:'g',voltage:12,resistance:.08,capacityWh:600,energyWh:600});s.add('load',{a:'p',b:'g',resistance:10});return s;};
+  const clean=make(),observed=make((name,data)=>{events.push([name,data]);if(armed&&name==='electricity:changed'){armed=false;throw failure;}if(throwEnergy&&name==='electricity:energy')throw energyFailure;});
+  const expected=clean.step(1);
+  assert.throws(()=>observed.step(1),error=>error===failure);
+  const actualBattery=observed.state('battery'),expectedBattery=clean.state('battery');
+  near(actualBattery.energyWh,expectedBattery.energyWh);near(actualBattery.suppliedWh,expectedBattery.suppliedWh);
+  near(actualBattery.initialWh+actualBattery.chargedWh-actualBattery.suppliedWh,actualBattery.energyWh);
+  assert.ok(actualBattery.energyWh<600);assert.ok(expected.energyJ.load>0);
+  near(observed.state('load').power,clean.state('load').power);
+  assert.deepEqual(events.filter(([name])=>name==='electricity:changed').map(([,row])=>row.id),['battery','load']);
+  assert.deepEqual(events.filter(([name])=>name==='electricity:energy').map(([,row])=>row.energyJ.load),[expected.energyJ.load]);
+  const nextExpected=clean.step(1);throwEnergy=true;
+  assert.throws(()=>observed.step(1),error=>error===energyFailure);
+  near(observed.state('battery').energyWh,clean.state('battery').energyWh);
+  near(observed.state('battery').suppliedWh,clean.state('battery').suppliedWh);
+  assert.deepEqual(events.filter(([name])=>name==='electricity:energy').map(([,row])=>row.energyJ.load),[expected.energyJ.load,nextExpected.energyJ.load]);
+});
+test('evaluate completes the solve notification batch and releases its guard after observer failure',()=>{
+  const failure=new Error('first solve observer failed'),events=[];let thrown=false;
+  const s=createElectricitySystem({emit:(name,data)=>{events.push([name,data]);if(!thrown&&name==='electricity:changed'){thrown=true;throw failure;}}});
+  s.add('battery',{kind:'battery',a:'p',b:'g',voltage:12,resistance:1});s.add('load',{a:'p',b:'g',resistance:11});
+  assert.throws(()=>s.evaluate(),error=>error===failure);
+  assert.deepEqual(events.filter(([name])=>name==='electricity:changed').map(([,row])=>row.id),['battery','load']);
+  near(s.state('load').current,1);s.configure('load',{resistance:22});s.evaluate();near(s.state('load').current,12/23);
+});
 test('circuit solve observers cannot re-enter evaluation or mutate live topology',()=>{
   let armed=false,s;const refused=[];
   s=createElectricitySystem({emit:name=>{

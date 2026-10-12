@@ -23,6 +23,16 @@ holdte dyserate.
 Verifikation: flow-suite **20/20**, fuld WebXR-demo Node-suite **534/534**, flow-browser-smoke
 **17/17**, produktionsbuild består; Sol-review uden blocker.
 
+## Afsluttet electricity-step observer-runde — 2026-10-12
+
+Hvis `electricity:changed` eller `electricity:energy`-observere kaster, afslutter et igangværende
+`step()` nu stadig batteri- og belastningsregnskabet for det allerede simulerede tidsrum, og
+rejses derefter med den første observerfejl. `evaluate()` færdiggør også sin notifikationsbatch
+før fejlen kastes. Reelle solverfejl bevares som fejl i selve evalueringen.
+
+Verifikation: fokuseret electricity-suite **18/18**, fuld WebXR-demo Node-suite **536/536**,
+produktionsbuild og Sol-review består.
+
 ## Afsluttet kamera-render reentrancy-runde — 2026-10-12
 
 En scene-komponents `onBeforeRender` kunne kalde samme kamera-systems `step()` igen, mens feedets
@@ -227,12 +237,14 @@ Verifikation: begge kloner matcher `origin/main`; ingen af de gennemgåede branc
 foran remote `main`. De primære GameSystems-, WebXR- og Godot-checkouts forbliver hver på deres egen
 `main`.
 
-## Nyt løbende delmål — VR-backpack
+## Nyt løbende delmål — fysisk VR-backpack
 
 Færdiggør og verificér et selvstændigt, genbrugeligt VR-backpack-system med fysisk adgang inspireret af
-*The Walking Dead VR*: spilleren åbner tasken med hånden, ser afgrænsede lommer og tager faktiske
-genstande ud. Inventory-ledgeren ejer slot og genstand; spillets objekter ejer deres egen ammunition,
-væske og gameplay-tilstand. Samspil mellem systemerne skal bruge stabile ID'er og atomiske overførsler.
+*The Walking Dead VR*: spilleren når tasken hen over skulderen, åbner den med hånden, ser
+afgrænsede lommer og tager faktiske genstande ud. Slotting skal være fysisk og let at lære, ja/nej
+feedback skal være tydelig ved forkert lomme eller manglende plads, og våben skal kunne skiftes uden
+flad inventory-menu. Inventory-ledgeren ejer slot og genstand; spilobjekter ejer ammunition, væske
+og gameplay-tilstand. Samspil bruger stabile ID'er og atomiske overførsler.
 
 NightfallContractsGodot har nu en fungerende håndbetjent rygsæk med tre indvendige lommer,
 udvendige mounts, reach-/occlusion-regler, weapon-/magasin-integration og et Blender-authored,

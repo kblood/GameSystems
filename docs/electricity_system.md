@@ -53,6 +53,9 @@ begrænset til mellemrummet mellem operationer, så checkpoint ikke kan indehold
 iteration. Guard'en frigives ved fejl, hvorefter netværket kan evalueres eller ændres normalt igen.
 `electricity:energy` udsendes som en kopi af resultatet; observere kan gemme eller ændre eventet
 uden at ændre den autoritative receipt, som `step()` returnerer.
+Hvis en observer kaster under `evaluate()`, færdiggør solver'en alle hændelser og rejs derefter den første
+observerfejl. Under `step()` bliver også batteri- og belastningsregnskabet for hele intervallet færdig,
+før solve- eller energikvitteringsfejlen kastes videre; ingen løst last får gratis simulationstid.
 
 ## Checkpoint og integration
 

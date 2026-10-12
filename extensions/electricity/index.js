@@ -24,11 +24,15 @@ export function createElectricitySystem({ emit = () => {}, quality = 'high', max
     const actual=c.enabled?Math.min(wh,charging?c.capacityWh-c.energyWh:c.energyWh):0;
     c.energyWh+=charging?actual:-actual;c[charging?'chargedWh':'suppliedWh']+=actual;dirty=true;return actual;
   }
-  function runEvaluate(silent=false, owner=null) {
+  function runEvaluate(silent=false, owner=null, deferObserverError=null) {
     live();if(phase!==null&&phase!==owner)throw new Error(`Cannot evaluate during electricity ${phase}`);
     const previous=phase;phase='evaluate';
     try {
-      const publish=silent?()=>{}:emit;
+      let observerFailure,observerFailed=false;
+      const publish=silent?()=>{}:(...args)=>{try{emit(...args);}catch(error){
+        if(deferObserverError)deferObserverError(error);
+        else if(!observerFailed){observerFailure=error;observerFailed=true;}
+      }};
       // At most one re-solve per fuse, so cascading trips terminate.
       const blocked=new Set();
       for (let pass = 0; pass <= store.entries.size; pass++) {
@@ -66,7 +70,9 @@ export function createElectricitySystem({ emit = () => {}, quality = 'high', max
         if(tripped.length)continue;
         dirty = false;
         for (const c of all) publish('electricity:changed', { ...c });
-        return { fault, components: all.map(c => ({ ...c })) };
+        const result={ fault, components: all.map(c => ({ ...c })) };
+        if(observerFailed)throw observerFailure;
+        return result;
       }
       throw new Error('Circuit did not converge');
     } finally { phase=previous; }
@@ -106,26 +112,30 @@ export function createElectricitySystem({ emit = () => {}, quality = 'high', max
       live();idle('step');positive(dt,'dt',true);if(dt>10)throw new RangeError('Circuit update exceeds catch-up budget');
       phase='step';
       try {
-      if(dirty)runEvaluate(false,'step');
+      let failure,failed=false;
+      const rememberObserverError=error=>{if(!failed){failure=error;failed=true;}};
+      if(dirty)runEvaluate(false,'step',rememberObserverError);
       const energyJ=Object.create(null);let remaining=dt;
       // A battery may first fill from a higher source, then discharge after that source depletes.
       for(let pass=0;remaining>1e-10&&pass<=2*store.entries.size;pass++){
         const all=[...store.entries.values()],batteries=all.filter(c=>c.kind==='battery'&&c.enabled&&Math.abs(c.current)>1e-10);
         let seconds=remaining;
         for(const b of batteries){const chemicalW=b.voltage*b.current;const available=chemicalW<0?b.energyWh:b.capacityWh-b.energyWh;seconds=Math.min(seconds,available*3600/Math.abs(chemicalW));}
-        if(seconds<=0){dirty=true;runEvaluate(false,'step');continue;}
+        if(seconds<=0){dirty=true;runEvaluate(false,'step',rememberObserverError);continue;}
         for(const c of all)energyJ[c.id]=(energyJ[c.id]??0)+c.power*seconds;
         for(const b of batteries){const wh=b.voltage*b.current*seconds/3600;
           if(wh<0){b.energyWh=Math.max(0,b.energyWh+wh);b.suppliedWh-=wh;}else{b.energyWh=Math.min(b.capacityWh,b.energyWh+wh);b.chargedWh+=wh;}
           if(b.energyWh<1e-12)b.energyWh=0;if(b.capacityWh-b.energyWh<1e-12)b.energyWh=b.capacityWh;
         }
         remaining=Math.max(0,remaining-seconds);
-        if(remaining>1e-10||batteries.some(b=>b.energyWh===0||b.energyWh===b.capacityWh)){dirty=true;runEvaluate(false,'step');}
+        if(remaining>1e-10||batteries.some(b=>b.energyWh===0||b.energyWh===b.capacityWh)){dirty=true;runEvaluate(false,'step',rememberObserverError);}
       }
       if(remaining>1e-8)throw new Error('Battery boundary solver did not converge');
       const result={seconds:dt,energyJ:{...energyJ}};
       // An observer may retain or edit its payload; the caller's receipt remains authoritative.
-      emit('electricity:energy',{seconds:result.seconds,energyJ:{...result.energyJ}});return result;
+      try{emit('electricity:energy',{seconds:result.seconds,energyJ:{...result.energyJ}});}catch(error){rememberObserverError(error);}
+      if(failed)throw failure;
+      return result;
       } finally { phase=null; }
     },
     evaluate({silent=false}={}) { live();idle('evaluate');return runEvaluate(silent,null); },
