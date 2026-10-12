@@ -150,8 +150,18 @@ This bounds capture resolution and cadence, not arbitrary scene rendering cost.
 GPU correctness and target-headset performance require a rendered host scene;
 headless contract tests alone do not establish either.
 
-Run the native contract suite from the GameSystems repository:
+Run the native contract suite from the GameSystems repository. The headless command
+checks the API and scheduling contracts; its dummy renderer skips pixel assertions.
+Run the same script without `--headless` on a graphics-enabled machine to render a
+camera environment color into a real `SubViewport`, read its texture image, and check
+the center pixel:
 
 ```powershell
 godot --headless --xr-mode off --path godot --script res://addons/gs_cameras/tests/gs_camera_system_tests.gd
+godot --xr-mode off --path godot --script res://addons/gs_cameras/tests/gs_camera_system_tests.gd
 ```
+
+The graphics check verifies that one requested draw reaches the borrowed feed texture
+and that its center pixel matches a flat camera environment color. It does not verify
+lit geometry, scene-specific culling/materials, the monitor's appearance in the main
+viewport, XR compositor behavior, headset performance, or target-device GPU cost.

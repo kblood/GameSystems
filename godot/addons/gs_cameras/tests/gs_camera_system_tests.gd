@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless native contract tests for gs_cameras.
+## Native contract tests for gs_cameras; non-headless runs also verify rendered pixels.
 ##   godot --headless --path godot --script res://addons/gs_cameras/tests/gs_camera_system_tests.gd
 
 const CameraSystem = preload("res://addons/gs_cameras/gs_camera_system.gd")
@@ -36,6 +36,7 @@ func _initialize() -> void:
 	world_root.queue_free()
 	system.queue_free()
 	await process_frame
+	await pixel_verification()
 	print("GS_CAMERAS passed=%d failed=%d" % [passed, failed])
 	quit(1 if failed else 0)
 
@@ -233,6 +234,54 @@ func host_integration() -> void:
 	host.dispose(&"gs_cameras")
 	check(host.ids().is_empty(), "host disposal tears down the camera extension cleanly")
 	host.queue_free()
+	await process_frame
+
+## A graphics-enabled run also checks real SubViewport output. The dummy renderer has no pixel data.
+func pixel_verification() -> void:
+	if DisplayServer.get_name() == "headless":
+		print("GS_CAMERAS_PIXEL skipped: headless display server")
+		return
+	var pixel_world := Node3D.new()
+	root.add_child(pixel_world)
+	var camera := Camera3D.new()
+	camera.name = "PixelFeedCamera"
+	var environment := Environment.new()
+	environment.background_mode = Environment.BG_COLOR
+	environment.background_color = Color(0.04, 0.82, 0.06)
+	camera.environment = environment
+	pixel_world.add_child(camera)
+	var pixel_system = CameraSystem.new()
+	pixel_system.auto_update = false
+	root.add_child(pixel_system)
+	check(pixel_system.configure({"quality": "minimal", "screen_layer": 1}), "pixel fixture configures a minimal render target")
+	check(pixel_system.add_feed(&"pixel", {"camera": camera, "aspect": 1.0}), "pixel fixture registers its feed")
+	var screen := MeshInstance3D.new()
+	screen.mesh = PlaneMesh.new()
+	pixel_world.add_child(screen)
+	check(pixel_system.add_screen(&"pixel_screen", {"mesh": screen, "feed_id": &"pixel"}), "pixel fixture selects its feed through a screen")
+	var scheduled: Dictionary = pixel_system.step(0.5)
+	check(scheduled.ok and int(scheduled.scheduled) == 1, "pixel fixture schedules a feed render")
+	for _frame in 8:
+		RenderingServer.force_draw()
+		await process_frame
+		if int(pixel_system.feed_state(&"pixel").frames) > 0: break
+	var image: Image = pixel_system.texture(&"pixel").get_image()
+	if image != null and not image.is_empty():
+		var pixel: Color = image.get_pixel(image.get_width() / 2, image.get_height() / 2)
+		var expected := Color(0.04, 0.82, 0.06)
+		var matches: bool = pixel_system.feed_state(&"pixel").frames == 1 \
+			and absf(pixel.r - expected.r) < 0.12 \
+			and absf(pixel.g - expected.g) < 0.12 \
+			and absf(pixel.b - expected.b) < 0.12
+		check(matches,
+			"actual SubViewport center pixel matches the camera environment color (%.3f, %.3f, %.3f)" % [pixel.r, pixel.g, pixel.b])
+		if matches:
+			print("GS_CAMERAS_PIXEL size=%s frames=%d center=(%.3f, %.3f, %.3f, %.3f)" % [image.get_size(), pixel_system.feed_state(&"pixel").frames, pixel.r, pixel.g, pixel.b, pixel.a])
+	else:
+		check(false, "SubViewport returned nonempty image data in graphics mode")
+	pixel_system.dispose()
+	pixel_system.queue_free()
+	pixel_world.queue_free()
 	await process_frame
 
 func make_camera(id: StringName) -> Camera3D:
