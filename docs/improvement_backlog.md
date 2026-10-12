@@ -273,7 +273,8 @@ udvendige mounts, reach-/occlusion-regler, weapon-/magasin-integration og et Ble
 tekstureret canvas asset integreret i runtime-scenen. De fire visuelle meshgrupper bevarer de
 eksisterende slot-/håndtagsankre, bruger 13.982 trekanter og tilføjer ingen kollidere eller
 løbende fysik. Asset-, importer- og hinge-kontrakter er grønne. Den seneste backpack-kørsel
-består 8/8 processer og 256 headless-checks; dette beviser ikke headset-fit. Det aktive
+består 9/9 processer og 370 headless-checks, inkl. grebsadgang, kollisionsbegrænset træk,
+feedback, våbenintegration og asset-regression; dette beviser ikke headset-fit. Det aktive
 arbejde er headset-afprøvning og eventuelle målte forbedringer af komfort, rækkevidde og læsbarhed samt
 fortsat kontrol af tracking-tab, afbrudt greb og checkpoint/lifecycle-regressioner. Undgå
 stof-/lynlåsfysik og kontinuerlig simulation af opbevarede genstande; hold løsningen eventbaseret.
