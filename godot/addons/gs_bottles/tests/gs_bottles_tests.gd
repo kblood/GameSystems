@@ -34,6 +34,10 @@ func run() -> void:
 	liquid_quality.quality = GSBottlePour.MEDIUM
 	check(pour_quality._stream_mode() == GSBottlePour.MEDIUM,
 		"stream quality follows the active liquid realism tier")
+	liquid_quality.quality = GSBottlePour.LOW
+	liquid_quality._tier = GSBottlePour.HIGH # simulate the one-frame stale rendered LOD after a setting change
+	check(pour_quality._stream_mode() == GSBottlePour.LOW,
+		"stale higher liquid LOD cannot override the current quality ceiling")
 	liquid_quality._tier = GSBottlePour.MINIMAL
 	check(pour_quality._stream_mode() == GSBottlePour.MINIMAL,
 		"pour detail follows the liquid's active distance tier")

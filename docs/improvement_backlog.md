@@ -222,7 +222,11 @@ kvaliteter bruger cachede rør med 440/252/126/50 vertices. Landingsstænk bære
 så deres kadence er ens for alle visuelle tiers; en manager-volumentest dækker dette. Alle kvaliteter
 bevarer samme væskedræning, per-tick-parcel, receiver-hit og puddle-regnskab.
 
-Verifikation: addon-kontrakt **29/29**, Nightfall `game-systems` **26/26**, fuld GameSystems
+En Nightfall-integrationstest fandt en frame, hvor den renderede liquid-LOD stadig kunne være HIGH,
+efter runtime-kvaliteten var sat til LOW. `_stream_mode()` begrænser nu først til den aktuelle
+containerkvalitet og derefter til en gyldig distance-LOD. Regressionstesten simulerer dette stale tier.
+
+Verifikation: addon-kontrakt **30/30**, Nightfall `game-systems` **26/26**, fuld GameSystems
 Node-suite **559/559**, produktionsbuild består. Godot-headset-frame-time er ikke målt.
 
 ## Afsluttet GearInventory root-rebind-runde — 2026-10-12

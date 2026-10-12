@@ -168,8 +168,12 @@ func in_flight_ml() -> float:
 func _stream_mode() -> int:
 	var mode := clampi(quality, MINIMAL, HIGH)
 	if is_instance_valid(_ctl):
+		# The liquid's rendered LOD can be one update behind a runtime quality change.
+		# Never let a stale higher tier defeat the authored per-container ceiling.
+		mode = mini(mode, clampi(_ctl.quality, MINIMAL, HIGH))
 		var liquid_tier := _ctl.current_tier()
-		mode = mini(mode, clampi(liquid_tier if liquid_tier >= MINIMAL else _ctl.quality, MINIMAL, HIGH))
+		if liquid_tier >= MINIMAL:
+			mode = mini(mode, clampi(liquid_tier, MINIMAL, HIGH))
 	return mode
 
 
