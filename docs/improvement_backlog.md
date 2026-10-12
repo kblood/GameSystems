@@ -984,9 +984,13 @@ Nyt afsluttet input-deltrin: rygsækkens Interact-kilde holdes nu adskilt fra de
 hånd, der bærer cargo og leverer trækkets pose. Det understøtter Touch og EXT
 hand-interaction-profilens venstre Interact, mens højre hånd flytter rygsækken;
 slip af den indledende knap annullerer trækket selv hvis den modsatte knap fortsat
-holdes. NightfallContracts' ni rygsæksuiter består med **374/374** kontroller.
-Sol-review godkendt. Det er syntetisk XR-verifikation; et faktisk OpenXR-
-profilskift og headset-ergonomi mangler fortsat enhedstest.
+holdes. NightfallContracts' ni rygsæksuiter består nu med **391/391** kontroller.
+Sol-review godkendte både input-routing og atomisk `bind_player()` lifecycle:
+afvist player-/equipped-root-rebind bevarer roots, spillerreference, approach-
+historik og drop-rute; manglende equipped-root fjernes kun, når intet registreret
+item eller checkpoint-reset længere afhænger af den. Det er syntetisk XR-
+verifikation; faktisk OpenXR-profilskift og headset-ergonomi mangler fortsat
+enhedstest.
 
 Våbenasset-validatoren kontrollerer nu de eksporterede grebsankre for afstand
 mellem primær-/støttegreb, forreste støttegreb på rifler og nærhed til våbnets
