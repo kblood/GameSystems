@@ -60,7 +60,10 @@ static func _validate_entry(entry: Dictionary, index: int, errors: Array[String]
 	if not attachments is Array or not moving_parts is Array: errors.append("%s attachment and moving part lists must be arrays" % label)
 	if entry.get("kind") == "melee":
 		if entry.get("capacity") != null or fire_modes is Array and not fire_modes.is_empty(): errors.append("%s melee entries cannot define ammo or fire modes" % label)
+		if entry.has("shot_profile"): errors.append("%s melee entries cannot define shot_profile" % label)
 	else:
+		var shot_result := GSWeaponShotProfile.parse(entry.get("shot_profile", {}))
+		for error in shot_result.errors: errors.append("%s %s" % [label, error])
 		var capacity: Variant = entry.get("capacity")
 		var capacity_value := float(capacity) if typeof(capacity) in [TYPE_INT, TYPE_FLOAT] else 0.0
 		if typeof(capacity) not in [TYPE_INT, TYPE_FLOAT] or capacity_value < 1.0 or capacity_value > 128.0 or floorf(capacity_value) != capacity_value:

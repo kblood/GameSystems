@@ -935,14 +935,13 @@ syntetiske XR-flow samt persistence; markér headsetkomfort og frame pacing som 
 indtil det er målt på hardware. Fortsæt med at finde og løse næste forbedring, når hvert
 backpack-delmål er reviewet og består relevante tests.
 
-Første genbrugelige delmål er på plads: `gs_backpack` har nu en lille
-`GSBackpackInteraction`-bro, som kobler den kontinuerlige over-skulderkontrol til
-gear-inventory-adapterens almindelige retrieve-gate. Broen ejer hverken scene,
-fysik eller inventar; forkert bane og tracking-tab afvises før adapterkald.
-Næste backpack-opgave er at koble den sammen med NightfallContracts-riggens rigtige
-input-/slot-flow og gennemgå bevægelig kropsramme, controller plus håndtracking,
-lyd/haptik samt restore i selve spillet. Headsetkomfort og frame pacing kræver
-fortsat fysisk Steam Frame-test.
+Første integrationstrin er nu gennemført: `GSBackpackInteraction` ejer den delte
+over-skuldervalidering, og NightfallContracts-riggen bruger den til cargo-udtag
+via gear-inventory-adapterens normale retrieve-gate. Våbens særlige transfer til
+`equipped` fortsætter gennem sin egen validerede callback/rollback. Næste backpack-
+gennemgang dækker håndtracking/controller-skift, kropsrammens bevægelse, inventory-
+restore og feedback i rigtige VR-flow; komfort og frame pacing kræver fortsat fysisk
+Steam Frame-test.
 
 ## Afsluttet væske-/batteri-observerfejl-runde
 
@@ -955,3 +954,16 @@ og senere biler er konsistente før observerfejlen kastes. Sol-review uden block
 Verifikation: **548/548** samlet Node-suite, **75/75** fokuserede strøm-/væske-/biltests,
 **52/52** thermal/firetests, Vite-build samt `git diff --check` består. Browser-buildens
 eksisterende advarsler om bundlestørrelse og tredjeparts worker-import er uændrede.
+
+## Afsluttet rygsæk-/våbenprofil-runde
+
+NightfallContracts' fysiske backpack-rig bruger nu det genbrugelige `GSBackpackInteraction`
+til skulderadgang og kontrolleret cargo-udtag; våbens særlige transfer til `equipped` bevarer
+sin særskilte callback/rollback. De fem våben bevarer fælles gameplay-kode, men skydevåbnenes
+range, recoil/recovery, understøttet affyringsfeedback, haptik og mundingsglimt ligger nu i en
+valideret `shot_profile`. Kestrel beholder sine gamle standardværdier; glas- og almindelig
+ballistik bruger samme variant-range. Astra implementerede profilerne, Luna tilføjede direkte
+test af rude inden for og uden for rækkevidde samt kildekatalogets parser-/valideringstilfælde.
+Sol-review er godkendt uden blocker. GameSystems katalogtest består **26/26**; Nightfall
+shot-profile-test består **38/38**; addon `--check` består. Headsetfølelse for recoil/haptik
+er ikke verificeret.

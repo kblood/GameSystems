@@ -24,19 +24,25 @@ func configure(adapter: Object, approach_slots: Array[String] = ["back"]) -> boo
 func observe_hand(side: String, tracked: bool, body_local_hand: Vector3, shoulder_y: float, dt: float) -> void:
 	_approach.observe(side, tracked, body_local_hand, shoulder_y, dt)
 
+func check_approach(slot_id: String, side: String, body_local_hand: Vector3, shoulder_y: float) -> Dictionary:
+	if not side in ["left", "right"]: return _result(false, "invalid_hand")
+	if not _approach_slots.has(slot_id): return {"allowed":true, "reason":"approach_not_required"}
+	return _approach.check(side, body_local_hand, shoulder_y)
+
 ## Only configured slots require the deliberate reach path. Every accepted
 ## retrieval still passes through the host adapter's hand/reach/occlusion gate.
 func retrieve(slot_id: String, side: String, tracked: bool, body_local_hand: Vector3,
 		shoulder_y: float, hand_world: Transform3D, reach_m: float,
-		exclude: Array[RID] = [], collision_mask: int = 0xFFFFFFFF) -> Dictionary:
+		exclude: Array[RID] = [], collision_mask: int = 0xFFFFFFFF,
+		require_approach := true) -> Dictionary:
 	if not side in ["left", "right"]: return _result(false, "invalid_hand")
 	if not tracked:
 		_approach.reset(side)
 		return _result(false, "hand_tracking_lost")
 	if not is_instance_valid(_adapter) or not _adapter.has_method("request_retrieve"):
 		return _result(false, "not_configured")
-	if _approach_slots.has(slot_id):
-		var access: Dictionary = _approach.check(side, body_local_hand, shoulder_y)
+	if require_approach:
+		var access: Dictionary = check_approach(slot_id, side, body_local_hand, shoulder_y)
 		if not bool(access.allowed): return access
 	return _adapter.call("request_retrieve", slot_id, "hand:" + side, true,
 		hand_world, reach_m, exclude, collision_mask)
