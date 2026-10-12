@@ -3,22 +3,29 @@ extends Node3D
 
 const Thermal = preload("res://addons/gs_thermal/gs_thermal_system.gd")
 const SupplyTank = preload("res://addons/gs_resource_adapters/gs_supply_tank.gd")
-const Battery = preload("res://addons/gs_resource_adapters/gs_battery_adapter.gd")
 const Sprinklers = preload("res://addons/gs_sprinklers/gs_sprinkler_system.gd")
-const BatteryPump = preload("res://addons/gs_sprinklers/gs_sprinkler_battery_pump.gd")
+const Electricity = preload("res://addons/gs_electricity/gs_electricity_system.gd")
+const NetworkPump = preload("res://addons/gs_electricity/gs_electricity_network_pump.gd")
 
 const ROOM_ID := &"demo-room"
 const FIRE_ID := &"burning-pallet"
 const HEAD_ID := &"ceiling-head"
 const SUPPLY_ID := &"water-tank"
+const BATTERY_ID := &"pump-battery"
+const FUSE_ID := &"pump-fuse"
+const MAIN_SWITCH_ID := &"main-switch"
+const FAULT_SWITCH_ID := &"fault-switch"
 const WATER_CAPACITY_ML := 20000.0
 
 var thermal: RefCounted
 var tank: RefCounted
 var battery: RefCounted
 var pump: RefCounted
+var electricity: RefCounted
 var sprinklers: RefCounted
 var valve_open := true
+var main_switch_on := true
+var fault_switch_on := false
 var last_spray_ml := 0.0
 var _spray_linger_seconds := 0.0
 var _status_label: Label3D
@@ -36,8 +43,22 @@ func _ready() -> void:
 		"temperature_c": 450.0, "ignition_c": 250.0, "heat_capacity_kj_c": 8.0,
 		"flammability": 0.9, "fuel": 300.0, "burn_rate": 2.0, "heat_kj_per_fuel": 18.0})
 	tank = SupplyTank.new(WATER_CAPACITY_ML, {"water": WATER_CAPACITY_ML})
-	battery = Battery.new(180.0, 180.0, 12.0)
-	pump = BatteryPump.new(battery, 120.0, 420.0)
+	electricity = Electricity.new()
+	electricity.add(BATTERY_ID, {"kind": &"battery", "a": &"battery+", "b": &"ground",
+		"capacity_wh": 180.0, "energy_wh": 180.0, "voltage": 12.0, "resistance": 0.08})
+	electricity.add(&"feed-wire", {"kind": &"wire", "a": &"battery+", "b": &"switch-in", "resistance": 0.02})
+	electricity.add(MAIN_SWITCH_ID, {"kind": &"switch", "a": &"switch-in", "b": &"fuse-in",
+		"resistance": 0.02, "enabled": true})
+	electricity.add(FUSE_ID, {"kind": &"fuse", "a": &"fuse-in", "b": &"pump-bus",
+		"resistance": 0.02, "rating": 16.0})
+	electricity.add(&"pump-load", {"kind": &"load", "a": &"pump-bus", "b": &"ground",
+		"resistance": 1.2, "enabled": false})
+	electricity.add(FAULT_SWITCH_ID, {"kind": &"switch", "a": &"pump-bus", "b": &"fault-bus",
+		"resistance": 0.02, "enabled": false})
+	electricity.add(&"fault-load", {"kind": &"load", "a": &"fault-bus", "b": &"ground",
+		"resistance": 0.1})
+	battery = electricity.battery_adapter(BATTERY_ID)
+	pump = NetworkPump.new(electricity, &"pump-load", 120.0)
 	sprinklers = Sprinklers.new(thermal)
 	sprinklers.register_supply(SUPPLY_ID, tank)
 	sprinklers.set_power_provider(pump)
@@ -57,6 +78,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_F: trigger_head()
 		KEY_V: set_valve(not valve_open)
 		KEY_B: set_battery_enabled(not bool(battery.state().enabled))
+		KEY_S: set_main_switch(not main_switch_on)
+		KEY_X: set_fault_switch(not fault_switch_on)
+		KEY_C: replace_fuse()
 		KEY_R: refill_water()
 
 
@@ -99,8 +123,25 @@ func set_valve(open: bool) -> bool:
 
 
 func set_battery_enabled(enabled: bool) -> void:
-	if battery != null: battery.set_enabled(enabled)
+	if electricity != null: electricity.set_enabled(BATTERY_ID, enabled)
 	_update_status()
+
+
+func set_main_switch(enabled: bool) -> void:
+	if electricity != null and electricity.set_enabled(MAIN_SWITCH_ID, enabled): main_switch_on = enabled
+	_update_status()
+
+
+func set_fault_switch(enabled: bool) -> void:
+	if electricity != null and electricity.set_enabled(FAULT_SWITCH_ID, enabled): fault_switch_on = enabled
+	_update_status()
+
+
+func replace_fuse() -> bool:
+	if electricity == null: return false
+	var replaced: bool = electricity.replace_fuse(FUSE_ID)
+	_update_status()
+	return replaced
 
 
 func refill_water() -> float:
@@ -116,6 +157,8 @@ func demo_state() -> Dictionary:
 	return {"fire": thermal.object_state(FIRE_ID), "room": thermal.room_state(ROOM_ID),
 		"supply": tank.state(), "battery": battery.state(), "pump": pump.state(),
 		"head": sprinklers.head_state(HEAD_ID), "valve_open": valve_open,
+		"main_switch_on": main_switch_on, "fault_switch_on": fault_switch_on,
+		"fuse_blown": electricity.state(FUSE_ID).blown,
 		"last_spray_ml": last_spray_ml, "spray_visible": _spray_visual.visible}
 
 
@@ -170,9 +213,10 @@ func _update_status() -> void:
 	var head: Dictionary = sprinklers.head_state(HEAD_ID) if sprinklers != null else {}
 	var battery_state: Dictionary = battery.state()
 	var water_ml := float(tank.state().components.get("water", 0.0))
-	_status_label.text = "F trigger  |  V valve  |  B pump power  |  R refill\nHead: %s  Valve: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Room smoke: %.2f" % [
+	_status_label.text = "F trigger | V valve | B battery | S switch | X fault | C fuse | R refill\nHead: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Room smoke: %.2f" % [
 		"ON" if head.get("triggered", false) else "standby", "OPEN" if valve_open else "CLOSED",
-		water_ml, float(battery_state.energyWh), float(battery_state.capacityWh),
+		"ON" if main_switch_on else "OFF", "BLOWN" if electricity != null and electricity.state(FUSE_ID).blown else "OK",
+		water_ml, float(battery_state.energy_wh), float(battery_state.capacity_wh),
 		float(thermal.room_state(ROOM_ID).get("smoke", 0.0)) if thermal != null else 0.0]
 
 

@@ -9,6 +9,7 @@ godot --headless --path godot --script res://tests/gs_gear_inventory_scene_adapt
 godot --headless --path godot --script res://tests/gs_resource_adapters_tests.gd
 godot --headless --path godot --script res://addons/gs_thermal/tests/gs_thermal_tests.gd
 godot --headless --path godot --script res://addons/gs_sprinklers/tests/gs_sprinkler_tests.gd
+godot --headless --path godot --script res://addons/gs_electricity/tests/gs_electricity_tests.gd
 godot --headless --path godot --script res://demos/sprinkler_fire/fire_station_demo_tests.gd
 godot --headless --path godot --script res://tests/gs_weapon_catalog_tests.gd
 godot --headless --path godot --script res://tests/gs_weapon_loadout_tests.gd

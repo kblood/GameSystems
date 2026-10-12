@@ -18,19 +18,20 @@ beskriver fundamentet fra første implementation.
 | `tools` | `add`, `state`, `hold`, `release`, `use`, `insert`, `removePart`, `forgetPart`, `releaseAll`, `remove` | `tools:changed`, `tools:installed`, `tools:removed`, `tools:impact` |
 | `acoustics` | `addRoom`, `addPortal`, `setPortal`, `addListener`, `moveListener`, `path`, `sound`, `step`, `removeRoom`, `removePortal`, `removeListener` | `acoustics:heard`, `acoustics:dropped` |
 
-Godot also has native bottle/liquid storage, a bounded fire/thermal kernel and a composed
-sprinkler scene; see [native puddles](native_puddles.md), [Godot thermal](godot_thermal.md)
-and [Godot sprinklers](godot_sprinklers.md). This native kernel remains smaller than the
-WebXR fire model; spatial spread and a native electrical grid remain follow-up work.
+Godot also has native bottle/liquid storage, bounded fire/thermal and electrical kernels,
+and a composed sprinkler scene; see [native puddles](native_puddles.md),
+[Godot thermal](godot_thermal.md), [Godot electricity](godot_electricity.md) and
+[Godot sprinklers](godot_sprinklers.md). The fire model remains coarser than WebXR spatial
+spread; cross-system electrical heat transfer and spatial fire spread remain follow-up work.
 
 For VR implementation, controllers, IK/avatar scale, active ragdolls, NPCs and performance,
 see the [VR guide index](vr/README.md).
 
 The native Godot sprinkler layer composes finite typed supplies, room fire state and an optional
-battery pump adapter. The runnable [Godot fire-station demo](../godot/demos/sprinkler_fire/README.md)
-shows that composition. Thermal, supply, battery, pump and sprinkler states expose versioned
-checkpoints which the host captures at one paused save boundary. A future native power grid can
-implement the same provider contract; see [Godot sprinklers](godot_sprinklers.md).
+battery or grid pump adapter. The runnable [Godot fire-station demo](../godot/demos/sprinkler_fire/README.md)
+shows the circuit integration. Thermal, supply, electrical-grid, pump and sprinkler states expose versioned
+checkpoints which the host captures at one paused save boundary. The native electrical network
+implements the provider contract; see [Godot sprinklers](godot_sprinklers.md).
 
 Alle kerner har `setQuality`, `quality` og `dispose`. Alle moduler eksporterer en default extension-factory samt en navngiven
 `create…System`. Kilde: `extensions/<id>/index.js`. Kun den fælles, offentlige host-helper `extensions/host/system.js` importeres

@@ -43,9 +43,10 @@ the supply-limited planned doses to calculate a common flow fraction, capped by 
 pump throughput and the Wh actually delivered by the battery. The power event reports
 planned ml separately from the actual volume withdrawn; a supply may return less than
 its earlier state advertised. Spray events carry the applied power fraction. An empty
-or disabled battery gives zero flow without withdrawing liquid. The provider can be
-replaced by a future grid adapter implementing the same method. This is a gameplay
-budget, not electrical wiring or hydraulic pressure simulation.
+or disabled battery gives zero flow without withdrawing liquid. For wired circuits,
+`GSElectricityNetworkPump` from [Godot electricity](godot_electricity.md) implements the
+same provider contract and advances the native grid exactly once per sprinkler tick. This
+is a gameplay budget, not hydraulic pressure simulation.
 
 The step returns `spray` receipts with the exact withdrawn amount, original fluid kind,
 source ID, head position, room and affected targets. Hosts can use those receipts for
@@ -60,12 +61,15 @@ work per call. Shared heads divide each tank/component's available flow proporti
 so iteration order does not give the first head the whole remaining tank. A host should
 refill through the supply tank API and treat each returned spray receipt as authoritative.
 
-The reusable core has no native electrical grid, automatic spatial target discovery,
-sound/visual effects or measured headset performance; the standalone demo composes these APIs. Versioned
+The reusable sprinkler core does not own the electrical grid, automatic spatial target discovery,
+sound/visual effects or measured headset performance; the standalone demo composes the
+separate native `gs_electricity` addon. Versioned
 `checkpoint()` / `restore_checkpoint()` covers head configuration, latches and fixed-step
 time in live head iteration order; that order affects shared-supply requests and spray events.
 It requires the same registered supply IDs and the same presence/absence of a power provider. Snapshot thermal, puddle/liquid-source, supply tank, battery, pump and sprinkler at one paused
-host boundary; if bottle sources are present, restore their puddle manager before the sources. Restore in this order: thermal, supplies, batteries, pump adapter, then sprinkler.
+host boundary. If bottle sources are present, restore their puddle manager before the
+sources. With a native circuit, restore thermal, supplies/puddle store, circuit, pump
+adapter, then sprinkler.
 This order is not a cross-system transaction: preflight the complete provider graph in an
 isolated staged world and swap it in only after every restore succeeds, or retain live
 checkpoints and roll all systems back before resuming after any failure.

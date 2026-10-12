@@ -1,5 +1,18 @@
 # Løbende forbedringer af GameSystems
 
+## Native Godot electricity and sprinkler circuit — 2026-10-12
+
+Added bounded DC network simulation with ideal sources, finite internal-resistance batteries,
+wires, switches, instant fuses, resistive loads, energy-boundary integration, battery views,
+versioned restore plans, and a network-powered sprinkler adapter. The fire-station scene now
+routes its pump through a battery, wire, switch and fuse; an overload branch trips the fuse
+until the fault is disconnected and the fuse replaced.
+
+Verification: electricity **24/24**, fire-station composition **11/11**, JavaScript network/pump
+reference contracts **28/28**, Godot editor parsing and scene launch smoke pass. Sol approved
+the updated guide and addon README. The model is gameplay-scale DC, not AC, conductor thermal simulation or device profiling.
+Guide: [Godot electricity](godot_electricity.md).
+
 ## Godot fire-station composition demo - 2026-10-12
 
 Added a runnable, asset-free 3D scene that composes the thermal fire, finite water tank,
@@ -24,7 +37,7 @@ power-provider presence match. Hosts pause at one save boundary; restore thermal
 batteries, pump state, then sprinkler state. Bottle source snapshots remain host-coordinated.
 
 Verification: thermal **42/42**, resource adapters **35/35**, sprinkler **54/54**; Godot editor
-scan passes. Sol review found that provider order alone is not a cross-system transaction; the guide now requires staged preflight/atomic world swap or full rollback. A regression verifies failed staged restore leaves the active world untouched. Thermal and sprinkler checkpoints now preserve runtime insertion order; reversed-ID multi-object/head tick replay passes. Sol's final checkpoint review was approved, and the authored scene wiring is now covered by the fire-station demo above. Native grid integration, spatial spread and headset profiling remain open.
+scan passes. Sol review found that provider order alone is not a cross-system transaction; the guide now requires staged preflight/atomic world swap or full rollback. A regression verifies failed staged restore leaves the active world untouched. Thermal and sprinkler checkpoints now preserve runtime insertion order; reversed-ID multi-object/head tick replay passes. Sol's final checkpoint review was approved, and the authored scene wiring is now covered by the fire-station demo above. Electrical heat transfer, spatial fire spread and headset profiling remain open.
 Guides: [thermal](godot_thermal.md), [supply adapters](godot_resource_adapters.md),
 [sprinkler](godot_sprinklers.md).
 

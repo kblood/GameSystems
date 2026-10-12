@@ -254,7 +254,9 @@ func _tick(dt: float, events: Array[Dictionary]) -> void:
 			allocated.append(allocation)
 	var power_scale := 1.0
 	var actual_delivered_ml := 0.0
-	if power_provider != null and not allocated.is_empty():
+	# A provider may own a shared circuit clock, so call it once even when this sprinkler
+	# has no liquid demand. An idle provider must advance its other loads with an empty list.
+	if power_provider != null:
 		var power_result: Variant = power_provider.call("power_fraction", allocated.duplicate(true), dt)
 		if not _bounded(power_result, 0.0, 1.0):
 			power_scale = 0.0
