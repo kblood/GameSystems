@@ -268,10 +268,22 @@ func pixel_verification() -> void:
 	check(pixel_system.add_feed(&"pixel", {"camera": camera, "aspect": 1.0}), "pixel fixture registers its feed")
 	var screen := MeshInstance3D.new()
 	var quad := QuadMesh.new()
-	quad.size = Vector2(2, 2)
+	quad.size = Vector2(20, 20)
 	screen.mesh = quad
 	pixel_world.add_child(screen)
 	check(pixel_system.add_screen(&"pixel_screen", {"mesh": screen, "feed_id": &"pixel"}), "pixel fixture selects its feed through a screen")
+	var patch := MeshInstance3D.new()
+	var patch_quad := QuadMesh.new()
+	patch_quad.size = Vector2(1.2, 1.2)
+	patch.mesh = patch_quad
+	patch.position.z = -0.05
+	patch.layers = 2
+	var patch_material := StandardMaterial3D.new()
+	patch_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	patch_material.albedo_color = Color(0.88, 0.04, 0.04)
+	patch.material_override = patch_material
+	pixel_world.add_child(patch)
+	check(patch.layers != screen.layers, "unshaded fixture geometry uses a non-reserved layer")
 	var scheduled: Dictionary = pixel_system.step(0.5)
 	check(scheduled.ok and int(scheduled.scheduled) == 1, "pixel fixture schedules a feed render")
 	for _frame in 8:
@@ -281,15 +293,16 @@ func pixel_verification() -> void:
 	var image: Image = pixel_system.texture(&"pixel").get_image()
 	if image != null and not image.is_empty():
 		var pixel: Color = image.get_pixel(image.get_width() / 2, image.get_height() / 2)
-		var expected := Color(0.04, 0.82, 0.06)
+		var corner: Color = image.get_pixel(4, 4)
 		var matches: bool = pixel_system.feed_state(&"pixel").frames == 1 \
-			and absf(pixel.r - expected.r) < 0.12 \
-			and absf(pixel.g - expected.g) < 0.12 \
-			and absf(pixel.b - expected.b) < 0.12
+			and pixel.r > 0.65 and pixel.g < 0.25 and pixel.b < 0.25 \
+			and absf(corner.r - 0.04) < 0.12 \
+			and absf(corner.g - 0.82) < 0.12 \
+			and absf(corner.b - 0.06) < 0.12
 		check(matches,
-			"actual SubViewport center pixel matches the camera environment color (%.3f, %.3f, %.3f)" % [pixel.r, pixel.g, pixel.b])
+			"actual SubViewport contains unshaded geometry at center and environment at corner (center %.3f/%.3f/%.3f, corner %.3f/%.3f/%.3f)" % [pixel.r, pixel.g, pixel.b, corner.r, corner.g, corner.b])
 		if matches:
-			print("GS_CAMERAS_PIXEL size=%s frames=%d center=(%.3f, %.3f, %.3f, %.3f)" % [image.get_size(), pixel_system.feed_state(&"pixel").frames, pixel.r, pixel.g, pixel.b, pixel.a])
+			print("GS_CAMERAS_PIXEL size=%s frames=%d center=(%.3f, %.3f, %.3f, %.3f) corner=(%.3f, %.3f, %.3f, %.3f)" % [image.get_size(), pixel_system.feed_state(&"pixel").frames, pixel.r, pixel.g, pixel.b, pixel.a, corner.r, corner.g, corner.b, corner.a])
 	else:
 		check(false, "SubViewport returned nonempty image data in graphics mode")
 	check(root.get_camera_3d() == display_camera, "main viewport keeps its own active display camera")
@@ -306,14 +319,16 @@ func pixel_verification() -> void:
 	var screen_image: Image = root.get_texture().get_image()
 	if screen_image != null and not screen_image.is_empty():
 		var screen_pixel: Color = screen_image.get_pixel(screen_image.get_width() / 2, screen_image.get_height() / 2)
-		var presented: bool = absf(screen_pixel.r - 0.04) < 0.2 and absf(screen_pixel.g - 0.82) < 0.2 and absf(screen_pixel.b - 0.06) < 0.2
-		check(presented, "main viewport pixel samples the registered screen's camera feed (%.3f, %.3f, %.3f)" % [screen_pixel.r, screen_pixel.g, screen_pixel.b])
+		var screen_corner: Color = screen_image.get_pixel(4, 4)
+		var presented: bool = screen_pixel.r > 0.65 and screen_pixel.g < 0.25 and screen_pixel.b < 0.25 \
+			and absf(screen_corner.r - 0.04) < 0.2 and absf(screen_corner.g - 0.82) < 0.2 and absf(screen_corner.b - 0.06) < 0.2
+		check(presented, "main viewport monitor shows feed geometry at center and feed background at corner (center %.3f/%.3f/%.3f, corner %.3f/%.3f/%.3f)" % [screen_pixel.r, screen_pixel.g, screen_pixel.b, screen_corner.r, screen_corner.g, screen_corner.b])
 		if presented:
-			print("GS_CAMERAS_SCREEN_PIXEL size=%s center=(%.3f, %.3f, %.3f, %.3f) layer=%d" % [screen_image.get_size(), screen_pixel.r, screen_pixel.g, screen_pixel.b, screen_pixel.a, screen.layers])
+			print("GS_CAMERAS_SCREEN_PIXEL size=%s center=(%.3f, %.3f, %.3f, %.3f) corner=(%.3f, %.3f, %.3f, %.3f) layer=%d" % [screen_image.get_size(), screen_pixel.r, screen_pixel.g, screen_pixel.b, screen_pixel.a, screen_corner.r, screen_corner.g, screen_corner.b, screen_corner.a, screen.layers])
 	else:
 		check(false, "main viewport returned nonempty image data in graphics mode")
-	check(image != null and not image.is_empty() and absf(image.get_pixel(image.get_width() / 2, image.get_height() / 2).g - 0.82) < 0.12,
-		"registered screen layer keeps its mesh out of recursive feed capture")
+	check(image != null and not image.is_empty() and absf(image.get_pixel(4, 4).g - 0.82) < 0.12,
+		"registered screen layer keeps its mesh out of recursive feed capture, leaving the background visible at the feed corner")
 	pixel_system.dispose()
 	pixel_system.queue_free()
 	pixel_world.queue_free()

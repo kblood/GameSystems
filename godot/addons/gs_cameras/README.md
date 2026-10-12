@@ -153,8 +153,8 @@ headless contract tests alone do not establish either.
 Run the native contract suite from the GameSystems repository. The headless command
 checks the API and scheduling contracts; its dummy renderer skips pixel assertions.
 Run the same script without `--headless` on a graphics-enabled machine to render a
-camera environment color into a real `SubViewport`, read its texture image, and check
-the center pixel:
+scene quad and environment background into a real `SubViewport`, then check its center
+and corner pixels and the registered screen in the main viewport:
 
 ```powershell
 godot --headless --xr-mode off --path godot --script res://addons/gs_cameras/tests/gs_camera_system_tests.gd
@@ -163,9 +163,10 @@ godot --rendering-method mobile --xr-mode off --path godot --script res://addons
 ```
 
 Graphics-enabled runs verify that one requested draw reaches the borrowed feed texture,
-the feed center pixel matches a flat camera environment color, and a registered quad
-displays that color at the center of the main viewport. The fixture puts the quad in the
-feed camera's view, so the environment pixel also checks that the reserved screen layer
-keeps the quad out of recursive feed capture. It does not verify lit geometry,
-scene-specific culling/materials, arbitrary monitor layouts, XR compositor behavior,
+an unshaded red quad on a non-reserved layer appears at the feed center, and the green
+camera environment remains visible at a feed corner. A registered screen quad fills the
+main viewport and must show the same red center and green corner. Because the screen quad
+is in the feed camera's view, the corner check also verifies that its reserved layer
+keeps it out of recursive feed capture. The fixture does not verify lit geometry,
+scene-specific material lighting, arbitrary monitor layouts, XR compositor behavior,
 headset performance, or target-device GPU cost.
