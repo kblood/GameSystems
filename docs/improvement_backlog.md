@@ -1001,3 +1001,11 @@ test af rude inden for og uden for rækkevidde samt kildekatalogets parser-/vali
 Sol-review er godkendt uden blocker. GameSystems katalogtest består **26/26**; Nightfall
 shot-profile-test består **38/38**; addon `--check` består. Headsetfølelse for recoil/haptik
 er ikke verificeret.
+
+## Afsluttet Godot UID-artifact-runde
+
+De 26 manglende `.gd.uid`-sidecars for allerede versionerede scripts og tests i
+GameSystems' Godot-kilder er nu versionsstyrede. Samlet kontrol finder 42 sidecars,
+alle med eksisterende og versionerede mål, uden dublerede UID'er. NightfallContracts'
+genererede addon-kopier forbliver uden GameSystems' sidecars, som fastlagt af
+`sync_addons.py`; hele addon-synckontrollen passerer.
