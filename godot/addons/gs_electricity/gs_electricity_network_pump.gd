@@ -9,6 +9,7 @@ var load_id: StringName
 var rated_w: float
 var total_j := 0.0
 var last_energy_j := 0.0
+var last_energy_receipt_j: Dictionary = {}
 var last_fraction := 0.0
 var last_seconds := 0.0
 var request_ml := 0.0
@@ -36,6 +37,7 @@ func is_valid() -> bool:
 
 func power_fraction(requests: Array, dt: float) -> float:
 	last_energy_j = 0.0
+	last_energy_receipt_j.clear()
 	last_fraction = 0.0
 	if not _valid or not _positive(dt) or dt > 10.0: return 0.0
 	var requested_ml := 0.0
@@ -58,11 +60,13 @@ func power_fraction(requests: Array, dt: float) -> float:
 	if on_seconds > 0.0:
 		var result: Dictionary = network.step(on_seconds)
 		if not result.get("ok", false): return 0.0
+		_accumulate_receipt(result.get("energy_j", {}))
 		last_energy_j = maxf(0.0, float(result.get("energy_j", {}).get(load_id, 0.0)))
 	if on_seconds < dt:
 		network.set_enabled(load_id, false)
 		var tail: Dictionary = network.step(dt - on_seconds)
 		if not tail.get("ok", false): return 0.0
+		_accumulate_receipt(tail.get("energy_j", {}))
 	last_seconds = dt
 	request_ml = requested_ml
 	nominal_ml = capacity_ml
@@ -76,6 +80,19 @@ func state() -> Dictionary:
 	return {"valid": _valid, "load_id": load_id, "rated_w": rated_w, "total_j": total_j,
 		"last_energy_j": last_energy_j, "last_fraction": last_fraction, "last_seconds": last_seconds,
 		"request_ml": request_ml, "nominal_ml": nominal_ml, "last_required_j": last_required_j}
+
+
+## Detached per-component energy receipt from the most recent fixed interval.
+func energy_receipt_j() -> Dictionary:
+	return last_energy_receipt_j.duplicate(true)
+
+
+func _accumulate_receipt(receipt: Variant) -> void:
+	if not receipt is Dictionary: return
+	for id: Variant in receipt:
+		var value: Variant = receipt[id]
+		if typeof(value) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(value)): continue
+		last_energy_receipt_j[id] = float(last_energy_receipt_j.get(id, 0.0)) + float(value)
 
 
 func checkpoint() -> Dictionary:
@@ -111,10 +128,12 @@ func restore_checkpoint(payload: Variant) -> bool:
 	request_ml = saved_request
 	nominal_ml = saved_nominal
 	last_required_j = saved_required
+	last_energy_receipt_j.clear()
 	return true
 
 
 func dispose() -> void:
+	last_energy_receipt_j.clear()
 	_valid = false
 
 

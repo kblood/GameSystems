@@ -30,3 +30,5 @@ spatial field. This is a gameplay network, not an electrical safety or installat
 
 See the [Godot electricity guide](../../../docs/godot_electricity.md) for checkpoint,
 host-tick and sprinkler-integration rules.
+Optional passive-load heat transfer into the fire kernel lives in the separate
+`gs_electricity_thermal` addon.

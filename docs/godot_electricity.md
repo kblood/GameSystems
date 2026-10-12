@@ -39,6 +39,16 @@ resistance fault branch, **C** replaces a tripped fuse, and the sprinkler valve 
 finite water tank remain independently controllable. The scene preflights its thermal
 and sprinkler frame budgets before any subsystem advances.
 
+`gs_electricity_thermal` is an optional separate adapter for routing positive dissipated
+joules from wires, switches, fuses and loads into authored `GSThermalSystem` objects. After
+a successful direct `network.step(dt)`, pass its `energy_j` map to `apply_energy_receipt` before the
+thermal tick. Apply each receipt once; the adapter does not deduplicate receipts. If
+`GSElectricityNetworkPump` owns the network interval, pass
+`pump.energy_receipt_j()` instead; it combines the pump-on and pump-off portions of that
+single tick so other electrical loads still transfer their heat. The adapter preflights
+the aggregate heat per object before applying any of it. It does not simulate conductor
+temperature or spread ignition spatially.
+
 ## Checkpoints and limits
 
 The network checkpoint records authored component identity/topology and mutable electrical
@@ -53,4 +63,5 @@ The model does not simulate AC, induction, capacitance, temperature-dependent co
 thermal fuse delay or circuit-breaker mechanics. Fuses trip immediately; a gameplay fault
 can be represented by a low-resistance branch. This is not a real-world wiring calculator.
 
-Focused tests: `res://addons/gs_electricity/tests/gs_electricity_tests.gd`.
+Focused tests: `res://addons/gs_electricity/tests/gs_electricity_tests.gd` and
+`res://addons/gs_electricity_thermal/tests/gs_electricity_thermal_tests.gd`.

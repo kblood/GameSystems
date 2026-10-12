@@ -1,5 +1,19 @@
 # Løbende forbedringer af GameSystems
 
+## Godot circuit-to-fire heat bridge — 2026-10-12
+
+Added a standalone `gs_electricity_thermal` composition adapter. Hosts bind passive circuit
+components to authored thermal objects and transfer positive per-component joule receipts into
+the fire/thermal kernel as kilojoules. Heat is aggregated and preflighted per target before any
+thermal object changes. `GSElectricityNetworkPump` now exposes the merged per-component receipt
+for its pump-on and pump-off parts of a single sprinkler-owned network interval, so other loads
+can share the circuit and heat bridge without advancing the network twice.
+
+Verification: adapter **6/6**, electricity **24/24**, sprinklers **54/54**. Direct-network
+and pump-owned receipt paths, invalid receipt rejection, passive component bindings, and
+no-partial-heat preflight are covered. Spatial ignition spread and headset profiling remain open.
+Guide: [Godot electricity](godot_electricity.md); source: `godot/addons/gs_electricity_thermal/`.
+
 ## Native Godot electricity and sprinkler circuit — 2026-10-12
 
 Added bounded DC network simulation with ideal sources, finite internal-resistance batteries,

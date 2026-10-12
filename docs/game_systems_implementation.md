@@ -19,10 +19,11 @@ beskriver fundamentet fra første implementation.
 | `acoustics` | `addRoom`, `addPortal`, `setPortal`, `addListener`, `moveListener`, `path`, `sound`, `step`, `removeRoom`, `removePortal`, `removeListener` | `acoustics:heard`, `acoustics:dropped` |
 
 Godot also has native bottle/liquid storage, bounded fire/thermal and electrical kernels,
-and a composed sprinkler scene; see [native puddles](native_puddles.md),
+an optional electrical-to-thermal adapter and a composed sprinkler scene; see [native puddles](native_puddles.md),
 [Godot thermal](godot_thermal.md), [Godot electricity](godot_electricity.md) and
 [Godot sprinklers](godot_sprinklers.md). The fire model remains coarser than WebXR spatial
-spread; cross-system electrical heat transfer and spatial fire spread remain follow-up work.
+spread; electrical heat transfer is now available through an optional adapter, while spatial
+fire spread remains follow-up work.
 
 For VR implementation, controllers, IK/avatar scale, active ragdolls, NPCs and performance,
 see the [VR guide index](vr/README.md).
