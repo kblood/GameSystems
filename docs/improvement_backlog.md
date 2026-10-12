@@ -948,9 +948,17 @@ lomme får lokal `FULL`, `WRONG ITEM`, `TOO LARGE` eller `INVALID SIZE` feedback
 Inventory-ledgeren afgør fortsat ejerskab og kapacitet; afvisninger ændrer hverken
 genstandens placering eller ledger. Varslerne udløber efter 1,25 s, forældes straks
 ved lukning, restore eller relevant ejerskift, og ældre timere kan ikke fjerne nyere
-varsler. Fire fokuserede rygsæksuiter består med **148/148** checks. Headsetlæsbarhed
-er ikke verificeret. Næste backpack-gennemgang dækker syntetiske controller- og
-tracking-skift samt persistence i skiftende kropsramme.
+varsler. Den levende backpack-regression flytter også den løste hofteforankring
+gennem translation, yaw og lavere crouch-højde og verificerer, at samme cargo-node,
+slot-ejer og lokale pasform bevares. Fire fokuserede rygsæksuiter består med
+**152/152** checks. Headsetlæsbarhed er ikke verificeret. Næste backpack-gennemgang
+dækker syntetiske controller-/håndtracking-skift og tracking-tab under udtag.
+
+Kropsramme-regressionen er nu dækket i den eksisterende `review-backpack-live`-test.
+Den flytter det løste holster-anker gennem translation, yaw og lavere crouch-højde og
+verificerer, at samme node, lokale slot-fit og inventory-ejer består. Headless-testen
+validerer transform-/ejerskabskontrakten, ikke avataranimation eller headsetkomfort.
+Næste backpack-opgave: syntetiske controller- og tracking-skift.
 
 Våbenasset-validatoren kontrollerer nu de eksporterede grebsankre for afstand
 mellem primær-/støttegreb, forreste støttegreb på rifler og nærhed til våbnets
