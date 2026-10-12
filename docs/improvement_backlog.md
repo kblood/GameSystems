@@ -14,9 +14,13 @@ Verifikation på Godot 4.7.2 headless: portaladapter **241/241**, atomisk rum-ba
 (64 rum, 256 brændstofobjekter, 1.024 links, 128 portaler) måltes **2,589 ms mean /
 4,270 ms P95 / 5,878 ms max** pr. tick på desktop. Det er lokal desktopmåling, ikke
 headset-evidens. Nightfall har nu den genererede addon-kopi og to målrettede native suitechecks.
-Addonet er endnu ikke koblet på en spilscene; demo-wiring og headset/standalone-profilering
-er fortsatte opgaver.
+Headset/standalone-profilering og mission-runtime integration er fortsatte opgaver.
 Guide: [thermal portals](../godot/addons/gs_thermal_portals/README.md).
+Fire-station-demoen har nu to visuelle rum og en dør på **H**, som åbner/lukker den
+samme portal. Integrationstesten beviser, at lukket dør holder naborummet ved ambient
+uden røg, og at åben dør udveksler begge kanaler. Demo-kontrakten består **32/32**;
+tests dækker også H-toggling og panelgeometri. Demo-guiden er reviewed af Sol. Nightfall har fortsat kun den genererede addon og
+kontraktchecks; scenedemoens wiring findes i GameSystems.
 
 ## Typet automatisk pytantænding — 2026-10-12
 

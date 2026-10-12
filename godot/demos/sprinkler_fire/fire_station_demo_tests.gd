@@ -18,6 +18,42 @@ func _run_tests() -> void:
 	case_result(initial.fire.burning and initial.supply.components.water == 20000.0
 		and initial.battery.energy_wh == 180.0 and not initial.fuse_blown,
 		"scene composes an active fire, finite water supply and fused battery circuit")
+	var compartments_demo: Node3D = DemoScene.instantiate()
+	root.add_child(compartments_demo)
+	var closed_door_state: Dictionary = compartments_demo.demo_state()
+	var door_panel := compartments_demo._door_visual.get_child(0) as MeshInstance3D
+	var closed_geometry_ok := (is_zero_approx(compartments_demo._door_visual.rotation.y)
+		and is_equal_approx(door_panel.global_position.z, 0.0)
+		and is_equal_approx((door_panel.mesh as BoxMesh).size.z, 1.2))
+	case_result(closed_geometry_ok, "closed door panel is centered and covers the authored wall opening")
+	var closed_room_ok := true
+	for _tick in 10:
+		closed_room_ok = closed_room_ok and bool(compartments_demo.advance(0.1).ok)
+	var isolated_room: Dictionary = compartments_demo.demo_state().adjacent_room
+	case_result(closed_door_state.door.opening == 0.0 and closed_room_ok
+		and is_equal_approx(float(isolated_room.smoke), 0.0)
+		and is_equal_approx(float(isolated_room.temperature_c), 20.0),
+		"closed compartment door isolates the adjacent room from fire smoke and heat")
+	var door_key := InputEventKey.new()
+	door_key.pressed = true
+	door_key.keycode = KEY_H
+	compartments_demo._unhandled_key_input(door_key)
+	case_result(compartments_demo.demo_state().door.opening == 1.0
+		and is_equal_approx(compartments_demo._door_visual.rotation.y, PI * 0.5),
+		"H opens the edge-hinged panel and its portal together")
+	compartments_demo._unhandled_key_input(door_key)
+	case_result(compartments_demo.demo_state().door.opening == 0.0
+		and is_zero_approx(compartments_demo._door_visual.rotation.y),
+		"H closes the panel over the opening and disables portal exchange")
+	compartments_demo._unhandled_key_input(door_key)
+	var open_room_ok := true
+	for _tick in 10:
+		open_room_ok = open_room_ok and bool(compartments_demo.advance(0.1).ok)
+	var exposed_room: Dictionary = compartments_demo.demo_state().adjacent_room
+	case_result(open_room_ok and float(exposed_room.smoke) > 0.0
+		and float(exposed_room.temperature_c) > 20.0,
+		"open compartment door exchanges fire smoke and heat into the adjacent room")
+	compartments_demo.queue_free()
 	case_result(initial.diesel_puddle == {"diesel": 1200.0, "water": 600.0}
 		and initial.puddle_ledger.held_ml == 1800.0 and initial.diesel_spill_visible
 		and not initial.spill_fire_visible and initial.spill_status == "READY",

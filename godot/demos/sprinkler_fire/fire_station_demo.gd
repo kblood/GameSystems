@@ -2,6 +2,7 @@ extends Node3D
 ## Small runnable composition of the native thermal, supply, battery, pump and sprinkler kernels.
 
 const Thermal = preload("res://addons/gs_thermal/gs_thermal_system.gd")
+const ThermalPortals = preload("res://addons/gs_thermal_portals/gs_thermal_portal_system.gd")
 const FireSpread = preload("res://addons/gs_fire_spread/gs_spatial_fire_spread_system.gd")
 const SupplyTank = preload("res://addons/gs_resource_adapters/gs_supply_tank.gd")
 const Sprinklers = preload("res://addons/gs_sprinklers/gs_sprinkler_system.gd")
@@ -11,6 +12,8 @@ const PuddleStore = preload("res://addons/gs_bottles/gs_puddle_store.gd")
 const PuddleFire = preload("res://addons/gs_thermal/gs_puddle_fire_adapter.gd")
 
 const ROOM_ID := &"demo-room"
+const ADJACENT_ROOM_ID := &"adjacent-room"
+const DOOR_ID := &"compartment-door"
 const FIRE_ID := &"burning-pallet"
 const SPREAD_FIRE_ID := &"nearby-crate"
 const SPILL_FIRE_ID := &"diesel-spill-fire"
@@ -26,6 +29,7 @@ const FAULT_SWITCH_ID := &"fault-switch"
 const WATER_CAPACITY_ML := 20000.0
 
 var thermal: RefCounted
+var thermal_portals: RefCounted
 var fire_spread: RefCounted
 var tank: RefCounted
 var diesel_tank: RefCounted
@@ -39,6 +43,7 @@ var diesel_puddle_id := -1
 var sprinkler_water_puddle_id := -1
 var fuel_valve_open := false
 var valve_open := true
+var compartment_door_open := false
 var main_switch_on := true
 var fault_switch_on := false
 var last_spray_ml := 0.0
@@ -56,6 +61,7 @@ var _spread_fire_visual: MeshInstance3D
 var _spill_fire_visual: MeshInstance3D
 var _spill_visual: MeshInstance3D
 var _sprinkler_runoff_visual: MeshInstance3D
+var _door_visual: Node3D
 
 
 func _ready() -> void:
@@ -63,6 +69,9 @@ func _ready() -> void:
 	thermal = Thermal.new()
 	# A low bounded capacity makes automatic sensor activation visible in a short demo.
 	thermal.add_room(ROOM_ID, {"temperature_c": 20.0, "heat_capacity_kj_c": 0.1})
+	thermal.add_room(ADJACENT_ROOM_ID, {"temperature_c": 20.0, "heat_capacity_kj_c": 0.1})
+	thermal_portals = ThermalPortals.new(thermal)
+	thermal_portals.add_portal(DOOR_ID, ROOM_ID, ADJACENT_ROOM_ID, {"opening": 0.0})
 	thermal.add_object(FIRE_ID, {"room_id": ROOM_ID, "position": Vector3.ZERO,
 		"temperature_c": 450.0, "ignition_c": 250.0, "heat_capacity_kj_c": 8.0,
 		"flammability": 0.9, "fuel": 300.0, "burn_rate": 2.0, "heat_kj_per_fuel": 18.0})
@@ -140,6 +149,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_T: trigger_runoff_head()
 		KEY_D: trigger_diesel_head()
 		KEY_G: set_fuel_valve(not fuel_valve_open)
+		KEY_H: set_compartment_door(not compartment_door_open)
 
 
 ## Testable host tick; each kernel applies its own fixed-step budget.
@@ -168,6 +178,8 @@ func advance(delta: float) -> Dictionary:
 		thermal_debt = fire_result.pending_seconds
 		remaining = maxf(0.0, remaining - slice)
 		if int(tick.get("steps", 0)) == 1:
+			var portal_tick: Dictionary = thermal_portals.step(Thermal.FIXED_STEP)
+			if not portal_tick.get("ok", false): return {"ok": false, "reason": &"portal_tick"}
 			var spread_tick: Dictionary = fire_spread.step(Thermal.FIXED_STEP)
 			if not spread_tick.get("ok", false): return {"ok": false, "reason": &"spread_tick"}
 			spread_steps += 1
@@ -221,6 +233,14 @@ func set_valve(open: bool) -> bool:
 func set_fuel_valve(open: bool) -> bool:
 	if sprinklers == null or not sprinklers.set_valve_open(DIESEL_HEAD_ID, open): return false
 	fuel_valve_open = open
+	_update_status()
+	return true
+
+
+func set_compartment_door(open: bool) -> bool:
+	if thermal_portals == null or not thermal_portals.set_opening(DOOR_ID, 1.0 if open else 0.0): return false
+	compartment_door_open = open
+	if is_instance_valid(_door_visual): _door_visual.rotation.y = deg_to_rad(90.0 if open else 0.0)
 	_update_status()
 	return true
 
@@ -366,6 +386,8 @@ func demo_state() -> Dictionary:
 	return {"fire": thermal.object_state(FIRE_ID), "spread_fire": thermal.object_state(SPREAD_FIRE_ID),
 		"spill_fire": thermal.object_state(SPILL_FIRE_ID),
 		"room": thermal.room_state(ROOM_ID),
+		"adjacent_room": thermal.room_state(ADJACENT_ROOM_ID),
+		"door_open": compartment_door_open, "door": thermal_portals.state(DOOR_ID),
 		"supply": tank.state(), "battery": battery.state(), "pump": pump.state(),
 		"head": sprinklers.head_state(HEAD_ID), "valve_open": valve_open,
 		"runoff_head": sprinklers.head_state(RUNOFF_HEAD_ID),
@@ -390,6 +412,13 @@ func _build_scene() -> void:
 	add_child(_box(Vector3(8.0, 4.0, 0.2), Vector3(0.0, 2.0, -4.0), Color(0.29, 0.31, 0.32)))
 	add_child(_box(Vector3(0.2, 4.0, 8.0), Vector3(-4.0, 2.0, 0.0), Color(0.29, 0.31, 0.32)))
 	add_child(_box(Vector3(0.2, 4.0, 8.0), Vector3(4.0, 2.0, 0.0), Color(0.29, 0.31, 0.32)))
+	add_child(_box(Vector3(0.16, 4.0, 3.35), Vector3(2.0, 2.0, -2.32), Color(0.29, 0.31, 0.32)))
+	add_child(_box(Vector3(0.16, 4.0, 3.35), Vector3(2.0, 2.0, 2.32), Color(0.29, 0.31, 0.32)))
+	add_child(_box(Vector3(0.16, 1.25, 1.3), Vector3(2.0, 3.375, 0.0), Color(0.29, 0.31, 0.32)))
+	_door_visual = Node3D.new()
+	_door_visual.position = Vector3(2.0, 0.0, -0.62)
+	_door_visual.add_child(_box(Vector3(0.12, 2.75, 1.2), Vector3(0.0, 1.375, 0.62), Color(0.42, 0.34, 0.22)))
+	add_child(_door_visual)
 	_fire_visual = _sphere(0.75, Vector3(0.0, 0.8, 0.0), Color(1.0, 0.26, 0.035), true)
 	add_child(_fire_visual)
 	_spread_fire_visual = _sphere(0.38, Vector3(0.8, 0.45, 0.0), Color(1.0, 0.43, 0.04), true)
@@ -508,11 +537,14 @@ func _update_status() -> void:
 	var runoff_total_ml := 0.0
 	for receipt: Dictionary in sprinkler_source_receipts.values():
 		runoff_total_ml += float(receipt.get("puddle_ml", 0.0))
-	_status_label.text = "F water head | T floor runoff | V valve | D diesel head | G fuel valve | B battery | S switch | X fault | C fuse | R refill\nI ignite spill | E cool spill | Head: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Smoke: %.2f  Fuel puddle: %.0f mL (%s)  Tank: %.0f mL  Deposited: %.0f mL" % [
+	_status_label.text = "F water head | T floor runoff | H compartment door | V valve | D diesel head | G fuel valve | B battery | S switch | X fault | C fuse | R refill\nI ignite spill | E cool spill | Door: %s  Head: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Smoke: %.2f  Adjacent: %.1f C / %.3f smoke  Fuel puddle: %.0f mL (%s)  Tank: %.0f mL  Deposited: %.0f mL" % [
+		"OPEN" if compartment_door_open else "CLOSED",
 		"ON" if head.get("triggered", false) else "standby", "OPEN" if valve_open else "CLOSED",
 		"ON" if main_switch_on else "OFF", "BLOWN" if electricity != null and electricity.state(FUSE_ID).blown else "OK",
 		water_ml, float(battery_state.energy_wh), float(battery_state.capacity_wh),
 		float(thermal.room_state(ROOM_ID).get("smoke", 0.0)) if thermal != null else 0.0,
+		float(thermal.room_state(ADJACENT_ROOM_ID).get("temperature_c", 20.0)) if thermal != null else 20.0,
+		float(thermal.room_state(ADJACENT_ROOM_ID).get("smoke", 0.0)) if thermal != null else 0.0,
 		float(spill_components.get("diesel", 0.0)), _spill_status(),
 		float(diesel_tank.state().components.get("diesel", 0.0)) if diesel_tank != null else 0.0,
 		runoff_total_ml]

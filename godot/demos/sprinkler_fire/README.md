@@ -1,7 +1,12 @@
 # Godot sprinkler fire-station demo
 
-Runnable 3D composition of the native `gs_thermal`, `gs_resource_adapters`,
-`gs_electricity`, `gs_fire_spread`, `gs_sprinklers` and `gs_bottles` typed-puddle store.
+Runnable 3D composition of the native `gs_thermal`, `gs_thermal_portals`,
+`gs_resource_adapters`, `gs_electricity`, `gs_fire_spread`, `gs_sprinklers` and
+`gs_bottles` typed-puddle store.
+The scene has two authored compartments joined by a hinged door. **H** opens or closes
+the door and updates `gs_thermal_portals`; a closed door stops exchange through that portal,
+while an open door transfers smoke and heat between the rooms. The status label shows the
+adjacent room's temperature and smoke level.
 The burning pallet can ignite a nearby crate through the room-bounded spread adapter; the
 sprinkler targets both. A persistent mixed diesel/water spill demonstrates receipt-based
 fuel ignition and water quenching through `GSPuddleFireAdapter`. The nearby burning pallet
@@ -25,7 +30,8 @@ Open `fire_station_demo.tscn` from the GameSystems Godot project, or run it with
 godot --path godot res://demos/sprinkler_fire/fire_station_demo.tscn
 ```
 
-Controls: **F** triggers the thermal-targeting water head, **V** opens/closes its valve,
+Controls: **H** opens/closes the compartment door, **F** triggers the thermal-targeting
+water head, **V** opens/closes its valve,
 **T** triggers the targetless floor-runoff water head, **D** triggers the diesel head, and
 **G** opens/closes its fuel valve. **B** enables/disables the finite pump battery, **S**
 opens/closes the circuit switch, **X** connects an overload branch, **C** replaces the fuse,
