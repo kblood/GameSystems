@@ -3,6 +3,16 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
+## Afsluttet GearInventory root-rebind-runde — 2026-10-12
+
+Scene-adapteren afviser nu skift af owner-root, mens inventory-ledgeren stadig har
+registrerede genstande hos den owner. Det forhindrer, at håndbårne eller world-ejede
+genstande bliver hængende under en gammel scene-root, mens ejerskabet fortsat peger
+på den nye. Samme root er et sikkert no-op; root-skift er tilladt, når owneren er tom.
+
+Verifikation: GameSystems scene-adapter **82/82**; Nightfall rygsæk-/inventory-udsnit
+**13/13 processer, 502 checks**; sync `--check` består. Sol-review uden blocker.
+
 ## Afsluttet kamera-render reentrancy-runde — 2026-10-12
 
 En scene-komponents `onBeforeRender` kunne kalde samme kamera-systems `step()` igen, mens feedets

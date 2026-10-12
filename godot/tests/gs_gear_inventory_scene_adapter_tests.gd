@@ -48,6 +48,18 @@ func run() -> void:
 	check(adapter.register_slot("back", back_anchor, ["pistol"], Vector3(0.32, 0.22, 0.06)), "physical back slot registered")
 	check(not adapter.register_slot("back_alias", back_anchor, ["pistol"], Vector3(0.32, 0.22, 0.06)), "one physical anchor cannot back two slot IDs")
 	check(adapter.register_item("sidearm", pistol, "pistol", Vector3(0.24, 0.17, 0.04), "hand:right"), "actual rigid body registered from hand")
+	var initial_pose := pistol.global_transform
+	var replacement_right := Node3D.new()
+	replacement_right.name = "ReplacementRightHand"
+	root.add_child(replacement_right)
+	check(not adapter.set_owner_root("hand:right", replacement_right),
+		"owner root cannot change while a registered item is carried by that owner")
+	check(adapter.set_owner_root("hand:right", right_hand), "setting the current owner root remains a safe no-op while carrying")
+	check(adapter.store("sidearm", "hand:right", "back") and pistol.get_parent() == back_anchor,
+		"rejected live owner-root replacement leaves carried items storable")
+	check(adapter.retrieve("back", "hand:right") == "sidearm" and pistol.get_parent() == right_hand,
+		"rejected live owner-root replacement leaves carried items retrievable to the original root")
+	replacement_right.free()
 	check(not adapter.register_item("duplicate_physical", pistol, "pistol", Vector3(0.24, 0.17, 0.04), "hand:right"), "one physical node cannot have two item IDs")
 	check(adapter.register_item("spare_tool", spare_item, "tool", Vector3(0.1, 0.1, 0.1), "world"), "second physical item registers independently")
 	var nested_item := Node3D.new()
@@ -59,7 +71,6 @@ func run() -> void:
 	cycle_anchor.name = "CycleSlot"
 	backpack.add_child(cycle_anchor)
 	check(adapter.register_slot("cycle", cycle_anchor, ["pistol"], Vector3(0.32, 0.22, 0.06)), "second independent slot anchor registers")
-	var initial_pose := pistol.global_transform
 	world.remove_child(spare_item)
 	pistol.add_child(spare_item)
 	check(not adapter.store("sidearm", "hand:right", "back"), "store rejects items externally nested after registration")

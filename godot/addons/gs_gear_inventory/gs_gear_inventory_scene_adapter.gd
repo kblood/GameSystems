@@ -21,6 +21,12 @@ var _busy := false
 
 func set_owner_root(owner: String, root: Node3D) -> bool:
 	if _busy or not owner in Inventory.OWNERS or not is_instance_valid(root) or not root.is_inside_tree(): return false
+	var current_root: Variant = _owner_roots.get(owner)
+	if is_instance_valid(current_root) and current_root == root: return true
+	# A root change must not strand cargo whose ledger owner still points at it.
+	# Move carried items through the normal inventory transitions before rebinding.
+	for item_id in _items:
+		if inventory.owner_of(item_id) == owner: return false
 	for item_id in _items:
 		var item := _item_node(item_id)
 		if item == root or _is_under(root, item): return false

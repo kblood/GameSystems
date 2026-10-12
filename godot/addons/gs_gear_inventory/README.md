@@ -15,3 +15,8 @@ This boundary lets a game save an ordinary tool or supply item in a backpack wit
 duplicating its ammo, fluid, durability, or world pose. The owning gameplay/scene
 system serializes those values; the gear inventory restores where the object belongs.
 The magazine and weapon systems remain authoritative for ammunition and weapon state.
+
+Scene owner roots may be replaced only when no registered items are currently owned
+by that owner. Move or store carried/world-owned items through normal inventory
+transitions before rebinding a root; otherwise the ledger and scene ancestry would
+disagree and strand the item.
