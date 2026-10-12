@@ -36,6 +36,8 @@ Synlighed er objektets/forældres flag, ikke en fuld frustum-/occlusiontest.
 Hvis et feed-render fejler, gendannes rendererens state, allerede rendere feeds opdaterer deres skærme,
 fejlen sendes videre, og round-robin-cursoren flyttes forbi feedet, så en vedvarende fejl ikke blokerer
 de øvrige aktive feeds på efterfølgende frames.
+Et render-callback kan ikke kalde `step()` rekursivt; forsøget afvises før feed-uret ændres,
+og step-guard frigives også efter fejl, så næste normale frame kan rendere.
 
 Skærme skjules under feed-rendering, så monitorer ikke sampler deres eget aktive render target.
 Rendererens target, cube face/mip-level, viewport, scissor, autoClear og XR-flag gendannes i finally,

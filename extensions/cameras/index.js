@@ -8,7 +8,7 @@ export function createCameraSystem({ THREE, renderer, scene, quality = 'high', e
   if (!THREE?.WebGLRenderTarget || !renderer?.render || !scene?.isScene) throw new TypeError('Cameras require THREE, renderer and scene');
   for (const budget of [maxFeeds, maxScreens]) if (!Number.isSafeInteger(budget) || budget < 1) throw new RangeError('Camera registry budget must be a positive integer');
   const feeds = registry(), screens = registry(), tiers = tierState(quality); tiers.setQuality(quality);
-  let clock = 0, cursor = 0, disposed = false;
+  let clock = 0, cursor = 0, disposed = false, stepping = false;
   function live() { if (disposed) throw new Error('System is disposed'); }
   function budget() { return CAMERA_BUDGETS[tiers.quality]; }
   function dimensions(aspect) { const size = budget().width; return [Math.max(1, Math.round(Math.min(size, size * aspect))), Math.max(1, Math.round(Math.min(size, size / aspect)))]; }
@@ -79,18 +79,23 @@ export function createCameraSystem({ THREE, renderer, scene, quality = 'high', e
     removeScreen(id) { live(); const s = screens.get(id); if (s.mesh.material === s.material) s.mesh.material = s.original; s.material.dispose(); screens.remove(id); },
     removeFeed(id) { live(); const f = feeds.get(id); for (const s of screens.entries.values()) if (s.feedId === id) { s.feedId = null; display(s); } f.target.dispose(); feeds.remove(id); },
     step(dt) {
-      live(); positive(dt, 'dt', true); clock += dt;
-      const selected = new Set([...screens.entries.values()].filter(s => s.enabled && s.feedId !== null && visible(s.mesh)).map(s => s.feedId));
-      const ordered = [...feeds.entries.values()].filter(f => f.enabled && selected.has(f.id)).sort((a, b) => a.id.localeCompare(b.id));
-      let rendered = 0;
-      for (let i = 0; i < ordered.length; i++) {
-        const index = (cursor + i) % ordered.length, f = ordered[index];
-        if (clock - f.lastTime + 1e-9 < 1 / budget().fps) continue;
-        try { draw(f); } catch (error) { cursor = (index + 1) % ordered.length; if (rendered) refresh(); throw error; }
-        rendered++;
-        if (rendered >= budget().perStep) { cursor = (index + 1) % ordered.length; break; }
-      }
-      if (rendered) refresh(); return rendered;
+      live(); positive(dt, 'dt', true);
+      if (stepping) throw new Error('Camera feeds are already rendering');
+      stepping = true;
+      try {
+        clock += dt;
+        const selected = new Set([...screens.entries.values()].filter(s => s.enabled && s.feedId !== null && visible(s.mesh)).map(s => s.feedId));
+        const ordered = [...feeds.entries.values()].filter(f => f.enabled && selected.has(f.id)).sort((a, b) => a.id.localeCompare(b.id));
+        let rendered = 0;
+        for (let i = 0; i < ordered.length; i++) {
+          const index = (cursor + i) % ordered.length, f = ordered[index];
+          if (clock - f.lastTime + 1e-9 < 1 / budget().fps) continue;
+          try { draw(f); } catch (error) { cursor = (index + 1) % ordered.length; if (rendered) refresh(); throw error; }
+          rendered++;
+          if (rendered >= budget().perStep) { cursor = (index + 1) % ordered.length; break; }
+        }
+        if (rendered) refresh(); return rendered;
+      } finally { stepping = false; }
     },
     stats() { live(); return { quality: tiers.quality, feeds: feeds.entries.size, screens: screens.entries.size, frames: [...feeds.entries.values()].reduce((n, f) => n + f.frames, 0), ...budget() }; },
     capture() { live(); return { schema: 'gamesystems.cameras.v1', feeds: [...feeds.entries.values()].map(f => ({ id: f.id, enabled: f.enabled })), screens: [...screens.entries.keys()].map(id => api.screenState(id)) }; },

@@ -47,6 +47,20 @@ test('feed rendering restores XR, viewport, scissor, target and monitor visibili
   assert.equal(mesh.visible, true); assert.equal(renderer.target, prior); assert.equal(renderer.xr.enabled, true); assert.equal(renderer.autoClear, false);
   assert.deepEqual(renderer.viewport.toArray(), [1, 2, 3, 4]); assert.deepEqual(renderer.scissor.toArray(), [5, 6, 7, 8]); assert.equal(renderer.scissorTest, true);
 });
+test('camera render callbacks cannot recursively step the same feed target', () => {
+  const { api, mesh, renderer, calls } = setup();
+  api.addFeed('a', { camera: new THREE.PerspectiveCamera() }); api.addScreen('screen', { mesh, feedId: 'a' });
+  const nestedErrors = [];
+  renderer.render = () => {
+    try { api.step(.1); } catch (error) { nestedErrors.push(error.message); }
+    calls.push({ nested: true });
+  };
+  assert.equal(api.step(.1), 1);
+  assert.deepEqual(nestedErrors, ['Camera feeds are already rendering']);
+  assert.equal(api.feedState('a').frames, 1);
+  assert.equal(calls.length, 1);
+  assert.equal(api.step(.1), 1); // The guard is released after the outer render finishes.
+});
 test('minimal quality limits updates and fairly services every selected feed', () => {
   const { api, mesh, scene, calls } = setup('minimal');
   for (const id of ['a', 'b', 'c']) { api.addFeed(id, { camera: new THREE.PerspectiveCamera() }); const m = mesh.clone(); scene.add(m); api.addScreen(id, { mesh: m, feedId: id }); }

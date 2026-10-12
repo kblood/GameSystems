@@ -3,6 +3,16 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
+## Afsluttet kamera-render reentrancy-runde — 2026-10-12
+
+En scene-komponents `onBeforeRender` kunne kalde samme kamera-systems `step()` igen, mens feedets
+render-target allerede var aktivt. Det gav rekursiv rendering og kunne forvrænge feed-ure/cursor.
+`step()` afviser nu nested kald før clock ændres og frigiver guard i `finally`, også ved fejl.
+Regressionen bekræfter både afvisning og at næste normale frame virker.
+
+Verifikation: fokuseret kamera-suite **11/11**, fuld WebXR-demo Node-suite **526/526** og Sol-review
+uden blocker. Browser/UI-adfærd er uændret; hardware-performance er fortsat ikke målt.
+
 ## Afsluttet bottle-factory lifecycle — 2026-10-12
 
 `GSBottleExtension.create_bottle()` afviser nu ikke-finite fyldniveau, manglende modelressource
