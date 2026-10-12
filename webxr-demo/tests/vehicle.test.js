@@ -17,6 +17,14 @@ test('vehicle: standalone stores conserve resources and reject invalid input', (
   near(battery.draw(3), 3); near(battery.charge(7), 5); near(battery.draw(20), 10); near(battery.state().voltage, 0);
   battery.setEnabled(false); near(battery.charge(2), 0); near(battery.draw(1), 0);
 });
+test('vehicle: initially disabled battery preserves partial charge and permits exact refunds when re-enabled', () => {
+  const battery = createBatteryStore({ capacityWh: 10, energyWh: 2, enabled: false });
+  const before = battery.capture();
+  near(battery.draw(1), 0); near(battery.charge(3), 0); assert.deepEqual(battery.capture(), before);
+  battery.setEnabled(true);
+  near(battery.draw(1.25), 1.25); near(battery.charge(1.25), 1.25); near(battery.state().energyWh, 2);
+  near(battery.charge(20), 8); near(battery.state().energyWh, 10);
+});
 test('vehicle: start gates fuel, compatible fluid and finite starter energy', () => {
   const s = createVehicleSystem();
   s.add('empty', { fuel: createFuelStore({ amountL: 0 }) }); assert.equal(s.start('empty').reason, 'fuel-empty');
@@ -102,6 +110,18 @@ test('vehicle: lights drain a parked battery and alternator recharges while runn
   s.setLights('car', true); s.step(3600); near(s.state('car').power.energyWh, 0); assert.equal(s.state('car').electrics, false);
   near(s.charge('car', 10), 10); s.start('car'); const before = s.state('car').power.energyWh; s.step(10);
   assert.ok(s.state('car').power.energyWh > before); assert.equal(s.state('car').electrics, true);
+});
+test('vehicle: running alternator does not charge disabled battery or alter charging accounting', () => {
+  const power = createEnergyStore({ capacityWh: 10, energyWh: 2, voltage: 12.6 });
+  const s = createVehicleSystem(); s.add('car', { power, alternatorW: 700 });
+  assert.equal(s.start('car').started, true);
+  power.setEnabled(false);
+  const disabledState = power.capture(), chargedBefore = s.state('car').chargedWh;
+  s.step(10);
+  assert.deepEqual(power.capture(), disabledState);
+  near(s.state('car').chargedWh, chargedBefore);
+  assert.equal(s.state('car').running, true);
+  s.stop('car'); assert.equal(s.start('car').reason, 'battery-flat');
 });
 test('vehicle: swappable public supply/power adapters use petrol only and preserve state', () => {
   const supply = createSupplySystem(); supply.add('tank', { capacityMl: 52000, components: { petrol: 1000, water: 100 } });

@@ -59,7 +59,7 @@ Fuel exhaustion stops the engine and emits `vehicle:stopped`. Start failures dis
 
 ## Swappable resources
 
-Adapters are synchronous, public-API objects. Each request returns the actual accepted or supplied quantity, from zero to the requested amount. Invalid negative, non-finite or over-reported transfers throw. Adapters must declare `reversible: true`: the `refill`/`charge` operation must be able to return an immediately preceding `consume`/`draw` when the other resource shortens the engine interval. This lets the vehicle settle fuel and power without burning fuel for an interval its power source could not support. Replacing an adapter does not copy, drain, dispose or reset either store.
+Adapters are synchronous, public-API objects. Each request returns the actual accepted or supplied quantity, from zero to the requested amount. Invalid negative, non-finite or over-reported transfers throw. Adapters must declare `reversible: true`: the `refill`/`charge` operation must be able to return an immediately preceding `consume`/`draw` when the other resource shortens the engine interval, while the store remains enabled and the released capacity remains available. This lets the vehicle settle fuel and power without burning fuel for an interval its power source could not support. Replacing an adapter does not copy, drain, dispose or reset either store.
 
 The shared supply fuel adapter keeps normal direct transfers synchronous. During a vehicle resource settlement it opens a supply batch, applies fuel use, power draw, and any compensating refund without callbacks, then publishes the settled tank state with `flush()`. This prevents observers from filling freed capacity between draw and refund. Vehicle stepping closes the batch even if an adapter throws; public refuel/spill calls remain immediately observable.
 
@@ -98,6 +98,8 @@ cars.add('shared-car', {
 The supply adapter converts L to mL and consumes only the specified fuel component. Wrong liquids still occupy tank capacity. A custom fuel system may implement stricter contamination rules behind the same interface.
 
 `createFuelStore` and `createBatteryStore` are the small standalone fallbacks. Disable one or both requirements explicitly with `setModes(id, { fuel: 'disabled', power: 'disabled' })`; resource values then remain unchanged. Re-enable with `'adapter'`. No silent infinite reserve is introduced when an adapter empties or is disconnected.
+
+Disabling the battery itself (`setEnabled(false)`, or `set_enabled(false)` in Godot) rejects both draw and charge, including manual and alternator charge, without changing its energy or capacity. Shared electricity stores and network battery adapters follow the same rule; their charge/supply ledgers also remain unchanged. Re-enabling the battery restores transfers from the preserved state. This differs from disabling a vehicle's power requirement: a disabled battery cannot satisfy the normal starter gate.
 
 During `step`, vehicle event callback errors are saved while all vehicles finish resource and motion updates; the first error is rethrown after the batch and the reentrancy guard is cleared. Direct `stop()` calls keep their normal synchronous notification behavior.
 

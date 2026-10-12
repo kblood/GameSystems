@@ -166,6 +166,16 @@ test('battery supplies bounded energy, charges and balances portable state', () 
   const bad = { ...saved, energyWh: NaN }; assert.throws(() => b.restore(bad)); assert.deepEqual(b.capture(), saved);
   assert.throws(() => b.draw(-1));
 });
+test('disabled electricity store preserves partial charge and ledgers until enabled refund and fill', () => {
+  const battery = createEnergyStore({ capacityWh: 10, energyWh: 2, enabled: false });
+  const before = battery.capture();
+  near(battery.draw(1), 0); near(battery.charge(3), 0); assert.deepEqual(battery.capture(), before);
+  battery.setEnabled(true);
+  near(battery.draw(1.25), 1.25); near(battery.charge(1.25), 1.25); near(battery.state().energyWh, 2);
+  near(battery.charge(20), 8);
+  const after = battery.state(); near(after.energyWh, 10);
+  near(after.initialWh + after.chargedWh - after.suppliedWh, after.energyWh);
+});
 test('disposed supply, sprinkler and battery reject mutation', () => {
   const { system, supply } = setup(); system.dispose(); assert.throws(() => system.step(1)); supply.dispose(); assert.throws(() => supply.fill('tank', 1));
   const b = createEnergyStore(); b.dispose(); assert.throws(() => b.charge(1));

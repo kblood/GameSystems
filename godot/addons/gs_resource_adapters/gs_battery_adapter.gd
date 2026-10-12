@@ -34,9 +34,10 @@ func draw(wh: float) -> float:
 	energy_wh -= actual
 	return actual
 
-## Actual accepted Wh. A draw can be refunded exactly while its freed capacity remains available.
+## Actual accepted Wh. Disabled batteries reject charge without changing stored energy.
+## A draw can be refunded exactly while enabled and its freed capacity remains available.
 func charge(wh: float) -> float:
-	if not _valid or not _finite_nonnegative(wh) or wh <= 0.0: return 0.0
+	if not _valid or not _finite_nonnegative(wh) or wh <= 0.0 or not enabled: return 0.0
 	var actual := minf(wh, capacity_wh - energy_wh)
 	energy_wh += actual
 	return actual

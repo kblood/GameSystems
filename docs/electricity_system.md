@@ -22,6 +22,9 @@ API: `add`, `state`, `all`, `configure`, `setEnabled`, `replaceFuse`, `remove`, 
 `configure` validerer alle ændringer før commit; terminaler/kind/kapacitet ændres ikke med denne metode.
 `charge`/`draw` arbejder i Wh og klamper til faktisk plads/energi. `batteryAdapter(id)` giver en
 udskiftelig `state/draw/charge`-adapter til bilen eller andre systemer.
+Når et batteri er deaktiveret (`enabled=false`), returnerer både `draw` og `charge` nul;
+energi, kapacitet og energi-ledger bevares. Det gælder også `batteryAdapter` og den
+selvstændige `createEnergyStore`. Genaktivering fortsætter fra den bevarede energi.
 
 Batteriets `voltage` er den nominelle elektromotoriske spænding; `volts` er terminalspændingen under last.
 `power` er terminaleffekt med fortegn: negativ betyder leveret strøm, positiv betyder absorberet strøm.
@@ -29,7 +32,7 @@ Batteriets `voltage` er den nominelle elektromotoriske spænding; `volts` er ter
 Batteriets kemi-ledger bruger nominelt voltage × strøm; forskellen til terminaleffekten er tab i intern modstand.
 Ledgeren følger initialWh + chargedWh − suppliedWh = energyWh.
 
-Et tomt batteri kan ikke drive strøm, men kan genoplades fra en tilsluttet kilde med højere spænding.
+Et tomt, aktiveret batteri kan ikke drive strøm, men kan genoplades fra en tilsluttet kilde med højere spænding.
 Et fuldt batteri tager ikke mere ladning ind, men kan stadig levere strøm til belastninger.
 Begrænsningerne afgøres før sikringer trips, så hypotetisk strøm fra et tomt batteri ikke springer en sikring.
 Ved flere spændingsniveauer fjernes udtømte drivende kilder før det afgøres, om et fuldt batteri faktisk lades.

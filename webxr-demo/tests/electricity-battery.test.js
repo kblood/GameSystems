@@ -44,6 +44,21 @@ test('battery adapter is finite and disabling it stops vehicle-style draws',()=>
   const s=circuit(),a=s.batteryAdapter('battery');near(a.draw(2),1);near(a.state().voltage,0);near(a.charge(2),1);s.setEnabled('battery',false);near(a.draw(1),0);
   s.dispose();assert.throws(()=>a.draw(1));assert.throws(()=>s.configure('load',{resistance:1}));
 });
+test('disabled electricity battery preserves charge and ledgers until enabled refunds and capacity fill',()=>{
+  const s=createElectricitySystem();
+  s.add('battery',{kind:'battery',a:'p',b:'g',voltage:12,resistance:1,capacityWh:10,energyWh:2,enabled:false});
+  const battery=s.batteryAdapter('battery'),before=s.state('battery');
+  near(s.draw('battery',1),0);near(s.charge('battery',3),0);
+  near(battery.draw(1),0);near(battery.charge(3),0);
+  assert.deepEqual(s.state('battery'),before);
+  s.setEnabled('battery',true);
+  near(s.charge('battery',1.25),1.25);near(s.draw('battery',1.25),1.25);
+  near(battery.draw(.5),.5);near(battery.charge(.5),.5);
+  near(s.state('battery').energyWh,2);
+  near(s.charge('battery',20),8);near(s.state('battery').energyWh,10);
+  const final=s.state('battery');
+  near(final.initialWh+final.chargedWh-final.suppliedWh,final.energyWh);
+});
 test('circuit registry budgets reject allocations before changing topology',()=>{
   const s=createElectricitySystem({maxComponents:2,maxNodes:3});s.add('a',{a:'p',b:'g'});const before=s.capture();assert.throws(()=>s.add('b',{a:'x',b:'y'}));assert.deepEqual(s.capture(),before);
   s.add('b',{a:'p',b:'q'});assert.throws(()=>s.add('c',{a:'p',b:'g'}));

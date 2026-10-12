@@ -37,12 +37,29 @@ func _initialize() -> void:
 	case_result(is_equal_approx(battery.state().voltage, 0.0), "empty battery reports zero voltage")
 	case_result(is_equal_approx(battery.charge(2.0), 2.0), "short starter draw can be refunded exactly")
 	case_result(is_equal_approx(battery.state().energyWh, 2.0), "battery energy is restored after refund")
+	var initially_disabled = Battery.new(10.0, 2.0, 12.6, false)
+	var initially_disabled_state: Dictionary = initially_disabled.state()
+	case_result(initially_disabled.is_valid() and not initially_disabled_state.enabled
+		and is_equal_approx(initially_disabled_state.energyWh, 2.0)
+		and is_zero_approx(initially_disabled_state.voltage), "initially disabled nonempty battery keeps its charge but exposes no voltage")
+	case_result(is_zero_approx(initially_disabled.draw(1.0)) and is_zero_approx(initially_disabled.charge(3.0))
+		and initially_disabled.state() == initially_disabled_state,
+		"disabled battery neither supplies nor accepts charge and preserves its full state")
+	initially_disabled.set_enabled(true)
+	case_result(is_equal_approx(initially_disabled.draw(1.25), 1.25)
+		and is_equal_approx(initially_disabled.charge(1.25), 1.25)
+		and is_equal_approx(initially_disabled.state().energyWh, 2.0), "re-enabled battery supports an exact partial draw refund")
+	case_result(is_equal_approx(initially_disabled.charge(20.0), 8.0)
+		and is_equal_approx(initially_disabled.state().energyWh, 10.0), "re-enabled battery accepts only its remaining capacity")
 	battery.set_enabled(false)
 	case_result(not battery.state().enabled and is_equal_approx(battery.state().voltage, 0.0), "disabled battery reports disabled and zero voltage")
 	case_result(is_zero_approx(battery.draw(1.0)), "disabled battery supplies no energy")
-	case_result(is_equal_approx(battery.charge(20.0), 8.0), "charge accepts only remaining capacity")
+	var disabled_battery_state: Dictionary = battery.state()
+	case_result(is_zero_approx(battery.charge(20.0)) and battery.state() == disabled_battery_state,
+		"disabled battery rejects charging without changing its state")
 	battery.set_enabled(true)
-	case_result(is_equal_approx(battery.state().voltage, 12.6), "re-enabled charged battery restores nominal voltage")
+	case_result(is_equal_approx(battery.charge(8.0), 8.0) and is_equal_approx(battery.state().voltage, 12.6),
+		"re-enabled charged battery accepts remaining capacity and restores nominal voltage")
 	case_result(is_zero_approx(battery.draw(INF)) and is_zero_approx(battery.charge(-1.0)), "invalid power transfers are rejected")
 
 	print("GS_RESOURCE_ADAPTERS passed=%d failed=%d" % [passed, failed])

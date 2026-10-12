@@ -21,7 +21,7 @@ export function createElectricitySystem({ emit = () => {}, quality = 'high', max
   let api;
   function energy(id,wh,charging){
     live();idle(charging?'charge battery':'draw battery');positive(wh,'Wh',true);const c=store.get(id);if(c.kind!=='battery')throw new Error('Not a battery');
-    const actual=charging?Math.min(wh,c.capacityWh-c.energyWh):c.enabled?Math.min(wh,c.energyWh):0;
+    const actual=c.enabled?Math.min(wh,charging?c.capacityWh-c.energyWh:c.energyWh):0;
     c.energyWh+=charging?actual:-actual;c[charging?'chargedWh':'suppliedWh']+=actual;dirty=true;return actual;
   }
   function runEvaluate(silent=false, owner=null) {

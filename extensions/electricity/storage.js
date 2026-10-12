@@ -12,7 +12,7 @@ export function createEnergyStore({ capacityWh = 600, energyWh = capacityWh, vol
     reversible: true,
     state() { live(); return { capacityWh, energyWh, voltage, enabled, initialWh, chargedWh, suppliedWh, chargeFraction: energyWh / capacityWh }; },
     draw(wh) { live(); positive(wh, 'Wh', true); const actual = enabled ? Math.min(energyWh, wh) : 0; energyWh -= actual; suppliedWh += actual; publish(); return actual; },
-    charge(wh) { live(); positive(wh, 'Wh', true); const actual = Math.min(capacityWh - energyWh, wh); energyWh += actual; chargedWh += actual; publish(); return actual; },
+    charge(wh) { live(); positive(wh, 'Wh', true); const actual = enabled ? Math.min(capacityWh - energyWh, wh) : 0; energyWh += actual; chargedWh += actual; publish(); return actual; },
     setEnabled(value) { live(); enabled = booleanState(value); publish(); },
     supplyWatts(watts, seconds) { positive(watts, 'watts', true); positive(seconds, 'seconds', true); return api.draw(watts * seconds / 3600) * 3600; },
     capture() { return { schema: 'gamesystems.battery.v1', ...api.state() }; },
