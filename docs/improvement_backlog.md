@@ -1,5 +1,19 @@
 # Løbende forbedringer af GameSystems
 
+## Godot fire-station composition demo - 2026-10-12
+
+Added a runnable, asset-free 3D scene that composes the thermal fire, finite water tank,
+finite battery, battery pump and sprinkler head. F triggers the head, V controls the valve,
+B disables/enables the pump battery, and R refills the same bounded tank. Spray feedback
+lingers across fixed ticks rather than flashing for a single rendered frame. Its small,
+bounded room heat capacity makes automatic sprinkler activation visible in a short run;
+the host preflights both kernel time budgets before consuming resources.
+
+Verification: demo integration contract **8/8**, scene launch smoke, GameSystems addon
+suites thermal **42/42**, resources **35/35**, sprinkler **54/54**. Sol reviewed the demo
+code and docs without remaining blockers. The scene is not a headset comfort or performance result.
+Usage: [fire-station demo](../godot/demos/sprinkler_fire/README.md).
+
 ## Native Godot fire/sprinkler checkpoint — 2026-10-12
 
 Thermal, liquid tank, battery, battery-pump and sprinkler kernels now expose independent,

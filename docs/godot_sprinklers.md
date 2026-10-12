@@ -60,16 +60,17 @@ work per call. Shared heads divide each tank/component's available flow proporti
 so iteration order does not give the first head the whole remaining tank. A host should
 refill through the supply tank API and treat each returned spray receipt as authoritative.
 
-The core has no native electrical grid, automatic spatial target discovery, game scene
-wiring, sound/visual effects or measured headset performance. Versioned
+The reusable core has no native electrical grid, automatic spatial target discovery,
+sound/visual effects or measured headset performance; the standalone demo composes these APIs. Versioned
 `checkpoint()` / `restore_checkpoint()` covers head configuration, latches and fixed-step
 time in live head iteration order; that order affects shared-supply requests and spray events.
-It requires the same registered supply IDs and the same presence/absence of a power provider. Snapshot thermal, supply tank, battery, pump and sprinkler at one paused host
-boundary. Restore in this order: thermal, supplies, batteries, pump adapter, then sprinkler.
+It requires the same registered supply IDs and the same presence/absence of a power provider. Snapshot thermal, puddle/liquid-source, supply tank, battery, pump and sprinkler at one paused
+host boundary; if bottle sources are present, restore their puddle manager before the sources. Restore in this order: thermal, supplies, batteries, pump adapter, then sprinkler.
 This order is not a cross-system transaction: preflight the complete provider graph in an
 isolated staged world and swap it in only after every restore succeeds, or retain live
 checkpoints and roll all systems back before resuming after any failure.
-Add native grid integration and an authored fire-station example next. Stay at coarse gameplay resolution until device profiling justifies more detail.
+A runnable authored fire-station scene is available at
+[`godot/demos/sprinkler_fire`](../godot/demos/sprinkler_fire/README.md). Native electrical-grid integration is next. Stay at coarse gameplay resolution until device profiling justifies more detail.
 
 The focused `gs_sprinkler_tests.gd` contract covers typed receipts, tank sharing,
 automatic/manual activation, response, valve, range, refill, reentrancy, battery energy,
