@@ -28,6 +28,7 @@ const RINGS := 96
 const SIDES := 6
 
 static var live: Array[GSBottleLeakStream] = []
+static var _next_checkpoint_id := 1
 static var emitted_ml := 0.0
 static var landed_ml := 0.0
 static var lost_ml := 0.0
@@ -63,9 +64,14 @@ var _acc_kind: StringName = &"unknown"
 var _acc_color := Color(0.5, 0.3, 0.1)
 var _excl: Array[RID] = []
 var _mask := 1
+var _source_rid := RID()
 var _mat: ShaderMaterial
 var _splash_k := 0
 var _rng := RandomNumberGenerator.new()
+var checkpoint_id := 0
+var _emitted_total := 0.0
+var _landed_total := 0.0
+var _lost_total := 0.0
 
 
 static func in_flight_total() -> float:
@@ -84,8 +90,8 @@ static func reset_ledger() -> void:
 
 
 ## New stream under `parent` (world-space), or null when MAX_STREAMS are live.
-static func acquire(parent: Node, exclude: RID, mask: int) -> GSBottleLeakStream:
-	if live.size() >= MAX_STREAMS:
+static func acquire(parent: Node, exclude: RID, mask: int, attach_to_parent: bool = true) -> GSBottleLeakStream:
+	if attach_to_parent and live.size() >= MAX_STREAMS:
 		return null
 	if _shader == null:
 		_shader = Shader.new()
@@ -93,8 +99,11 @@ static func acquire(parent: Node, exclude: RID, mask: int) -> GSBottleLeakStream
 		_tube = _build_tube(SIDES, RINGS)
 	var s := GSBottleLeakStream.new()
 	s.name = "GSBottleLeakStream"
+	s.checkpoint_id = _next_checkpoint_id
+	_next_checkpoint_id += 1
 	s._excl = [exclude]
 	s._mask = mask
+	s._source_rid = exclude
 	s._mat = ShaderMaterial.new()
 	s._mat.shader = _shader
 	s.mesh = _tube
@@ -102,10 +111,23 @@ static func acquire(parent: Node, exclude: RID, mask: int) -> GSBottleLeakStream
 	s.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	s.top_level = true
 	s._rng.randomize()
-	live.append(s)
-	parent.add_child(s)
-	s.global_transform = Transform3D.IDENTITY
+	if attach_to_parent:
+		live.append(s)
+		parent.add_child(s)
+		s.global_transform = Transform3D.IDENTITY
 	return s
+
+
+## Registers a prebuilt replacement group before firing any tree-entry callbacks.
+static func activate_staged(parent: Node, streams: Array[GSBottleLeakStream]) -> bool:
+	if live.size() + streams.size() > MAX_STREAMS: return false
+	for stream in streams:
+		if stream.finished or stream.get_parent() != null: return false
+	for stream in streams: live.append(stream)
+	for stream in streams:
+		parent.add_child(stream)
+		stream.global_transform = Transform3D.IDENTITY
+	return true
 
 
 func in_flight_ml() -> float:
@@ -113,6 +135,256 @@ func in_flight_ml() -> float:
 	for m in _fifo_ml:
 		s += m
 	return s
+
+
+static func find_checkpoint_id(parent: Node, wanted_id: int) -> GSBottleLeakStream:
+	for stream in live:
+		if is_instance_valid(stream) and stream.get_parent() == parent and stream.checkpoint_id == wanted_id:
+			return stream
+	return null
+
+
+static func checkpoints_equal(a: Variant, b: Variant) -> bool:
+	return _normalize_checkpoint_value(a) == _normalize_checkpoint_value(b)
+
+
+static func _normalize_checkpoint_value(value: Variant) -> Variant:
+	if typeof(value) in [TYPE_INT, TYPE_FLOAT]: return float(value)
+	if value is Array:
+		var normalized: Array = []
+		for item in value: normalized.append(_normalize_checkpoint_value(item))
+		return normalized
+	if value is Dictionary:
+		var normalized: Dictionary = {}
+		for key in value:
+			if String(key) in ["land_n", "normal"] and value[key] is Array and value[key].size() == 3:
+				var normal := _array_vector(value[key]).normalized()
+				normalized[key] = _vector_array(normal)
+			else:
+				normalized[key] = _normalize_checkpoint_value(value[key])
+		return normalized
+	return value
+
+
+static func validate_checkpoint(raw: Variant) -> bool:
+	if not raw is Dictionary or raw.get("version") != 1 or not _integer(raw.get("id")) \
+			or not _number_between(raw.get("id"), 1.0, 1.0e12) \
+			or not _integer(raw.get("mask")) or not _number_between(raw.get("mask"), 0.0, 4294967295.0) \
+			or not _finite_vector_array(raw.get("p0")) or not _finite_vector_array(raw.get("v0")) \
+			or not _finite_vector_array(raw.get("land_pos")) or not _finite_vector_array(raw.get("land_n")) \
+			or not _valid_normal(_array_vector(raw.get("land_n"))) \
+			or not _number_between(raw.get("q"), 0.0, 1.0) \
+			or not _number_between(raw.get("t_land"), 0.0, MAX_FLIGHT) \
+			or not _number_between(raw.get("phase"), 0.0, 1.0e6) \
+			or not _finite_color_array(raw.get("color")) \
+			or not _number_between(raw.get("q_set"), -1.0, 1.0) \
+			or typeof(raw.get("landed")) != TYPE_BOOL or typeof(raw.get("stopping")) != TYPE_BOOL \
+			or typeof(raw.get("finished")) != TYPE_BOOL or raw.finished \
+			or typeof(raw.get("has_path")) != TYPE_BOOL or not _number_between(raw.get("stop_t"), 0.0, 10.0) \
+			or not _integer(raw.get("feed_age_frames")) or int(raw.feed_age_frames) < 0 or int(raw.feed_age_frames) > 100000 \
+			or not _number_between(raw.get("acc"), 0.0, GSPuddleStore.MAX_VOLUME_ML) \
+			or not _number_between(raw.get("acc_t"), 0.0, 10.0) \
+			or not _number_between(raw.get("clock"), 0.0, 1.0e9) \
+			or not _valid_kind(raw.get("acc_kind")) or not _finite_color_array(raw.get("acc_color")) \
+			or not _integer(raw.get("splash_k")) or int(raw.splash_k) < 0 or int(raw.splash_k) > 2147483647 \
+			or not _valid_rng_state(raw.get("rng_state")) \
+			or not _number_between(raw.get("emitted_ml"), 0.0, 1.0e12) \
+			or not _number_between(raw.get("landed_ml"), 0.0, 1.0e12) \
+			or not _number_between(raw.get("lost_ml"), 0.0, 1.0e12) \
+			or not raw.get("fifo") is Array or raw.fifo.size() > MAX_BATCHES:
+		return false
+	var fifo_volume := 0.0
+	var previous_due := float(raw.clock)
+	for batch: Variant in raw.fifo:
+		if not batch is Dictionary or not _number_between(batch.get("due"), previous_due, float(raw.clock) + MAX_FLIGHT + 0.01) \
+				or not _number_between(batch.get("ml"), 0.0, GSPuddleStore.MAX_VOLUME_ML) or float(batch.ml) <= 0.0 \
+				or not _valid_kind(batch.get("kind")) or not _finite_color_array(batch.get("color")) \
+				or not batch.get("landing") is Dictionary:
+			return false
+		var landing: Dictionary = batch.landing
+		if not _finite_vector_array(landing.get("position")) or not _finite_vector_array(landing.get("normal")) \
+				or not _valid_normal(_array_vector(landing.get("normal"))) \
+				or typeof(landing.get("landed")) != TYPE_BOOL \
+				or not _number_between(landing.get("splash_radius"), 0.0, 1.0):
+			return false
+		previous_due = float(batch.due)
+		fifo_volume += float(batch.ml)
+	var total := float(raw.acc) + fifo_volume
+	if absf(float(raw.emitted_ml) - (float(raw.landed_ml) + float(raw.lost_ml) + total)) \
+			> maxf(0.000001, float(raw.emitted_ml) * 0.00000001):
+		return false
+	return true
+
+
+func capture_checkpoint() -> Dictionary:
+	if finished or not _valid_normal(land_n) or not _finite_color(color) or not _finite_color(_acc_color): return {}
+	if _fifo_t.size() != _fifo_ml.size() or _fifo_t.size() != _fifo_kind.size() \
+			or _fifo_t.size() != _fifo_color.size() or _fifo_t.size() != _fifo_landing.size(): return {}
+	var fifo: Array[Dictionary] = []
+	for i in _fifo_t.size():
+		if i >= _fifo_ml.size() or i >= _fifo_kind.size() or i >= _fifo_color.size() or i >= _fifo_landing.size(): return {}
+		var landing: Dictionary = _fifo_landing[i]
+		fifo.append({"due": _fifo_t[i], "ml": _fifo_ml[i], "kind": String(_fifo_kind[i]),
+			"color": _color_array(_fifo_color[i]), "landing": {"position": _vector_array(landing.get("position", Vector3.ZERO)),
+			"normal": _vector_array(landing.get("normal", Vector3.UP)), "landed": bool(landing.get("landed", false)),
+			"splash_radius": float(landing.get("splash_radius", 0.0))}})
+	var state := {"version": 1, "id": checkpoint_id, "mask": _mask,
+		"p0": _vector_array(p0), "v0": _vector_array(v0), "q": q, "t_land": t_land,
+		"land_pos": _vector_array(land_pos), "land_n": _vector_array(land_n), "landed": landed,
+		"stopping": stopping, "finished": finished, "phase": phase, "color": _color_array(color),
+		"q_set": _q_set, "has_path": _has_path, "stop_t": _stop_t,
+		"feed_age_frames": maxi(0, Engine.get_physics_frames() - _last_feed),
+		"acc": _acc, "acc_t": _acc_t, "clock": _clock, "fifo": fifo,
+		"acc_kind": String(_acc_kind), "acc_color": _color_array(_acc_color), "splash_k": _splash_k,
+		"rng_state": str(_rng.state), "emitted_ml": _emitted_total, "landed_ml": _landed_total, "lost_ml": _lost_total}
+	return state if validate_checkpoint(state) else {}
+
+
+func restore_checkpoint(raw: Dictionary, exclude: RID) -> bool:
+	if not validate_checkpoint(raw): return false
+	checkpoint_id = int(raw.id)
+	_next_checkpoint_id = maxi(_next_checkpoint_id, checkpoint_id + 1)
+	_mask = int(raw.mask)
+	_excl = [exclude]
+	_source_rid = exclude
+	p0 = _array_vector(raw.p0)
+	v0 = _array_vector(raw.v0)
+	q = float(raw.q)
+	t_land = float(raw.t_land)
+	land_pos = _array_vector(raw.land_pos)
+	land_n = _array_vector(raw.land_n).normalized()
+	landed = raw.landed
+	stopping = raw.stopping
+	finished = false
+	phase = float(raw.phase)
+	color = _array_color(raw.color)
+	_q_set = float(raw.q_set)
+	_has_path = raw.has_path
+	_stop_t = float(raw.stop_t)
+	_last_feed = Engine.get_physics_frames() - int(raw.feed_age_frames)
+	_acc = float(raw.acc)
+	_acc_t = float(raw.acc_t)
+	_clock = float(raw.clock)
+	_fifo_t.clear(); _fifo_ml.clear(); _fifo_kind.clear(); _fifo_color.clear(); _fifo_landing.clear()
+	for batch: Dictionary in raw.fifo:
+		_fifo_t.append(float(batch.due)); _fifo_ml.append(float(batch.ml))
+		_fifo_kind.append(StringName(batch.kind)); _fifo_color.append(_array_color(batch.color))
+		var landing: Dictionary = batch.landing
+		_fifo_landing.append({"position": _array_vector(landing.position), "normal": _array_vector(landing.normal).normalized(),
+			"landed": landing.landed, "splash_radius": float(landing.splash_radius)})
+	_acc_kind = StringName(raw.acc_kind)
+	_acc_color = _array_color(raw.acc_color)
+	_splash_k = int(raw.splash_k)
+	_rng.state = int(raw.rng_state)
+	_emitted_total = float(raw.emitted_ml)
+	_landed_total = float(raw.landed_ml)
+	_lost_total = float(raw.lost_ml)
+	emitted_ml += _emitted_total
+	landed_ml += _landed_total
+	lost_ml += _lost_total
+	_apply_visual_state()
+	set_physics_process(true)
+	return true
+
+
+func _apply_visual_state() -> void:
+	_mat.set_shader_parameter("p0", p0)
+	_mat.set_shader_parameter("v0", v0)
+	_mat.set_shader_parameter("t1", t_land)
+	_mat.set_shader_parameter("bead_f", 1.0 / maxf(0.01, t_land * 0.045))
+	_mat.set_shader_parameter("q", q)
+	_mat.set_shader_parameter("phase", phase)
+	_mat.set_shader_parameter("color", color)
+	_mat.set_shader_parameter("t0", minf(_stop_t, t_land) if stopping else 0.0)
+	_mat.set_shader_parameter("fade", clampf(1.0 - _stop_t / maxf(0.12, t_land), 0.0, 1.0) if stopping else 1.0)
+	var lo := p0.min(land_pos)
+	var hi := p0.max(land_pos)
+	hi.y = maxf(hi.y, p0.y + maxf(v0.y, 0.0) * maxf(v0.y, 0.0) / (2.0 * GRAV))
+	custom_aabb = AABB(lo, hi - lo).grow(0.01)
+	visible = not stopping or _stop_t < maxf(0.12, t_land)
+
+
+func can_bind_source(exclude: RID) -> bool:
+	return not _source_rid.is_valid() or _source_rid == exclude
+
+
+func bind_source(exclude: RID) -> bool:
+	if not can_bind_source(exclude): return false
+	_excl = [exclude]
+	_source_rid = exclude
+	return true
+
+
+func retire_for_restore() -> void:
+	if finished: return
+	emitted_ml -= _emitted_total
+	landed_ml -= _landed_total
+	lost_ml -= _lost_total
+	finished = true
+	set_physics_process(false)
+	live.erase(self)
+	queue_free()
+
+
+static func _integer(value: Variant) -> bool:
+	return typeof(value) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(value)) \
+		and floorf(float(value)) == float(value)
+
+
+static func _number_between(value: Variant, lo: float, hi: float) -> bool:
+	return typeof(value) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(value)) and float(value) >= lo and float(value) <= hi
+
+
+static func _finite_vector_array(value: Variant) -> bool:
+	if not value is Array or value.size() != 3: return false
+	for number in value:
+		if typeof(number) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(number)) or absf(float(number)) > 1.0e6: return false
+	return true
+
+
+static func _finite_color_array(value: Variant) -> bool:
+	if not value is Array or value.size() != 4: return false
+	for component in value:
+		if typeof(component) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(component)): return false
+	var color := Color(float(value[0]), float(value[1]), float(value[2]), float(value[3]))
+	return _finite_color(color)
+
+
+static func _finite_color(value: Color) -> bool:
+	return is_finite(value.r) and is_finite(value.g) and is_finite(value.b) and is_finite(value.a)
+
+
+static func _valid_normal(value: Vector3) -> bool:
+	if not value.is_finite(): return false
+	var length_sq := value.length_squared()
+	# Engine raycast/landing normals are unit vectors. Keeping the serialized
+	# contract tight ensures restore normalization cannot change source equality.
+	return is_finite(length_sq) and length_sq >= 0.98 and length_sq <= 1.02
+
+
+static func _valid_kind(value: Variant) -> bool:
+	return value is String and String(value) == GSPuddleStore.normalize_kind(StringName(value))
+
+
+static func _valid_rng_state(value: Variant) -> bool:
+	if not value is String or not String(value).is_valid_int(): return false
+	return str(String(value).to_int()) == String(value)
+
+
+static func _vector_array(value: Vector3) -> Array:
+	return [value.x, value.y, value.z]
+
+
+static func _color_array(value: Color) -> Array:
+	return [value.r, value.g, value.b, value.a]
+
+
+static func _array_vector(value: Array) -> Vector3:
+	return Vector3(float(value[0]), float(value[1]), float(value[2]))
+
+
+static func _array_color(value: Array) -> Color:
+	return Color(float(value[0]), float(value[1]), float(value[2]), float(value[3]))
 
 
 ## Called by the bottle every physics tick the hole flows. p / v: hole position and exit velocity (world), q_m3s flow, ml this tick.
@@ -131,6 +403,7 @@ func feed(p: Vector3, v: Vector3, q_m3s: float, ml: float, col: Color, kind: Str
 		_stop_t = 0.0
 		visible = true
 	emitted_ml += ml
+	_emitted_total += ml
 	q = q_m3s
 	if path_changed:
 		_recompute(p, v)
@@ -231,6 +504,7 @@ func _flush_accumulator() -> void:
 	if _acc <= 0.0: return
 	if _fifo_t.size() >= MAX_BATCHES:
 		lost_ml += _acc
+		_lost_total += _acc
 		_acc = 0.0
 		_acc_t = 0.0
 		return
@@ -252,8 +526,10 @@ func _flush_accumulator() -> void:
 func _deposit(ml: float, kind: StringName, captured_color: Color, landing: Dictionary) -> void:
 	if not landing.landed:
 		lost_ml += ml
+		_lost_total += ml
 		return
 	landed_ml += ml
+	_landed_total += ml
 	var mgr := GSBottleBreakManager.get_for(self)
 	var position: Vector3 = landing.position
 	var normal: Vector3 = landing.normal
@@ -281,7 +557,9 @@ func _finish() -> void:
 func _exit_tree() -> void:
 	if not finished:
 		finished = true
-		lost_ml += in_flight_ml()
+		var remainder := in_flight_ml()
+		lost_ml += remainder
+		_lost_total += remainder
 		live.erase(self)
 
 

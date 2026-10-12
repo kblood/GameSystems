@@ -126,9 +126,8 @@ func wake_leaks() -> void:
 		set_physics_process(true)
 
 
-## Captures liquid still owned by a low-tier bottle leak source. HIGH stream
-## batches have independent transport state and are deliberately refused here.
-## The host must checkpoint this alongside its bottle identity and world pose.
+## Captures low-tier hole accumulators and links active HIGH transports by ID.
+## The host checkpoints this alongside its bottle identity and world pose.
 func capture_leak_checkpoint() -> Dictionary:
 	if not _built or state != &"intact" or not is_finite(fill) or fill < 0.0 or fill > 1.0 \
 			or lut == null or not is_finite(lut.capacity_ml) or lut.capacity_ml <= 0.0 or leaks.size() > 3:
@@ -136,8 +135,14 @@ func capture_leak_checkpoint() -> Dictionary:
 	var entries: Array[Dictionary] = []
 	for leak in leaks:
 		var stream: Object = leak.get("stream")
+		var stream_state: Dictionary = {}
+		var stream_id := 0
 		if is_instance_valid(stream) and not bool(stream.get("finished")):
-			return {}
+			if not stream is GSBottleLeakStream or not is_inside_tree() \
+					or (stream as GSBottleLeakStream).get_parent() != GSBottleBreakManager.get_for(self): return {}
+			stream_state = (stream as GSBottleLeakStream).capture_checkpoint()
+			if stream_state.is_empty(): return {}
+			stream_id = int((stream as GSBottleLeakStream).checkpoint_id)
 		var position: Vector3 = leak.get("p", Vector3.ZERO)
 		var normal: Vector3 = leak.get("n", Vector3.UP)
 		var radius: float = leak.get("r", 0.0)
@@ -150,7 +155,8 @@ func capture_leak_checkpoint() -> Dictionary:
 			return {}
 		entries.append({"position": _vector_array(position), "normal": _vector_array(normal), "radius": radius,
 			"accumulated_ml": accumulated, "liquid_kind": String(liquid_kind),
-			"color": [color.r, color.g, color.b, color.a]})
+			"color": [color.r, color.g, color.b, color.a], "stream_id": stream_id,
+			"stream": stream_state})
 	var marks: Array[Dictionary] = []
 	for mark in hole_marks:
 		if not is_instance_valid(mark): continue
@@ -166,7 +172,7 @@ func capture_leak_checkpoint() -> Dictionary:
 		if not _valid_hole_pose(mark_position, radius) or radius <= 0.0 or not is_finite(radius): return {}
 		marks.append({"position": _vector_array(mark_position), "normal": _vector_array(mark_normal),
 			"radius": radius, "exit": bool(mark.get_meta("exit", false)), "tint": [tint.r, tint.g, tint.b, tint.a], "seed": float(seed)})
-	return {"version": 1, "bottle": bottle_name, "capacity_ml": lut.capacity_ml,
+	return {"version": 2, "bottle": bottle_name, "capacity_ml": lut.capacity_ml,
 		"fill": fill, "leaks": entries, "marks": marks}
 
 
@@ -174,7 +180,7 @@ func capture_leak_checkpoint() -> Dictionary:
 ## caller restores this with its matching bottle/world checkpoint as one commit.
 func restore_leak_checkpoint(raw: Dictionary) -> bool:
 	if not _built or state != &"intact" or lut == null or ctl == null or profile == null \
-			or raw.get("version") != 1 \
+			or int(raw.get("version", 0)) not in [1, 2] \
 			or raw.get("bottle") != bottle_name or not _finite_number(raw.get("capacity_ml")) \
 			or not is_equal_approx(float(raw.capacity_ml), lut.capacity_ml) \
 			or not _finite_number(raw.get("fill")) or float(raw.fill) < 0.0 or float(raw.fill) > 1.0 \
@@ -182,6 +188,7 @@ func restore_leak_checkpoint(raw: Dictionary) -> bool:
 			or not raw.get("marks") is Array or raw.marks.size() > GSBottleBulletHoleMark.MAX_PER_BOTTLE:
 		return false
 	var staged_leaks: Array[Dictionary] = []
+	var referenced_streams := {}
 	for saved: Variant in raw.leaks:
 		if not saved is Dictionary or not saved.get("position") is Array or not saved.get("normal") is Array \
 				or not saved.get("color") is Array or saved.color.size() != 4:
@@ -200,11 +207,22 @@ func restore_leak_checkpoint(raw: Dictionary) -> bool:
 			if not _finite_number(component): return false
 		var acc_color := Color(float(components[0]), float(components[1]), float(components[2]), float(components[3]))
 		if not _finite_color(acc_color): return false
+		var stream_id := int(saved.get("stream_id", 0))
+		var stream_state: Variant = saved.get("stream", {})
+		if stream_id < 0 or not stream_state is Dictionary: return false
+		if not stream_state.is_empty():
+			if stream_id <= 0 or referenced_streams.has(stream_id) \
+					or not GSBottleLeakStream.validate_checkpoint(stream_state) \
+					or int(stream_state.id) != stream_id:
+				return false
+			referenced_streams[stream_id] = true
+		elif stream_id != 0:
+			return false
 		normal = normal.normalized()
 		staged_leaks.append({"p": position, "n": normal, "r": float(saved.radius),
 			"acc": float(saved.accumulated_ml), "acc_kind": StringName(saved.liquid_kind),
 			"acc_color": acc_color,
-			"stream": null})
+			"stream_id": stream_id, "stream_checkpoint": stream_state, "stream": null})
 	var staged_marks: Array[Dictionary] = []
 	for saved: Variant in raw.marks:
 		if not saved is Dictionary or not saved.get("position") is Array or not saved.get("normal") is Array \
@@ -229,9 +247,21 @@ func restore_leak_checkpoint(raw: Dictionary) -> bool:
 	for current in leaks:
 		var stream: Object = current.get("stream")
 		if is_instance_valid(stream) and not bool(stream.get("finished")): return false
+	var manager: GSBottleBreakManager = GSBottleBreakManager.get_for(self) if is_inside_tree() else null
+	for leak in staged_leaks:
+		if int(leak.stream_id) == 0: continue
+		if manager == null: return false
+		var restored_stream := GSBottleLeakStream.find_checkpoint_id(manager, int(leak.stream_id))
+		if restored_stream == null or not restored_stream.can_bind_source(get_rid()) \
+				or not GSBottleLeakStream.checkpoints_equal(
+			restored_stream.capture_checkpoint(), leak.stream_checkpoint): return false
+		leak.stream = restored_stream
 	# No operation below can fail after the staged validation.
 	set_fill(float(raw.fill))
 	leaks = staged_leaks
+	for leak in leaks:
+		var stream: Object = leak.get("stream")
+		if is_instance_valid(stream): stream.bind_source(get_rid())
 	for mark in hole_marks:
 		if is_instance_valid(mark): mark.free()
 	hole_marks.clear()

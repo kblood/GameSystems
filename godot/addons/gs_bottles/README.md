@@ -41,8 +41,10 @@ is `tests/gs_pour_receiver_tests.gd`; API details are in `docs/pour_system.md`.
 `GSPuddleStore` now preserves explicitly authored component amounts through
 puddle merges, ballistic splash delivery, consumption, evaporation and bounded
 cleanup. Fuel/foam can persist beyond the legacy water/wine fade. The manager
-offers liquid-only atomic checkpoints including airborne droplets; live HIGH
-hole streams require a host checkpoint and are explicitly refused. The typed
-withdrawal API is the future fire/sprinkler integration seam. Focused contracts:
+offers manager checkpoints for puddles, airborne droplets and active HIGH
+hole-stream transport. Pair that with each bottle's source checkpoint from the
+same paused/fixed tick; restore the manager before restoring bottles so stream IDs
+can be rebound to their source holes. These are component checkpoints, not a full
+scene save. The typed withdrawal API is the future fire/sprinkler integration seam. Focused contracts:
 `tests/gs_puddle_tests.gd`; details and source-accounting limits:
 `docs/native_puddles.md` in GameSystems.

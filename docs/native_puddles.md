@@ -72,34 +72,40 @@ terminal ledgers. Restore validates finite amounts, limits, duplicate IDs and
 balance before changing the live store.
 
 `manager.capture_liquid()/restore_liquid(state)` additionally include puddle
-placement/color/evaporation state and airborne droplet identity, positions,
-velocities and amounts. JSON round trips are supported. Invalid geometry,
-missing/duplicate storage references, oversize budgets or volume imbalance reject
-the whole restore without modifying live liquid. Restore leaves physics shards
-outside the liquid checkpoint.
+placement/color/evaporation state, airborne droplet identity/positions/velocities/
+amounts, and every active HIGH hole-stream transport owned by that manager. A
+stream snapshot preserves its current path, stop/fade phase, accumulated dose,
+typed/color FIFO batches, due times, landing hit/miss geometry, RNG state and
+checkpoint ID. JSON round trips are supported. Invalid geometry, duplicate stream
+IDs, oversize budgets or volume imbalance reject the restore before replacing
+manager liquid.
 
-Capture returns `{}` and restore returns `false` while a live HIGH hole stream
-exists. That stream has its own batched in-flight amount; a host-level bottle/stream
-checkpoint must capture it before whole-scene saving can be promised. These APIs
-do not serialize intact bottles, inventory, the pour transport or an entire game.
+The host must capture the manager state and each active bottle's
+`capture_leak_checkpoint()` during the same paused/fixed-tick transaction. Restore
+the manager first, then restore each bottle with its stable host identity and world
+pose; the bottle checkpoint resolves its stream IDs and rebinds raycast exclusions
+to the restored source. A mismatched/missing stream makes bottle restore fail
+without changing that bottle. This still does not serialize inventory, the pour
+transport or a whole game; the host coordinates their checkpoints and commit.
 
 An intact bottle also exposes `capture_leak_checkpoint()` and
 `restore_leak_checkpoint(state)` for low-tier sub-drop amounts already debited
 from its fill. The versioned JSON state includes source fill, capacity and each
-hole's local geometry, pending mL, liquid kind and color. Restore validates every
-hole and value before mutating anything. Its dedicated source test covers JSON
-round-trip, restored source fill and pending doses, malformed topology/value,
-unsafe normal/seed rejection, numeric overflow after Color conversion, and refusal
-with a live stream. A live HIGH stream makes both operations refuse the checkpoint
-rather than silently omit its independently batched transport. Hosts must commit
-this state with matching bottle identity and world pose; it is not a full bottle
-or scene checkpoint.
+hole's local geometry, pending mL, liquid kind/color, and any active HIGH stream ID
+and matching stream state. Restore validates every field and confirms the manager
+has restored the corresponding stream before mutating the bottle. The dedicated
+source test covers topology rebuild, malformed-value rejection and
+HDR colors; the integrated puddle suite covers stream ownership, JSON round-trip,
+source rebind, and malformed manager payload rejection (66 checks). Hosts must commit this with the manager liquid
+checkpoint, bottle identity and world pose; it is not a full bottle or scene
+checkpoint.
 
 ## Verified routes and remaining accounting work
 
-`gs_puddle_tests.gd` covers 57 checks for typed merges, partial withdrawal and
+`gs_puddle_tests.gd` covers 65 checks for typed merges, partial withdrawal and
 evaporation, pool/volume/component limits, real ray-tested droplet landing,
-pour/splash identity, HIGH leak FIFO identity/geometry, same-kind source motion,
+pour/splash identity, HIGH leak FIFO identity/geometry and JSON persistence,
+source-to-stream rebinding, same-kind source motion,
 miss-to-hit and long-to-short flight changes, captured splash doses, queue budgets, stable checkpoints,
 atomic rejection and independent-world teardown. The neck-spurt route additionally
 verifies source fill + emitted mL, display fill and physical mass after the debit.

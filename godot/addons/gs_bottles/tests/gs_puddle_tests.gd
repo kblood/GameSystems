@@ -168,8 +168,60 @@ func run() -> void:
 	stream.feed(Vector3.ZERO, Vector3.ZERO, 0.00001, 1.0, Color.RED, &"petrol")
 	stream.feed(Vector3.ZERO, Vector3.ZERO, 0.00001, 2.0, Color.BLUE, &"water")
 	check(stream._fifo_kind[0] == &"petrol" and stream._acc_kind == &"water", "HIGH leak FIFO captures chemical changes separately")
-	check(manager.capture_liquid().is_empty() and not manager.restore_liquid(checkpoint),
-		"liquid-only checkpoint refuses uncaptured live hole streams")
+	var source: GSBreakableBottle = SilentBottle.new()
+	source.bottle_name = "beer"
+	source.profile = Profile.new()
+	source._rprof.resize(64)
+	source._rprof.fill(0.01)
+	source.lut = Lut.new()
+	source.lut.capacity_ml = 500.0
+	for ci in source.lut.n_cos:
+		var row: Array[float] = []
+		for fi in source.lut.n_fill: row.append(float(fi) / float(source.lut.n_fill - 1))
+		source.lut.lut.append(row)
+	source.ctl = Liquid.new()
+	source.add_child(source.ctl)
+	source.model = Node3D.new()
+	source.add_child(source.model)
+	source._built = true
+	source.leaks = [{"p": Vector3.ZERO, "n": Vector3.UP, "r": 0.002, "acc": 0.0,
+		"acc_kind": &"water", "acc_color": Color.BLUE, "stream": stream}]
+	scene.add_child(source)
+	stream.bind_source(source.get_rid())
+	var bottle_checkpoint: Dictionary = source.capture_leak_checkpoint()
+	check(bottle_checkpoint.get("version") == 2 and bottle_checkpoint.leaks[0].stream_id == stream.checkpoint_id,
+		"bottle checkpoint links each live HIGH stream to its owned hole")
+	var stream_checkpoint: Dictionary = manager.capture_liquid()
+	check(stream_checkpoint.get("streams", []).size() == 1 and stream_checkpoint.streams[0].id == stream.checkpoint_id
+		and stream_checkpoint.streams[0].fifo.size() == 1,
+		"manager checkpoint includes active HIGH stream identity and typed pending batches")
+	var stream_copy: Dictionary = JSON.parse_string(JSON.stringify(stream_checkpoint))
+	check(manager.restore_liquid(stream_copy), "manager restores HIGH stream transport atomically from JSON")
+	stream = Leak.find_checkpoint_id(manager, int(stream_checkpoint.streams[0].id))
+	check(stream != null and stream.capture_checkpoint() == stream_checkpoint.streams[0]
+		and stream._fifo_kind == [&"petrol"] and stream._acc_kind == &"water"
+		and stream.custom_aabb.size.x > 19.0,
+		"restored stream retains original per-batch identity and current accumulator")
+	var bottle_copy: Dictionary = JSON.parse_string(JSON.stringify(bottle_checkpoint))
+	var bottle_restore_ok := source.restore_leak_checkpoint(bottle_copy)
+	check(bottle_restore_ok, "bottle restores the source and saved stream relationship")
+	check(source.leaks[0].stream == stream and stream._excl == [source.get_rid()],
+		"bottle restore rebinds the saved stream ID to its leak and raycast exclusion")
+	var stable_stream_snapshot: Dictionary = manager.capture_liquid()
+	var bad_stream_snapshot: Dictionary = JSON.parse_string(JSON.stringify(stable_stream_snapshot))
+	bad_stream_snapshot.streams[0].fifo[0].landing.normal = [1.0e308, 1.0e308, 1.0e308]
+	check(not manager.restore_liquid(bad_stream_snapshot) and manager.capture_liquid() == stable_stream_snapshot,
+		"malformed stream geometry is rejected before manager state changes")
+	bad_stream_snapshot = JSON.parse_string(JSON.stringify(stable_stream_snapshot))
+	bad_stream_snapshot.streams[0].land_n = [0.0, 2.0, 0.0]
+	check(not manager.restore_liquid(bad_stream_snapshot) and manager.capture_liquid() == stable_stream_snapshot,
+		"non-unit stream normals are rejected before normalization can break source matching")
+	check(Leak.checkpoints_equal({"land_n": [0.0, 1.005, 0.0]}, {"land_n": [0.0, 1.0, 0.0]}),
+		"source matching canonicalizes valid serialized normals after restore")
+	bad_stream_snapshot = JSON.parse_string(JSON.stringify(stable_stream_snapshot))
+	bad_stream_snapshot.erase("streams")
+	check(not manager.restore_liquid(bad_stream_snapshot) and manager.capture_liquid() == stable_stream_snapshot,
+		"missing v2 stream list is rejected without retiring live transports")
 	stream._physics_process(0.1)
 	var leaked: Dictionary = manager.puddle_store.components(int(manager._puddles.back().id))
 	var airborne_water := 0.0
@@ -177,7 +229,7 @@ func run() -> void:
 		if manager._dalive[i] == 1 and manager._dkind[i] == &"water": airborne_water += manager._dvol[i]
 	check(leaked.get("petrol", 0.0) == 1.0 and is_equal_approx(float(leaked.get("water", 0.0)) + airborne_water, 2.0)
 		and balanced(manager.liquid_ledger()),
-		"HIGH leak delivery preserves both queued kinds and volume")
+		"restored HIGH leak transport delivers both queued kinds and volume")
 	stream._finish()
 	manager.clear_debris()
 	manager.set_physics_process(false)

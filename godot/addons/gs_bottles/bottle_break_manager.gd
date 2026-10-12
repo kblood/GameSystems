@@ -560,10 +560,9 @@ static func _valid_liquid(pos: Vector3, ml: float, color: Color) -> bool:
 		and is_finite(color.r) and is_finite(color.g) and is_finite(color.b) and is_finite(color.a)
 
 
-## Liquid-only checkpoint. Live HIGH hole streams require their own host checkpoint;
-## refuse capture/restore rather than omit their batched in-flight volume.
+## Liquid checkpoint including the manager's HIGH hole-stream transports. Bottle
+## sources still checkpoint their stream IDs and hole ownership separately.
 func capture_liquid() -> Dictionary:
-	if _has_live_leak_stream(): return {}
 	var puddles := []
 	for p in _puddles:
 		puddles.append({"id": p.id, "position": _vector_array(p.pos), "normal": _vector_array(p.normal),
@@ -573,15 +572,44 @@ func capture_liquid() -> Dictionary:
 		if _dalive[i] == 1:
 			droplets.append({"position": _vector_array(_dpos[i]), "velocity": _vector_array(_dvel[i]),
 				"ml": _dvol[i], "kind": String(_dkind[i]), "color": _color_array(_dmm.get_instance_color(i))})
-	return {"version": 1, "store": puddle_store.snapshot(), "puddles": puddles, "droplets": droplets,
+	var streams: Array[Dictionary] = []
+	for child in get_children():
+		if child is GSBottleLeakStream and not child.finished:
+			var snapshot: Dictionary = child.capture_checkpoint()
+			if snapshot.is_empty(): return {}
+			streams.append(snapshot)
+	return {"version": 2, "store": puddle_store.snapshot(), "puddles": puddles, "droplets": droplets,
+		"streams": streams,
 		"added_ml": _liquid_added_ml, "transport_removed_ml": _transport_removed_ml}
 
 
-func restore_liquid(state: Dictionary) -> bool:
-	if _has_live_leak_stream() or state.get("version") != 1 or not state.get("store") is Dictionary \
+func restore_liquid(raw_state: Dictionary) -> bool:
+	# Freeze caller-owned mutable JSON before preflight or any tree callbacks.
+	var state: Dictionary = raw_state.duplicate(true)
+	var version := int(state.get("version", 0))
+	if version not in [1, 2] or not state.get("store") is Dictionary \
 		or not state.get("puddles") is Array or not state.get("droplets") is Array \
 		or not GSPuddleStore._amount(state.get("added_ml")) or not GSPuddleStore._amount(state.get("transport_removed_ml")):
 		return false
+	if (version == 2 and not state.has("streams")) or (version == 1 and state.has("streams")):
+		return false
+	var streams: Variant = state.get("streams", [])
+	if not streams is Array or streams.size() > GSBottleLeakStream.MAX_STREAMS:
+		return false
+	var current_streams: Array[GSBottleLeakStream] = []
+	for child in get_children():
+		if child is GSBottleLeakStream and not child.finished: current_streams.append(child)
+	if version == 1 and not current_streams.is_empty(): return false
+	if GSBottleLeakStream.live.size() - current_streams.size() + streams.size() > GSBottleLeakStream.MAX_STREAMS:
+		return false
+	var stream_ids := {}
+	for stream_state: Variant in streams:
+		if not GSBottleLeakStream.validate_checkpoint(stream_state) or stream_ids.has(int(stream_state.id)):
+			return false
+		stream_ids[int(stream_state.id)] = true
+	for stream in GSBottleLeakStream.live:
+		if is_instance_valid(stream) and stream.get_parent() != self and stream_ids.has(stream.checkpoint_id):
+			return false
 	var staged := GSPuddleStore.new()
 	staged.limit = maxi(1, max_puddles)
 	if not staged.restore(state.store) or state.puddles.size() > max_puddles or state.droplets.size() > _dcap: return false
@@ -609,6 +637,22 @@ func restore_liquid(state: Dictionary) -> bool:
 	# Storage adds only liquid that landed; manager adds external airborne emission too.
 	var expected := float(ledger.added_ml) + airborne + float(state.transport_removed_ml)
 	if absf(float(state.added_ml) - expected) > maxf(0.000001, expected * 0.00000001): return false
+	# Reserve and fully restore streams before changing the live manager state.
+	# Tree-entry callbacks can run synchronously and could otherwise consume the
+	# global cap between the old streams being retired and their replacements.
+	var staged_streams: Array[GSBottleLeakStream] = []
+	for stream_state: Dictionary in streams:
+		var restored: GSBottleLeakStream = GSBottleLeakStream.acquire(self, RID(), int(stream_state.mask), false)
+		if restored == null or not restored.restore_checkpoint(stream_state, RID()):
+			if restored != null: restored.retire_for_restore()
+			for staged_stream: GSBottleLeakStream in staged_streams: staged_stream.retire_for_restore()
+			return false
+		staged_streams.append(restored)
+	for stream in current_streams: stream.retire_for_restore()
+	# This cannot fail after the preflight: old streams were retired and all
+	# replacements are registered together before any tree-entry callback fires.
+	var activated := GSBottleLeakStream.activate_staged(self, staged_streams)
+	assert(activated)
 	_clear_liquid()
 	puddle_store = staged
 	for p: Dictionary in state.puddles:
@@ -624,16 +668,11 @@ func restore_liquid(state: Dictionary) -> bool:
 	return true
 
 
-func _has_live_leak_stream() -> bool:
-	for child in get_children():
-		if child is GSBottleLeakStream and not child.finished: return true
-	return false
-
-
 static func _finite_array(value: Variant, size: int) -> bool:
 	if not value is Array or value.size() != size: return false
 	for number: Variant in value:
-		if typeof(number) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(number)): return false
+		if typeof(number) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(number)) \
+				or absf(float(number)) > 1.0e6: return false
 	return true
 
 static func _vector_array(value: Vector3) -> Array:

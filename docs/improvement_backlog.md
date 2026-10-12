@@ -3,16 +3,18 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
-## Native typede pytter: source-/trajectory-opfølgning klar til review — 2026-10-12
+## Native typede pytter: HIGH-stream host-checkpoint i review — 2026-10-12
 
 `GSPuddleStore` bevarer separate komponenter og stabile ID'er gennem merge,
 delvist forbrug og fordampning. Managerens dråber bevarer eksplicit identitet fra
 pour-parcels, splash og HIGH hole-stream FIFO. Benzin/diesel/foam består indtil
 eksplicit forbrug, fordampning, cleanup eller bogført budget-eviction; legacy
 water/wine/unknown beholder visuel levetid med faktisk bogført fordampning.
-Kvalitetsgrænser og world-lifecycle er fortsat afgrænsede. Liquid-only checkpoint
-validerer og gendanner pytter og dråber atomisk; aktive HIGH hole-streams afvises,
-indtil en host-checkpoint også kan indfange deres batchede væske.
+Kvalitetsgrænser og world-lifecycle er fortsat afgrænsede. Managerens version 2
+liquid-checkpoint inkluderer nu aktive HIGH hole-streams med akkumulator, typed
+FIFO, landing-geometri, flight clock, stopfade og stabil stream-ID. Bottle-source
+checkpointet gemmer samme stream-ID pr. hul; hosten skal tage begge snapshots i
+samme paused/fixed-tick transaktion og gendanne manageren før flaskerne.
 
 Første runde er godkendt af Sol og pushet som `438036b`. Reviewet fandt, at HIGH
 hole-stream FIFO beholdt identitet, men brugte seneste mutable landingspunkt.
@@ -33,9 +35,9 @@ API og begrænsninger: [native_puddles.md](native_puddles.md).
 
 Low-tier hole-accumulatorer flushes nu ved terminal flaske-break, og intakte
 flasker kan checkpoint/restore kildefyldning, typed sub-drop-mængde, farve og hul-
-topologi atomisk. HIGH hole-streams mangler stadig host-level persistence.
-Næste konkrete accounting-opgave er at inkludere disse streams i host-checkpointen.
-Derefter kan et selvstændigt native thermal-/sprinklerlag bruge store-API'ets
+topologi atomisk. HIGH-stream persistence er implementeret i manager- og
+flaskesnapshots; 66-check integrationssuite passeret, afsluttende Sol-review godkendt. Næste selvstændige
+systemopgave efter review er et native thermal-/sprinklerlag over store-API'ets
 faktiske petrol/diesel/water/foam-udtag. Farve må fortsat aldrig afgøre brændstof.
 WebXR beholder separat eksisterende pool-/thermal-integration.
 
@@ -1110,8 +1112,11 @@ flaskefyldning splashes. Resten beholder den væsketype/farve, den blev samlet m
 identitetsskift flusher den gamle rest før ny væske akkumuleres. Ugyldig rumlig
 overførsel går til managerens eksplicitte removal-kvittering.
 
-Verifikation: Godot puddle-suite **57/57**, bottle source-checkpoint suite **14/14**,
-Nightfall bottle-cap/physics suites **257/257**, fuld WebXR Node-suite **559/559**.
-Sol-review af checkpoint-ændringen afventer. Dette dækker flaske-ejet
-lavkvalitetsvæske; hosten skal stadig koordinere source-state med flaskeidentitet,
-pose og managerens checkpoint. HIGH-stream host-persistence er fortsat åben.
+Verifikation: Godot puddle-suite **66/66**, bottle source-checkpoint suite **14/14**,
+Nightfall bottle-cap/physics suites **257/257**. Managerens liquid-checkpoint
+inkluderer nu HIGH-streamtransport, og flaske-checkpointet gemmer stream-ID pr.
+hul. Sol-review fandt og hjalp med at lukke normaliserings-, v2-payload- og
+staging-/kapacitetsfejl. Hosten skal stadig
+tage manager-/kilde-snapshots i samme paused/fixed tick, bevare flaskeidentitet og
+pose samt gendanne manageren før flaskerne. Native brandadapter er fortsat en
+separat opgave.
