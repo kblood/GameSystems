@@ -14,10 +14,10 @@ Profile representative busy scenes, including many interactables, transparent ef
 NPCs, shadows and UI. Capture CPU main/render/physics time, GPU frame time, allocations,
 memory, draw calls, physics bodies and frame misses. Keep separate results for each
 target: Steam Frame PCVR streamed from a host, Steam Frame running on-device, and any other
-standalone mobile headset are distinct performance targets. For on-device results, record
-whether the build uses Windows x86 via Proton/FEX, native ARM64 Linux or an Android APK.
-Record engine version, renderer, resolution,
-foveation and runtime settings for each.
+standalone mobile headset are distinct performance targets. For Steam Frame on-device
+results, record whether the build uses Windows x86 via Proton/FEX, native ARM64 Linux or
+an Android APK. For other headsets, record their OS, package and runtime. Record engine
+version, renderer, resolution, foveation and runtime settings for each.
 
 Use the frame-time distribution and worst sustained scene, not only an average. Separate
 GPU saturation, CPU script work, driver overhead, physics cost, shader compilation,
@@ -51,9 +51,10 @@ and [standalone compatibility guidance](https://partner.steamgames.com/doc/steam
 
 Bound work per tick. Pool hot-path data; avoid allocations, deep scene scans, repeated
 resource lookup and synchronous I/O. Use simple collision shapes, collision layers and
-query masks. Disable or lower update rates for distant objects, idle ragdolls and hidden
-systems. Keep fluid/fire/vehicle simulations fixed-step and bounded; reduce detail with
-distance or activity while preserving gameplay outcomes.
+query masks. Disable or lower update rates for nonessential presentation and safely
+simplified distant simulation. Offscreen gameplay-critical systems such as fire, fluids,
+vehicles and NPCs must preserve correct state and causality; bound their fixed-step work
+and reduce detail with distance or activity without changing gameplay outcomes.
 
 Do not sacrifice tracked pose updates or interaction response to save a small amount of
 work elsewhere. Run AI and nonessential visuals at lower rates, interpolate their
