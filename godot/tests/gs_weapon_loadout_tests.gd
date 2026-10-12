@@ -74,10 +74,33 @@ func _initialize() -> void:
 		"host callbacks cannot delete the candidate before the active ID commits")
 	case_result(signal_rows == [[&"kestrel", &"shear"], [&"shear", &"kestrel"]],
 		"successful protected switch emits one stable transition")
+	var notification_attempts: Array[Dictionary] = []
+	var notification_observations: Array[bool] = []
+	var notification_listener := func(old_id: StringName, new_id: StringName) -> void:
+		notification_observations.append(loadout.active_id() == new_id \
+			and loadout.active_entry() == loadout.get_entry(new_id))
+		notification_attempts.append(loadout.select(&"kestrel", Callable(), apply))
+		notification_attempts.append(loadout.restore_active_entry(&"kestrel"))
+		notification_attempts.append(loadout.remove_entry(&"kestrel"))
+		notification_attempts.append(loadout.add_entry(&"new_entry", {}, null))
+	loadout.active_entry_changed.connect(notification_listener)
+	var notification_switch: Dictionary = loadout.select(&"shear", Callable(), apply)
+	loadout.active_entry_changed.disconnect(notification_listener)
+	var notification_results_blocked := notification_attempts.size() == 4
+	for attempt: Dictionary in notification_attempts:
+		notification_results_blocked = notification_results_blocked and not attempt.ok and attempt.code == "selection_in_progress"
+	case_result(notification_switch.ok and loadout.active_id() == &"shear" \
+		and notification_observations == [true] and notification_results_blocked,
+		"selection notifications block reentrant selection, restore, removal, and insertion")
+	case_result(signal_rows == [[&"kestrel", &"shear"], [&"shear", &"kestrel"], [&"kestrel", &"shear"]],
+		"reentrant notification attempts preserve one stable transition")
+	var after_notification: Dictionary = loadout.select(&"kestrel", Callable(), apply)
+	case_result(after_notification.ok and loadout.active_id() == &"kestrel",
+		"normal selection succeeds after notification dispatch releases the lock")
 	var same_entry: Dictionary = loadout.select(&"kestrel")
-	case_result(same_entry.ok and same_entry.reason == "already_active" and changes.size() == 2,
+	case_result(same_entry.ok and same_entry.reason == "already_active" and changes.size() == 4,
 		"same-entry selection is a no-op without host callback")
-	case_result(not loadout.select(&"missing", Callable(), apply).ok and changes.size() == 2,
+	case_result(not loadout.select(&"missing", Callable(), apply).ok and changes.size() == 4,
 		"unknown target never invokes host transition")
 	case_result(not loadout.remove_entry(&"kestrel").ok, "refuses removal of active entry")
 	case_result(loadout.remove_entry(&"shear").ok and loadout.get_entry(&"shear") == null,

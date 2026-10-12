@@ -310,6 +310,13 @@ Verifikation: loadout-kontrakten **25/25** og våbenkataloget **19/19** består;
 blocker. Nightfall-runtime integration er under arbejde: fysisk stuvning/hentning, isoleret state pr.
 våben, magasinidentitet og atomisk afvisning skal stadig bestå målrettede tests og review.
 
+Nyt afsluttet lifecycle-deltrin: `active_entry_changed` udsendes nu under loadoutens
+mutationslås. Synkrone observers kan ikke starte et nested weapon switch/restore eller
+ændre registry entries midt i den forrige transitions notifikation. Kildekontrakten
+verificerer, at alle observers ser det allerede committede aktive entry, de reentrante
+forsøg afvises, og låsen frigives bagefter. Godot-test **30/30**, Sol-review godkendt;
+ændringen er synkroniseret til Nightfall.
+
 ### Nightfall-integration — første verificerede milepæl — 2026-10-12
 
 NightfallContractsGodot har nu handlingsbaseret skift: det aktive våben skal stues i rygsækken,

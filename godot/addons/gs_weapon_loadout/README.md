@@ -33,7 +33,9 @@ change. The host callback must make its live binding transition atomically and
 return `true` or `{"ok": true}` only after success. A failed policy or apply
 leaves the registry's active ID unchanged and emits no signal. The registry
 updates the active ID and emits `active_entry_changed(previous_id, active_id)`
-only after the host reports success. A callback returning false must not leave
+only after the host reports success. Entry mutation and nested selection stay
+locked through the synchronous notification, so every listener observes the same
+committed transition. A callback returning false must not leave
 partial host changes behind; the host owns that rollback guarantee.
 
 `restore_active_entry(id)` is a narrow trusted-host seam for checkpoint

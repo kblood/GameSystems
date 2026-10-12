@@ -81,7 +81,11 @@ func select(entry_id: StringName, can_switch: Callable = Callable(),
 		or (previous != null and (active_entry() != previous or StringName(previous.id) != _active_id)):
 		return _failure("entry_changed", "Loadout entries changed during host selection")
 	_active_id = entry_id
+	# Observers see one stable committed transition. Keep recursive selection and
+	# entry mutation blocked until every synchronous observer has seen it.
+	_selection_callback_active = true
 	active_entry_changed.emit(StringName(previous.id) if previous != null else &"", entry_id)
+	_selection_callback_active = false
 	return {"ok":true, "reason":"selected", "entry":candidate, "previous":previous}
 
 ## Publish an already-applied selection restored by a trusted host transaction.
