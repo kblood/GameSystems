@@ -11,15 +11,19 @@ foam provide simple gameplay extinguishing. All material, rate and energy values
 are authored gameplay units; `heat_kj_per_fuel`, `PETROL_KJ_PER_ML` and
 `DIESEL_KJ_PER_ML` are not real-world fuel specifications.
 
-`GSPuddleFireAdapter` optionally accepts a store implementing `components(id)` and
-`withdraw(id, kind, ml)`. It burns only explicitly typed petrol or diesel, and
-extinguishes only with water or foam. It never uses liquid color to infer identity.
+`GSPuddleFireAdapter` optionally accepts a store implementing `components(id)`,
+`withdraw(id, kind, ml)`, and `deposit(id, kind, ml)` for reversible transfers. It burns
+only explicitly typed petrol or diesel, and extinguishes only with water or foam. It never
+uses liquid color to infer identity.
 Hosts may call `try_auto_ignite_from_hot_source` on fixed ticks. It checks the authored
 room, source-to-proxy distance, oxygen and target wetness before spending a real typed
 receipt, using explicit gameplay auto-ignition thresholds. Those values are not real fuel
 specifications. It requires a `deposit` method so under-delivered withdrawals can be refunded
-before heat is committed. Repeated calls do not spend another dose once the thermal target is
-burning, and moisture above the small dry threshold prevents immediate reignition.
+before heat is committed. Manual fuel-burning and water/foam-quenching calls also require
+`deposit`; they reject overdraw and refund their actual receipt if a store callback changes
+the thermal target or the commit is rejected. Repeated auto-ignition calls do not spend
+another dose once the thermal target is burning, and moisture above the small dry threshold
+prevents immediate reignition.
 Keep this adapter outside `gs_bottles` so the bottle/puddle addon does not depend
 on fire gameplay.
 

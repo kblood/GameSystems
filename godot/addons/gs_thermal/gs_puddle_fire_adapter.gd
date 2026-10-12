@@ -74,7 +74,7 @@ func try_auto_ignite_from_hot_source(store: Object, puddle_id: int, source_id: S
 		return {"ok": false, "ignited": false, "reason": &"invalid_withdrawal_receipt",
 			"kind": kind, "withdrawn_ml": 0.0, "refunded_ml": 0.0}
 	if actual_ml > planned_ml:
-		var invalid_refund := _refund_ignition_fuel(store, puddle_id, kind, actual_ml)
+		var invalid_refund := _refund_liquid(store, puddle_id, kind, actual_ml)
 		var invalid_refund_complete := _refund_complete(invalid_refund, actual_ml)
 		return {"ok": false, "ignited": false,
 			"reason": &"invalid_withdrawal_refunded" if invalid_refund_complete else &"rollback_incomplete",
@@ -88,7 +88,7 @@ func try_auto_ignite_from_hot_source(store: Object, puddle_id: int, source_id: S
 		and actual_energy_kj >= ignition_energy_kj + IGNITION_ENERGY_MARGIN_KJ \
 		and thermal.can_add_heat(target_id, actual_energy_kj)
 	if not can_commit:
-		var refunded := _refund_ignition_fuel(store, puddle_id, kind, actual_ml)
+		var refunded := _refund_liquid(store, puddle_id, kind, actual_ml)
 		var refund_complete := _refund_complete(refunded, actual_ml)
 		var energy_sufficient := actual_energy_kj >= ignition_energy_kj + IGNITION_ENERGY_MARGIN_KJ
 		return {"ok": refund_complete, "ignited": false,
@@ -96,7 +96,7 @@ func try_auto_ignite_from_hot_source(store: Object, puddle_id: int, source_id: S
 				(&"withdrawal_under_delivered" if not energy_sufficient else &"world_state_changed_refunded"),
 			"kind": kind, "ml": 0.0, "withdrawn_ml": actual_ml, "refunded_ml": refunded}
 	if not thermal.add_heat(target_id, actual_energy_kj):
-		var refunded_after_reject := _refund_ignition_fuel(store, puddle_id, kind, actual_ml)
+		var refunded_after_reject := _refund_liquid(store, puddle_id, kind, actual_ml)
 		var reject_refund_complete := _refund_complete(refunded_after_reject, actual_ml)
 		return {"ok": false, "ignited": false,
 			"reason": &"heat_rejected_refunded" if reject_refund_complete else &"rollback_incomplete",
@@ -106,7 +106,7 @@ func try_auto_ignite_from_hot_source(store: Object, puddle_id: int, source_id: S
 		"kind": kind, "ml": actual_ml, "energy_kj": actual_energy_kj}
 
 
-func _refund_ignition_fuel(store: Object, puddle_id: int, kind: StringName, ml: float) -> float:
+func _refund_liquid(store: Object, puddle_id: int, kind: StringName, ml: float) -> float:
 	if ml <= 0.0: return 0.0
 	var refunded := float(store.call("deposit", puddle_id, kind, ml))
 	return refunded if is_finite(refunded) and refunded >= 0.0 else 0.0
@@ -122,24 +122,45 @@ func burn_fuel_puddle(store: Object, puddle_id: int, target_id: StringName,
 		requested_ml: float, preferred_kind: StringName = &"") -> Dictionary:
 	if thermal == null or store == null or not store.has_method("components") or not store.has_method("withdraw") \
 			or thermal.object_state(target_id).is_empty() or not is_finite(requested_ml) or requested_ml <= 0.0:
-		return {"ok": false, "kind": &"", "ml": 0.0, "energy_kj": 0.0}
+		return {"ok": false, "reason": &"invalid_request", "kind": &"", "ml": 0.0, "energy_kj": 0.0}
 	var components: Variant = store.call("components", puddle_id)
-	if not components is Dictionary: return {"ok": false, "kind": &"", "ml": 0.0, "energy_kj": 0.0}
+	if not components is Dictionary: return {"ok": false, "reason": &"invalid_puddle", "kind": &"", "ml": 0.0, "energy_kj": 0.0}
+	if not store.has_method("deposit"):
+		return {"ok": false, "reason": &"rollback_not_supported", "kind": &"", "ml": 0.0, "energy_kj": 0.0}
 	var kind: StringName = preferred_kind
 	if kind not in [&"petrol", &"diesel"]:
 		kind = &"petrol" if float(components.get("petrol", 0.0)) > 0.0 else &"diesel"
 	var yield_kj := PETROL_KJ_PER_ML if kind == &"petrol" else DIESEL_KJ_PER_ML
 	var available := float(components.get(String(kind), 0.0))
+	if not is_finite(available) or available < 0.0:
+		return {"ok": false, "reason": &"invalid_component_amount", "kind": kind, "ml": 0.0, "energy_kj": 0.0}
 	var planned := minf(minf(requested_ml, 100000.0), available)
-	if planned <= 0.0 or not thermal.can_add_heat(target_id, planned * yield_kj):
-		return {"ok": false, "kind": &"", "ml": 0.0, "energy_kj": 0.0}
+	if planned <= 0.0:
+		return {"ok": false, "reason": &"no_fuel", "kind": kind, "ml": 0.0, "energy_kj": 0.0}
+	var initial_target: Dictionary = thermal.object_state(target_id)
+	if not thermal.can_add_heat(target_id, planned * yield_kj):
+		return {"ok": false, "reason": &"heat_preflight_rejected", "kind": kind, "ml": 0.0, "energy_kj": 0.0}
 	var actual := float(store.call("withdraw", puddle_id, kind, planned))
-	if actual <= 0.0: return {"ok": false, "kind": kind, "ml": 0.0, "energy_kj": 0.0}
+	if not is_finite(actual) or actual <= 0.0:
+		return {"ok": false, "reason": &"invalid_withdrawal_receipt", "kind": kind, "ml": 0.0, "energy_kj": 0.0}
+	if actual > planned:
+		var invalid_refund := _refund_liquid(store, puddle_id, kind, actual)
+		var invalid_refund_complete := _refund_complete(invalid_refund, actual)
+		return {"ok": false, "reason": &"invalid_withdrawal_refunded" if invalid_refund_complete else &"rollback_incomplete",
+			"kind": kind, "ml": 0.0, "withdrawn_ml": actual, "refunded_ml": invalid_refund, "energy_kj": 0.0}
 	var energy := actual * yield_kj
+	var latest_target: Dictionary = thermal.object_state(target_id)
+	if latest_target != initial_target or not thermal.can_add_heat(target_id, energy):
+		var refunded := _refund_liquid(store, puddle_id, kind, actual)
+		var refund_complete := _refund_complete(refunded, actual)
+		return {"ok": refund_complete, "reason": &"world_state_changed_refunded" if refund_complete else &"rollback_incomplete",
+			"kind": kind, "ml": 0.0, "withdrawn_ml": actual, "refunded_ml": refunded, "energy_kj": 0.0}
 	if not thermal.add_heat(target_id, energy):
-		push_error("GSPuddleFireAdapter: heat commit rejected after typed fuel withdrawal")
-		return {"ok": false, "kind": kind, "ml": actual, "energy_kj": 0.0}
-	return {"ok": true, "kind": kind, "ml": actual, "energy_kj": energy}
+		var rejected_refund := _refund_liquid(store, puddle_id, kind, actual)
+		var rejected_refund_complete := _refund_complete(rejected_refund, actual)
+		return {"ok": false, "reason": &"heat_rejected_refunded" if rejected_refund_complete else &"rollback_incomplete",
+			"kind": kind, "ml": 0.0, "withdrawn_ml": actual, "refunded_ml": rejected_refund, "energy_kj": 0.0}
+	return {"ok": true, "reason": &"burned", "kind": kind, "ml": actual, "energy_kj": energy}
 
 
 ## Only water and foam extinguish; fuel and unknown liquids remain untouched.
@@ -147,12 +168,36 @@ func extinguish_from_puddle(store: Object, puddle_id: int, target_id: StringName
 	if thermal == null or store == null or not store.has_method("components") or not store.has_method("withdraw") \
 			or thermal.object_state(target_id).is_empty() or kind not in [&"water", &"foam"] \
 			or not is_finite(requested_ml) or requested_ml <= 0.0:
-		return {"ok": false, "kind": kind, "ml": 0.0}
+		return {"ok": false, "reason": &"invalid_request", "kind": kind, "ml": 0.0}
 	var components: Variant = store.call("components", puddle_id)
-	if not components is Dictionary: return {"ok": false, "kind": kind, "ml": 0.0}
-	var planned := minf(minf(requested_ml, 100000.0), float(components.get(String(kind), 0.0)))
-	if planned <= 0.0: return {"ok": false, "kind": kind, "ml": 0.0}
+	if not components is Dictionary: return {"ok": false, "reason": &"invalid_puddle", "kind": kind, "ml": 0.0}
+	if not store.has_method("deposit"):
+		return {"ok": false, "reason": &"rollback_not_supported", "kind": kind, "ml": 0.0}
+	var available := float(components.get(String(kind), 0.0))
+	if not is_finite(available) or available < 0.0:
+		return {"ok": false, "reason": &"invalid_component_amount", "kind": kind, "ml": 0.0}
+	var planned := minf(minf(requested_ml, 100000.0), available)
+	if planned <= 0.0: return {"ok": false, "reason": &"no_liquid", "kind": kind, "ml": 0.0}
+	var initial_target: Dictionary = thermal.object_state(target_id)
 	var actual := float(store.call("withdraw", puddle_id, kind, planned))
-	if actual <= 0.0: return {"ok": false, "kind": kind, "ml": 0.0}
+	if not is_finite(actual) or actual <= 0.0:
+		return {"ok": false, "reason": &"invalid_withdrawal_receipt", "kind": kind, "ml": 0.0}
+	if actual > planned:
+		var invalid_refund := _refund_liquid(store, puddle_id, kind, actual)
+		var invalid_refund_complete := _refund_complete(invalid_refund, actual)
+		return {"ok": false, "reason": &"invalid_withdrawal_refunded" if invalid_refund_complete else &"rollback_incomplete",
+			"kind": kind, "ml": 0.0, "withdrawn_ml": actual, "refunded_ml": invalid_refund}
+	if thermal.object_state(target_id) != initial_target:
+		var changed_refund := _refund_liquid(store, puddle_id, kind, actual)
+		var changed_refund_complete := _refund_complete(changed_refund, actual)
+		return {"ok": changed_refund_complete,
+			"reason": &"world_state_changed_refunded" if changed_refund_complete else &"rollback_incomplete",
+			"kind": kind, "ml": 0.0, "withdrawn_ml": actual, "refunded_ml": changed_refund}
 	var applied := thermal.apply_liquid(target_id, kind, actual)
-	return {"ok": applied > 0.0, "kind": kind, "ml": applied}
+	if applied != actual:
+		var application_refund := _refund_liquid(store, puddle_id, kind, actual)
+		var application_refund_complete := _refund_complete(application_refund, actual)
+		return {"ok": false,
+			"reason": &"liquid_rejected_refunded" if application_refund_complete else &"rollback_incomplete",
+			"kind": kind, "ml": 0.0, "withdrawn_ml": actual, "refunded_ml": application_refund}
+	return {"ok": true, "reason": &"extinguished", "kind": kind, "ml": applied}

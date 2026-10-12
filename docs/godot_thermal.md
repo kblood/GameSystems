@@ -57,7 +57,7 @@ as historical diagnostics, not a headset performance gate; rerun the benchmark f
 hardware comparisons and profile on the target VR hardware and scene.
 
 `GSPuddleFireAdapter` composes with the existing `GSPuddleStore` through its public
-`components` and `withdraw` methods. The runnable fire-station demo now includes a
+`components`, `withdraw` and `deposit` methods. The runnable fire-station demo now includes a
 persistent mixed diesel/water puddle: a bounded diesel dose ignites a thermal target,
 and a typed water dose wets and extinguishes it. The adapter consumes petrol before
 diesel for fuel heat, accepts water or foam for extinguishing, and uses actual store
@@ -65,7 +65,10 @@ receipts. Its optional `try_auto_ignite_from_hot_source` checks same-room distan
 typed petrol/diesel auto-ignition thresholds, oxygen and target wetness before spending a
 receipt. The fire-station host calls it on thermal fixed ticks, so the nearby hot pallet can
 ignite the spill without a manual command. It requires a rollback-capable store; if a generic
-store returns less fuel than planned, the adapter restores that receipt before changing heat.
+store returns less fuel than planned, the adapter uses only that actual amount; manual fuel
+and water/foam transfers additionally require deposit rollback and refund if the target changes
+during a store callback or rejects the commit. Automatic ignition also restores its receipt
+before changing heat when the actual dose cannot meet its preflight.
 Auto-ignition and manual ignition both stay inhibited while target wetness exceeds the small
 dry threshold, so the persistent hot pallet cannot immediately relight a freshly quenched
 spill. Thresholds are authored gameplay values, not real fuel specifications; unknown liquids
@@ -89,5 +92,5 @@ quenching, typed puddle receipts, heat conservation through links, and the maxim
 object/link population. The core checkpoint suite passed 42/42 on Godot 4.7.2 in its
 last recorded run, including JSON roundtrip, malformed-payload atomicity and deterministic
 next-tick restore. Adapter regressions since then extend the same script; the current
-thermal/fire contract now passes 51/51 on Godot 4.7.2, including refunding a generic
-fuel withdrawal when its callback changes room oxygen before heat is committed.
+thermal/fire contract now passes 53/53 on Godot 4.7.2, including refunding generic
+automatic-ignition, manual-fuel and quenching withdrawals when callbacks change protected state.

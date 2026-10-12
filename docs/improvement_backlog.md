@@ -24,6 +24,19 @@ supply-callback, der ændrer rummets ilt under withdraw, bekræfter fuld refunde
 uden varmeændring på brandmålet. Mere detaljeret fordampning, damptænding og
 væskedynamik er fortsat særskilt arbejde.
 
+## Atomiske manuelle pytteoverførsler — 2026-10-12
+
+De manuelle `burn_fuel_puddle`- og `extinguish_from_puddle`-stier kræver nu en
+rollback-capable typed store. De validerer den faktiske withdraw-kvittering, afviser
+overtræk og sammenligner brandmålet før commit. Hvis en generisk store-callback ændrer
+brandmålet, eller varme-/væskekommit afvises, tilbageføres den præcise kvittering; afvist
+rollback rapporteres særskilt. En legitim delvis levering giver fortsat en tilsvarende
+delvis varmeeffekt.
+
+Verifikation på Godot 4.7.2: thermal/fire **53/53**, typed pytter **66/66**,
+sprinklerkerne **54/54** og fire-station-integration **27/27**. Nye regressioner dækker
+ændret måltemperatur inde i både brændstof- og vandwithdraw.
+
 ## VR performance guide: Steam Frame execution paths — 2026-10-12
 
 Clarified that PCVR streamed from a host and games running directly on Steam Frame are

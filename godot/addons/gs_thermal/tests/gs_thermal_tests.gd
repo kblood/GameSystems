@@ -6,26 +6,32 @@ const Puddles = preload("res://addons/gs_bottles/gs_puddle_store.gd")
 
 class PartialFuelStore extends RefCounted:
 	var diesel_ml := 200.0
+	var water_ml := 200.0
 	var max_take := 1.0
 	var overdraw_ml := 0.0
 	var reject_deposit := false
 	var mutate_thermal: Object
 	var mutate_room: StringName = &""
+	var mutate_target_id: StringName = &""
+	var mutate_target_heat := 0.0
 
 	func components(_id: int) -> Dictionary:
-		return {"diesel": diesel_ml}
+		return {"diesel": diesel_ml, "water": water_ml}
 
 	func withdraw(_id: int, kind: StringName, requested_ml: float) -> float:
-		if kind != &"diesel": return 0.0
+		if kind not in [&"diesel", &"water"]: return 0.0
 		var actual := requested_ml + overdraw_ml if overdraw_ml > 0.0 else minf(requested_ml, max_take)
-		diesel_ml -= actual
+		if kind == &"diesel": diesel_ml -= actual
+		else: water_ml -= actual
 		if mutate_thermal != null:
-			mutate_thermal.call("configure_room", mutate_room, {"oxygen": 0.0})
+			if mutate_room != &"": mutate_thermal.call("configure_room", mutate_room, {"oxygen": 0.0})
+			if mutate_target_id != &"": mutate_thermal.call("add_heat", mutate_target_id, mutate_target_heat)
 		return actual
 
 	func deposit(_id: int, kind: StringName, ml: float) -> float:
-		if kind != &"diesel" or reject_deposit: return 0.0
-		diesel_ml += ml
+		if kind not in [&"diesel", &"water"] or reject_deposit: return 0.0
+		if kind == &"diesel": diesel_ml += ml
+		else: water_ml += ml
 		return ml
 
 var passed := 0
@@ -110,6 +116,33 @@ func _initialize() -> void:
 		"typed fuel cannot satisfy an extinguishing request")
 	case_result(not bridge.burn_fuel_puddle(store, puddle_id, &"missing", 10.0).ok
 		and is_equal_approx(store.components(puddle_id).diesel, 20.0), "invalid heat target is rejected before liquid withdrawal")
+	var changed_burn_thermal = Thermal.new()
+	changed_burn_thermal.add_object(&"target", {"temperature_c": 20.0, "ignition_c": 1000.0})
+	var changed_burn_store := PartialFuelStore.new()
+	changed_burn_store.max_take = 100.0
+	changed_burn_store.mutate_thermal = changed_burn_thermal
+	changed_burn_store.mutate_target_id = &"target"
+	changed_burn_store.mutate_target_heat = 1.0
+	var changed_burn: Dictionary = Adapter.new(changed_burn_thermal).burn_fuel_puddle(
+		changed_burn_store, 1, &"target", 50.0)
+	case_result(changed_burn.reason == &"world_state_changed_refunded"
+		and changed_burn.refunded_ml == 50.0 and changed_burn_store.diesel_ml == 200.0
+		and changed_burn_thermal.object_state(&"target").temperature_c == 21.0,
+		"manual fuel burn refunds its receipt when the withdrawal callback changes target heat")
+	var changed_quench_thermal = Thermal.new()
+	changed_quench_thermal.add_object(&"target", {"temperature_c": 20.0, "ignition_c": 1000.0})
+	var changed_quench_store := PartialFuelStore.new()
+	changed_quench_store.max_take = 10.0
+	changed_quench_store.mutate_thermal = changed_quench_thermal
+	changed_quench_store.mutate_target_id = &"target"
+	changed_quench_store.mutate_target_heat = 1.0
+	var changed_quench: Dictionary = Adapter.new(changed_quench_thermal).extinguish_from_puddle(
+		changed_quench_store, 1, &"target", &"water", 10.0)
+	case_result(changed_quench.reason == &"world_state_changed_refunded"
+		and changed_quench.refunded_ml == 10.0 and changed_quench_store.water_ml == 200.0
+		and changed_quench_thermal.object_state(&"target").temperature_c == 21.0
+		and changed_quench_thermal.object_state(&"target").wetness == 0.0,
+		"manual quenching refunds water when its withdrawal callback changes target heat")
 	var auto_store = Puddles.new()
 	var auto_puddle: int = auto_store.create()
 	auto_store.deposit(auto_puddle, &"diesel", 200.0)
