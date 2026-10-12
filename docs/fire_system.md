@@ -143,9 +143,14 @@ abstrakte regel med direkte afstand gennem en hvilken som helst åben forbindels
 Branddemoens nye dørportal matcher åbningen i væggen. Forkert ikke-null portal i en
 gemning afvises som layout-mismatch; legacy null forbliver understøttet.
 
-Rumluftens heat/smoke/oxygen-reservoirs udveksles stadig via flow/open, uanset portalens
-placering. De abstrakte game-blast-hits bruger rutelængde og open-faktor; dette er ikke
-en fysisk trykmodel. `connectNearby` respekterer portalen ved authoring. Eksisterende
+Rumluftens heat/smoke/oxygen-reservoirs udveksles via `flow × open`. Når en vent har en
+portal, skaleres dette yderligere efter åbningsarealet: portalens største rektangulære
+flade normaliseret mod 1,8 m², med loft ved 1. En dørstor åbning bevarer den authored
+flow-rate; et smallere vindue eller en sprække giver langsommere varme-, røg- og
+iltudveksling. Vents uden portal bevarer deres hidtidige flow. Det er en enkel, bounded
+gameplay-regel, ikke en model af tryk, vind eller luftstrømme. De abstrakte game-blast-hits
+bruger fortsat rutelængde og open-faktor; dette er ikke en fysisk trykmodel.
+`connectNearby` respekterer portalen ved authoring. Eksisterende
 eksplicitte connect-links er materialeforbindelser og gates ikke bagefter af døren.
 
 Rum accepterer `heatCapacityPerVolume` (positiv, standard 1200), `heatFraction` (0–1,

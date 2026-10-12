@@ -15,3 +15,12 @@ export function portalDistance(a,b,portal){
   const pa=a.map((v,i)=>clamp(v,portal.min[i],portal.max[i])),pb=b.map((v,i)=>clamp(v,portal.min[i],portal.max[i]));
   return distance(a,pa)+distance(pa,pb)+distance(pb,b);
 }
+
+// Portal openings scale room-air transfer against a common 1.8 square-metre door-sized aperture.
+// This is a bounded gameplay factor, not a fluid-dynamics model.
+export function portalAirflowFactor(portal){
+  if(!portal)return 1;
+  const size=portal.max.map((value,index)=>Math.max(0,value-portal.min[index]));
+  const area=Math.max(size[0]*size[1],size[0]*size[2],size[1]*size[2]);
+  return Math.min(1,area/1.8);
+}

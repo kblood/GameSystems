@@ -541,7 +541,6 @@ Dette tab er nu rettet; maxPools begrænser aktive termiske noder og kasserer ik
 
 - Verdens-chunking og streaming for store scener; varme-/brandinteresse er nu implementeret.
 
-- Større rum, smallere åbninger, per-room varme og overgang mellem rum ved flytning.
 - Dynamisk geometry og flere materialeeffekter; overflade-/højdeafhængig, endeligt doseret skumvirkning er nu implementeret.
 - Bilens lette collision-/affjedringsintegration i WebXR-labben er nu implementeret; videre terræn-/køredynamik kræver særskilt acceptance.
 - Mere læsbar brand-/røgfeedback samt mål og sværhedsgrad i demoen.
@@ -1019,3 +1018,13 @@ GameSystems' Godot-kilder er nu versionsstyrede. Samlet kontrol finder 42 sideca
 alle med eksisterende og versionerede mål, uden dublerede UID'er. NightfallContracts'
 genererede addon-kopier forbliver uden GameSystems' sidecars, som fastlagt af
 `sync_addons.py`; hele addon-synckontrollen passerer.
+
+## Afsluttet termisk portal-flow-runde
+
+Authored portalgeometri skalerer nu ventilens rumluftudveksling efter åbningens
+areal, normaliseret mod 1,8 m². Smalle vinduer og sprækker udveksler varme, røg
+og ilt langsommere end dørstore åbninger; vents uden portal bevarer hidtidig
+flow-rate. Rumspecifik varmekapacitet og `setPosition`-rumskift bevares.
+Verifikation: thermal-air, thermal-portals og thermal-numerics **38/38 tests**;
+fuld GameSystems Node-suite **559/559**, Vite-produktionsbuild og branddemoens
+synlige browserkontrol **24/24** består.

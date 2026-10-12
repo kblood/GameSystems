@@ -22,7 +22,9 @@ try{
   await slider('door',0);assert.equal(await page.evaluate(()=>window.__fire.heat.heatPath({roomId:'west',position:[-.2,.5,.7]},{roomId:'east',position:[.2,.5,.7]})),null);
   await page.evaluate(d=>window.__fire.checkpoint.restore(d),initial);
   assert.equal(await page.evaluate(()=>{const f=window.__fire,raw=f.checkpoint.capture(),bad=structuredClone(raw);bad.state.fire.thermal.vents.find(v=>v.id==='door').portal.max[2]+=1;try{f.checkpoint.restore(bad);return false;}catch{return JSON.stringify(f.heat.capture())===JSON.stringify(raw.state.fire.thermal);}}),true);
+  assert.equal(await page.evaluate(()=>{const f=window.__fire,before=JSON.stringify(f.heat.capture()),bad=structuredClone(f.checkpoint.capture());bad.state.fire.thermal.vents.find(v=>v.id==='window').portal.max[0]+=.2;try{f.checkpoint.restore(bad);return false;}catch{return JSON.stringify(f.heat.capture())===before;}}),true);
   checks.push('actual doorway geometry permits heat through opening, blocks solid partition and rejects wrong saved aperture');
+  checks.push('narrow exterior window uses its mesh aperture and rejects mismatched saved geometry');
   const alarm=await page.evaluate(()=>{const f=window.__fire;f.heat.configureRoom('west',{smoke:1});f.alarms.step(.6);return f.alarms.state('west');});assert.equal(alarm.triggered,true);assert.equal(alarm.audible,true);
   await page.waitForFunction(()=>window.__fire.scene.getObjectByName('alarm:west').material.color.getHex()===0xec634c);
   await page.click('#alarm-silence');assert.equal(await page.evaluate(()=>window.__fire.alarms.state('west').audible),false);await page.click('#alarm-reset');assert.equal(await page.evaluate(()=>window.__fire.alarms.state('west').triggered),true);

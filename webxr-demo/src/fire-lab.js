@@ -28,6 +28,7 @@ import {assetUrl} from './urls.js';
 
 const $=id=>document.getElementById(id),toast=text=>{$('toast').textContent=text;};
 const doorPortal={min:[-.04,0,.3],max:[.04,2.1,1.1]};
+const windowPortal={min:[-1.8,1.35,-1.30],max:[-1.1,2.05,-1.26]};
 const challengeLimits={easy:180,normal:120,hard:60};
 const roomProfiles={standard:{heatCapacityPerVolume:1200,heatFraction:.08,coolingRate:.005},insulated:{heatCapacityPerVolume:1200,heatFraction:.08,coolingRate:.001},light:{heatCapacityPerVolume:300,heatFraction:.08,coolingRate:.005}};
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x25383e);
@@ -81,7 +82,7 @@ async function reset(){
   $('door').value='1';$('window').value='1';$('target').querySelectorAll('option[data-pool]').forEach(o=>o.remove());$('target').value='chair';
   physics=new PhysicsWorld();build();host=createHost({THREE,scene,renderer,camera,physics:physics.adapter,quality:+$('quality').value,onError:(e,id)=>{console.error(id,e);toast(`Fejl: ${e.message}`);}});
   heat=await host.load(thermalExtension,{autoSpread:true,spreadRadius:1,spreadConductance:12});
-  heat.addRoom('west',{volume:16,ceiling:2.6});heat.addRoom('east',{volume:16,ceiling:2.6});heat.addVent('door',{a:'west',b:'east',open:1,flow:3,portal:doorPortal});heat.addVent('window',{a:'west',flow:8,open:1});
+  heat.addRoom('west',{volume:16,ceiling:2.6});heat.addRoom('east',{volume:16,ceiling:2.6});heat.addVent('door',{a:'west',b:'east',open:1,flow:3,portal:doorPortal});heat.addVent('window',{a:'west',flow:8,open:1,portal:windowPortal});
   for(const id of ['chair','curtain','east-chair','metal','charge']){const mesh=objectMeshes.get(id),material=id==='metal'?'metal':id==='charge'?'powder':id==='curtain'?'fabric':'wood';heat.add(id,{material,position:mesh.position.toArray(),roomId:id==='east-chair'||id==='metal'?'east':'west',fuelJ:material==='metal'?0:material==='powder'?3000:500000,heatCapacity:100,airConductance:.5,burnPower:material==='metal'?0:material==='powder'?3000:1800,smokeYield:.00014,...(id==='charge'?{blast:{fuseSeconds:2,radius:1.4,strength:12}}:{})});}
   mechanics=await host.load(mechanicsExtension);mechanics.add('door',{kind:'hinge',axis:[0,1,0],max:Math.PI/2,value:Math.PI/2});
   host.on('mechanics:changed',s=>{if(s.id==='door'){heat.setVent('door',s.fraction);doorPivot.rotation.y=s.value;}});doorPivot.rotation.y=Math.PI/2;
@@ -139,6 +140,7 @@ function applicationState(){
       thermalPlan.objectState(data.selected);
       const door=thermalPlan.ventState('door'),window=thermalPlan.ventState('window');
       if(door.portal!==null&&JSON.stringify(door.portal)!==JSON.stringify(doorPortal))throw new Error('Saved door portal differs from building geometry');
+      if(window.portal!==null&&JSON.stringify(window.portal)!==JSON.stringify(windowPortal))throw new Error('Saved window portal differs from building geometry');
       if(door.a!=='west'||door.b!=='east'||window.a!=='west'||window.b!==null||Math.abs(door.open-mechanicsPlan.state('door').fraction)>1e-8)throw new Error('Saved openings disagree with building mechanics');
       let target=data.selected;const pool=poolRecords.find(p=>p.thermalId===target);if(pool&&pool.ml<=.01)target='chair';
       return {commit(){eastBurned=protectedBurn;missionPlan.commit();$('challenge-difficulty').value=difficulty;alarmPlan.commit();xrHoses.clear();$('hose-kind').value=data.hoseMode;$('foam-dose').value=data.foamDose;pourClock=pour;blastClock=blast;blastMesh.position.set(...position);simulationPaused=paused;missionStarted=started;selected=target;},

@@ -2,6 +2,32 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createThermalSystem} from '../../extensions/thermal/index.js';
 const near=(a,b,eps=1e-7)=>assert.ok(Math.abs(a-b)<eps,`${a} != ${b}`);
+test('thermal air: authored portal area limits room heat, oxygen and smoke exchange',()=>{
+  function run(portal){
+    const t=createThermalSystem({fixedStep:.05});
+    t.addRoom('hot',{volume:10,temperature:200,oxygen:.2,smoke:5,coolingRate:0});
+    t.addRoom('cold',{volume:10,temperature:20,oxygen:.8,smoke:0,coolingRate:0});
+    t.addVent('door',{a:'hot',b:'cold',flow:1,portal});
+    t.step(1);
+    return [t.roomState('hot'),t.roomState('cold')];
+  }
+  const legacy=run(undefined),wide=run({min:[0,0,0],max:[1,2,0]}),narrow=run({min:[0,0,0],max:[.1,2,0]});
+  assert.equal(wide[0].temperature,legacy[0].temperature,'door-sized portals preserve legacy airflow');
+  assert.equal(wide[0].oxygen,legacy[0].oxygen);
+  assert.equal(wide[0].smoke,legacy[0].smoke);
+  assert.ok(narrow[0].temperature>wide[0].temperature,'narrow openings retain more heat in the source room');
+  assert.ok(narrow[1].temperature<wide[1].temperature,'narrow openings transfer less heat to the adjacent room');
+  assert.ok(narrow[0].oxygen<wide[0].oxygen,'narrow openings exchange less oxygen');
+  assert.ok(narrow[1].smoke<wide[1].smoke,'narrow openings transfer less smoke');
+  function outside(portal){
+    const t=createThermalSystem({fixedStep:.05});t.addRoom('room',{volume:10,temperature:100,oxygen:.2,smoke:5,coolingRate:0});
+    t.addVent('window',{a:'room',flow:1,portal});t.step(1);return t.roomState('room');
+  }
+  const openOutside=outside(undefined),narrowOutside=outside({min:[0,0,0],max:[0,.2,.9]});
+  assert.ok(narrowOutside.temperature>openOutside.temperature,'small exterior openings retain more room heat');
+  assert.ok(narrowOutside.oxygen<openOutside.oxygen,'small exterior openings admit less fresh air');
+  assert.ok(narrowOutside.smoke>openOutside.smoke,'small exterior openings release less smoke');
+});
 test('thermal air: hot room air heats and ignites a distant object without spatial links',()=>{
   const t=createThermalSystem();t.addRoom('hot',{temperature:400});t.addRoom('cold');
   t.add('wood',{roomId:'hot',material:'wood',position:[100,0,0],airConductance:100,cooling:0});
