@@ -11,7 +11,7 @@ func _initialize() -> void:
 	var thermal := Thermal.new()
 	thermal.add_room(&"kitchen")
 	thermal.add_room(&"hall")
-	thermal.add_object(&"fire", {"room_id": &"kitchen", "position": Vector3.ZERO,
+	thermal.add_object(&"fire", {"room_id": &"kitchen", "position": Vector3(-0.1, 0.0, 0.0),
 		"temperature_c": 300.0, "ignition_c": 200.0, "fuel": 100.0, "burn_rate": 0.01})
 	thermal.add_object(&"near", {"room_id": &"kitchen", "position": Vector3(0.5, 0.0, 0.0),
 		"temperature_c": 20.0, "ignition_c": 21.0, "heat_capacity_kj_c": 0.001,
@@ -20,16 +20,25 @@ func _initialize() -> void:
 		"temperature_c": 20.0, "ignition_c": 21.0, "flammability": 1.0, "fuel": 1.0, "burn_rate": 0.01})
 	thermal.add_object(&"other-room", {"room_id": &"hall", "position": Vector3(0.25, 0.0, 0.0),
 		"temperature_c": 20.0, "ignition_c": 21.0, "flammability": 1.0, "fuel": 1.0, "burn_rate": 0.01})
+	thermal.add_object(&"wet-target", {"room_id": &"kitchen", "position": Vector3(0.6, 0.0, 0.0),
+		"temperature_c": 20.0, "ignition_c": 21.0, "flammability": 1.0, "fuel": 1.0,
+		"burn_rate": 0.01, "wetness": 0.9})
+	thermal.add_object(&"foam-target", {"room_id": &"kitchen", "position": Vector3(0.7, 0.0, 0.0),
+		"temperature_c": 20.0, "ignition_c": 21.0, "flammability": 1.0, "fuel": 1.0, "burn_rate": 0.01})
+	thermal.apply_liquid(&"foam-target", &"foam", 50.0)
 	var spread := FireSpread.new(thermal, 1.5, 4.0)
 	case_result(spread.register_object(&"fire") and spread.register_object(&"near")
-		and spread.register_object(&"far") and spread.register_object(&"other-room"),
+		and spread.register_object(&"far") and spread.register_object(&"other-room")
+		and spread.register_object(&"wet-target") and spread.register_object(&"foam-target"),
 		"bounded spread system registers authored thermal objects")
 	var report: Dictionary = spread.step(0.05)
-	case_result(report.ok and report.pairs == 3 and report.heated == 1
+	case_result(report.ok and report.pairs == 1 and report.heated == 1
 		and thermal.object_state(&"near").burning
 		and thermal.object_state(&"far").temperature_c == 20.0
-		and thermal.object_state(&"other-room").temperature_c == 20.0,
-		"burning object heats only nearby flammable objects in the same room")
+		and thermal.object_state(&"other-room").temperature_c == 20.0
+		and thermal.object_state(&"wet-target").temperature_c == 20.0
+		and thermal.object_state(&"foam-target").temperature_c == 20.0,
+		"room grid heats nearby targets but skips distant, cross-room, wet and foamed objects")
 
 	var chain := Thermal.new()
 	chain.add_room(&"room")
@@ -44,6 +53,9 @@ func _initialize() -> void:
 		"newly ignited object cannot cascade spread in the same pass")
 	chain_spread.step(0.05)
 	case_result(chain.object_state(&"end").burning, "newly burning object spreads on the following interval")
+	var no_targets: Dictionary = chain_spread.step(0.05)
+	case_result(no_targets.ok and no_targets.heated == 0,
+		"rooms with burning sources but no eligible targets complete without a missing-grid error")
 	var before := float(chain.object_state(&"end").temperature_c)
 	case_result(not chain_spread.step(FireSpread.FIXED_STEP * 2.0).ok
 		and is_equal_approx(chain.object_state(&"end").temperature_c, before),

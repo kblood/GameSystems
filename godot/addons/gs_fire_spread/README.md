@@ -9,8 +9,9 @@ adapter snapshots participants before applying heat, so newly ignited objects be
 spread sources on the next interval instead of cascading in the same pass.
 
 The default radius is 1.5 m and the source heat rate is 4 kJ/s with squared linear distance
-falloff. Both are constructor-configurable within hard limits. The system evaluates at most
-256 registered objects (65,280 directed pairs) per 50 ms tick and preflights summed heat for every
+falloff. Both are constructor-configurable within hard limits. The system registers at most
+256 objects and checks at most 16,384 source/target pairs per 50 ms call (the balanced worst-case
+partition); a room-aware 3D cell grid skips distant target cells. It preflights summed heat for every
 target before mutation. It does not trace walls, model airflow or fuel chemistry, or claim
 real fire-spread timing; room IDs act as authored barriers. Hosts should author a room for
 each connected fire zone and bind only the objects participating in that zone.

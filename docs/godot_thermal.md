@@ -45,7 +45,15 @@ only spread on the next interval. The adapter snapshots participants and preflig
 heat before changing targets. It caps at 256 registered objects and one 50 ms tick per call.
 Room IDs are authored spread barriers; this is not line-of-sight, airflow, or a fire-code
 simulation. Hosts should include only objects in each fire zone and avoid registering
-unrelated world props.
+unrelated world props. The adapter uses a room-aware 3D cell grid and checks at most 16,384
+source/target candidates per 50 ms call for 256 registered objects.
+
+Run `godot --headless --path godot --script res://tools/benchmark_spatial_fire_spread.gd -- dense`
+or replace `dense` with `sparse` to measure 128 burning sources plus 128 targets over 200
+measured ticks after 20 warmups. On Windows with Godot 4.7.2 and a Ryzen 7 5700G, one local
+run measured dense average/P95/max **5.15/6.23/7.97 ms** and sparse **2.63/3.93/6.36 ms**
+per 50 ms spread tick. These headless desktop measurements are diagnostic, not a headset
+performance gate; profile on the target VR hardware and scene.
 
 `GSPuddleFireAdapter` composes with the existing `GSPuddleStore` through its public
 `components` and `withdraw` methods. It consumes petrol before diesel for fuel heat,

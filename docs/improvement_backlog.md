@@ -8,11 +8,13 @@ flammable, fueled neighbors in the same authored room. It snapshots source state
 pass, so newly ignited targets begin spreading on the next interval, and preflights all
 target heat before any mutation. It does not trace occlusion or simulate airflow.
 
-Verification: spatial spread **6/6**, fire-station composition **13/13**, thermal **42/42**;
+Verification: spatial spread **7/7**, fire-station composition **13/13**, thermal **42/42**;
 cross-room isolation, range, delayed chain spread, fixed-tick rejection, demo ignition, and
 no-partial-update thermal preflight are covered. The demo also proves one 0.3 s frame matches
-three 0.1 s frames with the sprinkler active. Sol approved the guide and timing contract;
-final demo scheduling review is pending.
+three 0.1 s frames with the sprinkler active. Sol approved the guide and demo scheduling.
+A room-aware 3D grid skips distant targets; the 256-object benchmark measured 5.15 ms dense
+and 2.63 ms sparse average per tick on a Ryzen 7 5700G desktop. Quest/Steam Frame profiling
+remains open.
 Guide: [Godot thermal](godot_thermal.md); [fire-station demo](../godot/demos/sprinkler_fire/README.md).
 
 ## Godot circuit-to-fire heat bridge — 2026-10-12
@@ -26,7 +28,7 @@ can share the circuit and heat bridge without advancing the network twice.
 
 Verification: adapter **6/6**, electricity **24/24**, sprinklers **54/54**. Direct-network
 and pump-owned receipt paths, invalid receipt rejection, passive component bindings, and
-no-partial-heat preflight are covered. Spatial ignition spread and headset profiling remain open.
+no-partial-heat preflight are covered. Quest/Steam Frame profiling remains open.
 Guide: [Godot electricity](godot_electricity.md); source: `godot/addons/gs_electricity_thermal/`.
 
 ## Native Godot electricity and sprinkler circuit — 2026-10-12
@@ -44,16 +46,11 @@ Guide: [Godot electricity](godot_electricity.md).
 
 ## Godot fire-station composition demo - 2026-10-12
 
-Added a runnable, asset-free 3D scene that composes the thermal fire, finite water tank,
-finite battery, battery pump and sprinkler head. F triggers the head, V controls the valve,
-B disables/enables the pump battery, and R refills the same bounded tank. Spray feedback
-lingers across fixed ticks rather than flashing for a single rendered frame. Its small,
-bounded room heat capacity makes automatic sprinkler activation visible in a short run;
-the host preflights both kernel time budgets before consuming resources.
-
-Verification: demo integration contract **8/8**, scene launch smoke, GameSystems addon
-suites thermal **42/42**, resources **35/35**, sprinkler **54/54**. Sol reviewed the demo
-code and docs without remaining blockers. The scene is not a headset comfort or performance result.
+The runnable, asset-free 3D scene now composes spatial fire spread, the bounded thermal fire,
+finite water, and a finite-battery pump on the switch/fuse circuit. Its 13/13 integration
+contract covers spread ignition, active-sprinkler frame-partition equivalence, fuse trip,
+water debit and the automatic sensor. Sol reviewed the demo without remaining blockers.
+It is not a headset comfort or performance result.
 Usage: [fire-station demo](../godot/demos/sprinkler_fire/README.md).
 
 ## Native Godot fire/sprinkler checkpoint — 2026-10-12
@@ -66,7 +63,7 @@ power-provider presence match. Hosts pause at one save boundary; restore thermal
 batteries, pump state, then sprinkler state. Bottle source snapshots remain host-coordinated.
 
 Verification: thermal **42/42**, resource adapters **35/35**, sprinkler **54/54**; Godot editor
-scan passes. Sol review found that provider order alone is not a cross-system transaction; the guide now requires staged preflight/atomic world swap or full rollback. A regression verifies failed staged restore leaves the active world untouched. Thermal and sprinkler checkpoints now preserve runtime insertion order; reversed-ID multi-object/head tick replay passes. Sol's final checkpoint review was approved, and the authored scene wiring is now covered by the fire-station demo above. Electrical heat transfer, spatial fire spread and headset profiling remain open.
+scan passes. Sol review found that provider order alone is not a cross-system transaction; the guide now requires staged preflight/atomic world swap or full rollback. A regression verifies failed staged restore leaves the active world untouched. Thermal and sprinkler checkpoints now preserve runtime insertion order; reversed-ID multi-object/head tick replay passes. Sol's final checkpoint review was approved, and the authored scene wiring is now covered by the fire-station demo above. Headset profiling and richer occlusion/airflow fire behavior remain open.
 Guides: [thermal](godot_thermal.md), [supply adapters](godot_resource_adapters.md),
 [sprinkler](godot_sprinklers.md).
 
@@ -76,8 +73,8 @@ Guides: [thermal](godot_thermal.md), [supply adapters](godot_resource_adapters.m
 Den native Godot-sprinkler kan nu bruge den udskiftelige `power_fraction(requests, dt)`-kontrakt.
 `GSSprinklerBatteryPump` kobler den til det eksisterende `GSBatteryAdapter`, begrænser fælles flow
 pr. fixed tick efter både pumpens ml/s-kapacitet og leveret Wh, og undlader at trække væske ved
-tomt batteri. Uden provider er sprinklerflow fortsat uændret. Dette er ikke et native ledningsnet;
-et fremtidigt net kan implementere samme provider-kontrakt.
+tomt batteri. Uden provider er sprinklerflow fortsat uændret. Den senere native
+`gs_electricity` provider og fire-station-demo bruger samme kontrakt.
 
 Verifikation: sprinkler-pumpe-suite **47/47**, thermal **42/42**, resource-adapters **35/35**.
 Sol har godkendt pumpe-implementationen og guiden. Checkpoint-opfolgningen er dokumenteret nedenfor.
@@ -154,9 +151,10 @@ uafhængige sprinklerhoveder, automatisk temperatur-responstid, manuel test, ven
 proportional deling af næsten tom forsyning og typed spray-receipts. Vand køler, skum
 undertrykker, og andre væsker bevarer deres identitet i receipt, så hosten kan aflevere
 dem til pyt-systemet. Per-head mål og fixed-step-arbejde er begrænset. Den fokuserede
-suite er siden udvidet til 47/47 med batteripumpe, flowbegrænsning og power-kvitteringer.
-Afsluttende Sol-review afventer. Scene/wiring, native grid, checkpoint-samordning og
-headset-profilering er fortsat næste arbejde. Guide: [Godot sprinkler](godot_sprinklers.md).
+suite er siden udvidet til 54/54 med batteri- og netværkspumpe, flowbegrænsning og
+power-kvitteringer. Sol har godkendt kerne og guider; grid, fire-station-demo og koordineret
+checkpoint er implementeret. Headset-profilering er fortsat åben.
+Guide: [Godot sprinkler](godot_sprinklers.md).
 
 ## Afsluttet gs_bottles pour-quality-runde — 2026-10-12
 

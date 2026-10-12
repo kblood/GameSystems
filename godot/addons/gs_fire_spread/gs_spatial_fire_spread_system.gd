@@ -50,44 +50,65 @@ func unregister_object(id: StringName) -> bool:
 func step(delta: float) -> Dictionary:
 	if not _valid or not is_finite(delta) or absf(delta - FIXED_STEP) > 1.0e-9:
 		return {"ok": false, "pairs": 0, "heated": 0}
-	var snapshot: Array[Dictionary] = []
+	var source_ids: Array[StringName] = []
+	var source_positions: Array[Vector3] = []
+	var source_rooms: Array[StringName] = []
+	var target_ids: Array[StringName] = []
+	var target_positions: Array[Vector3] = []
+	var target_rooms: Array[StringName] = []
 	for id: StringName in _object_ids:
 		var state: Dictionary = thermal.object_state(id)
 		if state.is_empty() or not state.get("position") is Vector3: return {"ok": false, "pairs": 0, "heated": 0}
-		snapshot.append({"id": id, "state": state})
-	var heat_by_target: Dictionary = {}
+		var room_id := StringName(state.get("room_id", &""))
+		if room_id == &"": continue
+		var position: Vector3 = state.position
+		if state.get("burning", false):
+			source_ids.append(id)
+			source_positions.append(position)
+			source_rooms.append(room_id)
+		elif float(state.get("flammability", 0.0)) > 0.0 and float(state.get("fuel", 0.0)) > 0.0 \
+				and float(state.get("wetness", 0.0)) < 0.8 and float(state.get("foam_ml", 0.0)) <= 0.0:
+			target_ids.append(id)
+			target_positions.append(position)
+			target_rooms.append(room_id)
+	var target_grid: Dictionary = {}
+	for target_index in range(target_ids.size()):
+		var room_id: StringName = target_rooms[target_index]
+		var room_cells: Dictionary = target_grid.get(room_id, {})
+		var cell := _cell(target_positions[target_index])
+		var bucket: Array = room_cells.get(cell, [])
+		bucket.append(target_index)
+		room_cells[cell] = bucket
+		target_grid[room_id] = room_cells
+	var heat_by_target: Array[float] = []
+	for _target_index in range(target_ids.size()): heat_by_target.append(0.0)
 	var pairs := 0
-	for source_index in range(snapshot.size()):
-		var source: Dictionary = snapshot[source_index]
-		var source_state: Dictionary = source.state
-		if not source_state.get("burning", false): continue
-		var source_room: StringName = source_state.get("room_id", &"")
-		if source_room == &"": continue
-		for target_index in range(snapshot.size()):
-			if source_index == target_index: continue
-			pairs += 1
-			var target: Dictionary = snapshot[target_index]
-			var target_state: Dictionary = target.state
-			if target_state.get("room_id", &"") != source_room or target_state.get("burning", false) \
-					or float(target_state.get("flammability", 0.0)) <= 0.0 \
-					or float(target_state.get("fuel", 0.0)) <= 0.0 \
-					or float(target_state.get("wetness", 0.0)) >= 0.8 \
-					or float(target_state.get("foam_ml", 0.0)) > 0.0:
-				continue
-			var distance := (source_state.position as Vector3).distance_to(target_state.position as Vector3)
-			if distance >= radius_m: continue
-			var falloff := 1.0 - distance / radius_m
-			var energy_kj := heat_kj_per_second * delta * falloff * falloff
-			if energy_kj <= 0.0: continue
-			var target_id: StringName = target.id
-			heat_by_target[target_id] = float(heat_by_target.get(target_id, 0.0)) + energy_kj
-	for target_id: StringName in heat_by_target:
-		if not thermal.can_add_heat(target_id, float(heat_by_target[target_id])):
+	var radius_squared := radius_m * radius_m
+	for source_index in range(source_ids.size()):
+		var room_cells: Dictionary = target_grid.get(source_rooms[source_index], {})
+		var source_cell := _cell(source_positions[source_index])
+		for x in range(-1, 2):
+			for y in range(-1, 2):
+				for z in range(-1, 2):
+					var bucket: Array = room_cells.get(source_cell + Vector3i(x, y, z), [])
+					for target_index: int in bucket:
+						pairs += 1
+						var distance_squared := source_positions[source_index].distance_squared_to(target_positions[target_index])
+						if distance_squared >= radius_squared: continue
+						var falloff := 1.0 - sqrt(distance_squared) / radius_m
+						var energy_kj := heat_kj_per_second * delta * falloff * falloff
+						if energy_kj > 0.0: heat_by_target[target_index] += energy_kj
+	var heated := 0
+	for target_index in range(target_ids.size()):
+		if heat_by_target[target_index] <= 0.0: continue
+		if not thermal.can_add_heat(target_ids[target_index], heat_by_target[target_index]):
 			return {"ok": false, "pairs": pairs, "heated": 0, "reason": &"thermal_budget"}
-	for target_id: StringName in heat_by_target:
-		if not thermal.add_heat(target_id, float(heat_by_target[target_id])):
+	for target_index in range(target_ids.size()):
+		if heat_by_target[target_index] <= 0.0: continue
+		if not thermal.add_heat(target_ids[target_index], heat_by_target[target_index]):
 			return {"ok": false, "pairs": pairs, "heated": 0, "reason": &"thermal_commit"}
-	return {"ok": true, "pairs": pairs, "heated": heat_by_target.size()}
+		heated += 1
+	return {"ok": true, "pairs": pairs, "heated": heated}
 
 
 func dispose() -> void:
@@ -97,3 +118,7 @@ func dispose() -> void:
 
 static func _positive(value: Variant) -> bool:
 	return typeof(value) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(value)) and float(value) > 0.0
+
+
+func _cell(position: Vector3) -> Vector3i:
+	return Vector3i(floori(position.x / radius_m), floori(position.y / radius_m), floori(position.z / radius_m))
