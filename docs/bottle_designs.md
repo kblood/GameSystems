@@ -219,13 +219,17 @@ MINIMAL texture memory is 0. GLB files are 0.3-2.4 MB, mostly the liquid LUT JSO
 
 Foam rendering is supported by the Three.js HIGH implementation and Godot tiers above MINIMAL; Godot MINIMAL deliberately omits foam to keep its shader inexpensive. Three.js currently implements HIGH only.
 
-Still not honoured by `shaders/godot/bottle_liquid.*` / `shaders/three/bottle_liquid.js`:
+`density` is gameplay data rather than a rendering control, so neither liquid shader consumes it. Godot's
+`BottleDesign.mass_kg(fill)` and Three.js `loadDesign(...).massKg(fill)` both return the liquid-only mass in kg
+from `capacity_ml * density * fill`; the physics adapter remains responsible for shell mass and applying it
+to a body. With Three.js, `massKg()` uses this precedence: an explicit query fill, current live fill, the
+`loadDesign()` fill option, then authored `fill_default`. It works with the liquid renderer disabled because
+the design wrapper loads liquid metadata independently of rendering.
+The standalone `liquidMassKg(info, fill)` helper supports designs used without the wrapper. A missing density
+defaults to water (`1 g/ml`), fill is clamped to `[0, 1]`, and invalid or overflowing mass data returns zero.
 
-| owner | field | needed |
-|---|---|---|
-| TODO(owner) | `density` | `mass_kg()` uses a water-like default |
-
-`BottleDesign.UNSUPPORTED` lists the same items.
+`BottleDesign.UNSUPPORTED` lists `density` to distinguish gameplay mass from visual liquid parameters; no
+shader-only TODO remains.
 
 ## Fonts and licences
 

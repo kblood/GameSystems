@@ -141,9 +141,17 @@ func set_liquid_color(c: Color) -> void:
 	m.set_shader_parameter("surface_color", c.lightened(0.12))
 
 
-func mass_kg(fill: float = -1.0) -> float:
-	var f: float = ctl.fill if fill < 0.0 and ctl else maxf(fill, 0.0)
-	return float(liquid_info.get("capacity_ml", 0.0)) / 1000.0 * float(liquid_info.get("density", 1.0)) * f
+func mass_kg(fill: float = NAN) -> float:
+	var raw_fill: float = ctl.fill if is_nan(fill) and ctl else (float(liquid_info.get("fill_default", 0.6)) if is_nan(fill) else fill)
+	if not is_finite(raw_fill):
+		return 0.0
+	var f := clampf(raw_fill, 0.0, 1.0)
+	var capacity := float(liquid_info.get("capacity_ml", 0.0))
+	var density := float(liquid_info.get("density", 1.0))
+	if not is_finite(capacity) or not is_finite(density) or capacity < 0.0 or density < 0.0:
+		return 0.0
+	var mass := capacity / 1000.0 * density * f
+	return mass if is_finite(mass) else 0.0
 
 
 # ------------------------------------------------------------------ labels

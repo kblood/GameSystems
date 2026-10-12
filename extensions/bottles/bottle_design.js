@@ -10,10 +10,26 @@
 // Slot swap works on high/medium (one mesh per slot). On low/minimal the slots live in a single atlas/band mesh:
 // setLabelImage() returns false there (reload a higher tier first).
 //
-// Density remains available through BottleDesign.mass_kg().
+// Gameplay-only liquid mass is exposed by BottleDesign.mass_kg() in Godot and massKg() here.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { setupBottle } from './bottle_liquid.js';
+import { setupBottle, loadLiquidInfo } from './bottle_liquid.js';
+
+/** Liquid-only mass in kg. The design density is g/ml (water = 1); shell mass is intentionally excluded. */
+export function liquidMassKg(info, fill = info?.fill_default ?? 0.6) {
+  const capacityMl = Number(info?.capacity_ml);
+  const densityGPerMl = Number(info?.density ?? 1);
+  const fraction = Number(fill);
+  if (![capacityMl, densityGPerMl, fraction].every(Number.isFinite)
+      || capacityMl < 0 || densityGPerMl < 0) return 0;
+  const massKg = capacityMl / 1000 * densityGPerMl * Math.min(1, Math.max(0, fraction));
+  return Number.isFinite(massKg) ? massKg : 0;
+}
+
+/** Pick an explicit mass query, current live fill, load-time fill, then authored/default fill. */
+export function resolveMassFill(info, requestedFill, liveFill, loadFill) {
+  return requestedFill ?? liveFill ?? loadFill ?? info?.fill_default ?? 0.6;
+}
 
 export const TIERS = ['high', 'medium', 'low', 'minimal'];
 
@@ -51,10 +67,11 @@ function hasAlpha(img) {
   return false;
 }
 
-export async function loadDesign(path, { tier = 'high', fill = 0.6, slosh = true, bubbleSize, viscosity, tintStrength, opacity, foamStatic, withLiquid = true } = {}) {
+export async function loadDesign(path, { tier = 'high', fill, slosh = true, bubbleSize, viscosity, tintStrength, opacity, foamStatic, withLiquid = true } = {}) {
   const gltf = await new GLTFLoader().loadAsync(tierPath(path, tier));
   const root = gltf.scene;
-  const out = { root, path, tier, bottle: null, labels: {}, atlas: null };
+  const info = await loadLiquidInfo(root, path);
+  const out = { root, path, tier, bottle: null, info, labels: {}, atlas: null };
   root.traverse((o) => {
     if (!o.isMesh) return;
     const ex = o.userData || {};
@@ -63,7 +80,12 @@ export async function loadDesign(path, { tier = 'high', fill = 0.6, slosh = true
       out.labels[ex.slot] = o;
     } else if (o.name === 'Labels') out.atlas = o;
   });
-  if (withLiquid) out.bottle = setupBottle(root, { fill, slosh, bubbleSize, viscosity, tintStrength, opacity, foamStatic });
+  if (withLiquid) {
+    out.bottle = setupBottle(root, { info, fill: fill ?? info.fill_default ?? 0.6, slosh, bubbleSize, viscosity, tintStrength, opacity, foamStatic });
+  }
+  // Mirrors BottleDesign.mass_kg(fill) in Godot. This is the liquid component only;
+  // a physics adapter remains responsible for bottle shell mass.
+  out.massKg = (fraction) => liquidMassKg(info, resolveMassFill(info, fraction, out.bottle?.fill, fill));
   out.update = (dt) => out.bottle && out.bottle.update(dt);
   out.supportsSlotSwap = () => Object.keys(out.labels).length > 0;
 

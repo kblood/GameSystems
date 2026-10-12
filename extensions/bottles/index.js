@@ -36,7 +36,7 @@ export { BottleAudio, BOTTLE_SOUNDS } from './audio.js';
 export { BOTTLE_TIERS, BOTTLE_QUALITY, bottleQuality, tierIndex } from './quality.js';
 export { setupBottle, setupBottleFromUrl, loadLiquidInfo, makeLiquidMaterial } from './bottle_liquid.js';
 export { makeLut } from './liquid_lut_v2.js';
-export { loadDesign, tierPath, TIERS as DESIGN_TIERS } from './bottle_design.js';
+export { loadDesign, liquidMassKg, resolveMassFill, tierPath, TIERS as DESIGN_TIERS } from './bottle_design.js';
 
 /**
  * Extension factory. options: { catalog, assetURL(path) -> url (default: ctx.assetURL), surfaces: meshes receiving
