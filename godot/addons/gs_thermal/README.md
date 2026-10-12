@@ -32,7 +32,7 @@ for rooms, objects, links and fixed-step time. It does not coordinate snapshots 
 liquid sources, supplies, batteries or sprinklers; the host must pause the world and
 restore those dependencies at the same save boundary. More complete fluid/vapor fire
 behavior and headset profiling remain follow-up tasks. The shared Godot guide and validation limits are
-documented in [`docs/godot_thermal.md`](../../../docs/godot_thermal.md).
+documented in the [shared Godot thermal guide](https://github.com/kblood/GameSystems/blob/main/docs/godot_thermal.md).
 
 Run the focused contract from the GameSystems repository:
 
