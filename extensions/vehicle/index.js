@@ -134,6 +134,37 @@ export function createVehicleSystem({ emit = () => {}, quality = 'high' } = {}) 
       }
       s.controls = controls;
     },
+    applyMotionResolution(id, fromValue, resolution) {
+      alive();
+      if (stepping) throw new Error('Cannot resolve vehicle motion during step');
+      const s = store.get(id), from = { position: vector(fromValue?.position, 'from.position'), heading: finite(fromValue?.heading, 'from.heading'),
+        distanceM: positive(fromValue?.distanceM, 'from.distanceM', true), wheelAngle: finite(fromValue?.wheelAngle, 'from.wheelAngle') };
+      if (!resolution || typeof resolution !== 'object' || typeof resolution.collided !== 'boolean') throw new TypeError('Physics resolution required');
+      const position = vector(resolution.pose?.position, 'resolution.pose.position'), heading = finite(resolution.pose?.heading, 'resolution.pose.heading');
+      const fraction = finite(resolution.motionFraction, 'resolution.motionFraction');
+      if (fraction < 0 || fraction > 1) throw new RangeError('motionFraction must be within [0, 1]');
+      let normal = null;
+      if (resolution.collisionNormal !== null) {
+        normal = vector(resolution.collisionNormal, 'resolution.collisionNormal');
+        const length = Math.hypot(...normal);
+        if (length < 1e-8) throw new RangeError('collisionNormal cannot be zero');
+        normal = normal.map(value => value / length);
+      }
+      const distance = positive(s.distanceM - from.distanceM, 'step distance', true);
+      const wheelDelta = s.wheelAngle - from.wheelAngle;
+      // Validate all host data before changing the vehicle. A partial hit keeps
+      // distance and visual wheel rotation consistent with the clipped pose.
+      s.position = position;
+      s.heading = heading;
+      s.distanceM = from.distanceM + distance * fraction;
+      s.wheelAngle = from.wheelAngle + wheelDelta * fraction;
+      if (resolution.collided) {
+        s.speed = 0;
+        s.controls = { ...s.controls, throttle: 0, brake: 0, steer: 0, handbrake: true };
+        s.rpm = s.running ? 800 : 0;
+      }
+      return { collided: resolution.collided, motionFraction: fraction, collisionNormal: normal, position: [...s.position], heading: s.heading };
+    },
     start(id) {
       alive(); const s = store.get(id); if (s.running) return { started: true, reason: 'already-running' };
       if (s.modes.fuel === 'adapter') {

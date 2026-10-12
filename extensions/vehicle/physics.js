@@ -151,6 +151,7 @@ export function createVehiclePhysicsAdapter({
       collided: hit != null,
       collisionNormal,
       suspension: {
+        staticSagM,
         compressionM: { ...compression },
         targetCompressionM: compressionTargets,
         bodyOffsetM: mean - staticSagM,
@@ -161,5 +162,12 @@ export function createVehiclePhysicsAdapter({
     };
   }
 
-  return { resolve };
+  function reset() {
+    for (const [name] of WHEELS) {
+      compression[name] = 0;
+      velocity[name] = 0;
+    }
+  }
+
+  return { resolve, reset };
 }

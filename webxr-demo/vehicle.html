@@ -8,7 +8,7 @@
 <button id="lock-panels">Lock panels</button>
 <hr><div class="row"><button id="ignition">Start engine</button><button id="lights">Lights</button></div>
 <label>Throttle <input id="throttle" type="range" min="0" max="1" step=".01" value="0"></label><label>Steering <input id="steer" type="range" min="-1" max="1" step=".01" value="0"></label>
-<div class="row"><button id="drive">Parking brake: on</button><button id="brake">Brake</button></div>
+<div class="row"><button id="drive">Parking brake: on</button><button id="gear">Gear: drive</button><button id="brake">Brake</button></div>
 <div class="row"><button id="refuel">Add 5 L petrol</button><button id="charge">Charge 100 Wh</button></div>
 <div class="row"><button id="spill">Spill 100 ml</button><button id="leak">Start leak</button></div><div class="row"><button id="ignite-spill">Ignite spill</button><button id="collect-spill">Collect spill</button></div>
 <label>Resource source<select id="adapters"><option value="shared">Supply + electricity</option><option value="standalone">Standalone stores</option><option value="disabled">Disabled consumption</option></select></label>
@@ -16,4 +16,4 @@
 <div class="row"><button id="pause">Pause</button><button id="save">Save vehicle</button><button id="restore">Restore</button></div>
 <div class="row"><button id="export">Export file</button><button id="import">Import file</button></div><input id="checkpoint-file" type="file" accept="application/json,.json" hidden>
 <p>Checkpoint includes all fuel/battery sources, adapter binding, motion and panel animation. Driver inputs return to neutral after restore.</p>
-<div id="readout" aria-live="polite"></div><p>Stationary drivetrain bench: wheels turn while the model stays on its platform. Open the fuel flap and stop the engine before refueling. <a href="./fire.html">Fire lab</a> · <a href="./systems.html">Workshop</a></p></aside><div id="message">Loading Blender model…</div><script type="module" src="/src/vehicle-lab.js"></script></body></html>
+<div id="readout" aria-live="polite"></div><p>Drive with throttle and steering. The Aster has a swept chassis proxy and four suspension raycasts; the orange barrier is a collision test. Open the fuel flap and stop before refueling. <a href="./fire.html">Fire lab</a> · <a href="./systems.html">Workshop</a></p></aside><div id="message">Loading Blender model…</div><script type="module" src="/src/vehicle-lab.js"></script></body></html>

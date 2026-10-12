@@ -27,6 +27,21 @@ test('braking reaches rest without backwards jitter and reversing starts only af
   const s=car();s.step(2);s.setControls('c',{throttle:0,brake:1});s.step(2);near(s.state('c').speed,0);const position=s.state('c').position;s.step(2);assert.deepEqual(s.state('c').position,position);
   s.setControls('c',{brake:0,throttle:1,gear:-1});s.step(1);assert.ok(s.state('c').speed<0);
 });
+test('host motion resolution commits the clipped pose and stops safely at a chassis collision',()=>{
+  const s=car(),from=s.state('c');s.step(.5);const desired=s.state('c'),fraction=.4;
+  const resolution={pose:{position:from.position.map((v,i)=>v+(desired.position[i]-v)*fraction),heading:from.heading+(desired.heading-from.heading)*fraction},motionFraction:fraction,collided:true,collisionNormal:[0,0,-2],suspension:{}};
+  const committed=s.applyMotionResolution('c',from,resolution),state=s.state('c');
+  assert.deepEqual(committed.position,resolution.pose.position);assert.equal(state.heading,resolution.pose.heading);
+  near(state.distanceM,from.distanceM+(desired.distanceM-from.distanceM)*fraction);
+  near(state.wheelAngle,from.wheelAngle+(desired.wheelAngle-from.wheelAngle)*fraction);
+  assert.equal(state.speed,0);assert.deepEqual(state.controls,{throttle:0,brake:0,steer:0,gear:1,handbrake:true});
+  assert.equal(state.running,true);assert.equal(state.rpm,800);assert.deepEqual(committed.collisionNormal,[0,0,-1]);
+});
+test('host motion resolution rejects invalid callback data without partial mutation',()=>{
+  const s=car(),from=s.state('c');s.step(.25);const before=s.capture();
+  assert.throws(()=>s.applyMotionResolution('c',from,{pose:{position:[1,2,3],heading:0},motionFraction:1.2,collided:false,collisionNormal:null}));
+  assert.deepEqual(s.capture(),before);
+});
 test('exact fuel boundary stops once at interval end without leaving running flag behind',()=>{
   const events=[],s=createVehicleSystem({emit:(name,data)=>events.push([name,data])});s.add('c',{fuel:createFuelStore({amountL:.00022})});s.start('c');s.step(1);assert.equal(s.state('c').running,false);near(s.state('c').fuel.amountL,0);s.step(1);assert.equal(events.filter(([name])=>name==='vehicle:stopped').length,1);
 });

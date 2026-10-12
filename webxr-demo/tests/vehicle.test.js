@@ -214,6 +214,19 @@ test('vehicle: visual binding rotates exact pivots without accumulated transform
   near(q.angleTo(root.getObjectByName('Door_FL').quaternion), 0); near(root.getObjectByName('Hood').rotation.x, -1.1);
   binding.dispose(); assert.throws(() => bindVehicleVisual(new THREE.Group(), { THREE }));
 });
+test('vehicle: suspension visuals separate chassis movement from wheel contact and dispose cleanly',()=>{
+  const root=new THREE.Group();
+  for(const part of Object.values(VEHICLE_PARTS)){const object=new THREE.Group();object.name=part.node;root.add(object);}
+  for(const label of ['FL','FR','RL','RR']){const steer=new THREE.Group();steer.name='Steer_'+label;steer.position.set(label.endsWith('L')?-.917:.917,.35,label.startsWith('F')?1.41:-1.41);root.add(steer);const wheel=new THREE.Group();wheel.name='Wheel_'+label;steer.add(wheel);}
+  const s=createVehicleSystem();s.add('car');const state=s.state('car'),binding=bindVehicleVisual(root,{THREE});
+  const suspension={staticSagM:.08,bodyOffsetM:.03,pitchRad:-.02,rollRad:.01,compressionM:{frontLeft:.16,frontRight:.08,rearLeft:.08,rearRight:0}};
+  binding.update({...state,position:[3,0,4],heading:.4},{moveRoot:true,suspension});
+  const chassis=root.getObjectByName('VehicleChassisVisual');near(chassis.position.y,.03);near(chassis.rotation.x,-.02);near(chassis.rotation.z,.01);
+  near(root.position.x,3);near(root.position.z,4);near(root.rotation.y,.4);
+  near(root.getObjectByName('Steer_FL').position.y,.43);near(root.getObjectByName('Steer_RR').position.y,.27);
+  const moved=root.getObjectByName('Steer_FL').position.clone();binding.update({...state,position:[3,0,4],heading:.4},{moveRoot:true,suspension});assert.ok(moved.distanceTo(root.getObjectByName('Steer_FL').position)<1e-10);
+  binding.dispose();assert.equal(root.getObjectByName('VehicleChassisVisual'),undefined);assert.equal(root.getObjectByName('Door_FL').parent,root);near(root.position.length(),0);near(root.getObjectByName('Steer_FL').position.y,.35);
+});
 test('vehicle: optional host module loads and runs without fluid/electricity dependencies', async () => {
   const host = createHost(); const api = await host.load(vehicle); assert.ok(api); api.add('car'); assert.equal(api.start('car').started, true); host.dispose();
 });

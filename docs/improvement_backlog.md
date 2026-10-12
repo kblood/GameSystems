@@ -490,10 +490,11 @@ varmeudløsning, ventil, valgfri power gate og checkpoint er verificeret; detalj
 [supply_sprinklers.md](supply_sprinklers.md). Bilens endelige batteri- og brændstofadaptere er integreret.
 Det fysiske DC-strømskab, ledninger, endelige netbatterier og sikringer er også implementeret og driver
 kontrolrummets kamera/skærm-system; se [electricity_system.md](electricity_system.md). De oprindelige
-sprinkler-, bilasset-, strøm- og kameraopgaver fra den oprindelige liste er altså gennemført. Køretøjet har nu
-en valgfri, motoruafhængig adapter til chassis-sweep og fire dæmpede hjulkontakter, men den stationære lab og
-drivlinjen anvender den endnu ikke som samlet kørselsmodel. Integration med et aktivt terræn-/fysikmiljø og
-headsetmålinger er fortsat åbne delmål. `webxr-demo`-suiten består **554/554** Node-tests.
+sprinkler-, bilasset-, strøm- og kameraopgaver fra den oprindelige liste er altså gennemført. Køretøjets
+motoruafhængige chassis-/affjedringsadapter er nu koblet til den bevægelige WebXR-bil: terræn-rays støtter hjulene,
+en synlig barriere stopper chassisbevægelsen, og accepteret pose/hjulleje synkroniseres til drivlinje og mesh.
+Mere avanceret terræn, ekstra udfjedring og headsetmålinger er fortsat åbne delmål. `webxr-demo`-suiten består
+Checkpoint-restore nulstiller også affjedringens transientfjederhistorik og genberegner hjul-/karrosserivisualer mod aktuelt terræn, selv mens bilen er pauset. `webxr-demo` består **558/558** Node-tests; browser-smoken for bevægelse, kollision og restore består **8/8** checks.
 Headset-performance er ikke målt; det løbende mål fortsætter med nye fund.
 
 ## Afsluttet bil- og kamerarunde
@@ -506,9 +507,9 @@ Headset-performance er ikke målt; det løbende mål fortsætter med nye fund.
 - 201/201 GameSystems-tests, produktionsbuild, 8/8 bil- og 9/9 kamera-browserchecks består.
 - Bil: [vehicle_system.md](vehicle_system.md). Kamera: [camera_system.md](camera_system.md).
 
-Bilens checkpoint-provider er implementeret. Den valgfrie `createVehiclePhysicsAdapter()` tilbyder nu
-chassis-sweep, collision-skin, fire hjulraycasts og dæmpet compression/heave/pitch/roll; fuld lab- og
-terrænintegration mangler stadig.
+Bilens checkpoint-provider er implementeret. `createVehiclePhysicsAdapter()` tilbyder chassis-sweep,
+collision-skin, fire hjulraycasts og dæmpet compression/heave/pitch/roll; WebXR-labben bruger nu laget
+med synlig barrieretest og bevægelig chassisvisualisering. Avanceret terræn og headset-fit er fortsat åbent.
 Strømskab, ledninger, endelige netbatterier og sikringer er nu implementeret og koblet til skærmen.
 13 nye kerne-/integrationschecks, 15/15 kamera-/strømskab-browserchecks og 12/12 eksisterende værkstedschecks består.
 Samlet GameSystems-suite: 214/214; produktionsbuild består.
@@ -541,7 +542,7 @@ Dette tab er nu rettet; maxPools begrænser aktive termiske noder og kasserer ik
 
 - Større rum, smallere åbninger, per-room varme og overgang mellem rum ved flytning.
 - Dynamisk geometry og flere materialeeffekter; overflade-/højdeafhængig, endeligt doseret skumvirkning er nu implementeret.
-- Videre bilintegration med physical collision/terrain; låsemekanik og timestep-/pauseadfærd er nu forbedret.
+- Bilens lette collision-/affjedringsintegration i WebXR-labben er nu implementeret; videre terræn-/køredynamik kræver særskilt acceptance.
 - Mere læsbar brand-/røgfeedback samt mål og sværhedsgrad i demoen.
 - Videre checkpoint-dækning af asset-lifecycle, knuste beholdere, ruder og debris i spil med dynamisk destruktion.
 - Gennemgå de øvrige systemers persistens, validering, lifecycle og budgetter, når de vigtigste brandopgaver er løst.

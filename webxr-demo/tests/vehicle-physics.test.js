@@ -110,3 +110,17 @@ test('vehicle physics: terrain below full extension is not reported as wheel con
   assert.equal(result.suspension.groundedWheels, 0);
   assert.deepEqual(Object.values(result.suspension.compressionM), [0, 0, 0, 0]);
 });
+
+test('vehicle physics: reset clears spring history before sampling restored terrain', () => {
+  let distanceM = 0.40;
+  const options = { sweepChassis: () => null, raycastWheel: () => ({ distanceM }) };
+  const physics = createVehiclePhysicsAdapter(options);
+  const pose = { position: [0, 0, 0], heading: 0 };
+  const loaded = physics.resolve(pose, pose, 0.2);
+  assert.ok(loaded.suspension.compressionM.frontLeft > 0.15);
+  distanceM = 0.513;
+  physics.reset();
+  const restored = physics.resolve(pose, pose, 1 / 60);
+  const fresh = createVehiclePhysicsAdapter(options).resolve(pose, pose, 1 / 60);
+  assert.deepEqual(restored.suspension.compressionM, fresh.suspension.compressionM);
+});
