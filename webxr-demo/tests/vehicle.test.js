@@ -49,6 +49,41 @@ test('vehicle: failed partial starter draw refunds battery and accounting exactl
   near(s.state('car').drawnWh, 0);
   assert.equal(s.state('car').running, false);
 });
+test('vehicle: starter draw observer error surfaces after the successful start commits', () => {
+  const observerError = new Error('battery observer failed after starter draw');
+  const battery = createEnergyStore({ capacityWh: 1, energyWh: 1, emit: () => { throw observerError; } });
+  const s = createVehicleSystem(); s.add('car', { power: battery });
+
+  assert.throws(() => s.start('car'), error => error === observerError);
+  const vehicle = s.state('car'), store = battery.state();
+  assert.equal(vehicle.running, true);
+  near(vehicle.drawnWh, 0.35);
+  near(store.energyWh, 0.65);
+  near(store.suppliedWh, 0.35);
+  near(store.initialWh + store.chargedWh - store.suppliedWh, store.energyWh);
+});
+test('vehicle: partial starter refund completes before battery observer error surfaces', () => {
+  const observerError = new Error('battery observer failed after starter refund');
+  const battery = createEnergyStore({ capacityWh: 1, energyWh: 1, emit: () => { throw observerError; } });
+  const power = {
+    reversible: true,
+    state: () => battery.state(),
+    draw(wh) { return battery.draw(wh / 2); },
+    charge(wh) { return battery.charge(wh); },
+    beginBatch() { return battery.beginBatch(); },
+    flush(token) { return battery.flush(token); },
+  };
+  const s = createVehicleSystem(); s.add('car', { power });
+
+  assert.throws(() => s.start('car'), error => error === observerError);
+  const vehicle = s.state('car'), store = battery.state();
+  assert.equal(vehicle.running, false);
+  near(store.energyWh, 1);
+  near(vehicle.drawnWh, 0);
+  near(store.initialWh + store.chargedWh - store.suppliedWh, store.energyWh);
+  near(store.suppliedWh, 0.175);
+  near(store.chargedWh, 0.175);
+});
 test('vehicle: adapters must declare reversible transfers before they can be bound', () => {
   const s=createVehicleSystem();
   const fuel={state:()=>({amountL:10,capacityL:10,kind:'petrol'}),consume:()=>0,refill:()=>0};

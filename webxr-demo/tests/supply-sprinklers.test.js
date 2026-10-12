@@ -49,6 +49,121 @@ test('supply: reentrant observer batches defer the rest of the notification queu
   supply.flush(nestedToken);
   assert.deepEqual(events, [['a', 9], ['b', 9]], 'the deferred tank state is published exactly once when its batch closes');
 });
+test('supply: batch flush drains later tank notifications after the first observer throws', () => {
+  const observerError = new Error('first tank observer failed'), notifications = [];
+  let armed = false;
+  const supply = createSupplySystem({ emit: (name, state) => {
+    notifications.push([name, state.id]);
+    if (armed && state.id === 'a') throw observerError;
+  } });
+  supply.add('a', { capacityMl: 10, components: { water: 10 } });
+  supply.add('b', { capacityMl: 10, components: { water: 10 } });
+  notifications.length = 0;
+  const token = supply.beginBatch();
+  supply.draw('a', 1); supply.draw('b', 2); armed = true;
+
+  assert.throws(() => supply.flush(token), error => error === observerError);
+  assert.deepEqual(notifications, [['supply:changed', 'a'], ['supply:changed', 'b']]);
+  assert.deepEqual(notifications.map(([, id]) => id), ['a', 'b'], 'each queued tank notification is delivered once');
+  near(supply.state('a').ml, 9); near(supply.state('b').ml, 8);
+});
+test('sprinkler completes its draw and spray effects before rethrowing a supply observer error', () => {
+  const observerError = new Error('tank observer failed'), supplyEvents = [], sprinklerEvents = [];
+  let armed = false, failOnce = true;
+  const supply = createSupplySystem({ emit: (name, state) => {
+    supplyEvents.push([name, state.id, state.drawnMl]);
+    if (armed && failOnce && state.drawnMl > 0) { failOnce = false; throw observerError; }
+  } });
+  supply.add('tank', { capacityMl: 100, components: { water: 100 } });
+  const thermal = createThermalSystem();
+  thermal.addRoom('room'); thermal.add('chair', { roomId: 'room', position: [0, 0, 0], temperature: 300, cooling: 0 });
+  const system = createSprinklerSystem({ supply, thermal, emit: (name, data) => sprinklerEvents.push([name, data]) });
+  system.add('head', { tankId: 'tank', roomId: 'room', rateMlPerSecond: 100 }); system.trigger('head');
+  armed = true;
+
+  assert.throws(() => system.step(0.1), error => error === observerError);
+  const tank = supply.state('tank'), head = system.state('head');
+  near(tank.ml, 90); near(tank.initialMl + tank.filledMl - tank.drawnMl, tank.ml);
+  near(head.deliveredMl, 10); near(head.flowMlPerSecond, 100);
+  assert.ok(sprinklerEvents.some(([name]) => name === 'sprinklers:spray'));
+  assert.ok(sprinklerEvents.some(([name]) => name === 'liquid:deposit'));
+  near(system.capture().pending, 0, 'the observer error is surfaced after the tick phase is consumed');
+
+  system.step(0.1);
+  near(supply.state('tank').ml, 80); near(system.state('head').deliveredMl, 20);
+});
+test('sprinkler keeps its first observer error while draining spray effects and supply notifications', () => {
+  const sprayError = new Error('spray observer failed'), supplyError = new Error('supply observer failed');
+  const supplyEvents = [], sprinklerEvents = [];
+  let armed = false;
+  const supply = createSupplySystem({ emit: (name, state) => {
+    supplyEvents.push([name, state.id]);
+    if (armed && state.drawnMl > 0) throw supplyError;
+  } });
+  supply.add('tank', { capacityMl: 100, components: { water: 100 } });
+  const thermal = createThermalSystem();
+  thermal.addRoom('room'); thermal.add('chair', { roomId: 'room', position: [0, 0, 0], temperature: 300, cooling: 0 });
+  const system = createSprinklerSystem({ supply, thermal, emit: (name, data) => {
+    sprinklerEvents.push([name, data]);
+    if (armed && name === 'sprinklers:spray') throw sprayError;
+  } });
+  system.add('head', { tankId: 'tank', roomId: 'room', rateMlPerSecond: 100 }); system.trigger('head');
+  supplyEvents.length = 0; armed = true;
+
+  assert.throws(() => system.step(0.1), error => error === sprayError);
+  near(supply.state('tank').ml, 90); near(system.state('head').deliveredMl, 10);
+  assert.ok(sprinklerEvents.some(([name]) => name === 'liquid:deposit'), 'the tick continues after the spray observer throws');
+  assert.ok(sprinklerEvents.some(([name]) => name === 'sprinklers:changed'), 'final head state notification is attempted');
+  assert.deepEqual(supplyEvents, [['supply:changed', 'tank']], 'supply notification drains despite its own observer error');
+  near(system.capture().pending, 0);
+});
+for (const failedEvent of ['thermal:extinguished', 'thermal:cooled']) {
+  test(`sprinkler completes delivery after a ${failedEvent} observer failure`, () => {
+    const thermalError = new Error(failedEvent), supplyError = new Error('supply observer failed');
+    function fixture(fail) {
+      let armed = false;
+      const events = [];
+      const supply = createSupplySystem({ emit: (name, state) => {
+        if (!armed) return;
+        events.push([name, state.id]);
+        if (fail) throw supplyError;
+      } });
+      supply.add('tank', { capacityMl: 100, components: { water: 100 } });
+      const thermal = createThermalSystem({ emit: (name, state) => {
+        if (!armed) return;
+        events.push([name, state.id]);
+        if (fail && name === failedEvent) throw thermalError;
+      } });
+      for (const id of ['chair-a', 'chair-b']) {
+        thermal.add(id, { material: 'wood', temperature: 300, position: [0, 0, 0], cooling: 0 });
+        thermal.ignite(id);
+      }
+      const system = createSprinklerSystem({ supply, thermal, emit: (name, state) => {
+        if (armed) events.push([name, state.id]);
+      } });
+      for (const id of ['head-a', 'head-b']) {
+        system.add(id, { tankId: 'tank', rateMlPerSecond: 100 }); system.trigger(id);
+      }
+      armed = true;
+      return { supply, thermal, system, events, stopFailing() { fail = false; } };
+    }
+    const clean = fixture(false), faulty = fixture(true);
+    clean.system.step(0.1);
+    assert.throws(() => faulty.system.step(0.1), error => error === thermalError);
+    const snapshot = f => ({ supply: f.supply.capture(), thermal: f.thermal.capture(), sprinklers: f.system.capture() });
+    assert.deepEqual(snapshot(faulty), snapshot(clean), 'later heads and thermal targets receive the same complete tick');
+    assert.deepEqual(faulty.events, clean.events, 'all cooled, extinguished, spray, deposit and supply events are attempted');
+    near(faulty.supply.state('tank').drawnMl, 20);
+    for (const id of ['chair-a', 'chair-b']) near(faulty.thermal.state(id).wetMl, 10);
+    for (const id of ['head-a', 'head-b']) near(faulty.system.state(id).deliveredMl, 10);
+    const completed = snapshot(faulty);
+    faulty.system.step(0);
+    assert.deepEqual(snapshot(faulty), completed, 'the debited tick is never replayed');
+    faulty.stopFailing();
+    clean.system.step(0.1); faulty.system.step(0.1);
+    assert.deepEqual(snapshot(faulty), snapshot(clean), 'the next tick remains deterministic');
+  });
+}
 test('vehicle fuel adapter converts units and leaves wrong fuel in storage', () => {
   const events = [], s = createSupplySystem({ emit: name => events.push(name) }); s.add('car', { capacityMl: 5000 }); const a = createFuelAdapter(s, 'car');
   events.length = 0;

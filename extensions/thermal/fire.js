@@ -68,7 +68,7 @@ export function createThermalSystem({ emit = () => {}, quality = 'high', ambient
   function wakeAir(roomId){if(roomId)awakeAir.add(roomId);}
   function membersChanged(){objectDirty=airDirty=true;}
   function objectSnapshot(){if(objectDirty){objectList=[...objects.entries.values()];objectDirty=false;}return objectList;}
-  function notify(event,payload){if(!stepping){emit(event,payload);return;}try{emit(event,payload);}catch(error){if(!observerFailed){observerError=error;observerFailed=true;}}}
+  function notify(event,payload,onObserverError=null){if(onObserverError){try{emit(event,payload);}catch(error){onObserverError(error);}return;}if(!stepping){emit(event,payload);return;}try{emit(event,payload);}catch(error){if(!observerFailed){observerError=error;observerFailed=true;}}}
   function rebuildAir(){
     const groups=new Map();awakeAir.clear();
     for(const s of objectSnapshot())if(s.roomId&&s.airConductance){const r=rooms.get(s.roomId),{beta,fraction}=implicitExchange(s.airConductance,fixedStep,s.heatCapacity);let group=groups.get(r.id);if(!group){const capacity=r.volume*r.heatCapacityPerVolume;group={r,baseCapacity:capacity,scale:capacity,nodes:[]};groups.set(r.id,group);}group.scale=Math.max(group.scale,beta);group.nodes.push({s,beta,fraction});}
@@ -169,7 +169,7 @@ export function createThermalSystem({ emit = () => {}, quality = 'high', ambient
   const air = s => s.roomId ? rooms.get(s.roomId).oxygen : 1;
   const eligible = s => s.fuelJ > 0 && s.flammability > 0 && s.wetMl < 1e-8 && s.blanket < 0.95 && air(s) > oxygenCutoff + 0.01;
   const intensity = s => s.burning ? s.burnPower * s.flammability * clamp((air(s) - oxygenCutoff) / 0.3, 0, 1) * (1 - s.blanket) : 0;
-  function burn(s, value) { if (s.burning !== value) { s.burning = value; notify(value ? 'thermal:ignited' : 'thermal:extinguished', api.state(s.id)); } }
+  function burn(s, value, onObserverError=null) { if (s.burning !== value) { s.burning = value; notify(value ? 'thermal:ignited' : 'thermal:extinguished', api.state(s.id),onObserverError); } }
   function makeObject(id, options = {}, roomLookup = id => rooms.get(id)) {
     if(typeof id!=='string'||!id)throw new Error('Invalid thermal object id');
     const preset = options.material ? FIRE_PRESETS[options.material] : null;
@@ -325,7 +325,9 @@ export function createThermalSystem({ emit = () => {}, quality = 'high', ambient
     addHeat(id,joules) { const s=objects.get(id),amount=positive(joules,'joules',true),temperature=addHeatToTemperature(s.temperature,amount,s.heatCapacity);if(!Number.isFinite(temperature))throw new RangeError('Heat addition exceeds the finite temperature range');s.temperature=temperature;if(amount)wakeAir(s.roomId); },
     addFuel(id,joules) { const s=objects.get(id),fuel= s.fuelJ+positive(joules,'joules',true);if(!Number.isFinite(fuel))throw new RangeError('Fuel addition exceeds the finite fuel range');s.fuelJ=fuel; },
     setHeater(id,watts) { objects.get(id).heaterW=positive(watts,'watts',true); },
-    water(id,ml) { const s=objects.get(id),amount=positive(ml,'ml',true),wetMl=s.wetMl+amount,available=availableCoolingEnergy(s.temperature,ambient,s.heatCapacity),waterEnergy=cappedProduct(amount,2256);if(available.capped&&waterEnergy.capped)throw new RangeError('Water cooling energy exceeds the finite range');const energy=Math.min(available.value,waterEnergy.value),fullyCooled=available.value>0&&!available.capped&&waterEnergy.value>=available.value,temperature=fullyCooled?ambient:subtractHeatFromTemperature(s.temperature,energy,s.heatCapacity);if(!Number.isFinite(wetMl)||!Number.isFinite(energy)||!Number.isFinite(temperature))throw new RangeError('Water addition exceeds the finite thermal state range');s.wetMl=wetMl;s.temperature=temperature;if(energy)wakeAir(s.roomId);if(!eligible(s)||s.temperature<s.ignition)burn(s,false);notify('thermal:cooled',{id,ml:amount,joules:energy}); },
+    // A coordinating system can retain notification errors until its delivery
+    // receipt is complete. Validation and simulation errors still throw here.
+    water(id,ml,{onObserverError=null}={}) { if(onObserverError!==null&&typeof onObserverError!=='function')throw new TypeError('onObserverError must be a function');const s=objects.get(id),amount=positive(ml,'ml',true),wetMl=s.wetMl+amount,available=availableCoolingEnergy(s.temperature,ambient,s.heatCapacity),waterEnergy=cappedProduct(amount,2256);if(available.capped&&waterEnergy.capped)throw new RangeError('Water cooling energy exceeds the finite range');const energy=Math.min(available.value,waterEnergy.value),fullyCooled=available.value>0&&!available.capped&&waterEnergy.value>=available.value,temperature=fullyCooled?ambient:subtractHeatFromTemperature(s.temperature,energy,s.heatCapacity);if(!Number.isFinite(wetMl)||!Number.isFinite(energy)||!Number.isFinite(temperature))throw new RangeError('Water addition exceeds the finite thermal state range');s.wetMl=wetMl;s.temperature=temperature;if(energy)wakeAir(s.roomId);if(!eligible(s)||s.temperature<s.ignition)burn(s,false,onObserverError);notify('thermal:cooled',{id,ml:amount,joules:energy},onObserverError); },
     suppress(id,coverage=1) { const s=objects.get(id);s.blanket=clamp(finite(coverage),0,1);if(!eligible(s))burn(s,false); },
     arm(id,seconds) { const s=objects.get(id);if(!s.blast||s.blast.spent)return false;s.blast.armed=true;s.blast.clock=positive(seconds??s.blast.fuseSeconds,'seconds',true);notify('thermal:armed',{id,seconds:s.blast.clock});return true; },
     step(dt) {

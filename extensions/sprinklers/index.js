@@ -18,9 +18,12 @@ export function createSprinklerSystem({ supply, thermal, emit = () => {}, powere
   }
   function tick(dt) {
     let observerFailed = false, observerError;
+    const rememberError = error => {
+      if (!observerFailed) { observerFailed = true; observerError = error; }
+    };
     const publishTickEvent = (name, payload) => {
       try { emit(name, payload); }
-      catch (error) { if (!observerFailed) { observerFailed = true; observerError = error; } }
+      catch (error) { rememberError(error); }
     };
     const staged = [], groups = new Map(), requests = [];
     const objects = thermal.objects();
@@ -49,63 +52,77 @@ export function createSprinklerSystem({ supply, thermal, emit = () => {}, powere
     // invoked, consume the phase even when its result cannot be committed.
     const fraction=powerFraction===null?1:finite(powerFraction(requests,dt),'power fraction');
     if(fraction<0||fraction>1)throw new RangeError('Power fraction must be between zero and one');
-    for (const { head, temperature, triggered } of staged) {
-      head.temperature = temperature; head.triggered = triggered; head.flowMlPerSecond = 0;
-    }
-    for (const { head, newlyTriggered } of staged) {
-      if (newlyTriggered) publishTickEvent('sprinklers:triggered', { id: head.id });
-    }
-    for (const [tankId, entries] of groups) {
-      for(const entry of entries)entry.demand*=fraction;
-      const demand = entries.reduce((n, e) => n + e.demand, 0), out = supply.draw(tankId, demand);
-      for (const { head, nearby, demand: requested } of entries) {
-        const fraction = demand ? requested / demand : 0, ml = out.ml * fraction;
-        if (!ml) continue;
-        const components = Object.fromEntries(Object.entries(out.components).map(([kind, amount]) => [kind, amount * fraction]));
-        const waterMl = components.water ?? 0;
-        // Spray coverage is a gameplay effect, not a CFD/droplet collision model.
-        // Pools own their wetness through liquid:deposit below; cooling them here
-        // as well would apply one sprinkler dose twice.
-        const poolTargets = nearby.filter(target => target.id.startsWith('pool:'));
-        const nonPoolTargets = nearby.filter(target => !target.id.startsWith('pool:'));
-        for (const target of nonPoolTargets) if (waterMl) thermal.water(target.id, waterMl / Math.max(1, nearby.length));
-        head.deliveredMl += ml; head.flowMlPerSecond = ml / dt;
-        const event = { id: head.id, ml, components, sourceKey: `sprinkler:${head.id}`, roomId: head.roomId,
-          surfaceId: head.surfaceId, position: [head.position[0], head.floorY, head.position[2]], targets: nearby.map(s => s.id) };
-        publishTickEvent('sprinklers:spray', event);
-        // Pools in spray range receive an even share directly. This lets a
-        // sprinkler reach a burning puddle without requiring its floor impact
-        // point to fall inside the pool merge radius. Otherwise the spray forms
-        // the usual persistent puddle beneath the head.
-        if (poolTargets.length) {
-          const targetShare = 1 / Math.max(1, nearby.length);
-          for (const target of poolTargets) {
-            const share = Object.fromEntries(Object.entries(components).map(([kind, amount]) => [kind, amount * targetShare]));
-            const deposit = { ...event, id: target.id.slice('pool:'.length), ml: Object.values(share).reduce((sum, amount) => sum + amount, 0),
-              components: share, emitterId: head.id };
-            delete deposit.position;
-            delete deposit.surfaceId;
-            delete deposit.roomId;
-            delete deposit.targets;
-            publishTickEvent('liquid:deposit', deposit);
-          }
-          if (nonPoolTargets.length) {
-            const remainder = Object.fromEntries(Object.entries(components).map(([kind, amount]) => [kind, amount * nonPoolTargets.length * targetShare]));
-            const deposit = { ...event, ml: Object.values(remainder).reduce((sum, amount) => sum + amount, 0),
-              components: remainder, emitterId: head.id };
+    // Supply observers must see completed delivery receipts and effects. A
+    // callback failure after the draw must not interrupt a debited phase.
+    const batchable = typeof supply.beginBatch === 'function' && typeof supply.flush === 'function';
+    const supplyBatch = batchable ? supply.beginBatch() : null;
+    try {
+      for (const { head, temperature, triggered } of staged) {
+        head.temperature = temperature; head.triggered = triggered; head.flowMlPerSecond = 0;
+      }
+      for (const { head, newlyTriggered } of staged) {
+        if (newlyTriggered) publishTickEvent('sprinklers:triggered', { id: head.id });
+      }
+      for (const [tankId, entries] of groups) {
+        for(const entry of entries)entry.demand*=fraction;
+        const demand = entries.reduce((n, e) => n + e.demand, 0), out = supply.draw(tankId, demand);
+        for (const { head, nearby, demand: requested } of entries) {
+          const fraction = demand ? requested / demand : 0, ml = out.ml * fraction;
+          if (!ml) continue;
+          const components = Object.fromEntries(Object.entries(out.components).map(([kind, amount]) => [kind, amount * fraction]));
+          const waterMl = components.water ?? 0;
+          // Spray coverage is a gameplay effect, not a CFD/droplet collision model.
+          // Pools own their wetness through liquid:deposit below; cooling them here
+          // as well would apply one sprinkler dose twice.
+          const poolTargets = nearby.filter(target => target.id.startsWith('pool:'));
+          const nonPoolTargets = nearby.filter(target => !target.id.startsWith('pool:'));
+          for (const target of nonPoolTargets) if (waterMl) thermal.water(target.id, waterMl / Math.max(1, nearby.length), { onObserverError: rememberError });
+          head.deliveredMl += ml; head.flowMlPerSecond = ml / dt;
+          const event = { id: head.id, ml, components, sourceKey: `sprinkler:${head.id}`, roomId: head.roomId,
+            surfaceId: head.surfaceId, position: [head.position[0], head.floorY, head.position[2]], targets: nearby.map(s => s.id) };
+          publishTickEvent('sprinklers:spray', event);
+          // Pools in spray range receive an even share directly. This lets a
+          // sprinkler reach a burning puddle without requiring its floor impact
+          // point to fall inside the pool merge radius. Otherwise the spray forms
+          // the usual persistent puddle beneath the head.
+          if (poolTargets.length) {
+            const targetShare = 1 / Math.max(1, nearby.length);
+            for (const target of poolTargets) {
+              const share = Object.fromEntries(Object.entries(components).map(([kind, amount]) => [kind, amount * targetShare]));
+              const deposit = { ...event, id: target.id.slice('pool:'.length), ml: Object.values(share).reduce((sum, amount) => sum + amount, 0),
+                components: share, emitterId: head.id };
+              delete deposit.position;
+              delete deposit.surfaceId;
+              delete deposit.roomId;
+              delete deposit.targets;
+              publishTickEvent('liquid:deposit', deposit);
+            }
+            if (nonPoolTargets.length) {
+              const remainder = Object.fromEntries(Object.entries(components).map(([kind, amount]) => [kind, amount * nonPoolTargets.length * targetShare]));
+              const deposit = { ...event, ml: Object.values(remainder).reduce((sum, amount) => sum + amount, 0),
+                components: remainder, emitterId: head.id };
+              delete deposit.id;
+              publishTickEvent('liquid:deposit', deposit);
+            }
+          } else {
+            // `id` belongs to the sprinkler head; pools interpret `id` as an
+            // explicit pool record. Preserve emitter identity separately.
+            const deposit = { ...event, emitterId: head.id };
             delete deposit.id;
             publishTickEvent('liquid:deposit', deposit);
           }
-        } else {
-          // `id` belongs to the sprinkler head; pools interpret `id` as an
-          // explicit pool record. Preserve emitter identity separately.
-          const deposit = { ...event, emitterId: head.id };
-          delete deposit.id;
-          publishTickEvent('liquid:deposit', deposit);
         }
       }
+      for (const id of heads.entries.keys()) publishTickEvent('sprinklers:changed', api.state(id));
+    } catch (error) { rememberError(error); }
+    finally {
+      // Release the token even if processing an already drawn dose fails. The
+      // consumed simulation phase remains consumed by step().
+      if (batchable) {
+        try { supply.flush(supplyBatch); }
+        catch (error) { rememberError(error); }
+      }
     }
-    for (const id of heads.entries.keys()) publishTickEvent('sprinklers:changed', api.state(id));
     // Finish every event/deposit in the tick before surfacing an observer fault;
     // callers can safely checkpoint afterward without capturing a half-tick.
     if (observerFailed) throw observerError;

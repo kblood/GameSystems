@@ -61,7 +61,7 @@ før solve- eller energikvitteringsfejlen kastes videre; ingen løst last får g
 
 Checkpoint bevarer komponentparametre, afbrydere, sprunget sikring og batteriernes endelige energi/ledger.
 Topologi og ledger valideres før live net erstattes. Commit beregner voltages stille før observers kører.
-De eksisterende autonome Wh-stores i `electricity/storage.js` kan fortsat bruges, når et helt net ikke behøves.
+De eksisterende autonome Wh-stores i `electricity/storage.js` kan fortsat bruges, når et helt net ikke behøves. `createEnergyStore` tilbyder også valgfri nested `beginBatch()` / `flush(token)`-notifikationer. Bilen bruger dem omkring start og hvert `step`, så synkrone batteri- og brændstof-observers først ser den færdige ressource- og bevægelsesbogføring. Observerfejl rapporteres efter step-batchen, og andre biler i samme batch færdiggøres.
 Bilen er testet med `batteryAdapter`: starter og netbelastning debiterer samme batteri, og tomt batteri hindrer start.
 
 `webxr-demo/security.html` har et synligt skab med åbnelig låge, batteri, afbryder, sikring og kabler.

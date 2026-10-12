@@ -10,6 +10,12 @@ The component does not own inventory, scene nodes, collision queries, audio,
 haptics, or a bag model. Pair it with `gs_gear_inventory` for item ownership and
 let the game decide when to query visibility or play feedback.
 
+`GSBackpackInteraction` composes this policy with the scene adapter's gated
+`request_retrieve()` API. By default, the `back` slot requires the deliberate
+approach; other slots use the adapter's normal tracking, reach and occlusion
+checks. The bridge never changes ownership or reparents an item itself, so it
+can be used with the same gear inventory as holsters and tool belts.
+
 ```gdscript
 var approach := GSBackpackApproach.new()
 approach.observe("right", tracked, backpack_local_hand, shoulder_y, delta)
@@ -21,4 +27,5 @@ if result.allowed:
 
 Reset a side on tracking loss, hand ownership changes, teleport, or pack reset.
 The tests cover both mirrored hands, tracking loss, jumps, hitches, expiry and
-body-crossing rejection.
+body-crossing rejection. `gs_backpack_interaction_tests.gd` verifies the
+composition and confirms rejected reaches never call the host adapter.

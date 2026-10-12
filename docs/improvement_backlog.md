@@ -934,3 +934,24 @@ hvis en lille deterministisk slotmodel giver samme spiloplevelse. Verificér con
 syntetiske XR-flow samt persistence; markér headsetkomfort og frame pacing som uafprøvet,
 indtil det er målt på hardware. Fortsæt med at finde og løse næste forbedring, når hvert
 backpack-delmål er reviewet og består relevante tests.
+
+Første genbrugelige delmål er på plads: `gs_backpack` har nu en lille
+`GSBackpackInteraction`-bro, som kobler den kontinuerlige over-skulderkontrol til
+gear-inventory-adapterens almindelige retrieve-gate. Broen ejer hverken scene,
+fysik eller inventar; forkert bane og tracking-tab afvises før adapterkald.
+Næste backpack-opgave er at koble den sammen med NightfallContracts-riggens rigtige
+input-/slot-flow og gennemgå bevægelig kropsramme, controller plus håndtracking,
+lyd/haptik samt restore i selve spillet. Headsetkomfort og frame pacing kræver
+fortsat fysisk Steam Frame-test.
+
+## Afsluttet væske-/batteri-observerfejl-runde
+
+Sprinkleren færdiggør nu spraydosis, alle targets/heads og supply-notifikationer,
+hvis en `thermal:cooled` eller `thermal:extinguished` observer kaster; første
+observerfejl rejses efter fixed-tick-bogføringen. Bilen batcher valgfri batteri- og
+brændstofnotifikationer gennem start og step, så energi-/brændstofregnskab, bevægelse
+og senere biler er konsistente før observerfejlen kastes. Sol-review uden blocker.
+
+Verifikation: **548/548** samlet Node-suite, **75/75** fokuserede strøm-/væske-/biltests,
+**52/52** thermal/firetests, Vite-build samt `git diff --check` består. Browser-buildens
+eksisterende advarsler om bundlestørrelse og tredjeparts worker-import er uændrede.

@@ -1,9 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createElectricitySystem } from '../../extensions/electricity/index.js';
+import { createEnergyStore } from '../../extensions/electricity/storage.js';
 import { createVehicleSystem } from '../../extensions/vehicle/index.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 function circuit(energyWh=1){const s=createElectricitySystem();s.add('battery',{kind:'battery',a:'p',b:'g',voltage:12,resistance:1,capacityWh:1,energyWh});s.add('load',{a:'p',b:'g',resistance:11});return s;}
+test('standalone battery batches coalesce nested and reentrant notifications',()=>{
+  const notifications=[];
+  const battery=createEnergyStore({capacityWh:10,energyWh:4,emit:(name,state)=>notifications.push([name,state])});
+  const outer=battery.beginBatch(),inner=battery.beginBatch();
+  battery.draw(1);battery.charge(.5);
+  assert.equal(battery.flush(outer),true);assert.equal(notifications.length,0,'the inner token keeps updates deferred');
+  assert.equal(battery.flush(inner),true);assert.equal(notifications.length,1,'the nested updates publish once');
+  assert.equal(notifications[0][0],'electricity:battery');near(notifications[0][1].energyWh,3.5);
+
+  const reentrant=[];let store,opened=false,armed=false;
+  store=createEnergyStore({capacityWh:10,energyWh:10,emit:(_name,state)=>{
+    reentrant.push(state.energyWh);
+    if(armed&&!opened){opened=true;const token=store.beginBatch();store.draw(1);store.flush(token);}
+  }});
+  const token=store.beginBatch();store.draw(1);armed=true;store.flush(token);
+  assert.deepEqual(reentrant,[9,8],'the outer flush drains the observer-created update exactly once');
+});
 test('finite battery powers resistive loads with internal voltage drop and energy conservation',()=>{
   const s=circuit();s.evaluate();near(s.state('load').current,1);near(s.state('load').power,11);near(s.state('battery').volts,11);
   const step=s.step(1);near(step.energyJ.load,11);near(step.energyJ.battery,-11);near(s.state('battery').suppliedWh,12/3600);

@@ -41,13 +41,18 @@ export function createSupplySystem({ emit = () => {}, quality = 'high' } = {}) {
       live(); if (!token || !batchTokens.delete(token)) return false;
       if (batchTokens.size || publishing) return true;
       publishing = true;
+      let failed = false, firstError;
       try {
         while (batchTokens.size === 0 && pendingNotifications.size) {
           const id = pendingNotifications.values().next().value;
           pendingNotifications.delete(id);
-          if (tanks.entries.has(id)) publish(id);
+          if (tanks.entries.has(id)) {
+            try { publish(id); }
+            catch (error) { if (!failed) { failed = true; firstError = error; } }
+          }
         }
       } finally { publishing = false; }
+      if (failed) throw firstError;
       return true;
     },
     add(id, { capacityMl = 10000, components = {} } = {}) {

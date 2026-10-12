@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createVehicleSystem,createFuelStore,createBatteryStore} from '../../extensions/vehicle/index.js';
+import {createEnergyStore} from '../../extensions/electricity/storage.js';
 const near=(a,b,tolerance=1e-7)=>assert.ok(Math.abs(a-b)<tolerance,`${a} != ${b}`);
 function car(){const s=createVehicleSystem();s.add('c',{resourceModes:{fuel:'disabled',power:'disabled'}});s.start('c');s.setControls('c',{throttle:.8,steer:.3,handbrake:false});return s;}
 test('engaging lock freezes an existing panel animation and unlock resumes its target',()=>{
@@ -40,6 +41,39 @@ test('step observer failures finish powered motion and later vehicles before ret
 });
 test('power exhaustion limits torque and fuel to the powered portion of an interval',()=>{
   const s=createVehicleSystem();s.add('c',{alternatorW:0,power:createBatteryStore({energyWh:.351})});s.start('c');s.setControls('c',{throttle:1,handbrake:false});s.step(1);assert.equal(s.state('c').lastStop,'power-loss');near(s.state('c').consumedL,(.00022+.0022*.25)*(.001*3600/88));assert.ok(s.state('c').speed<.2);assert.equal(s.state('c').electrics,false);
+});
+
+test('battery observer failures finish runtime accounting, motion and later vehicles',()=>{
+  for(const alternatorW of [0,700]){
+    const failure=new Error('runtime battery observer failed');let armed=false,observed;
+    function setup(emit){
+      const power=createEnergyStore({energyWh:100,emit}),s=createVehicleSystem();
+      s.add('car',{power,idleLps:1,alternatorW});s.add('later');
+      for(const id of ['car','later']){s.start(id);s.setControls(id,{throttle:1,handbrake:false});}
+      return {s,power};
+    }
+    const affected=setup(()=>{if(armed){observed=affected.s.state('car');throw failure;}}),clean=setup(()=>{});
+    armed=true;
+    assert.throws(()=>affected.s.step(1),error=>error===failure);clean.s.step(1);
+    for(const id of ['car','later'])assert.deepEqual(affected.s.state(id),clean.s.state(id));
+    assert.deepEqual(affected.power.capture(),clean.power.capture());
+    assert.deepEqual(observed,clean.s.state('car'));
+    armed=false;affected.s.step(.25);clean.s.step(.25);
+    for(const id of ['car','later'])assert.deepEqual(affected.s.state(id),clean.s.state(id));
+  }
+});
+
+test('runtime closes the battery batch after an earlier vehicle observer failure',()=>{
+  const firstError=new Error('part observer failed'),batteryError=new Error('battery observer failed');
+  let armed=false,batteryNotifications=0;
+  const power=createEnergyStore({emit(){if(armed){batteryNotifications++;throw batteryError;}}});
+  const s=createVehicleSystem({emit(event){if(event==='vehicle:part')throw firstError;}});
+  s.add('car',{power,alternatorW:0});s.add('later');s.start('car');s.setPart('car','hood',1);
+  armed=true;
+  assert.throws(()=>s.step(.25),error=>error===firstError);
+  assert.equal(batteryNotifications,1);near(s.state('car').drawnWh,.35+88*.25/3600);
+  near(s.state('later').drawnWh,3*.25/3600);
+  assert.throws(()=>power.draw(1),error=>error===batteryError);assert.equal(batteryNotifications,2);
 });
 test('large parked intervals preserve whole resource accounting and invalid huge time is atomic',()=>{
   const s=createVehicleSystem();s.add('c');s.setLights('c',true);s.step(3600);near(s.state('c').power.energyWh,442);near(s.state('c').distanceM,0);const saved=s.capture();assert.throws(()=>s.step(86401));assert.deepEqual(s.capture(),saved);

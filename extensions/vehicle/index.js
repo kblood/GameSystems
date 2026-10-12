@@ -140,17 +140,34 @@ export function createVehicleSystem({ emit = () => {}, quality = 'high' } = {}) 
         if (f.kind && f.kind !== s.fuelKind) return { started: false, reason: 'wrong-fuel' };
         if (!(f.amountL > 0)) return { started: false, reason: 'fuel-empty' };
       }
-      if (s.modes.power === 'adapter') {
-        const p = s.power.state();
+      const power = s.power, usesPower = s.modes.power === 'adapter';
+      if (usesPower) {
+        const p = power.state();
         if (p.enabled === false || p.voltage < 10.8 || p.energyWh < s.starterWh) return { started: false, reason: 'battery-flat' };
-        const drawn = transfer(s.power, 'draw', s.starterWh); s.drawnWh += drawn;
-        if (drawn < s.starterWh - 1e-8) {
-          const refunded = transfer(s.power, 'charge', drawn); s.drawnWh -= refunded;
-          if (refunded < drawn - 1e-10) throw new Error('Power adapter violated its reversible transfer contract');
-          return { started: false, reason: 'starter-power' };
-        }
       }
-      s.running = true; s.lastStop = null; s.rpm = 800; emit('vehicle:started', { id }); return { started: true };
+      const batchable = usesPower && typeof power.beginBatch === 'function' && typeof power.flush === 'function';
+      const batchToken = batchable ? power.beginBatch() : undefined;
+      let result, firstError, failed = false;
+      const rememberError = error => { if (!failed) { firstError = error; failed = true; } };
+      try {
+        if (usesPower) {
+          const drawn = transfer(power, 'draw', s.starterWh); s.drawnWh += drawn;
+          if (drawn < s.starterWh - 1e-8) {
+            const refunded = transfer(power, 'charge', drawn); s.drawnWh -= refunded;
+            if (refunded < drawn - 1e-10) throw new Error('Power adapter violated its reversible transfer contract');
+            result = { started: false, reason: 'starter-power' };
+          }
+        }
+        if (!result) {
+          s.running = true; s.lastStop = null; s.rpm = 800;
+          result = { started: true }; emit('vehicle:started', { id });
+        }
+      } catch (error) { rememberError(error); }
+      finally {
+        if (batchable) { try { power.flush(batchToken); } catch (error) { rememberError(error); } }
+      }
+      if (failed) throw firstError;
+      return result;
     },
     stop(id, reason = 'ignition') { alive(); stopVehicle(store.get(id),reason); },
     setLights(id, value) { alive(); store.get(id).lights = !!value; },
@@ -171,11 +188,16 @@ export function createVehicleSystem({ emit = () => {}, quality = 'high' } = {}) 
     },
     step(dt) {
       alive();if(stepping)throw new Error('Vehicle step is reentrant');positive(dt, 'dt', true);if(dt>86400)throw new RangeError('Vehicle update exceeds one-day catch-up budget'); if (!dt) return;
-      stepping=true;let observerError,observerFailed=false;const report=(event,data)=>{try{emit(event,data);}catch(error){if(!observerFailed){observerError=error;observerFailed=true;}}};
+      stepping=true;let observerError,observerFailed=false;
+      const rememberObserverError=error=>{if(!observerFailed){observerError=error;observerFailed=true;}};
+      const report=(event,data)=>{try{emit(event,data);}catch(error){rememberObserverError(error);}};
       try{
       // Resources use the whole elapsed interval. Motion is a lightweight bicycle model, not a collision solver.
       for (const s of store.entries.values()) {
         const initialSpeed=s.speed;
+        const power=s.power,powerBatch=s.modes.power==='adapter'&&typeof power.beginBatch==='function'&&typeof power.flush==='function';
+        const powerBatchToken=powerBatch?power.beginBatch():undefined;
+        try {
         const c = s.controls,wasRunning=s.running,idleW=3+(s.lights?95:0),runningW=idleW+85;
         const rate=s.idleLps+s.driveLps*c.throttle*(.25+Math.min(Math.abs(s.speed)/22,1));let runningTime=wasRunning?dt:0,fuelLimit=Infinity,powerLimit=Infinity,stopReason=null;
         if (s.running && s.modes.fuel === 'adapter') {
@@ -183,32 +205,33 @@ export function createVehicleSystem({ emit = () => {}, quality = 'high' } = {}) 
           if(f.kind&&f.kind!==s.fuelKind){runningTime=0;stopReason='wrong-fuel';}else{fuelLimit=f.amountL>0?(rate>0?f.amountL/rate:Infinity):0;runningTime=Math.min(runningTime,fuelLimit);}
         }
         const deficit=Math.max(0,runningW-s.alternatorW);
-        if(wasRunning&&s.modes.power==='adapter'&&deficit>0){const p=s.power.state();powerLimit=p.enabled===false?0:p.energyWh*3600/deficit;runningTime=Math.min(runningTime,powerLimit);}
+        if(wasRunning&&s.modes.power==='adapter'&&deficit>0){const p=power.state();powerLimit=p.enabled===false?0:p.energyWh*3600/deficit;runningTime=Math.min(runningTime,powerLimit);}
         let fuelUsed=0;
         const fuelBatch=wasRunning&&s.modes.fuel==='adapter';
         const fuelBatchToken=fuelBatch?s.fuel.beginBatch?.():undefined;
         try {
           if(fuelBatch){const need=rate*runningTime;fuelUsed=transfer(s.fuel,'consume',need);s.consumedL+=fuelUsed;if(rate>0&&fuelUsed<need-1e-10){runningTime=fuelUsed/rate;fuelLimit=runningTime;}}
           if(s.modes.power==='adapter'){
-            const needWh=(deficit*runningTime+idleW*(dt-runningTime))/3600,drawn=transfer(s.power,'draw',needWh);s.drawnWh+=drawn;
+            const needWh=(deficit*runningTime+idleW*(dt-runningTime))/3600,drawn=transfer(power,'draw',needWh);s.drawnWh+=drawn;
             if(deficit>0&&drawn*3600+1e-8<deficit*runningTime){runningTime=drawn*3600/deficit;powerLimit=runningTime;}
           }
           // A power adapter can return less than its advertised reserve after fuel was consumed. Return the fuel for
           // the engine interval that could not run; both built-in and public fuel adapters expose this inverse sink.
           if(rate>0&&fuelUsed>rate*runningTime+1e-10){const excess=fuelUsed-rate*runningTime,refunded=transfer(s.fuel,'refill',excess,s.fuelKind);fuelUsed-=refunded;s.consumedL-=refunded;
             if(refunded<excess-1e-10)throw new Error('Fuel adapter violated its reversible transfer contract');}
-        } finally { if(fuelBatchToken!==undefined)s.fuel.flush?.(fuelBatchToken); }
+        } finally { if(fuelBatchToken!==undefined){try{s.fuel.flush?.(fuelBatchToken);}catch(error){rememberObserverError(error);}} }
         if(s.modes.power==='adapter'){
-          const p=s.power.state();if(p.enabled!==false){const charge=transfer(s.power,'charge',Math.max(0,s.alternatorW-runningW)*runningTime/3600);s.chargedWh+=charge;}
+          const p=power.state();if(p.enabled!==false){const charge=transfer(power,'charge',Math.max(0,s.alternatorW-runningW)*runningTime/3600);s.chargedWh+=charge;}
         }
         if(wasRunning&&(runningTime<dt-1e-10||fuelLimit<=dt||powerLimit<=dt)){stopReason=stopReason??(powerLimit<fuelLimit?'power-loss':'fuel-empty');stopVehicle(s,stopReason,report);}
-        const endPower=s.power.state();s.electrics=s.modes.power==='disabled'||(s.running&&s.alternatorW>=runningW)||(endPower.enabled!==false&&endPower.energyWh>1e-10);
+        const endPower=power.state();s.electrics=s.modes.power==='disabled'||(s.running&&s.alternatorW>=runningW)||(endPower.enabled!==false&&endPower.energyWh>1e-10);
         move(s,runningTime,6200/s.massKg*c.throttle*c.gear);move(s,dt-runningTime,0);
         for(const[name,p]of Object.entries(s.parts)){
           if(p.locked||(Math.max(Math.abs(initialSpeed),Math.abs(s.speed))>.5&&p.target>p.fraction))continue;
           const before=p.fraction;p.fraction+=clamp(p.target-p.fraction,-dt*1.4,dt*1.4);if(p.fraction!==before)report('vehicle:part',{id:s.id,part:name,fraction:p.fraction});
         }
         s.rpm = s.running ? Math.min(6500, 800 + Math.abs(s.speed) * 105 + c.throttle * 1400) : 0;
+        } finally { if(powerBatch){try{power.flush(powerBatchToken);}catch(error){rememberObserverError(error);}} }
       }
       }finally{stepping=false;}
       if(observerFailed)throw observerError;

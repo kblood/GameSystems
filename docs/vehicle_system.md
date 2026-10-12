@@ -106,7 +106,7 @@ The supply adapter converts L to mL and consumes only the specified fuel compone
 
 Disabling the battery itself (`setEnabled(false)`, or `set_enabled(false)` in Godot) rejects both draw and charge, including manual and alternator charge, without changing its energy or capacity. Shared electricity stores and network battery adapters follow the same rule; their charge/supply ledgers also remain unchanged. Re-enabling the battery restores transfers from the preserved state. This differs from disabling a vehicle's power requirement: a disabled battery cannot satisfy the normal starter gate.
 
-During `step`, vehicle event callback errors are saved while all vehicles finish resource and motion updates; the first error is rethrown after the batch and the reentrancy guard is cleared. Direct `stop()` calls keep their normal synchronous notification behavior.
+During `step`, vehicle, built-in battery and batched fuel observer errors are saved while all vehicles finish resource and motion updates; the first error is rethrown after the batch and the reentrancy guard is cleared. Battery observers see the completed engine/resource state, not a partially applied draw. Adapters without optional batching keep their synchronous behavior. Direct `stop()` calls keep their normal synchronous notification behavior.
 
 ## Rendering and physical parts
 
