@@ -32,6 +32,36 @@ response headers or its documented PWA service-worker workaround; basic WebXR al
 not require it. See the Web export guide's [thread and extension support](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#thread-and-extension-support)
 and [serving the files](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#serving-the-files) sections.
 
+Also connect `reference_space_reset` and `visibility_state_changed`. A reference-space
+reset means the browser or device changed/reconfigured the tracking origin; it may happen
+after recentering or a play-area change, and the runtime is not required to emit it for
+every such change. Treat the first pose after a reset as a new tracking epoch: invalidate
+pose-derived velocities, throw/melee sweeps and stale input edges, then recalibrate the
+tracking-to-world mapping from fresh valid poses. Apply that mapping to the avatar, both
+hands and held-object attachment frames as one transaction. Preserve held-item ownership
+and its grip-relative pose unless the interaction contract explicitly calls for release;
+never compute a velocity or collision sweep across the discontinuity. Godot exposes the
+reset signal without a transform argument, so the adapter must establish its continuity
+policy from tracked poses rather than expecting a reset delta.
+
+`visibility_state_changed` reports the current `visibility_state` (`hidden`, `visible` or
+`visible-blurred`). On hidden or blurred states, suspend gameplay input and time-based
+actions such as firing, charging, locomotion and melee windows; do not accumulate elapsed
+time or input edges to replay when visibility returns. Keep authoritative ownership and
+inventory state intact. On return to `visible`, refresh valid head/hand poses, clear
+motion history, and require neutral input followed by a fresh press before resuming
+gameplay. Whether a runtime emits each visibility transition varies, so treat this as a
+capability to observe and test, not a guaranteed pause callback. Godot documents both
+signals and the visibility states in the
+[WebXRInterface API](https://docs.godotengine.org/en/4.7/classes/class_webxrinterface.html#signals).
+
+Add a device acceptance pass that recenters while holding a prop and another that hides
+and restores the session. Verify no visible pose jump, held-item detachment, phantom throw,
+melee hit, repeated shot or locomotion burst occurs. Record whether the browser/device
+actually emitted each signal; a manual recenter that produces no reset signal is a
+separate runtime limitation to handle with pose-discontinuity detection. See the
+[avatar calibration contract](controls.md#avatar-scale-and-calibration).
+
 Godot 4.7's XR action map is currently part of its OpenXR module, so do not assume that
 OpenXR bindings automatically cover a Godot WebXR export. Verify its input path on the
 exact Godot release and target browser.
