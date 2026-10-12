@@ -3,6 +3,16 @@
 Mål oprettet 2026-10-10: find, løs og verificér konkrete forbedringer. Når aktive opgaver er løst,
 fortsættes med nye fund i brandsystemet eller de øvrige systemer. En tom opgaveliste afslutter ikke målet.
 
+## Afsluttet gs_bottles pour-quality-runde — 2026-10-12
+
+Pour-strålen følger nu flaskens aktive distance-LOD og per-pour quality ceiling. De fire
+kvaliteter bruger cachede rør med 440/252/126/50 vertices. Landingsstænk bærer faktisk væske,
+så deres kadence er ens for alle visuelle tiers; en manager-volumentest dækker dette. Alle kvaliteter
+bevarer samme væskedræning, per-tick-parcel, receiver-hit og puddle-regnskab.
+
+Verifikation: addon-kontrakt **29/29**, Nightfall `game-systems` **26/26**, fuld GameSystems
+Node-suite **559/559**, produktionsbuild består. Godot-headset-frame-time er ikke målt.
+
 ## Afsluttet GearInventory root-rebind-runde — 2026-10-12
 
 Scene-adapteren afviser nu skift af owner-root, mens inventory-ledgeren stadig har
@@ -364,7 +374,7 @@ Nightfall-kopiens manifest stemmer. Review-hærdning tilføjede også synkron `f
 foruden `queue_free()`.
 
 Verifikation: GameSystems ledger **57/57**, scene adapter 65/65, alle fem GameSystems Godot-addon-suiter
-**212 checks samlet**, addon sync-check og Nightfall adapter-kontrakten 65/65 består på Godot 4.7.2.
+**213 checks samlet**, addon sync-check og Nightfall adapter-kontrakten 65/65 består på Godot 4.7.2.
 Den afsluttende source-ledger-runde dækker også `equipped`-ejeren for våben ved transfer, checkpoint
 restore og reset; den samlede kildepakke er staged til review, endnu ikke committed.
 Kørsel af Nightfall headless-testen kræver `--xr-mode off`; almindelig fallback uden headset gav ikke

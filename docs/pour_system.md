@@ -37,8 +37,11 @@ capped and at rest: 0 (verified: 3 resting containers, 0 pour nodes processing).
 sum, one ray per parcel (~ 15-30 parcels for a 0.3 s flight) and one receivers scan per tick.
 
 ## Tiers
-Only HIGH is implemented. `quality` is stored (BottleBinding sets it); `_stream_mode()` is the single hook where MEDIUM
-(fewer rings / no splash), LOW (puddle only, no tube) would branch.
+`quality` (3 high .. 0 minimal) is a per-pour ceiling. The active stream uses the lower of that value and the
+liquid shader's current distance tier. Cached tube meshes use 10×40, 8×28, 6×18 and 4×10 ring/side profiles;
+all tiers retain the parabolic tube, exact per-tick parcel volume, receiver hits and puddle accounting. The
+volume-carrying landing splash cadence stays constant across tiers so visual LOD cannot change where liquid ends up.
+Quality changes tube geometry while preserving liquid transfer and puddle volume.
 
 ## Tests
 `tests/pour_proj/pour_test.gd` (`-- --numeric` headless, `-- --shots <dir>` windowed). Results 2026-10-04: all 10 checks

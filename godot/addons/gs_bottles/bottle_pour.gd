@@ -9,13 +9,16 @@ extends Node
 ##    (receive(): fill rises, empty receiver adopts the colour, overflow leaves over its own rim as parcels), or on the world
 ##    (puddle + splash droplets through GSBottleBreakManager). The visible stream is one tube mesh bent in the vertex shader.
 ##  - Cost: physics_process only while pouring, parcels in flight, or the body is awake. Sleeping / capped: 0.
-## Tiers: only HIGH is built (quality is stored; _stream_mode() is the hook for cheaper tiers later).
+## Quality keeps liquid accounting/trajectory identical while reducing stream tube tessellation.
 
 signal poured_into(receiver: Node3D, ml: float)
 signal stream_started
 signal stream_stopped
 
 const GRAV := 9.81
+const MINIMAL := 0
+const LOW := 1
+const MEDIUM := 2
 const HIGH := 3
 
 static var registry: Array[GSBottlePour] = []     ## every live pour node (receiver candidates)
@@ -29,7 +32,7 @@ static var world_lost_ml := 0.0                 ## parcels that flew past max_fl
 @export var max_flight := 1.6                   ## s; parcels older than this are dropped (counted in world_lost_ml)
 @export_flags_3d_physics var ray_mask := 1 | 2 | 8
 @export var can_receive := true
-@export var quality := HIGH                     ## only HIGH implemented
+@export_range(MINIMAL, HIGH, 1) var quality := HIGH
 
 var body: RigidBody3D
 var pouring := false
@@ -65,6 +68,10 @@ var _stream: MeshInstance3D
 var _smat: ShaderMaterial
 static var _shader: Shader
 static var _tube: ArrayMesh
+static var _tube_medium: ArrayMesh
+static var _tube_low: ArrayMesh
+static var _tube_minimal: ArrayMesh
+var _stream_quality := -1
 
 
 func _enter_tree() -> void:
@@ -135,9 +142,34 @@ func in_flight_ml() -> float:
 	return s + _overflow_ml
 
 
-## Stream mode by tier. Only HIGH (tube + parcels + splash) exists; lower tiers would branch here (see docs/pour_system.md).
+## Bottle-liquid quality is a per-container ceiling (0 minimal .. 3 high).
 func _stream_mode() -> int:
-	return HIGH
+	var mode := clampi(quality, MINIMAL, HIGH)
+	if is_instance_valid(_ctl):
+		var liquid_tier := _ctl.current_tier()
+		mode = mini(mode, clampi(liquid_tier if liquid_tier >= MINIMAL else _ctl.quality, MINIMAL, HIGH))
+	return mode
+
+
+static func _splash_interval(_mode: int) -> int:
+	# Splash beads carry real liquid volume, so their cadence must not vary with visual LOD.
+	return 3
+
+
+static func _stream_mesh_for_quality(mode: int) -> ArrayMesh:
+	match clampi(mode, MINIMAL, HIGH):
+		HIGH:
+			if _tube == null: _tube = _build_tube(10, 40)
+			return _tube
+		MEDIUM:
+			if _tube_medium == null: _tube_medium = _build_tube(8, 28)
+			return _tube_medium
+		LOW:
+			if _tube_low == null: _tube_low = _build_tube(6, 18)
+			return _tube_low
+		_:
+			if _tube_minimal == null: _tube_minimal = _build_tube(4, 10)
+			return _tube_minimal
 
 
 func _physics_process(dt: float) -> void:
@@ -343,7 +375,8 @@ func _land(pos: Vector3, n: Vector3, ml: float, col: Color, space: PhysicsDirect
 	var sml := 0.0
 	# splash beads: never fatter than the stream tube at the landing point (a bead bigger than the tube reads as a row of balls),
 	# none when the stream lands right next to the mouth (age < 0.08 s: it hit the container's surroundings, not a free fall)
-	if _splash_k % 3 == 0 and ml > 0.3 and age > 0.08:
+	var splash_interval := _splash_interval(_stream_mode())
+	if splash_interval > 0 and _splash_k % splash_interval == 0 and ml > 0.3 and age > 0.08:
 		var rd := maxf(0.6 * stream_radius_at(age), 0.0025)
 		var each := minf(ml * 0.1, rd * rd * rd * 4.18879e6)
 		sml = each * 2.0
@@ -424,8 +457,7 @@ func _stream_r_max() -> float:
 
 
 func _update_stream(flowed: float, dt: float) -> void:
-	if _stream_mode() != HIGH:
-		return
+	var mode := _stream_mode()
 	if flowed <= 0.0:
 		if _stop_t < 0.0 or _stream == null or not _stream.visible:
 			return
@@ -435,7 +467,10 @@ func _update_stream(flowed: float, dt: float) -> void:
 			_q_vis = 0.0
 			return
 	if _stream == null:
-		_make_stream()
+		_make_stream(mode)
+	elif mode != _stream_quality:
+		_stream.mesh = _stream_mesh_for_quality(mode)
+		_stream_quality = mode
 	_stream.visible = true
 	_glug_t += dt
 	var pulse := 1.0
@@ -457,16 +492,16 @@ func _update_stream(flowed: float, dt: float) -> void:
 	_smat.set_shader_parameter("color", _ctl.liquid_color())
 
 
-func _make_stream() -> void:
+func _make_stream(mode: int) -> void:
 	if _shader == null:
 		_shader = Shader.new()
 		_shader.code = STREAM_SHADER
-		_tube = _build_tube(10, 40)
 	_smat = ShaderMaterial.new()
 	_smat.shader = _shader
 	_stream = MeshInstance3D.new()
 	_stream.name = "PourStream"
-	_stream.mesh = _tube
+	_stream.mesh = _stream_mesh_for_quality(mode)
+	_stream_quality = mode
 	_stream.material_override = _smat
 	_stream.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_stream.top_level = true

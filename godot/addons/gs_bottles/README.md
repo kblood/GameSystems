@@ -17,10 +17,13 @@ or liquid definitions in this addon.
 
 The scripts are initially extracted from `gameplay/godot` and `shaders/godot`.
 This is the portable core boundary; Nightfall-specific grab behavior, mission
-ownership, asset paths, and quality selection stay in its adapter. Bottle breaking
-uses Godot rigid bodies and deferred contact processing directly; a second physics
-implementation would duplicate engine collision handling. `GSHost` extension,
-quality, and `broken`-event integration remain follow-up work.
+ownership, and asset paths stay in its adapter. Pour streams follow the liquid's
+current distance tier and keep a per-pour quality ceiling; lower tiers use cached,
+smaller tube meshes. Volume-carrying landing splashes keep the same cadence at every
+visual tier so puddle accounting stays invariant. Bottle breaking uses Godot rigid bodies and deferred contact processing
+directly; a second physics implementation would duplicate engine collision handling.
+`GSHost` owns the scene-scoped manager, applies quality tiers, and forwards the
+`broken` event.
 
 The `shaders/` directory must remain adjacent to these scripts. This addon does
 not include the bench harness, which is a source-project tool rather than a

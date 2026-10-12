@@ -1,6 +1,6 @@
 # Plan: Godot-versionen af Contracts på de fælles extensions
 
-## Current verified state — 2026-10-11
+## Current verified state — 2026-10-12
 
 This status supersedes older worktree/branch references and the historical table below.
 `gs_host` was merged into `GameSystems/main` in commit `5234a29`; the reusable gear ledger
@@ -10,17 +10,17 @@ consumption/unregistration and scene-exit cleanup; these source changes are stag
 but not yet committed. Ledger tests cover the `equipped` weapon owner through transfer,
 checkpoint restore and reset. Their independent source tests pass 57/57 and 65/65, and
 the source addon sync check against NightfallContractsGodot passes. The five current
-Godot addon contract scripts pass 212 checks total on Godot 4.7.2.
+Godot addon contract scripts pass 213 checks total on Godot 4.7.2.
 
-The next port-plan step remains `gs_bottles`; its portable scripts and shaders are now
-extracted as a source addon and synced to Nightfall, but adapter/quality wiring and full
-game integration remain open. Resource adapters and the weapon catalog are parallel additions, not
-evidence that the bottle port is complete. The primary Godot game, GameSystems source,
+`gs_bottles` has been ported as a source addon and synced to Nightfall with its adapter,
+quality and `broken`-event integration. Current work extends its per-pour quality tiers.
+Resource adapters and the weapon catalog are parallel additions, not evidence that the
+remaining extension ports are complete. The primary Godot game, GameSystems source,
 and WebXR game each track their own `main`; old duplicate Godot branches were verified
 as ancestors of kblood's Godot `main` and cleaned up. See
 [`improvement_backlog.md`](improvement_backlog.md) for the current per-task record.
 
-Status (2026-10-11): **G0 afklaret, G1 implementeret og versioneret** (se [G1-resultat](#g1-resultat-2026-10-11)); `gs_bottles` er fortsat næste planlagte porttrin.
+Status (2026-10-12): **G0 afklaret, G1 og G2 implementeret og versioneret**; næste planlagte porttrin er G3 (fælles grebs-/skeletdata).
 Status (2026-10-10): undersøgelse, ingen kode ændret i `NightfallContractsGodot*` eller i `GameSystems/extensions`. Relateret: [extensions_plan.md](extensions_plan.md) (trin 1–9), [grab_findings.md](grab_findings.md).
 
 > **Ufuldstændig kortlægning.** Denne version blev skrevet, før de to baggrunds-kortlægninger var færdige: (1) Godot-koden pr.
@@ -179,7 +179,7 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 |---|---|---|---|
 | G0 | Afklaring | Brugerens svar på spørgsmålene nedenfor. Ret kortlægningen i denne fil (fingerkonvention, worktree-status, `-blood`/`-npcai`). Vælg hvilke `r2-*`/`pkg-*` der merges først | beslutninger skrevet her |
 | G1 (færdig 2026-10-11) | `gs_host` + sync | `GameSystems/godot/addons/gs_host`, sync-script med `SOURCE.json` + `--check` (genbrug formatet fra `addons/game_systems`), `tier_for`-golden. Contracts-Godot får en `GSHost` i missionsscenen og sender core-events | headless-test: load/fejlisolering/tiers; `run_native_suite.py` grøn |
-| G2 | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`; sceneejet manager, asset-/quality-options, stabil API og `broken`-event i `GSHost` | Nightfall-adapter bruger den synkede addon; legacy-flaskekopi fjernet; bottle- og `--only game-systems`-suiter grønne |
+| G2 (færdig 2026-10-12) | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`; sceneejet manager, asset-/quality-options, stabil API og `broken`-event i `GSHost` | Nightfall-adapter bruger den synkede addon; legacy-flaskekopi fjernet; bottle- og `--only game-systems`-suiter grønne |
 | G3 | Data ud af JS | `extensions/grasp/data/*.json` + `humanoid` bone maps som JSON. JS læser dem (efter trin 5) | JS-tests uændret grønne; golden-generator findes |
 | G4 | `gs_grasp` kerne | Port: katalog/SDF, validator (`clamp_rows`), `baked_grasps` (nearest + hysterese, `merge_poses`), held-drive, kast | golden-tests ≤ tolerance; Godot-greb uændrede i `test`-suiten |
 | G5 | `gs_humanoid` + `gs_character_cc` | Canonical skelet, bone maps → `Skeleton3D`, `rest_hand()`. CC-karakter bag `GSCharacter` | karakter-kontrakt-test i Godot; `rest_hand` = JS-golden |
@@ -192,8 +192,8 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 
 `godot/addons/gs_bottles` now contains the reusable breakable-bottle/liquid scripts,
 adjacent shader resources, `GSBottleExtension`, license, README, and headless tests. It is
-synced to Nightfall at `addons/gs_bottles` with `SOURCE.json`. The addon test passes 17/17;
-Nightfall's `game-systems` integration passes 25/25, the bottle physics review passes
+synced to Nightfall at `addons/gs_bottles` with `SOURCE.json`. The addon test passes 29/29;
+Nightfall's `game-systems` integration passes 26/26, the bottle physics review passes
 191/191, and the bullet-impact review passes 75/75. The Nightfall adapter now derives from
 `GSBreakableBottle`, the extension owns scene-scoped manager/quality and forwards the core
 `broken` event, and the old bottle scripts/shaders have been removed from the legacy glass
@@ -242,8 +242,8 @@ Implementeret af Claude (Opus i stedet for Astra, jf. Godot-AGENTS.md) og efterf
   `gs-host` 47/47, `gs-core-events` 11/11, `fast_tests.py --tier full`: 124/127. `combat` og `review-routes` fejlede allerede ved HEAD.
   `magazine-acquisition-budget` (1 ms realtidsbudget under 8 parallelle jobs) består alene 2/2 og bruger ikke G1-kode.
   `run_native_suite.py --only gs-* --only smoke --only game-systems` er grøn.
-- **Næste (G2)**: bottle API/extension oven på Godots `RigidBody3D`, sceneejet manager, `broken`-event,
-  Nightfall-adapter til grab/cap/asset/pour og kvalitetskobling til `GSHost.set_quality`. `GSPhysicsAdapter` bruges
+- **Næste (G3)**: fælles grasp-data og humanoid bone maps flyttes til versionsstyrede JSON, så Godot/WebXR kan
+  dele golden-testede koordinatdata uden runtime-afhængighed på hinanden. `GSPhysicsAdapter` bruges
   kun til fysik, som ikke allerede håndteres af Godots rigid-body-kontakter.
 
 ## Afklaringer og risici

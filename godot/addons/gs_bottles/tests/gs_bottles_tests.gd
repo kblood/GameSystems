@@ -3,11 +3,15 @@ extends SceneTree
 const ManagerScript = preload("../bottle_break_manager.gd")
 const BottleScript = preload("../breakable_bottle.gd")
 const LiquidScript = preload("../shaders/bottle_liquid.gd")
+const PourScript = preload("../bottle_pour.gd")
 const HostScript = preload("res://addons/gs_host/gs_host.gd")
 const ExtensionScript = preload("../gs_bottle_extension.gd")
 
 class SilentBottle extends GSBreakableBottle:
 	func _ready() -> void: pass
+
+class PourBody extends RigidBody3D:
+	var ctl: GSBottleLiquid
 
 var checks := 0
 var failures := 0
@@ -23,6 +27,38 @@ func _initialize() -> void:
 
 func run() -> void:
 	check(BottleScript != null and LiquidScript != null, "bottle and liquid scripts load")
+	var pour_quality: GSBottlePour = PourScript.new()
+	check(pour_quality._stream_mode() == GSBottlePour.HIGH, "pour stream defaults to high quality")
+	var liquid_quality: GSBottleLiquid = LiquidScript.new()
+	pour_quality._ctl = liquid_quality
+	liquid_quality.quality = GSBottlePour.MEDIUM
+	check(pour_quality._stream_mode() == GSBottlePour.MEDIUM,
+		"stream quality follows the active liquid realism tier")
+	liquid_quality._tier = GSBottlePour.MINIMAL
+	check(pour_quality._stream_mode() == GSBottlePour.MINIMAL,
+		"pour detail follows the liquid's active distance tier")
+	liquid_quality._tier = -1
+	pour_quality.quality = GSBottlePour.LOW
+	check(pour_quality._stream_mode() == GSBottlePour.LOW,
+		"per-pour quality remains an upper bound on liquid tier")
+	check(GSBottlePour._splash_interval(GSBottlePour.HIGH) == 3
+		and GSBottlePour._splash_interval(GSBottlePour.MEDIUM) == 3
+		and GSBottlePour._splash_interval(GSBottlePour.LOW) == 3
+		and GSBottlePour._splash_interval(GSBottlePour.MINIMAL) == 3,
+		"volume-carrying splash cadence stays constant across visual tiers")
+	var tube_vertices := {}
+	for tier in [GSBottlePour.HIGH, GSBottlePour.MEDIUM, GSBottlePour.LOW, GSBottlePour.MINIMAL]:
+		var tube: ArrayMesh = GSBottlePour._stream_mesh_for_quality(tier)
+		var arrays: Array = tube.surface_get_arrays(0)
+		tube_vertices[tier] = (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size()
+	check(tube_vertices[GSBottlePour.HIGH] == 440 and tube_vertices[GSBottlePour.MEDIUM] == 252
+		and tube_vertices[GSBottlePour.LOW] == 126 and tube_vertices[GSBottlePour.MINIMAL] == 50,
+		"all stream quality tiers use progressively smaller cached tube geometry")
+	check(GSBottlePour._stream_mesh_for_quality(GSBottlePour.HIGH)
+		== GSBottlePour._stream_mesh_for_quality(GSBottlePour.HIGH),
+		"stream tube meshes are cached instead of rebuilt on tier changes")
+	pour_quality.free()
+	liquid_quality.free()
 	var first_scene := Node3D.new()
 	root.add_child(first_scene)
 	current_scene = first_scene
@@ -37,6 +73,24 @@ func run() -> void:
 		"MINIMAL tier disables shard physics and caps effects")
 	check(manager.quality_at(Vector3.ZERO) == GSBottleBreakManager.Quality.MINIMAL,
 		"no-camera fallback uses the configured tier")
+	manager.set_quality(GSBottleBreakManager.Quality.HIGH)
+	manager.puddle_decals = false
+	var landing_puddle_volumes: Array[float] = []
+	var landing_body := PourBody.new()
+	first_scene.add_child(landing_body)
+	var landing_pour: GSBottlePour = PourScript.new()
+	landing_body.add_child(landing_pour)
+	for tier in [GSBottlePour.HIGH, GSBottlePour.MEDIUM, GSBottlePour.LOW, GSBottlePour.MINIMAL]:
+		landing_pour.quality = tier
+		landing_pour._splash_k = 2
+		landing_pour._land(Vector3(float(tier) * 2.0, 0.0, 0.0), Vector3.UP, 4.0, Color.CYAN, null, [], 0.5)
+		landing_puddle_volumes.append(float(manager._puddles.back()["vol"]))
+	check(landing_puddle_volumes.size() == 4
+		and is_equal_approx(landing_puddle_volumes[0], landing_puddle_volumes[1])
+		and is_equal_approx(landing_puddle_volumes[1], landing_puddle_volumes[2])
+		and is_equal_approx(landing_puddle_volumes[2], landing_puddle_volumes[3]),
+		"actual manager puddle volume is invariant across pour visual tiers")
+	landing_pour.free()
 	var second_scene := Node3D.new()
 	root.add_child(second_scene)
 	current_scene = second_scene
