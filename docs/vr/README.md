@@ -1,9 +1,11 @@
 # VR development guides
 
-These notes are practical design and review guides for VR work across GameSystems,
-NightfallContractsGodot and the separate WebXR projects. Treat the project and platform
-contracts as the source of truth; this folder explains the choices that should be made
-explicitly and the failures to test for. Reviewed 2026-10-13.
+These notes are shared design and review principles for VR work across GameSystems,
+NightfallContractsGodot and the separate WebXR projects. They explain choices to make
+explicitly and failures to test for. For workspace-specific implementation notes and
+links to project evidence, see the [GameDev VR development hub](../../../VR_DEVELOPMENT.md).
+Each project's `AGENTS.md`, configuration and current implementation remain authoritative
+for project-specific behavior. Reviewed 2026-10-13.
 
 | Guide | Use it for |
 |---|---|
