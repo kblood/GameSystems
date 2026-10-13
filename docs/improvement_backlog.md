@@ -1,5 +1,42 @@
 # Løbende forbedringer af GameSystems
 
+## G4 merge/default-kontrakt — 2026-10-13
+
+`GSGraspMerge.merge_poses` porter JS `record.mergePoses` med originalt baked-array ved
+tomme recordings, stabil rækkefølge, bevaret Dictionary-identitet og shallow copies
+kun ved fjernede defaults. Baked-duplikater bevares; baked-ID'er vinder over recordings,
+og første recorded-ID vinder. Alle recorded defaults samles før ID-filtrering, så en
+senere frasorteret recording stadig kan rydde baked default. JS's slash-key-aliaser
+og kollision mellem ID'er og `default:<key>`-markører bevares og testes eksplicit.
+
+21 cases fra den offentlige JS-funktion inkluderer hele canonical bake/recorded-merge,
+værdier/rækkefølge, array-/record-/nested-identitet og uændrede input. Godot 4.7.2
+består **2.392/2.392** checks; eksisterende nearest-suite består **2.071/2.071**.
+Golden-freshness og diff-check passerer. Typed arrays med string-nøgler og valgfri
+boolean default er parity-scope; malformed input giver null, ikke JS-coercion.
+Source-only; Sol-review og consumer-sync afventer. Variantvalg, native recorded-only,
+avatar-konvertering, kontakt, clamp/SDF, drive/kast og runtime-integration er fortsat åbne.
+
+## G4 beslutning: behold native controller-lookup — 2026-10-13
+
+En midlertidig, efterfølgende slettet headless probe sammenlignede native `lookup`
+med cached controller-frame-projektion plus `GSNearestGrasp` på alle fem avatar-bakes.
+To kørsler med hver 36.599 self-/interpolerede-/seedede random queries gav samme 331
+winner-skift nær interpolerede ties. Et særskilt pistol-filterforsøg gav fem skift
+blandt 1.247 slide-rear queries, inklusive tilstødende 5° roll-varianter.
+
+På Ryzen 7 5700G/Godot 4.7.2, 256 warmups og 2.048 alternerende målinger pr.
+implementation/gruppe, var cached adapter ca. **4–5,5 gange langsommere** ved slide-
+seam. Inputprojektion var cached; live-query-konvertering og resultatkopi var med.
+Ingen dedikeret lookup-budgetgrænse er fundet; andre frame-/carry-budgetter godkender
+ikke denne regression. `lookup_palm` bruger desuden off-line palm-residual og kan
+ikke erstattes af euklidisk wrist/controller-distance.
+
+Beslutning: ingen hot-path-substitution nu. JS-parity-logikken kræver ingen rettelse;
+native scoring/precision og cached validering kræver en særskilt kontrakt før migration.
+Eksperimentet brugte baked variants og desktop headless; recorded rig-rebinding,
+kontaktaccept og headsetbudget er ikke bevist. Runtime-integration forbliver uløst.
+
 ## G4 første kerneport: nærmeste greb — 2026-10-13
 
 `gs_grasp/GSNearestGrasp` er en selvstændig, stateless port af JS `nearestPose`:

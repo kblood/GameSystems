@@ -1,6 +1,6 @@
 # gs_grasp
 
-The first G4 component is `GSNearestGrasp`, a standalone, stateless port of the
+The G4 components are `GSNearestGrasp` and `GSGraspMerge`. The selector is a stateless port of the
 public JavaScript `baked_grasps.nearestPose` scoring/selection operation. The caller
 owns the candidate library and previous selection. This addon does not maintain a
 global grasp library or integrate a native game's grab loop.
@@ -78,6 +78,58 @@ godot --headless --path godot --script res://addons/gs_grasp/tests/gs_nearest_gr
 ```
 
 Godot 4.7.2: **2,071 assertions passed, 296 parity cases**. This is source-only
-selector evidence. Merge/default policy, pose clamping, catalog/SDF, closure/contact,
+selector evidence. Pose clamping, catalog/SDF, closure/contact,
 bake algorithms, held-drive/throwing, avatar fitting and headset/in-game parity remain
 outside this slice. No consumer repository has been synced by this change.
+
+## Merging baked and recorded libraries
+
+`GSGraspMerge.merge_poses(baked: Array, recorded: Array) -> Variant` ports the public
+JS `record.mergePoses`. It returns an Array on valid input and does not mutate either
+input. Use the returned library with `GSNearestGrasp` if desired; the merge utility
+does not install global state or perform avatar conversion.
+
+- Empty recordings return the exact original baked Array.
+- Otherwise the output is a new Array: every baked entry remains in order, followed
+  by surviving recordings in order. Duplicate IDs already in baked are retained.
+  Recordings colliding with any baked ID are skipped; the first recorded ID wins.
+- All recorded defaults are collected **before** duplicate filtering. Any such
+  default clears every baked default in the same kind/side/grasp group, even when
+  that recording is subsequently skipped. Clearing a default creates a shallow copy
+  with `default = false`; all other baked Dictionaries retain their identity.
+- Among surviving recordings, the first default per group normally remains default.
+  Later defaults are shallow-copied with `default = false`; other recorded
+  Dictionaries retain their identity. Missing `default` remains missing.
+- Nested arrays/Dictionaries and metadata remain shared, including on shallow copies.
+
+Two less obvious JS behaviors are intentionally preserved: grouping concatenates
+`kind/side/grasp` strings, so embedded slashes can alias groups; the `seen` set shares
+recording IDs with `default:<group>` markers, so an ID can collide with a marker.
+That can skip a later recording or suppress its default. This port does not repair
+those cases or introduce new ID/key restrictions.
+
+Within the typed Array API, valid records are Dictionaries with string `id`, `kind`,
+`side`, `grasp`, and optional boolean `default`. Empty strings are accepted. Geometry
+and arbitrary additional metadata are untouched; this is not a pose/schema validator.
+All entries are checked before merging. Invalid entries return `null`, including
+invalid baked entries when recordings are empty. Wrong top-level types are rejected
+by Godot's typed API. This differs deliberately from unchecked JS: JS's truthy/falsy
+coercion, missing group fields, sparse arrays and non-string IDs are outside parity
+scope. There are no units or coordinate conversions in this utility.
+
+The public JS function generates 21 golden cases, including the canonical bake and
+accepted recordings, duplicate/default conflicts, ordering, absent defaults and both
+key-collision behaviors. Golden identity descriptors distinguish original versus
+copied Dictionaries and record each nested reference. Godot checks output values,
+array/record/nested identity and input preservation, plus malformed inputs. Fixture
+generation checks JS inputs remain unchanged and hashes source/probe dependencies.
+
+```powershell
+node godot/tools/gen_golden.mjs --check
+godot --headless --path godot --script res://addons/gs_grasp/tests/gs_grasp_merge_tests.gd
+```
+
+Godot 4.7.2: **2,392 assertions passed, 21 merge cases**. Source-only pending review
+and consumer sync. Variant parsing/selection, recording validation/conversion, native
+`recorded-only` behavior, avatar fitting and live-game integration are not ported by
+this utility. Existing native grasp logic is unchanged.

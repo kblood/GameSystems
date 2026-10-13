@@ -13,3 +13,11 @@ selected results rather than copying the bake. The existing `gs_grasp_data` addo
 provides the canonical data copy; its `LICENSE-NOTES.md` retains the complete bake,
 reference-hand and recording provenance. Importing those modules for the JS oracle
 does not port their algorithms or prove avatar-asset/contact parity.
+
+`GSGraspMerge` ports the public `mergePoses` function in MIT GameSystems
+`extensions/grasp/record.js`, retaining its ordering, shallow-copy and reference
+semantics. Its tests/probe are original GameSystems MIT work, Copyright (c) 2026
+Kasper Olesen. The merge golden invokes that public function on synthetic records
+and the existing canonical bake/accepted Grasp Studio recordings. It stores origin
+and identity descriptors, not another canonical library. No recording, mirroring,
+closure, CharacterCreator runtime or avatar calibration algorithm is copied here.

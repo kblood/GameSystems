@@ -2,6 +2,16 @@
 
 ## Current verified state — 2026-10-13
 
+G4's next source-only contract is `GSGraspMerge.merge_poses`, preserving public JS
+merge ordering, duplicate/default policy and shallow identity, including existing
+key/marker collision semantics. Its 21 JS-generated cases pass 2,392 Godot assertions;
+review and consumer sync are pending. Variant parsing, avatar conversion and native
+`recorded-only` selection are outside this utility. The controller-lookup experiment
+recorded in the backlog rejects hot-path substitution of `GSNearestGrasp` for now:
+near-tie winners differ and the cached adapter costs about 4–5.5 times as much at the
+slide seam. `lookup_palm` uses a different residual model. Native integration remains
+unresolved; the generic JS-parity selector is unchanged.
+
 G4 has begun with the standalone [`gs_grasp` nearest selector](../godot/addons/gs_grasp/README.md).
 The pure caller-owned-library API preserves JS distance/angle scoring, previous-ID
 bonus, filters, input order and original pose identity. Its JS-generated golden has
@@ -258,7 +268,7 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 | G1 (færdig 2026-10-11) | `gs_host` + sync | `GameSystems/godot/addons/gs_host`, sync-script med `SOURCE.json` + `--check` (genbrug formatet fra `addons/game_systems`), `tier_for`-golden. Contracts-Godot får en `GSHost` i missionsscenen og sender core-events | headless-test: load/fejlisolering/tiers; `run_native_suite.py` grøn |
 | G2 (færdig 2026-10-12) | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`; sceneejet manager, asset-/quality-options, stabil API og `broken`-event i `GSHost` | Nightfall-adapter bruger den synkede addon; legacy-flaskekopi fjernet; bottle- og `--only game-systems`-suiter grønne |
 | G3 (færdig 2026-10-13) | Fælles data-kontrakt | Humanoid maps, validatorens `HARD`/`COMFORT`/`GATES`, closure-defaults, held-drive-skalarer, katalog og kvalitetspolicy er versioneret JSON med Godot-readers og JS-goldens. Reference-hand, recordings og bake har strukturelle readers. Afledt geometri, recording/bake-algoritmer, avatar-fit og headsetparitet er ikke bevist og ligger i senere trin | Source/consumer-kopier og manifests matcher; alle G3-readers og goldens passerer; WebXR-suiterne passerer; G3-afgrænsningen er dokumenteret |
-| G4 (påbegyndt) | `gs_grasp` kerne | Nearest + hysterese er pushet/synket og Sol-reviewed; runtime-adapteren til den eksisterende reach/contact-bevidste lookup mangler. Resterer også: katalog/SDF, validator (`clamp_rows`), `merge_poses`, held-drive, kast | Selector: 296 JS-cases, 2.071 Godot-checks, tolerance `1e-10`; samlet Godot-grebs-/consumer-paritet endnu ikke verificeret |
+| G4 (påbegyndt) | `gs_grasp` kerne | Nearest + hysterese er pushet/synket og Sol-reviewed; native hot-path-substitution er afvist indtil separat scoring/performance-kontrakt. `merge_poses` har source-port; review/sync afventer. Resterer: katalog/SDF, validator (`clamp_rows`), held-drive, kast | Selector: 296 JS-cases, 2.071 Godot-checks, tolerance `1e-10`; merge: 21 JS-cases, 2.392 checks; samlet Godot-grebs-/runtime-paritet endnu ikke verificeret |
 | G5 | `gs_humanoid` + `gs_character_cc` | Canonical skelet, bone maps → `Skeleton3D`, `rest_hand()`. CC-karakter bag `GSCharacter` | karakter-kontrakt-test i Godot; `rest_hand` = JS-golden |
 | G6 | Lukning-til-kontakt + optagelser | Port af `closure.js` og `record.js` (`place_wrist`, `close_to_contact`, `mirror_pose`). Erstat `baked_grasps_*.json` pr. kropstype med én bagning + lukning | golden ≤ tolerance; et Studio-greb vises i Godot; 4 af 5 bagefiler kan slettes |
 | G7 | `gs_avatar` | VR-IK, kalibrering, fingermapping (OpenXR → rækker) bag samme API. Beslut port af `vrik.js` vs. Godots IK-modifiers | Godot-avatar-tests grønne; fingre fra hand tracking = JS-golden |

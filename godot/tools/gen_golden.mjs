@@ -8,6 +8,7 @@ import { deepStrictEqual } from 'node:assert';
 import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { nearestGraspCases } from './nearest_grasp_golden.mjs';
+import { graspMergeCases } from './grasp_merge_golden.mjs';
 import { tierFor, normalizeTier } from '../../extensions/host/quality.js';
 import { JOINT_NAMES } from '../../extensions/humanoid/canonical.js';
 import { MPFB_ROOT_BONE } from '../../extensions/humanoid/rig.js';
@@ -266,9 +267,24 @@ async function nearestGraspGolden() {
   } };
 }
 
+async function graspMergeGolden() {
+  const names = ['record.js', 'recorded_grasps.json', 'baked_grasps.data.json', 'reference_hand.json',
+    'closure.js', 'data/closure.data.json', 'catalog.js', 'data/catalog.data.json', 'contact.js',
+    'grasp_validator.js', 'data/validator.data.json', 'math.js'];
+  const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
+    const path = resolve(ROOT, 'extensions/grasp', name);
+    return [rel(path), await sha256(path)];
+  })));
+  const probe = resolve(ROOT, 'godot/tools/grasp_merge_golden.mjs');
+  return { path: resolve(ROOT, 'godot/addons/gs_grasp/tests/grasp_merge.golden.json'), pretty: true, data: {
+    schema: 'gamesystems.golden.grasp-merge.v1', generator: 'godot/tools/gen_golden.mjs',
+    probe: rel(probe), probe_sha256: await sha256(probe), sources_sha256, cases: graspMergeCases(),
+  } };
+}
+
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden()]) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)
