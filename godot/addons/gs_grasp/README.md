@@ -166,6 +166,27 @@ empty-open behavior, first-token ID replacement, and input immutability. Godot 4
 passes **978 assertions** across ten cases. This verifies conversion math and
 copying only, not fit quality or runtime hand contact.
 
+## Capture geometry helpers
+
+`GSGraspCapture.hand_basis(side, joints)` derives the tracked hand frame from wrist,
+index-knuckle, middle-knuckle and little-knuckle positions. It returns the forward,
+radial, dorsal and thumb axes plus the basis quaternion, or `null` if a required
+joint is missing or non-finite. `hand_length_from_joints(joints)` sums the wrist to
+middle-fingertip bone chain, returning `null` when one of its joints is unusable.
+`quat_from_basis(X, Y, Z)` converts matrix columns to an `[x,y,z,w]` quaternion.
+`rows_from_joints(side, joints, hand)` extracts all five finger-angle rows, including
+thumb twist. `capture_from_joints(side, joints, item, hand)` returns the wrist pose in
+item space with those rows and the measured hand length, or `null` when required
+tracking joints are missing.
+The Godot API accepts a Dictionary keyed by WebXR joint name; runtime adapters own
+translation from their input container.
+
+The JS golden covers both hand sides, missing/non-finite/degenerate joints, extreme
+finite scales, zero length, all quaternion matrix branches, 12 baked-pose row captures,
+two non-zero thumb-twist inversions, missing finger joints and six item-space capture
+cases across rotated items. Godot 4.7.2 passes **711 assertions**. Closure/contact and
+runtime integration remain separate work.
+
 ## Merging baked and recorded libraries
 
 `GSGraspMerge.merge_poses(baked: Array, recorded: Array) -> Variant` ports the public

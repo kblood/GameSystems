@@ -1,5 +1,15 @@
 # Løbende forbedringer af GameSystems
 
+## G4 capture conversion helpers — 2026-10-13
+
+`GSGraspCapture` porter `handBasis`, `handLengthFromJoints`, `quatFromBasis` og
+`rowsFromJoints` og `captureFromJoints` fra `record.js`. Den udleder håndramme,
+håndlængde, finger-vinkler og wrist-pose i item-space. Golden dækker begge hænder,
+manglende/non-finite/degenerate led, 12 baked-pose row captures, to syntetiske ikke-nul
+twist-inverser, fem quaternion-grene, ekstreme finite længder og seks capture-cases
+med roterede items. Godot 4.7.2 består **711/711** assertions. Closure/contact og
+runtime-integration er fortsat åbne G4-opgaver.
+
 ## G4 mirror-pose conversion — 2026-10-13
 
 `GSGraspMirror.mirror_pose` porter `record.js`' spejling af optagede greb over
