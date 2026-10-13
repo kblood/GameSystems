@@ -1,5 +1,14 @@
 # Løbende forbedringer af GameSystems
 
+## G4 finger-chain forward kinematics — 2026-10-13
+
+`GSGraspClosure.finger_chain` porter `closure.js`' publice `fingerChain`: dyaw,
+pitch, to hængselbøjninger og valgfri tommelfingertwist bliver til base/MCP/PIP/tip
+positioner i håndrummet. 26 JS-golden-cases dækker begge hænder, baked poses,
+syntetiske ±30° twist og fallback ved degenereret hængselakse. Godot 4.7.2 består
+**495/495** assertions. Kontaktfit, lukning mod geometri og runtime-integration er
+fortsat åbne G4-opgaver.
+
 ## G4 capture-to-recorded-pose helpers — 2026-10-13
 
 `GSGraspCapture` porter `handBasis`, `handLengthFromJoints`, `quatFromBasis` og

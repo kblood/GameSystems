@@ -1,9 +1,21 @@
 # gs_grasp
 
-The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp`, `GSGraspShapeSdf`, `GSGraspVariants`, `GSGraspHeldDrive`, `GSGraspThrowRelease` and `GSGraspValidator`. The selector is a stateless port of the
+The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp`, `GSGraspShapeSdf`, `GSGraspVariants`, `GSGraspHeldDrive`, `GSGraspThrowRelease`, `GSGraspValidator` and `GSGraspClosure`. The selector is a stateless port of the
 public JavaScript `baked_grasps.nearestPose` scoring/selection operation. The caller
 owns the candidate library and previous selection. This addon does not maintain a
 global grasp library or integrate a native game's grab loop.
+
+## Finger-chain forward kinematics
+
+`GSGraspClosure.finger_chain(finger, row)` maps the reference finger model and one
+angle row to `[base, MCP, PIP, tip]` positions in hand space. It applies dyaw/pitch,
+two hinge bends and the optional thumb axial twist, with the same hinge projection and
+dorsal fallback as the public JS `fingerChain`. It is a pure geometry helper; contact
+search, joint-limit clamping and runtime hand integration remain separate systems.
+
+The JS golden covers 26 baked and synthetic cases across both hands, including
+positive/negative thumb twist and a degenerate hinge-axis fallback. Godot 4.7.2 passes
+495 assertions; neither a broad closure-fit nor physical contact behavior is implied.
 
 ```gdscript
 const Selector = preload("res://addons/gs_grasp/gs_nearest_grasp.gd")
