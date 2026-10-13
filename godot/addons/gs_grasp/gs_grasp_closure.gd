@@ -4,10 +4,128 @@ extends RefCounted
 
 const D2R := PI / 180.0
 const ShapeSdf := preload("res://addons/gs_grasp/gs_grasp_shape_sdf.gd")
+const DEFAULT_THUMB_TILT := PI / 3.0
 const DEFAULT_REFERENCE_HAND := {
 	"length": 0.203,
 	"palm": [0.0, -0.0238, 0.0685],
 }
+const DEFAULT_PAD_RADIUS := {
+	"Thumb": [0.031, 0.037, 0.032],
+	"Index": [0.055, 0.052, 0.05],
+	"Middle": [0.04, 0.037, 0.034],
+	"Ring": [0.05, 0.047, 0.045],
+	"Little": [0.044, 0.042, 0.04],
+}
+const FINGERS := ["Thumb", "Index", "Middle", "Ring", "Little"]
+
+## Build hand-space finger, palm and thenar geometry from a measured profile or a rest-hand joint fixture.
+## Supports the public closure.handGeometry format; lengths and points are rig-space metres.
+static func hand_geometry(rest: Dictionary, options: Dictionary = {}) -> Dictionary:
+	var scale_value: Variant = options.get("scale")
+	if not options.has("scale"):
+		scale_value = rest.get("scale")
+		if scale_value == null:
+			scale_value = 1.0
+	var scale := float(scale_value) if scale_value != null else 0.0
+	var profile: Dictionary = {}
+	var requested_profile: Variant = options.get("profile")
+	if requested_profile == null:
+		requested_profile = rest.get("profile")
+	if _is_hand_profile(requested_profile):
+		profile = requested_profile
+	else:
+		var tilt_option: Variant = options.get("thumbTilt")
+		if tilt_option == null:
+			tilt_option = rest.get("thumbTilt")
+			if tilt_option == null:
+				tilt_option = DEFAULT_THUMB_TILT
+		var radii_option: Variant = options.get("radii")
+		var requested_radii: Dictionary = radii_option if radii_option is Dictionary else DEFAULT_PAD_RADIUS
+		profile = _profile_from_rest(rest, float(tilt_option), requested_radii)
+	if options.has("radii") and options.radii is Dictionary:
+		profile = profile.duplicate(true)
+		var pads: Dictionary = {}
+		for finger_name: String in FINGERS:
+			var values: Array = options.radii[finger_name]
+			var scaled: Array = []
+			for radius: float in values:
+				scaled.append(radius * float(profile.length))
+			pads[finger_name] = scaled
+		profile["pad"] = pads
+	var side := str(profile.get("side", rest.get("side", "")))
+	var tilt_value: Variant = options.get("thumbTilt")
+	if tilt_value == null:
+		tilt_value = profile.get("thumbTilt")
+	if tilt_value == null:
+		tilt_value = rest.get("thumbTilt")
+		if tilt_value == null:
+			tilt_value = DEFAULT_THUMB_TILT
+	var tilt := float(tilt_value)
+	var radial_sign := -1.0 if side == "left" else 1.0
+	var fingers: Dictionary = {}
+	for finger_name: String in FINGERS:
+		var axes := _finger_axes(finger_name, side, tilt)
+		var basis: Dictionary = profile.bases
+		var segment_lengths: Dictionary = profile.segments
+		var spreads: Dictionary = profile.spread
+		var pads: Dictionary = profile.pad
+		fingers[finger_name] = {
+			"base": _profile_to_hand_space(basis[finger_name], radial_sign),
+			"len": segment_lengths[finger_name].duplicate(),
+			"axes": axes,
+			"hinge": _norm(_cross(axes.D, axes.F)),
+			"restYaw": float(spreads[finger_name]),
+			"radius": pads[finger_name].duplicate(),
+			"twistSign": -1.0 if side == "left" else 1.0,
+		}
+	var center := _profile_to_hand_space(profile.palmCenter, radial_sign)
+	var normal := _norm(_profile_to_hand_space(profile.palmNormal, radial_sign))
+	var samples: Array = []
+	var palm_patch: Variant = profile.get("palmPatch", [])
+	if palm_patch is Array:
+		for point: Variant in palm_patch:
+			if _is_vector3(point):
+				samples.append(_profile_to_hand_space(point, radial_sign))
+	if samples.size() < 3:
+		var profile_width: Variant = profile.get("palmWidth")
+		if not _finite_number(profile_width) or float(profile_width) == 0.0:
+			profile_width = 0.43 * float(profile.length)
+		var width := 0.3 * float(profile_width)
+		var depth := 0.25 * float(profile.knuckle)
+		var u := _norm(_reject([1.0, 0.0, 0.0], normal))
+		var v := _norm(_cross(normal, u))
+		for i: float in [-1.0, 0.0, 1.0]:
+			for j: float in [-1.0, 0.0, 1.0]:
+				samples.append(_add(center, _add(_scale(u, i * width), _scale(v, j * depth))))
+	samples.append(center.duplicate())
+	var thumb: Dictionary = fingers.Thumb
+	var thumb_base: Array = thumb.base
+	var thumb_joint: Array = finger_chain(thumb, [0.0, 0.0, 0.0, 0.0])[1]
+	var thenar_points: Array = []
+	var raw_thenar: Variant = profile.get("thenarPatch", [])
+	if raw_thenar is Array:
+		for point: Variant in raw_thenar:
+			if _is_vector3(point):
+				thenar_points.append(_profile_to_hand_space(point, radial_sign))
+	var palm_geometry := {"center": center, "normal": normal, "samples": samples}
+	if profile.has("palmWidth"):
+		palm_geometry["width"] = profile.palmWidth
+	if profile.has("palmThickness"):
+		palm_geometry["thickness"] = profile.palmThickness
+	var thumb_root: Variant = profile.get("thumbRoot")
+	if thumb_root == null:
+		thumb_root = thumb.radius[0]
+	return {
+		"side": side,
+		"scale": scale,
+		"length": float(profile.length) * scale,
+		"thumbTilt": tilt,
+		"profile": profile,
+		"fingers": fingers,
+		"palm": palm_geometry,
+		"thenar": {"a": thumb_base.duplicate(), "b": _add(thumb_base, _scale(_sub(thumb_joint, thumb_base), 0.6)),
+			"radius": float(thumb_root), "points": thenar_points},
+	}
 
 ## Retarget a baked/recorded wrist to this hand's length while keeping its palm anchor in place.
 ## `hand.length` and `reference.length` use metres; `pose.wrist` and `pose.quat` are item-space.
@@ -139,3 +257,92 @@ static func _rotate_by_quaternion(vector: Array, quaternion: Array) -> Array:
 
 static func _to_item_space(point: Array, wrist: Array, quat: Array, scale: float) -> Array:
 	return _add(wrist, _rotate_by_quaternion(_scale(point, scale), quat))
+
+static func _is_vector3(value: Variant) -> bool:
+	return value is Array and value.size() == 3 and _finite_number(value[0]) and _finite_number(value[1]) and _finite_number(value[2])
+
+static func _profile_to_hand_space(point: Array, radial_sign: float) -> Array:
+	return [float(point[0]) * radial_sign, float(point[1]), float(point[2])]
+
+static func _is_hand_profile(value: Variant) -> bool:
+	if not value is Dictionary or value.get("format") != "gamesystems.hand-profile.v1":
+		return false
+	if value.get("side") not in ["left", "right"] or not _finite_number(value.get("length")) or float(value.length) <= 0.0:
+		return false
+	if not _finite_number(value.get("knuckle")) or float(value.knuckle) <= 0.0:
+		return false
+	if not _is_vector3(value.get("palmCenter")) or not _is_vector3(value.get("palmNormal")):
+		return false
+	for finger_name: String in FINGERS:
+		if not value.get("bases") is Dictionary or not _is_vector3(value.bases.get(finger_name)):
+			return false
+		if not value.get("segments") is Dictionary or not value.segments.get(finger_name) is Array or value.segments[finger_name].size() != 3:
+			return false
+		if not value.get("pad") is Dictionary or not value.pad.get(finger_name) is Array or value.pad[finger_name].size() != 3:
+			return false
+		var spreads: Variant = value.get("spread")
+		if not spreads is Dictionary or not _finite_number(spreads.get(finger_name)):
+			return false
+		for index: int in 3:
+			if not _finite_number(value.segments[finger_name][index]) or not _finite_number(value.pad[finger_name][index]):
+				return false
+	return true
+
+static func _profile_from_rest(rest: Dictionary, thumb_tilt: float, radii: Dictionary) -> Dictionary:
+	var side := str(rest.side)
+	var frame: Dictionary = rest.frame
+	var dorsal: Array = _norm(frame.D)
+	var forward: Array = _norm(frame.F)
+	var radial: Array
+	if frame.get("R") != null:
+		radial = _norm(frame.R)
+	else:
+		var cross_axis := _norm(_cross(dorsal, forward))
+		radial = _scale(cross_axis, -1.0 if side == "left" else 1.0)
+	var wrist: Array = rest.wrist
+	var bases: Dictionary = {}
+	var segments: Dictionary = {}
+	var spread: Dictionary = {}
+	for finger_name: String in FINGERS:
+		var source: Dictionary = rest.fingers[finger_name]
+		var points: Array = source.pts
+		var local_points: Array = []
+		for point: Array in points:
+			var relative := _sub(point, wrist)
+			local_points.append([_dot(relative, radial), _dot(relative, dorsal), _dot(relative, forward)])
+		bases[finger_name] = local_points[0]
+		var length_values: Array = []
+		if source.has("len") and source.len is Array and source.len.size() == 3:
+			length_values = source.len.duplicate()
+		else:
+			for index: int in 3:
+				length_values.append(_length(_sub(local_points[index + 1], local_points[index])))
+		segments[finger_name] = length_values
+		var first_direction := _norm(_sub(local_points[1], local_points[0]))
+		var recorded_yaw: Variant = source.get("rest", {}).get("yaw")
+		spread[finger_name] = float(recorded_yaw) if recorded_yaw != null else atan2(float(first_direction[0]), float(first_direction[2]))
+	var knuckle := _length(bases.Middle)
+	var hand_length := knuckle + float(segments.Middle[0]) + float(segments.Middle[1]) + float(segments.Middle[2])
+	var pads: Dictionary = {}
+	for finger_name: String in FINGERS:
+		var values: Array = []
+		for radius: float in radii[finger_name]:
+			values.append(radius * hand_length)
+		pads[finger_name] = values
+	var palm := _scale(DEFAULT_REFERENCE_HAND.palm, hand_length / float(DEFAULT_REFERENCE_HAND.length))
+	return {"format": "gamesystems.hand-profile.v1", "side": side, "source": "rest", "length": hand_length,
+		"knuckle": knuckle, "palmWidth": 0.43 * hand_length, "palmThickness": 0.16 * hand_length,
+		"palmCenter": palm, "palmNormal": [0.0, -1.0, 0.0], "palmPatch": [], "thumbRoot": pads.Thumb[0],
+		"thumbTilt": thumb_tilt, "bases": bases, "spread": spread, "segments": segments, "girth": pads, "pad": pads}
+
+static func _finger_axes(finger_name: String, side: String, tilt: float) -> Dictionary:
+	var forward := [0.0, 0.0, 1.0]
+	var dorsal := [0.0, 1.0, 0.0]
+	var radial := [-1.0, 0.0, 0.0] if side == "left" else [1.0, 0.0, 0.0]
+	if finger_name != "Thumb":
+		return {"F": forward, "D": dorsal, "R": radial}
+	var cosine := cos(tilt)
+	var sine := sin(tilt)
+	var thumb_dorsal := _norm(_add(_scale(dorsal, cosine), _scale(radial, sine)))
+	var thumb_radial := _norm(_reject(_sub(_scale(radial, cosine), _scale(dorsal, sine)), thumb_dorsal))
+	return {"F": forward, "D": thumb_dorsal, "R": thumb_radial}

@@ -22,11 +22,17 @@ each segment's skin gap against the catalog SDF, using bone midpoint and distal-
 samples. It shares `GSGraspShapeSdf`; unsupported shape input leaves the affected gap at
 `INF`, so callers should validate their catalog geometry before fitting.
 
+`GSGraspClosure.hand_geometry(rest, options)` builds closure-frame finger bases, axes,
+hinges, pad radii, palm samples and the thenar capsule from a rest hand or a measured
+`gamesystems.hand-profile.v1` profile. It supports explicit scale, profile, thumb tilt
+and legacy pad-radius overrides without mutating the input.
+
 The JS goldens cover 26 baked/synthetic finger-chain cases, 15 baked/recorded wrist
-placement cases, and 8 segment-gap cases across both hands and item scales. They include
-twist, axis fallback, custom reference geometry, invalid recorded-length fallback and
-distal-only segment sampling. Godot 4.7.2 passes **1,212 assertions**; this does not
-complete the closure search or imply physical skin contact.
+placement cases, 8 segment-gap cases, 6 reference-hand geometry cases and 8 explicit
+profile/raw-rest edge cases. They include twist, axis fallback, custom reference
+geometry, invalid recorded-length fallback, distal-only samples, palm/thenar patches,
+pad overrides and null/zero optional-field fallback. Godot 4.7.2 passes **7,593
+assertions**; this does not complete closure search or imply physical skin contact.
 
 ```gdscript
 const Selector = preload("res://addons/gs_grasp/gs_nearest_grasp.gd")

@@ -1,7 +1,9 @@
 import { BAKED } from '../../extensions/grasp/baked_grasps.js';
 import { chainGaps, fingerChain, placeWrist, REFERENCE_HAND } from '../../extensions/grasp/closure.js';
+import { handGeometry, PAD_RADIUS } from '../../extensions/grasp/closure.js';
 import { CATALOG } from '../../extensions/grasp/catalog.js';
 import { referenceHand } from '../../extensions/grasp/record.js';
+import REFERENCE from '../../extensions/grasp/reference_hand.json' with { type: 'json' };
 
 const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
 const modelForGolden = model => ({ base: model.base, len: model.len, axes: model.axes,
@@ -78,6 +80,46 @@ export function graspSegmentGapCases() {
           placed, rows: pose.angles, expected: chainGaps(hand, shape, placed, pose.angles) });
       }
     }
+  }
+  return cases;
+}
+
+export function graspProfileGeometryCases() {
+  const cases = [];
+  for (const side of ['left', 'right']) {
+    const rest = REFERENCE.hands[side];
+    const profile = structuredClone(handGeometry(rest).profile);
+    profile.palmPatch = [[0.02, 0, 0.04], [-0.02, 0, 0.04], [0, 0, 0.09]];
+    profile.thenarPatch = [[0.03, -0.01, 0.04], [0.02, -0.02, 0.05]];
+    profile.palmWidth = 0.11;
+    profile.palmThickness = 0.031;
+    profile.thumbRoot = 0.008;
+    const radii = Object.fromEntries(Object.entries(PAD_RADIUS).map(([name, values]) => [name, values.map(value => value * 0.8)]));
+    const options = { scale: 0.93, profile, thumbTilt: 0.91, radii };
+    cases.push({ name: `${side}:profile-palm-thenar-pads`, rest, options,
+      expected: handGeometry(rest, options) });
+    const optionalProfile = structuredClone(profile);
+    delete optionalProfile.palmWidth;
+    delete optionalProfile.palmThickness;
+    delete optionalProfile.thumbRoot;
+    delete optionalProfile.thumbTilt;
+    const optionalOptions = { scale: 1.07, profile: optionalProfile };
+    cases.push({ name: `${side}:profile-optional-geometry-fallbacks`, rest, options: optionalOptions,
+      expected: handGeometry(rest, optionalOptions) });
+    const zeroWidthProfile = structuredClone(profile);
+    zeroWidthProfile.palmPatch = [];
+    zeroWidthProfile.palmWidth = 0;
+    const zeroWidthOptions = { scale: 1, profile: zeroWidthProfile };
+    cases.push({ name: `${side}:zero-palm-width-falls-back`, rest, options: zeroWidthOptions,
+      expected: handGeometry(rest, zeroWidthOptions) });
+    const nullableRest = structuredClone(rest);
+    nullableRest.frame.R = null;
+    nullableRest.scale = null;
+    nullableRest.thumbTilt = null;
+    nullableRest.fingers.Middle.rest.yaw = null;
+    const nullableOptions = {};
+    cases.push({ name: `${side}:null-rest-frame-and-yaw-fallbacks`, rest: nullableRest, options: nullableOptions,
+      expected: handGeometry(nullableRest, nullableOptions) });
   }
   return cases;
 }

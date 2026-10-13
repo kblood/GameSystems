@@ -1,5 +1,14 @@
 # Løbende forbedringer af GameSystems
 
+## G4 hand geometry fra rigprofil eller rest joints — 2026-10-13
+
+`GSGraspClosure.hand_geometry` porter både profile-path og `profileFromRest` fallback:
+fingerbaser, segmentlængder, spredning, fingerakser/hængsler, pad-radier, palm-samples og
+thenar-geometri. Den matcher JS referencehand for begge hænder ved standard, 1× og 2×
+skala samt custom palm-/thenar-patches, profiltilt, radiusoverride og fallback ved null/
+zero optional fields. 14 hand-geometry goldens bidrager til **7.593/7.593** closure-assertions. Søgning efter lukkevinkler,
+palm-/thenar-fit mod genstand og runtime-integration mangler fortsat.
+
 ## G4 finger-segment SDF gaps — 2026-10-13
 
 `GSGraspClosure.segment_gaps` måler hvert knoglesegments hudgab mod katalogets SDF med

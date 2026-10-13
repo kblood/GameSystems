@@ -42,9 +42,10 @@ a clear recenter action.
    poses authoritative while allowing collision-limited visual hand presentation.
 
 Use a confidence state for every input. During brief loss, smoothly hold or fade the
-avatar limb; after a timeout, release interactions and return to a neutral estimate.
-Never lerp a reacquired hand through a long path while it holds an object. Rebase or
-release according to the interaction contract.
+avatar limb; after a timeout, resolve interactions according to their lost-tracking
+contract and return the avatar to a neutral estimate. Never lerp a reacquired hand
+through a long path while it holds an object. Rebase or release according to the
+interaction contract.
 
 ## Hands, IK and visible errors
 
