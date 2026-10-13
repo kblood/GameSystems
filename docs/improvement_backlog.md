@@ -1,5 +1,17 @@
 # Løbende forbedringer af GameSystems
 
+## G4 throw-release sampling — 2026-10-13
+
+`GSGraspThrowRelease` porter JS-vinduet for recent peak-speed smoothing,
+dt-vægtning, sample/historie-caps og poseafledt lineær/angulær hastighed. API'et ejer
+kun caller-provided history; det implementerer ikke Nightfalls release-routing,
+glaskontaktklassifikation eller fysik. Golden fra den offentlige JS-funktion dækker fire
+release-cases, seks pushes, caps, stale peaks, history trimming, tre pose-overgange
+(inklusive ikke-kommuterende rotationer og negativ `w`-ækvivalens) samt ugyldige input.
+Godot 4.7.2 består **183/183** checks ved `2e-5` Vector3-tolerance. Nightfall sync og
+den målrettede `gs`-suite består 7/7; Sol har godkendt porten uden blokeringer. Live
+throw-feel og headsetbudget er ikke bevist.
+
 ## G4 held-drive-math og håndbevægelse — 2026-10-13
 
 `GSGraspHeldDrive` porter de offentlige JS-funktioner for acceleration cap, implicit

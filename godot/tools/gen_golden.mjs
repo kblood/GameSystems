@@ -20,6 +20,9 @@ import { HARD, COMFORT, GATES } from '../../extensions/grasp/grasp_validator.js'
 import { CLOSURE, PAD_RADIUS, REFERENCE_HAND, THUMB_TILT } from '../../extensions/grasp/closure.js';
 import { STIFFNESS, DAMPING, MAX_ACCELERATION, MAX_TORQUE, MAX_HOLD_FORCE, HAND_MOTION_SAMPLES,
   accelerationLimit, driveAcceleration, driveAngular, createHandMotion, pushHandMotion, carriedVelocity } from '../../extensions/grasp/held_drive.js';
+import { GLASS_BREAK_CONTACT_SPEED, RELEASE_SPEED_CAP, RELEASE_SPIN_CAP, RELEASE_WINDOW, RELEASE_SMOOTHING,
+  SAMPLE_SPEED_CAP, SAMPLE_SPIN_CAP, HISTORY_SPAN, createThrowHistory, pushSample as pushThrowSample,
+  releaseVelocity as throwReleaseVelocity, sampleFromPoses } from '../../extensions/grasp/throw_release.js';
 import { DEFAULT_MASS, CATALOG } from '../../extensions/grasp/catalog.js';
 import { referenceHand, RECORDED_SCHEMA, recordedPoses, isPose } from '../../extensions/grasp/record.js';
 import { BAKED, RECORDED, GRASP_QUALITY, CLAMP_EXEMPT, graspQuality, setGraspQuality } from '../../extensions/grasp/baked_grasps.js';
@@ -170,6 +173,61 @@ async function graspHeldDriveMathGolden() {
       linear, angular, pushes, motion_steps,
       carried: { ...carried, expected: vec(carriedVelocity(carried.linear, carried.angular, carried.pivot, carried.point)) } },
   };
+}
+
+async function graspThrowReleaseGolden() {
+  const source = resolve(ROOT, 'extensions/grasp/throw_release.js');
+  const sources_sha256 = Object.fromEntries(await Promise.all([source, resolve(ROOT, 'extensions/grasp/math.js')]
+    .map(async path => [rel(path), await sha256(path)])));
+  const cases = [
+    { name: 'recent-peak-decelerating', samples: [
+      { dt: 0.02, linear: [0.5, 0, 0], angular: [0, 0, 0] },
+      { dt: 0.02, linear: [2, 0, 0], angular: [0, 1, 0] },
+      { dt: 0.02, linear: [4, 0, 0], angular: [0, 2, 0] },
+      { dt: 0.02, linear: [2, 0, 0], angular: [0, 0.5, 0] },
+      { dt: 0.02, linear: [0.5, 0, 0], angular: [0, 0, 0] },
+    ] },
+    { name: 'speed-and-spin-caps', samples: [
+      { dt: 0.04, linear: [30, 0, 0], angular: [0, 0, 50] },
+    ] },
+    { name: 'stale-peak-outside-window', samples: [
+      { dt: 0.04, linear: [7, 0, 0], angular: [0, 1, 0] },
+      { dt: 0.04, linear: [0.5, 0, 0], angular: [0, 0, 0] },
+      { dt: 0.04, linear: [0.25, 0, 0], angular: [0, 0, 0] },
+    ] },
+    { name: 'partial-smoothing-window', samples: [
+      { dt: 0.015, linear: [0, 2, 0], angular: [1, 0, 0] },
+      { dt: 0.03, linear: [0, 4, 0], angular: [2, 0, 0] },
+    ] },
+  ].map(row => ({ ...row, expected: throwReleaseVelocity(row.samples) }));
+  const pushes = [
+    { linear: [0, 0, -2], angular: [0, 1, 0], dt: 1 / 72 },
+    { linear: [0, 0, -4], angular: [0, 2, 0], dt: 1 / 72 },
+    { linear: [0, 0, -6], angular: [0, 3, 0], dt: 1 / 72 },
+    { linear: [0, 0, -3], angular: [0, 1.5, 0], dt: 1 / 72 },
+    { linear: [0, 0, -1], angular: [0, 0.5, 0], dt: 1 / 72 },
+    { linear: [0, 0, -12], angular: [0, 40, 0], dt: 0.08 },
+  ];
+  const history = createThrowHistory();
+  const push_steps = pushes.map(row => {
+    pushThrowSample(history, row.linear, row.angular, row.dt);
+    return { samples: history.samples.map(s => ({ dt: s.dt, linear: s.linear, angular: s.angular })),
+      linear: history.linear, angular: history.angular };
+  });
+  const pose_cases = [
+    { name: 'identity-to-y-quarter-turn', previous: { pos: [0.1, 1.2, -0.4], quat: [0, 0, 0, 1] },
+      current: { pos: [0.2, 1.4, -0.1], quat: [0, Math.SQRT1_2, 0, Math.SQRT1_2] }, dt: 0.1 },
+    { name: 'noncommuting-nonidentity-rotations', previous: { pos: [-0.3, 0.5, 1.1], quat: [Math.sin(0.3), 0, 0, Math.cos(0.3)] },
+      current: { pos: [-0.2, 0.45, 1.3], quat: [0, Math.sin(0.45), 0, Math.cos(0.45)] }, dt: 1 / 72 },
+    { name: 'negative-w-equivalent-current', previous: { pos: [0, 0.2, 0], quat: [Math.sin(0.3), 0, 0, Math.cos(0.3)] },
+      current: { pos: [0.05, 0.25, -0.1], quat: [0, -Math.sin(0.45), 0, -Math.cos(0.45)] }, dt: 0.02 },
+  ].map(row => ({ ...row, expected: sampleFromPoses(row.previous, row.current, row.dt) }));
+  return { path: resolve(ROOT, 'godot/addons/gs_grasp/tests/throw_release.golden.json'), pretty: true,
+    data: { schema: 'gamesystems.golden.grasp-throw-release.v1', generator: 'godot/tools/gen_golden.mjs',
+      source: rel(source), sources_sha256,
+      constants: { GLASS_BREAK_CONTACT_SPEED, RELEASE_SPEED_CAP, RELEASE_SPIN_CAP, RELEASE_WINDOW,
+        RELEASE_SMOOTHING, SAMPLE_SPEED_CAP, SAMPLE_SPIN_CAP, HISTORY_SPAN },
+      cases, pushes, push_steps, pose_cases } };
 }
 
 async function graspCatalogGolden() {
@@ -366,7 +424,7 @@ async function graspVariantsGolden() {
 
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), await graspHeldDriveMathGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden(), await graspClampGolden(), await graspSdfGolden(), await graspVariantsGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), await graspHeldDriveMathGolden(), await graspThrowReleaseGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden(), await graspClampGolden(), await graspSdfGolden(), await graspVariantsGolden()]) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)

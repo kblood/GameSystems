@@ -1,6 +1,6 @@
 # gs_grasp
 
-The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp`, `GSGraspShapeSdf`, `GSGraspVariants` and `GSGraspHeldDrive`. The selector is a stateless port of the
+The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp`, `GSGraspShapeSdf`, `GSGraspVariants`, `GSGraspHeldDrive` and `GSGraspThrowRelease`. The selector is a stateless port of the
 public JavaScript `baked_grasps.nearestPose` scoring/selection operation. The caller
 owns the candidate library and previous selection. This addon does not maintain a
 global grasp library or integrate a native game's grab loop.
@@ -215,3 +215,25 @@ passes **45 checks** with `2e-5` Vector3 tolerance. This utility computes math o
 it does not apply forces, integrate inertia, choose grasp targets or replace the
 Nightfall physics-driven held-object loop. No headset performance budget or in-game
 parity is claimed.
+
+## Throw release sampling
+
+`GSGraspThrowRelease` ports the public JS constants and functions for creating a
+throw history, adding controller velocity samples, calculating peak-smoothed release
+velocity and deriving linear/angular velocity from consecutive poses. The release
+selector evaluates short `RELEASE_SMOOTHING`-second time-weighted windows whose ends
+fall inside `RELEASE_WINDOW`, then keeps the candidate with the greatest linear speed;
+its angular sample stays paired with that candidate. Samples are individually bounded,
+and history older than `HISTORY_SPAN` is discarded. Positions use world metres,
+velocities metres/second, `dt` seconds and spin radians/second.
+
+The typed API uses `Vector3` and unit `Quaternion` inputs and returns `null` for
+malformed histories, non-finite input or invalid time steps; rejected pushes leave the
+caller-owned history unchanged. `GLASS_BREAK_CONTACT_SPEED` is exported as tuning data;
+the addon does not decide which contacts break glass, classify colliders, release
+objects or apply physics. Nightfall retains its host adapter and interaction policy.
+The JS-generated golden covers four release histories, six pushed samples including
+history trimming/caps, three pose transitions (including noncommuting rotations and
+negative-`w` sign equivalence) and invalid boundaries. Godot 4.7.2 passes **183 checks**
+at `2e-5` Vector3 tolerance. It proves math parity only, not live
+throw feel or headset performance.

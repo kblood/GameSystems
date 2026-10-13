@@ -29,6 +29,12 @@ this addon. Its golden invokes the public JS function for the canonical bake and
 synthetic edge rows. The tests and probe are original GameSystems MIT work,
 Copyright (c) 2026 Kasper Olesen.
 
+`GSGraspThrowRelease` ports the public sampling and release math from MIT GameSystems
+`extensions/grasp/throw_release.js`. It does not copy Nightfall's host-side glass
+contact classifier or object-release integration. The golden invokes the public JS
+functions; the GDScript, generator probe and tests are original GameSystems MIT work,
+Copyright (c) 2026 Kasper Olesen.
+
 `GSGraspHeldDrive` ports the public math/sampling helpers from MIT GameSystems
 `extensions/grasp/held_drive.js` and reads tuning from `gs_grasp_data`. It does not
 include host physics integration or the Nightfall runtime's drive implementation.
