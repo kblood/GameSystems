@@ -47,3 +47,13 @@
   Accepted/rejected raw indices and dependency hashes preserve that distinction.
   The reader and tests are original GameSystems MIT work, with no capture, mirror,
   recording, closure or SDF algorithm port.
+- `data/baked_grasps.data.json` copies the existing MIT GameSystems
+  `extensions/grasp/baked_grasps.data.json`. As documented in `baked_grasps.js`,
+  these Godot bake rows were converted by Contracts' `convert_baked_grasps.mjs`
+  to plugin wrist/quaternion/finger conventions and refitted by the grasp tools.
+  Source schema/digests, `night-watch.glb` path/hash, operator scale, limits and fit
+  metadata are preserved verbatim as data. No avatar asset or baking tool is copied.
+- `data/baked_grasps.golden.json` contains the complete public JS `BAKED`, pose IDs,
+  per-kind counts and kinds without a generic catalog entry, with dependency hashes.
+  The source metadata is historical provenance, not verification of current assets,
+  license status of external assets, or reproduction of the original bake.

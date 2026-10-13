@@ -1,5 +1,28 @@
 # Løbende forbedringer af GameSystems
 
+## G3 bake-kontrakt med komplette offentlige records — 2026-10-13
+
+`GSGraspBakedData` læser en genereret kopi af den uændrede
+`extensions/grasp/baked_grasps.data.json`. Goldenen bygger på hele den offentlige
+`BAKED`-eksport og gemmer desuden samtlige 255 pose-ID'er i rækkefølge, kind-tællinger
+og typer uden generisk katalogpost. Source-/konventions-/summary-metadata, oprindelige
+raw-vinkler, wrap/flat/pinch, fit-markører og sentinel-metrics bevares.
+
+Valideringen kontrollerer feltstruktur, finite tal, quaternion-norm, rækker,
+unikke ID'er og summary-counts. Den kræver ikke `CATALOG`-medlemskab: 34 magazine-
+records er asset-specifikke. Mug-exemption og magazine-clamping er uændrede i JS;
+regressionen fastholder hele dokumentets historiske hash og hvert records identitet.
+Source-hashes/avatarsti dokumenterer den historiske Godot-bake, konvertering og refit;
+ingen avatarasset, bake-algoritme eller kontakt-/SDF-paritet er verificeret her.
+Reference-hand-fixturet er en separat kilde og forveksles ikke med bake-avatarens
+operatorScale/rest-konventioner.
+
+Verifikation: Godot 4.7.2 **300/300**, fokuseret JS **28/28** inklusive Contracts-
+filsammenligningen, golden-freshness og `git diff --check` passerer. Canonical JSON
+og JS-runtime har ingen ændringer; native-addon-sync til spillet er stadig udestående.
+G3 mangler kvalitetsdata og en samlet afslutningsaudit; senere algoritme-/headset-
+validering er fortsat særskilt arbejde.
+
 ## G3 optagede greb: rå dokument og filtreret API hver for sig — 2026-10-13
 
 Den kanoniske `extensions/grasp/recorded_grasps.json` og dens JS-forbrugere er

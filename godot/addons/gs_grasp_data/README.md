@@ -1,7 +1,7 @@
 # gs_grasp_data
 
 This data-only G3 addon has separate readers for validator ranges/gates, closure
-defaults, held-drive tuning, prop catalogs, the reference rest hand and recorded grasps.
+defaults, held-drive tuning, prop catalogs, the reference rest hand, recordings and bakes.
 Each reads a versioned JSON contract shared with JavaScript. Generated goldens record
 the source data and public JS exports or API outputs.
 
@@ -72,6 +72,25 @@ Structural validity does not imply anatomical/contact quality: raw rows, includi
 thumb twists outside `HARD`, are preserved for the existing runtime clamp. Duplicate
 ids are retained as data; variant merging remains the JS runtime's responsibility.
 
+`GSGraspBakedData` reads the unchanged canonical `baked_grasps.data.json`, retaining
+its original `nightfall-webxr.baked-grasps.v1` schema. It validates exact field sets,
+source metadata/hash-string format, finite convention/metric values, unit rest/pose
+quaternions (`1e-3` tolerance), five digit rows, unique IDs and summary counts matching
+the poses. The full public `BAKED` golden covers all 255 records in order. It preserves
+wrap/flat/pinch modes, optional fit markers, raw angles beyond anatomical limits and
+finite sentinel contact metrics such as `palmGapMm: 1000`.
+
+The bake contains six kinds; `magazine` has no generic `CATALOG` entry. This is valid
+asset-specific data, so the reader requires summary coverage rather than catalog
+membership. Source limits/metrics are historical bake metadata, not current acceptance
+thresholds. Source `night-watch.glb`/operator-scale and `conventions.rest` metadata
+describe the bake/conversion context; they are not required to equal the separate
+CharacterCreator reference rest-hand fixture used by JS recording tools. Pose rows
+share the wrist/quaternion/finger conventions consumed by the grasp modules, while
+the versioned bake and recording documents retain their distinct metadata schemas.
+The reader does not verify the avatar path/hash against an installed asset, reproduce
+the bake/refit algorithm, or establish avatar fit/contact/SDF parity.
+
 The readers do not clamp finger rows, score grasps, calculate contacts, solve closure,
 apply drive forces, sample/capture/mirror recordings or convert coordinates. Algorithm ports and
 their parity tests remain separate G4/G6 work.
@@ -89,6 +108,8 @@ var reference := GSGraspReferenceHandData.load_data()
 var left_rest: Dictionary = reference["hands"]["left"]
 var recordings := GSGraspRecordedData.load_data()
 var raw_poses: Array = recordings["poses"]
+var bake := GSGraspBakedData.load_data()
+var baked_poses: Array = bake["poses"]
 ```
 
 Run the source contract with Godot 4.7+:
@@ -100,4 +121,5 @@ godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp
 godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_catalog_data_tests.gd
 godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_reference_hand_data_tests.gd
 godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_recorded_data_tests.gd
+godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_baked_data_tests.gd
 ```

@@ -16,7 +16,7 @@ import { CLOSURE, PAD_RADIUS, REFERENCE_HAND, THUMB_TILT } from '../../extension
 import { STIFFNESS, DAMPING, MAX_ACCELERATION, MAX_TORQUE, MAX_HOLD_FORCE, HAND_MOTION_SAMPLES } from '../../extensions/grasp/held_drive.js';
 import { DEFAULT_MASS, CATALOG } from '../../extensions/grasp/catalog.js';
 import { referenceHand, RECORDED_SCHEMA, recordedPoses, isPose } from '../../extensions/grasp/record.js';
-import { RECORDED } from '../../extensions/grasp/baked_grasps.js';
+import { BAKED, RECORDED } from '../../extensions/grasp/baked_grasps.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const sha256 = async path => createHash('sha256').update(await readFile(path)).digest('hex');
@@ -195,9 +195,33 @@ async function graspRecordedGolden() {
   ];
 }
 
+async function graspBakedGolden() {
+  const source = resolve(ROOT, 'extensions/grasp/baked_grasps.data.json');
+  const contract = JSON.parse(await readFile(source, 'utf8'));
+  deepStrictEqual(contract, BAKED, 'Canonical bake differs from the public BAKED export');
+  const kind_counts = {};
+  for (const pose of BAKED.poses) kind_counts[pose.kind] = (kind_counts[pose.kind] ?? 0) + 1;
+  const names = ['baked_grasps.data.json', 'baked_grasps.js', 'recorded_grasps.json', 'record.js', 'reference_hand.json',
+    'closure.js', 'data/closure.data.json', 'catalog.js', 'data/catalog.data.json', 'contact.js',
+    'grasp_validator.js', 'data/validator.data.json', 'math.js'];
+  const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
+    const path = resolve(ROOT, 'extensions/grasp', name);
+    return [rel(path), await sha256(path)];
+  })));
+  return [
+    { path: resolve(ROOT, 'godot/addons/gs_grasp_data/data/baked_grasps.data.json'), data: contract, pretty: true },
+    { path: resolve(ROOT, 'godot/addons/gs_grasp_data/data/baked_grasps.golden.json'), data: {
+      schema: 'gamesystems.golden.grasp-baked-data.v1', generator: 'godot/tools/gen_golden.mjs',
+      source: rel(source), source_sha256: await sha256(source), sources_sha256, baked: BAKED,
+      pose_ids: BAKED.poses.map(pose => pose.id), kind_counts,
+      kinds_without_catalog: Object.keys(kind_counts).filter(kind => !Object.hasOwn(CATALOG, kind)),
+    }, pretty: true },
+  ];
+}
+
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden()]) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)
