@@ -109,6 +109,15 @@ controller poses, action bindings, hand-joint availability, haptics, eye trackin
 filesystem access or background behavior. See the
 [Godot 4.7 XR action map](https://docs.godotengine.org/en/4.7/tutorials/xr/xr_action_map.html).
 
+Treat browser audio and persistence as explicit port boundaries. Godot's default Web
+Audio Sample playback path does not support the full native audio feature set, including
+AudioEffects (such as reverb), Doppler tracking and procedural audio generation; verify
+the selected playback mode and target browsers before porting those features. Web
+`user://` storage is backed by browser storage and may not persist in private browsing or
+when cookies/site data are blocked. Provide a clear save failure or retry path for
+important progress, and test save/reload in the actual browser configuration. See
+[Godot's Web export audio and persistence notes](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html).
+
 ## Port sequence
 
 1. Read both project contracts and the source system's current tests.

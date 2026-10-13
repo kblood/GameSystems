@@ -19,6 +19,14 @@ results, record whether the build uses Windows x86 via Proton/FEX, native ARM64 
 an Android APK. For other headsets, record their OS, package and runtime. Record engine
 version, renderer, resolution, foveation and runtime settings for each.
 
+Profile browser WebXR as a separate target from native OpenXR and from desktop browser
+simulation. Record browser/version, device and WebXR runtime, headset refresh rate,
+render scale, GPU/CPU frame timings, JavaScript and WASM work, memory, and reprojection or
+missed-frame data where available. Test session entry, tab hide/background pause and
+resume, visibility changes, and a sustained run on the actual headset browser; desktop
+WebXR emulation does not establish headset performance. See the
+[Godot WebXR port guide](godot_webxr_porting.md) for browser lifecycle and export limits.
+
 Use the frame-time distribution and worst sustained scene, not only an average. Separate
 GPU saturation, CPU script work, driver overhead, physics cost, shader compilation,
 loading stalls and thermal throttling. Desktop editor and simulator numbers do not prove
