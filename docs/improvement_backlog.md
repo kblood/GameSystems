@@ -15,10 +15,12 @@ ingen mutation og fejlede input. Numeric tolerance er `1e-10`; generator-check o
 `git diff --check` passerer. Godots typed API og fail-closed validering adskiller sig
 bevidst fra JS ved ugyldige input; README beskriver grænsen og enhederne.
 
-Sol har godkendt source-porten. Nightfall packaging/runtime-integration afventer. G4 er
-fortsat åben for merge/default-policy, clamp, katalog/SDF, held-drive og kast;
-closure/kontakt, avatar- og headsetparitet er heller ikke bevist. Ingen grab-loop er
-ændret, og addon-sync til Nightfall er næste trin.
+Sol har godkendt source-porten. Addon'et er synket i Nightfall Godot `f54599a` og dets
+fokuserede suite passerer **2.071/2.071**. Nightfalls eksisterende `BakedGraspLibrary`
+lookup tager også reach/contact-regler; ingen grab-loop er ændret, og en runtime-adapter
+skal bevare de begrænsninger før integration. G4 er fortsat åben for merge/default-
+policy, clamp, katalog/SDF, held-drive og kast; closure/kontakt-, avatar- og headset-
+paritet er heller ikke bevist.
 
 ## G3 fælles grasp-data: afsluttende kontrakt- og consumer-audit — 2026-10-13
 
