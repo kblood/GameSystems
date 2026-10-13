@@ -4,9 +4,13 @@
 //   node godot/tools/gen_golden.mjs --check  exit 1 when a golden file is missing or out of date (writes nothing)
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { deepStrictEqual } from 'node:assert';
 import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tierFor, normalizeTier } from '../../extensions/host/quality.js';
+import { JOINT_NAMES } from '../../extensions/humanoid/canonical.js';
+import { MPFB_ROOT_BONE } from '../../extensions/humanoid/rig.js';
+import { MPFB_GAME_ENGINE, VRM_HUMANOID, VRM0_HUMANOID, mixamoBoneMap } from '../../extensions/humanoid/bone_maps.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const sha256 = async path => createHash('sha256').update(await readFile(path)).digest('hex');
@@ -32,17 +36,44 @@ async function tierForGolden() {
   };
 }
 
+async function humanoidBoneMapsGolden() {
+  const source = resolve(ROOT, 'extensions/humanoid/bone_maps.data.json');
+  const contract = JSON.parse(await readFile(source, 'utf8'));
+  // Exercise the public JS API, not a second read of the copied JSON. In
+  // particular, canonical.js owns the ordered joint list independently, and
+  // Mixamo's public API adds a configurable prefix to the stored bare names.
+  const expected = {
+    schema: 'gamesystems.humanoid-bone-maps.v1', rootMotionBone: MPFB_ROOT_BONE,
+    jointNames: JOINT_NAMES,
+    maps: { mpfb: MPFB_GAME_ENGINE, vrm1: VRM_HUMANOID, vrm0: VRM0_HUMANOID, mixamo: mixamoBoneMap('') },
+  };
+  deepStrictEqual(contract, expected, 'Humanoid data contract differs from the public JS API');
+  const sources = ['bone_maps.data.json', 'bone_maps.js', 'rig.js', 'canonical.js', 'qmath.js'];
+  const sources_sha256 = Object.fromEntries(await Promise.all(sources.map(async name => {
+    const path = resolve(ROOT, 'extensions/humanoid', name);
+    return [rel(path), await sha256(path)];
+  })));
+  return [
+    { path: resolve(ROOT, 'godot/addons/gs_humanoid/data/bone_maps.data.json'), data: contract, pretty: true },
+    { path: resolve(ROOT, 'godot/addons/gs_humanoid/data/bone_maps.golden.json'), data: {
+      schema: 'gamesystems.golden.humanoid-bone-maps.v1', generator: 'godot/tools/gen_golden.mjs',
+      source: rel(source), source_sha256: await sha256(source), sources_sha256, contract: expected,
+    }, pretty: true },
+  ];
+}
+
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const { path, data } of [await tierForGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden()]) {
+  const { path, data } = output;
   // One case per line: small file, readable diffs.
-  const text = '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)
+  const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)
     ? `[\n${value.map(row => `\t\t${JSON.stringify(row)}`).join(',\n')}\n\t]` : JSON.stringify(value))).join(',\n') + '\n}\n';
   const old = await readFile(path, 'utf8').catch(() => null);
   if (old === text) { console.log(`ok       ${rel(path)}`); continue; }
   if (check) { stale++; console.log(`STALE    ${rel(path)}`); continue; }
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, text);
-  console.log(`written  ${rel(path)} (${data.cases.length} cases)`);
+  console.log(`written  ${rel(path)}${data.cases ? ` (${data.cases.length} cases)` : ''}`);
 }
 if (stale) { console.error(`${stale} golden file(s) out of date: run node godot/tools/gen_golden.mjs`); process.exit(1); }

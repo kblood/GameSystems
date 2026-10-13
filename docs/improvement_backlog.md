@@ -1,20 +1,18 @@
 # Løbende forbedringer af GameSystems
 
-## Fælles humanoid-data til Godot-porten — 2026-10-13
+## G3 humanoid-data: første Godot-forbruger — 2026-10-13
 
-Første del af G3 flyttede humanoidens MPFB-, VRM 1.0-, VRM 0.x- og Mixamo-bone
-maps til `extensions/humanoid/bone_maps.data.json`. `rig.js` og `bone_maps.js`
-læser nu JSON-dataene, mens deres offentlige eksportnavne og map-værdier bevares.
-WebXR-demoen og Nightfall Contracts WebXR bruger genererede synkroniserede kopier;
-licensnoterne skelner mellem MPFB-data fra MIT-udgivet CharacterCreator og
-GameSystems-ejede VRM/Mixamo-maps. En sorteringsstabil SHA-256-golden fastholder
-de tidligere værdier i alle fire 52-joints maps.
+`gs_humanoid` har nu en lille Godot-læser, der afviser forkert skema, manglende eller
+duplikerede canonical joints, ekstra/manglende rigs og ufuldstændige maps. Generatoren
+kopierer den fælles humanoid-JSON og laver en Godot-golden fra JS-eksporternes
+canonical-led og fire rig-maps. JS-golden fastholder samtidig de fire maps' historiske
+52-leds værdier. Det giver et selvstændigt, headless-testbart dataprodukt før den større
+Skeleton3D-/retargeting-port.
 
-Verifikation: GameSystems WebXR-demo **564/564** og Nightfall Contracts WebXR
-**375/375** Node-tests passerer, og demoens Vite-produktionsbuild lykkes. Det
-verificerer JS-runtime og de synkroniserede kopier, ikke en Godot-forbruger.
-Resterende G3-arbejde er et stabilt tværgående skema og genererede golden-data,
-som Godot kan læse og sammenligne med JS; `gs_humanoid` findes endnu ikke.
+Verifikation: Godot 4.7.2 **10/10**, hele GameSystems WebXR-demoen **564/564**, den
+fokuserede JS-kontraktstest **1/1**, og `node godot/tools/gen_golden.mjs --check`
+består. G3 er ikke færdig: graspens bake-, recording- og reference-data har endnu ikke
+Godot-side schema-/forbrugstests eller dækkende cross-runtime golden.
 
 ## Godot OpenXR- og VR-guide-review — 2026-10-13
 
