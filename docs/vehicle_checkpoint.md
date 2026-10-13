@@ -56,8 +56,10 @@ High/low er kun rendering; begge assets har samme paneltopologi, og quality-rest
 Gemningen er for samme author-konfiguration og registrerede kilder. Den indlæser ikke vilkårlige bilmodeller
 eller eksterne hardwarekilder. Native API'er og den konkrete scene-composition er forskellige niveauer:
 en anden kildearkitektur skal stille sine egne staged resource views til rådighed.
-Labben viser stadig bilen på sin platform; den logiske motion-state gemmes, mens visual binding kan bruge
-`moveRoot:true` i et egentligt spil. Collision/suspension og fysiske headsetkontroller er fortsat ikke implementeret.
+Labben viser bilen på sin platform og bruger `moveRoot:true` til visuel bevægelse. En host-drevet swept-chassis-
+og fire-hjul-ray-adapter giver letvægts collision-sikkerhed og affjedringspræsentation. Checkpointet gemmer bilens
+logiske motion-state; restore nulstiller adapteren og beregner den visuelle affjedring ud fra den gendannede bil.
+Det er stadig ikke en rigid-body-/tire-slip-solver, og fysiske headsetkontroller er ikke implementeret.
 
 10 nye checkpoint-/ejerskabstests, 290/290 samlet GameSystems-tests og de eksisterende 11 vehicle-tests består. 7/7 nye browserchecks
 bekræfter native kørsel/paneler, pose og visuel hinge-restore, neutral input, faktisk side-reload,
