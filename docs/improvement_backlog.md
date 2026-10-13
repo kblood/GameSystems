@@ -14,8 +14,27 @@ værdier/rækkefølge, array-/record-/nested-identitet og uændrede input. Godot
 består **2.392/2.392** checks; eksisterende nearest-suite består **2.071/2.071**.
 Golden-freshness og diff-check passerer. Typed arrays med string-nøgler og valgfri
 boolean default er parity-scope; malformed input giver null, ikke JS-coercion.
-Source-only; Sol-review og consumer-sync afventer. Variantvalg, native recorded-only,
-avatar-konvertering, kontakt, clamp/SDF, drive/kast og runtime-integration er fortsat åbne.
+Source-porten er Sol-reviewed og synket til Nightfall Godot `75823df`; target består
+2.392/2.392 mergechecks, nearest-regressionen 2.071/2.071, og golden-/sync-checks passerer.
+Variantvalg, native recorded-only, avatar-konvertering, kontakt, clamp/SDF, drive/kast
+og runtime-integration er fortsat åbne. Clamp er nu under implementering i næste afsnit.
+
+## G4 hard-range finger clamping — 2026-10-13
+
+`GSGraspClamp.clamp_rows` porter den rene `grasp_validator.js`-funktion til `gs_grasp`.
+Den returnerer et nyt resultat for hver gang, læser hard ranges og comfort-centre fra
+den fælles `gs_grasp_data`-kontrakt og lader `CLAMP_EXEMPT`, kvalitetsvalg, memoization
+og aktiv game-hand-path være consumeransvar. Manglende/ufuldstændige/non-finite led
+falder tilbage til comfort-centret; thumb twist har nul som fallback. Gyldige værdier
+clampes til HARD, og input ændres ikke. Godot afviser tilstedeværende ikke-array-fingerrækker.
+
+JS-golden indeholder alle 255 baked poses plus fire syntetiske missing/partial/extreme-
+cases. Godot består **7.008/7.008**; det inkluderer lokale NaN/INF/boolean/twist- og
+ugyldig-konfigurationscases. Sol-review godkendt uden fund. Nightfall suite `gs` kører
+nu clamp-, merge- og nearest-portens parity-tests; målrettet native runner bestod **3/3**
+med stabil source digest. Addon-sync-check og golden freshness passerer. Denne port er
+fortsat en isoleret utility og beviser ikke kontakt, closure, kvalitetspolitik,
+performance i grab-loop eller headset-fit.
 
 ## G4 beslutning: behold native controller-lookup — 2026-10-13
 

@@ -1,6 +1,6 @@
 # gs_grasp
 
-The G4 components are `GSNearestGrasp` and `GSGraspMerge`. The selector is a stateless port of the
+The G4 components are `GSNearestGrasp`, `GSGraspMerge` and `GSGraspClamp`. The selector is a stateless port of the
 public JavaScript `baked_grasps.nearestPose` scoring/selection operation. The caller
 owns the candidate library and previous selection. This addon does not maintain a
 global grasp library or integrate a native game's grab loop.
@@ -78,9 +78,27 @@ godot --headless --path godot --script res://addons/gs_grasp/tests/gs_nearest_gr
 ```
 
 Godot 4.7.2: **2,071 assertions passed, 296 parity cases**. This is source-only
-selector evidence. Pose clamping, catalog/SDF, closure/contact,
-bake algorithms, held-drive/throwing, avatar fitting and headset/in-game parity remain
-outside this slice. No consumer repository has been synced by this change.
+selector evidence. Catalog/SDF, closure/contact, bake algorithms, held-drive/throwing,
+avatar fitting and headset/in-game parity remain outside this slice.
+
+## Clamping finger rows
+
+`GSGraspClamp.clamp_rows(rows: Dictionary, data: Dictionary = {}) -> Variant` ports
+the public JS `grasp_validator.clampRows`. It always returns a new Dictionary with
+four degree values for every digit, and a fifth thumb twist only when the input thumb
+row has one. Missing/short entries and non-finite values use the shared comfort
+center; the thumb twist fallback is zero. Values are clamped to the shared hard joint
+ranges. Extra non-thumb entries and entries beyond thumb twist are ignored. Input is
+never mutated. A present row must be an Array; malformed rows or invalid validator
+configuration return `null` (JS itself is more permissive for arbitrary object rows).
+An empty `data` Dictionary is the default-data sentinel; pass a non-empty validated
+`GSGraspValidatorData` payload to supply configuration explicitly.
+
+The caller can preload validated `GSGraspValidatorData` and pass it to avoid reading
+JSON on each call. This utility does not choose grasp quality, apply `CLAMP_EXEMPT`,
+memoize results, close fingers to contact or alter the active game hand path.
+`grasp_clamp.golden.json` is generated from the public JS function for all 255 baked
+poses plus missing/partial rows and upper/lower extremes.
 
 ## Merging baked and recorded libraries
 
@@ -129,7 +147,7 @@ node godot/tools/gen_golden.mjs --check
 godot --headless --path godot --script res://addons/gs_grasp/tests/gs_grasp_merge_tests.gd
 ```
 
-Godot 4.7.2: **2,392 assertions passed, 21 merge cases**. Source-only pending review
-and consumer sync. Variant parsing/selection, recording validation/conversion, native
+Godot 4.7.2: **2,392 assertions passed, 21 merge cases**. Sol-reviewed and synced to
+Nightfall Godot. Variant parsing/selection, recording validation/conversion, native
 `recorded-only` behavior, avatar fitting and live-game integration are not ported by
 this utility. Existing native grasp logic is unchanged.

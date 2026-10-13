@@ -21,3 +21,10 @@ Kasper Olesen. The merge golden invokes that public function on synthetic record
 and the existing canonical bake/accepted Grasp Studio recordings. It stores origin
 and identity descriptors, not another canonical library. No recording, mirroring,
 closure, CharacterCreator runtime or avatar calibration algorithm is copied here.
+
+`GSGraspClamp` ports `clampRows` from the same MIT GameSystems
+`extensions/grasp/grasp_validator.js` module. It reads the shared validator
+ranges/comfort data through `gs_grasp_data`; no joint-limit table is duplicated in
+this addon. Its golden invokes the public JS function for the canonical bake and
+synthetic edge rows. The tests and probe are original GameSystems MIT work,
+Copyright (c) 2026 Kasper Olesen.
