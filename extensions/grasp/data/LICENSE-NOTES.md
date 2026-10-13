@@ -35,3 +35,9 @@ glass silhouettes (MIT, Kasper Olesen), as documented in the original module hea
 All catalog records and this extraction remain under the repository's MIT licence.
 Geometry uses item-local metres with +Y up, masses are kilograms, and color fields
 are numeric 24-bit RGB values. The JSON contains no executable SDF or mesh algorithm.
+
+`quality.data.json` extracts the existing GameSystems MIT quality-policy literals
+from `extensions/grasp/baked_grasps.js`: public quality levels/clamp-exempt kinds,
+default level, legacy aliases and the private exempt-finger list. Values and public
+freeze behavior are preserved. These symbolic names have no physical units and are
+not performance measurements or executable clamping/closure algorithms.

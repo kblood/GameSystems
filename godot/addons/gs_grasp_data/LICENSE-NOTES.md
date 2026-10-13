@@ -57,3 +57,8 @@
   per-kind counts and kinds without a generic catalog entry, with dependency hashes.
   The source metadata is historical provenance, not verification of current assets,
   license status of external assets, or reproduction of the original bake.
+- `data/quality.data.json` copies policy literals extracted from the MIT GameSystems
+  `baked_grasps.js`. Its golden records public arrays, initial default via the getter,
+  and setter results for aliases/levels. The private exempt-finger list is preserved
+  as source data, not misrepresented as a public export. Reader/tests are original
+  GameSystems MIT work; no Godot quality/clamping/closure behavior is implemented.

@@ -22,6 +22,7 @@
 // side, grasp) lists the bake's default and the recordings to choose from. BAKED stays the bake alone.
 import DATA from './baked_grasps.data.json' with { type: 'json' };
 import RECORDED_DATA from './recorded_grasps.json' with { type: 'json' };
+import QUALITY_DATA from './data/quality.data.json' with { type: 'json' };
 import { qmul, qconj, rotate, add, sub, length } from './math.js';
 import { clampRows } from './grasp_validator.js';
 import { CATALOG } from './catalog.js';
@@ -120,9 +121,9 @@ export function toWorld(item, pose) {
   return { pos: add(item.pos, rotate(item.quat, pose.wrist)), quat: qmul(item.quat, pose.quat) };
 }
 
-export const GRASP_QUALITY = Object.freeze(['raw', 'low', 'mid', 'high']);
-const ALIASES = { clamped: 'low' };
-let quality = 'mid';
+export const GRASP_QUALITY = Object.freeze(QUALITY_DATA.GRASP_QUALITY);
+const ALIASES = QUALITY_DATA.aliases;
+let quality = QUALITY_DATA.defaultQuality;
 /** 'raw' | 'low' | 'mid' (default) | 'high' ('clamped' = 'low'); returns the active level. */
 export function setGraspQuality(level) {
   const q = ALIASES[level] ?? level;
@@ -136,8 +137,8 @@ export const graspQuality = () => quality;
 // fingers close to contact. The grasp lab (step 3) found no in-range mug thumb that holds the cup on the CC skin, so
 // close-to-contact replaced the old per-kind SKIN_MARGIN but not this exemption (grab_findings 1.4, 3.1). The margin's mug
 // thumb part (+10 deg bend1) was folded into the mug poses of baked_grasps.data.json, as a refit would.
-export const CLAMP_EXEMPT = Object.freeze(['mug']);
-const EXEMPT_KEEP = ['Thumb'];
+export const CLAMP_EXEMPT = Object.freeze(QUALITY_DATA.CLAMP_EXEMPT);
+const EXEMPT_KEEP = QUALITY_DATA.exemptKeep;
 
 // Clamped open/closed rows per pose object (the joint ranges are a box, so a lerp between two clamped ends stays inside).
 const clampedRows = new WeakMap();

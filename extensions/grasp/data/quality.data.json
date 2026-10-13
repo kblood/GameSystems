@@ -1,0 +1,19 @@
+{
+  "schema": "gamesystems.grasp-quality-data.v1",
+  "GRASP_QUALITY": [
+    "raw",
+    "low",
+    "mid",
+    "high"
+  ],
+  "CLAMP_EXEMPT": [
+    "mug"
+  ],
+  "defaultQuality": "mid",
+  "aliases": {
+    "clamped": "low"
+  },
+  "exemptKeep": [
+    "Thumb"
+  ]
+}

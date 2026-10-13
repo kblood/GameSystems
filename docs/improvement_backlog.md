@@ -1,5 +1,27 @@
 # Løbende forbedringer af GameSystems
 
+## G3 grasp-kvalitet som eksplicit policydata — 2026-10-13
+
+`extensions/grasp/data/quality.data.json` indeholder nu den eksisterende policy fra
+`baked_grasps.js`: frosne offentlige `GRASP_QUALITY` og `CLAMP_EXEMPT`, default `mid`,
+alias `clamped` → `low` og den private exempt-fingerliste `["Thumb"]`. Værdier og
+runtime-algoritmer bevares; data har navnesemantik og ingen fysiske enheder eller
+målte performancebudgetter.
+
+`GSGraspQualityData` validerer feltsæt, v1-rækkefølge, default/aliasmål, alias-kollisioner
+og unikke kind-/fingernavne. Godot-goldenen afprøver de offentlige JS-arrays, frisk
+initialiseret default-getter og alias-/niveau-setteren og gendanner singleton-tilstanden.
+Den private fingerliste er kopieret policydata, ikke en påstået offentlig eksport.
+En historisk hash og JS-regression dækker frysning, level/alias, afvist valg uden
+tilstandsændring, mug-exemption ved low/mid og almindelig magazine-clamping.
+
+Verifikation: Godot 4.7.2 **46/46**, fokuseret JS **29/29** efter lokal demo-sync,
+golden-freshness og `git diff --check` passerer. Contracts-filsammenligningen er
+eksplicit udeladt, indtil sibling-repoet integrerer den nye datafil. Eksisterende
+rekursiv `grasp/data`-sync dækker filen; ingen sibling-sync eller commit er udført.
+Kvalitetspolicyen er nu delt, men Godot-reader implementerer ingen quality-switch,
+clamping eller closure. G3-afslutning kræver fortsat samlet audit og consumer-verifikation.
+
 ## Aktuel G3-integrationsstatus — 2026-10-13
 
 De syv `gs_grasp_data`-datakontrakter er nu pushet i GameSystems og synkroniseret til

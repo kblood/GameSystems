@@ -1,7 +1,8 @@
 # gs_grasp_data
 
 This data-only G3 addon has separate readers for validator ranges/gates, closure
-defaults, held-drive tuning, prop catalogs, the reference rest hand, recordings and bakes.
+defaults, held-drive tuning, prop catalogs, the reference rest hand, recordings, bakes
+and quality policy.
 Each reads a versioned JSON contract shared with JavaScript. Generated goldens record
 the source data and public JS exports or API outputs.
 
@@ -91,6 +92,26 @@ the versioned bake and recording documents retain their distinct metadata schema
 The reader does not verify the avatar path/hash against an installed asset, reproduce
 the bake/refit algorithm, or establish avatar fit/contact/SDF parity.
 
+`GSGraspQualityData` reads `quality.data.json`. Policy fields are symbolic names with
+no physical units: ordered `GRASP_QUALITY` is `raw`, `low`, `mid`, `high`;
+`defaultQuality` is `mid`; `aliases` preserves `clamped` → `low`; `CLAMP_EXEMPT` is
+`["mug"]`; `exemptKeep` is `["Thumb"]`. In existing JS, raw keeps bake rows, low clamps
+ordinary kinds, mid closes once against the character hand, and high rechecks contact
+after relative hand motion. Exempt kinds stay raw at low; their listed fingers keep
+raw rows during mid/high closure. Mid/high fall back to lower-cost paths when required
+hand/catalog data is unavailable. This describes existing JS behavior, not new Godot
+functionality or measured performance.
+
+The v1 reader checks exact fields/order, valid default and alias targets, no alias
+chains/level-name collisions, and unique nonempty kind/finger names. Exempt fingers
+must be canonical digit names; kinds need not exist in the generic catalog. The golden
+observes public arrays, the freshly initialized default getter and setter results for
+aliases/levels; it restores the JS singleton state after probing. Private `exemptKeep`
+is copied configuration, not an independent public export. JS regression preserves
+historical values, frozen public arrays and representative runtime behavior. Godot
+validation only proves that the policy data is usable, not that a native implementation
+performs quality switching, clamping or closure.
+
 The readers do not clamp finger rows, score grasps, calculate contacts, solve closure,
 apply drive forces, sample/capture/mirror recordings or convert coordinates. Algorithm ports and
 their parity tests remain separate G4/G6 work.
@@ -110,6 +131,8 @@ var recordings := GSGraspRecordedData.load_data()
 var raw_poses: Array = recordings["poses"]
 var bake := GSGraspBakedData.load_data()
 var baked_poses: Array = bake["poses"]
+var quality := GSGraspQualityData.load_data()
+var declared_levels: Array = quality["GRASP_QUALITY"]
 ```
 
 Run the source contract with Godot 4.7+:
@@ -122,4 +145,5 @@ godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp
 godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_reference_hand_data_tests.gd
 godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_recorded_data_tests.gd
 godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_baked_data_tests.gd
+godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_quality_data_tests.gd
 ```

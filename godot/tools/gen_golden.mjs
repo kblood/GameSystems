@@ -16,7 +16,10 @@ import { CLOSURE, PAD_RADIUS, REFERENCE_HAND, THUMB_TILT } from '../../extension
 import { STIFFNESS, DAMPING, MAX_ACCELERATION, MAX_TORQUE, MAX_HOLD_FORCE, HAND_MOTION_SAMPLES } from '../../extensions/grasp/held_drive.js';
 import { DEFAULT_MASS, CATALOG } from '../../extensions/grasp/catalog.js';
 import { referenceHand, RECORDED_SCHEMA, recordedPoses, isPose } from '../../extensions/grasp/record.js';
-import { BAKED, RECORDED } from '../../extensions/grasp/baked_grasps.js';
+import { BAKED, RECORDED, GRASP_QUALITY, CLAMP_EXEMPT, graspQuality, setGraspQuality } from '../../extensions/grasp/baked_grasps.js';
+
+// Captured before any generator probes change the singleton quality selection.
+const INITIAL_GRASP_QUALITY = graspQuality();
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const sha256 = async path => createHash('sha256').update(await readFile(path)).digest('hex');
@@ -178,7 +181,7 @@ async function graspRecordedGolden() {
   deepStrictEqual(recorded, RECORDED, 'Recorded file filtering differs from the public RECORDED export');
   const accepted_indices = [], rejected_indices = [];
   contract.poses.forEach((pose, index) => (isPose(pose) ? accepted_indices : rejected_indices).push(index));
-  const names = ['recorded_grasps.json', 'baked_grasps.js', 'baked_grasps.data.json', 'record.js', 'reference_hand.json',
+  const names = ['recorded_grasps.json', 'baked_grasps.js', 'data/quality.data.json', 'baked_grasps.data.json', 'record.js', 'reference_hand.json',
     'closure.js', 'data/closure.data.json', 'catalog.js', 'data/catalog.data.json', 'contact.js',
     'grasp_validator.js', 'data/validator.data.json', 'math.js'];
   const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
@@ -201,7 +204,7 @@ async function graspBakedGolden() {
   deepStrictEqual(contract, BAKED, 'Canonical bake differs from the public BAKED export');
   const kind_counts = {};
   for (const pose of BAKED.poses) kind_counts[pose.kind] = (kind_counts[pose.kind] ?? 0) + 1;
-  const names = ['baked_grasps.data.json', 'baked_grasps.js', 'recorded_grasps.json', 'record.js', 'reference_hand.json',
+  const names = ['baked_grasps.data.json', 'baked_grasps.js', 'data/quality.data.json', 'recorded_grasps.json', 'record.js', 'reference_hand.json',
     'closure.js', 'data/closure.data.json', 'catalog.js', 'data/catalog.data.json', 'contact.js',
     'grasp_validator.js', 'data/validator.data.json', 'math.js'];
   const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
@@ -219,9 +222,37 @@ async function graspBakedGolden() {
   ];
 }
 
+async function graspQualityGolden() {
+  const source = resolve(ROOT, 'extensions/grasp/data/quality.data.json');
+  const contract = JSON.parse(await readFile(source, 'utf8'));
+  const previous = graspQuality(), aliases = {}, selections = [];
+  try {
+    for (const name of Object.keys(contract.aliases)) aliases[name] = setGraspQuality(name);
+    for (const input of GRASP_QUALITY) selections.push({ input, expected: setGraspQuality(input) });
+  } finally { setGraspQuality(previous); }
+  const api = { GRASP_QUALITY, CLAMP_EXEMPT, defaultQuality: INITIAL_GRASP_QUALITY, aliases };
+  for (const [key, value] of Object.entries(api)) deepStrictEqual(contract[key], value, `Quality data differs from JS API: ${key}`);
+  // exemptKeep is private JS configuration read directly from the contract; it
+  // is intentionally not described as an independently exported API result.
+  const names = ['data/quality.data.json', 'baked_grasps.js', 'baked_grasps.data.json', 'recorded_grasps.json',
+    'record.js', 'reference_hand.json', 'closure.js', 'data/closure.data.json', 'catalog.js', 'data/catalog.data.json',
+    'contact.js', 'grasp_validator.js', 'data/validator.data.json', 'math.js'];
+  const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
+    const path = resolve(ROOT, 'extensions/grasp', name);
+    return [rel(path), await sha256(path)];
+  })));
+  return [
+    { path: resolve(ROOT, 'godot/addons/gs_grasp_data/data/quality.data.json'), data: contract, pretty: true },
+    { path: resolve(ROOT, 'godot/addons/gs_grasp_data/data/quality.golden.json'), data: {
+      schema: 'gamesystems.golden.grasp-quality-data.v1', generator: 'godot/tools/gen_golden.mjs',
+      source: rel(source), source_sha256: await sha256(source), sources_sha256, contract, api, selections,
+    }, pretty: true },
+  ];
+}
+
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden()]) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)

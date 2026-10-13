@@ -5,7 +5,8 @@
   "source_sha256": "7927605241d292ba7a367c4d8c752cf18f40e353b664c1a024c9b28673cfeb3c",
   "sources_sha256": {
     "extensions/grasp/recorded_grasps.json": "7927605241d292ba7a367c4d8c752cf18f40e353b664c1a024c9b28673cfeb3c",
-    "extensions/grasp/baked_grasps.js": "936465cff2b28bfb77836c21b69a29ca25b8a7b8775a2d6893c32c5e5d13aeef",
+    "extensions/grasp/baked_grasps.js": "06f8f653b3ad5f2289613f9449b9a373a9409eb7be0905cfa42d077d9cd9ecaf",
+    "extensions/grasp/data/quality.data.json": "25a8c3a3fa8f5aef267ad2efc40c132e872d2b1c5ab791a7050bb7942b26f3d6",
     "extensions/grasp/baked_grasps.data.json": "6e253435445e2bcfe3117ad8714e2c93ad585a46e26da4822fefb64bd88d88af",
     "extensions/grasp/record.js": "addf91980a7403cd4b930562614aa96e04fb9d99b8955f9d683d6da4ff8b2e84",
     "extensions/grasp/reference_hand.json": "94bbd44fc445f105bbac261506609c1fc701aa6a3700387f64d732837cc973ab",
