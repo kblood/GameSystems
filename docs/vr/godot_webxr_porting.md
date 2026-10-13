@@ -47,8 +47,10 @@ policy from tracked poses rather than expecting a reset delta.
 `visibility_state_changed` reports the current `visibility_state` (`hidden`, `visible` or
 `visible-blurred`). On hidden or blurred states, suspend gameplay input and time-based
 actions such as firing, charging, locomotion and melee windows; do not accumulate elapsed
-time or input edges to replay when visibility returns. Keep authoritative ownership and
-inventory state intact. On return to `visible`, refresh valid head/hand poses, clear
+time or input edges to replay when visibility returns. Do not infer a release from missing
+samples. Preserve inventory and ownership invariants, but suspend, park, cancel or release
+a held object according to its documented lost-tracking contract, especially if the hidden
+state persists. On return to `visible`, refresh valid head/hand poses, clear
 motion history, and require neutral input followed by a fresh press before resuming
 gameplay. Whether a runtime emits each visibility transition varies, so treat this as a
 capability to observe and test, not a guaranteed pause callback. Godot documents both
@@ -56,8 +58,10 @@ signals and the visibility states in the
 [WebXRInterface API](https://docs.godotengine.org/en/4.7/classes/class_webxrinterface.html#signals).
 
 Add a device acceptance pass that recenters while holding a prop and another that hides
-and restores the session. Verify no visible pose jump, held-item detachment, phantom throw,
-melee hit, repeated shot or locomotion burst occurs. Record whether the browser/device
+and restores the session. Verify no visible pose jump, unintended held-item detachment,
+phantom throw, melee hit, repeated shot or locomotion burst occurs. Also verify brief loss
+retains the item when specified, while prolonged loss follows its documented release policy.
+Record whether the browser/device
 actually emitted each signal; a manual recenter that produces no reset signal is a
 separate runtime limitation to handle with pose-discontinuity detection. See the
 [avatar calibration contract](controls.md#avatar-scale-and-calibration).
