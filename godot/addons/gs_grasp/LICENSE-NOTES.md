@@ -65,3 +65,9 @@ individual entries and ignores optional metadata, unlike the stricter G3 source-
 reader. Its golden calls the public JS functions on synthetic documents; the
 GDScript, probe and tests are original GameSystems MIT work, Copyright (c) 2026
 Kasper Olesen.
+
+`GSGraspMirror` ports the public `mirrorPose` reflection and copy behavior from MIT
+GameSystems `extensions/grasp/record.js`. It does not validate or install the result.
+The golden calls the public JS function on synthetic and canonical poses; the
+GDScript, probe and tests are original GameSystems MIT work, Copyright (c) 2026
+Kasper Olesen.

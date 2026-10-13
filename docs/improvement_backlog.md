@@ -1,5 +1,14 @@
 # Løbende forbedringer af GameSystems
 
+## G4 mirror-pose conversion — 2026-10-13
+
+`GSGraspMirror.mirror_pose` porter `record.js`' spejling af optagede greb over
+emnets XY-plan: håndside, wrist/palm-position, quaternion, række-kopier,
+`mirroredFrom` og første ID-side-token følger JS. Falsy `open` bruger standardrækker;
+ukendt metadata bevares via et shallow copy. Golden sammenligner ti synthetic og
+kanoniske input direkte mod offentlig JS. Godot 4.7.2 består **978/978** assertions;
+det beviser ikke kontaktfit, library-installation eller runtime-paritet.
+
 ## G4 recorded-pose filtering — 2026-10-13
 
 `GSGraspRecordedPoses` porter `isPose` og `recordedPoses` fra `record.js`: hver pose

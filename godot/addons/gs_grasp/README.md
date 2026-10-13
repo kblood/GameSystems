@@ -152,6 +152,20 @@ and invalid poses, quaternion tolerance edges, thumb twist rows and ignored meta
 The utility only filters and does not merge, convert, score or install a runtime
 library.
 
+## Mirroring a recorded pose
+
+`GSGraspMirror.mirror_pose(pose)` reflects wrist/palm Z over the item's XY plane,
+switches the hand side, transforms the frame quaternion, and copies angle/open rows.
+It preserves other metadata, records the source ID in `mirroredFrom`, and replaces
+the first matching side token in a string ID before appending `-m`. Falsy `open`
+values use the public JS default-open rows. It does not validate the pose or write it
+to a library; callers must provide the fields used by `record.js`.
+
+The JS golden covers left/right, a baked and recorded pose, default-open fallbacks,
+empty-open behavior, first-token ID replacement, and input immutability. Godot 4.7.2
+passes **978 assertions** across ten cases. This verifies conversion math and
+copying only, not fit quality or runtime hand contact.
+
 ## Merging baked and recorded libraries
 
 `GSGraspMerge.merge_poses(baked: Array, recorded: Array) -> Variant` ports the public

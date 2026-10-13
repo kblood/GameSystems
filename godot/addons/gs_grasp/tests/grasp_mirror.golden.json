@@ -1,0 +1,1864 @@
+{
+  "schema": "gamesystems.golden.grasp-mirror.v1",
+  "generator": "godot/tools/gen_golden.mjs",
+  "probe": "godot/tools/grasp_mirror_golden.mjs",
+  "probe_sha256": "023c57890e34b1ecf3f30a5fa82eb5b7e8e3682d5a7b19dec70c2ff94ac3cf4c",
+  "sources_sha256": {
+    "extensions/grasp/record.js": "addf91980a7403cd4b930562614aa96e04fb9d99b8955f9d683d6da4ff8b2e84",
+    "extensions/grasp/math.js": "975799db1b6bbe9835d0a1c800363e3bbefed4b86a4b312d7ccbdcb306ee5530",
+    "extensions/grasp/baked_grasps.js": "06f8f653b3ad5f2289613f9449b9a373a9409eb7be0905cfa42d077d9cd9ecaf",
+    "extensions/grasp/baked_grasps.data.json": "6e253435445e2bcfe3117ad8714e2c93ad585a46e26da4822fefb64bd88d88af",
+    "extensions/grasp/recorded_grasps.json": "7927605241d292ba7a367c4d8c752cf18f40e353b664c1a024c9b28673cfeb3c"
+  },
+  "cases": [
+    {
+      "name": "synthetic-right-with-metadata",
+      "input": {
+        "id": "sample/right/body/source",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "right",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          0.2,
+          -0.3,
+          0.4,
+          0.8426149773176358
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "old-source"
+      },
+      "expected": {
+        "id": "sample/left/body/source-m",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "left",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          -0.4,
+          0.8426149773176358,
+          -0.2,
+          -0.3
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          -0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "sample/right/body/source"
+      }
+    },
+    {
+      "name": "synthetic-left",
+      "input": {
+        "id": "sample/left/body/source",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "left",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          0.2,
+          -0.3,
+          0.4,
+          0.8426149773176358
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "old-source"
+      },
+      "expected": {
+        "id": "sample/right/body/source-m",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "right",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          -0.4,
+          0.8426149773176358,
+          -0.2,
+          -0.3
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          -0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "sample/left/body/source"
+      }
+    },
+    {
+      "name": "missing-open-uses-default",
+      "input": {
+        "id": "sample/left/body/source",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "left",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          0.2,
+          -0.3,
+          0.4,
+          0.8426149773176358
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "old-source"
+      },
+      "expected": {
+        "id": "sample/right/body/source-m",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "right",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          -0.4,
+          0.8426149773176358,
+          -0.2,
+          -0.3
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          -0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "sample/left/body/source",
+        "open": [
+          [
+            0,
+            10,
+            5,
+            5
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "name": "null-open-uses-default",
+      "input": {
+        "id": "sample/right/body/source",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "right",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          0.2,
+          -0.3,
+          0.4,
+          0.8426149773176358
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": null,
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "old-source"
+      },
+      "expected": {
+        "id": "sample/left/body/source-m",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "left",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          -0.4,
+          0.8426149773176358,
+          -0.2,
+          -0.3
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [
+          [
+            0,
+            10,
+            5,
+            5
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          -0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "sample/right/body/source"
+      }
+    },
+    {
+      "name": "false-open-uses-default",
+      "input": {
+        "id": "sample/right/body/source",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "right",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          0.2,
+          -0.3,
+          0.4,
+          0.8426149773176358
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": false,
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "old-source"
+      },
+      "expected": {
+        "id": "sample/left/body/source-m",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "left",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          -0.4,
+          0.8426149773176358,
+          -0.2,
+          -0.3
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [
+          [
+            0,
+            10,
+            5,
+            5
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          -0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "sample/right/body/source"
+      }
+    },
+    {
+      "name": "empty-open-is-truthy",
+      "input": {
+        "id": "sample/right/body/source",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "right",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          0.2,
+          -0.3,
+          0.4,
+          0.8426149773176358
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "old-source"
+      },
+      "expected": {
+        "id": "sample/left/body/source-m",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "left",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          -0.4,
+          0.8426149773176358,
+          -0.2,
+          -0.3
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          -0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "sample/right/body/source"
+      }
+    },
+    {
+      "name": "replace-first-side-token-only",
+      "input": {
+        "id": "x/right/a/right/z",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "right",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          0.2,
+          -0.3,
+          0.4,
+          0.8426149773176358
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "old-source"
+      },
+      "expected": {
+        "id": "x/left/a/right/z-m",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "left",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          -0.4,
+          0.8426149773176358,
+          -0.2,
+          -0.3
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          -0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "x/right/a/right/z"
+      }
+    },
+    {
+      "name": "id-without-side-token",
+      "input": {
+        "id": "legacy-pose",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "left",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          0.2,
+          -0.3,
+          0.4,
+          0.8426149773176358
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "old-source"
+      },
+      "expected": {
+        "id": "legacy-pose-m",
+        "kind": "sample",
+        "grasp": "body",
+        "side": "right",
+        "mode": "wrap",
+        "default": true,
+        "wrist": [
+          0.03,
+          -0.02,
+          0
+        ],
+        "quat": [
+          -0.4,
+          0.8426149773176358,
+          -0.2,
+          -0.3
+        ],
+        "angles": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "open": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.19,
+        "palm": [
+          0.01,
+          -0.02,
+          -0.03
+        ],
+        "recorded": {
+          "at": "synthetic",
+          "source": "test"
+        },
+        "unknownMetadata": {
+          "nested": [
+            "preserved"
+          ]
+        },
+        "mirroredFrom": "legacy-pose"
+      }
+    },
+    {
+      "name": "canonical-baked-right",
+      "input": {
+        "id": "bottle_beer/right/body/o+0.0000_r000_t+1",
+        "kind": "bottle_beer",
+        "grasp": "body",
+        "mode": "wrap",
+        "side": "right",
+        "default": true,
+        "wrist": [
+          0.06229,
+          0.09732,
+          0.07622
+        ],
+        "quat": [
+          -0.73172,
+          -0.68157,
+          0.00478,
+          -0.00582
+        ],
+        "angles": [
+          [
+            -50.37,
+            60.97,
+            51.7,
+            -4.54
+          ],
+          [
+            0,
+            43.05,
+            50.31,
+            36
+          ],
+          [
+            0,
+            45.99,
+            53.36,
+            38.16
+          ],
+          [
+            0,
+            39.77,
+            46.79,
+            33.43
+          ],
+          [
+            0,
+            30.67,
+            37.05,
+            26.46
+          ]
+        ],
+        "open": [
+          [
+            0,
+            10,
+            5,
+            5
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ]
+        ],
+        "palm": [
+          0.0326,
+          0.0645,
+          -0.0055
+        ],
+        "metrics": {
+          "penetrationMm": 0.8,
+          "palmGapMm": 3.74,
+          "thumbOppositionDeg": 157.3
+        },
+        "fit": "lab-v1"
+      },
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0000_r000_t+1-m",
+        "kind": "bottle_beer",
+        "grasp": "body",
+        "mode": "wrap",
+        "side": "left",
+        "default": true,
+        "wrist": [
+          0.06229,
+          0.09732,
+          -0.07622
+        ],
+        "quat": [
+          -0.00478,
+          -0.00582,
+          0.73172,
+          -0.68157
+        ],
+        "angles": [
+          [
+            -50.37,
+            60.97,
+            51.7,
+            -4.54
+          ],
+          [
+            0,
+            43.05,
+            50.31,
+            36
+          ],
+          [
+            0,
+            45.99,
+            53.36,
+            38.16
+          ],
+          [
+            0,
+            39.77,
+            46.79,
+            33.43
+          ],
+          [
+            0,
+            30.67,
+            37.05,
+            26.46
+          ]
+        ],
+        "open": [
+          [
+            0,
+            10,
+            5,
+            5
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ]
+        ],
+        "palm": [
+          0.0326,
+          0.0645,
+          0.0055
+        ],
+        "metrics": {
+          "penetrationMm": 0.8,
+          "palmGapMm": 3.74,
+          "thumbOppositionDeg": 157.3
+        },
+        "fit": "lab-v1",
+        "mirroredFrom": "bottle_beer/right/body/o+0.0000_r000_t+1"
+      }
+    },
+    {
+      "name": "canonical-recorded-left",
+      "input": {
+        "id": "bottle_beer/left/body/rec-20261010T195507-m",
+        "kind": "bottle_beer",
+        "grasp": "body",
+        "mode": "wrap",
+        "side": "left",
+        "default": false,
+        "wrist": [
+          0.05822,
+          0.08445,
+          -0.08805
+        ],
+        "quat": [
+          0.12192,
+          0.17758,
+          0.64299,
+          -0.73496
+        ],
+        "angles": [
+          [
+            -23.6,
+            9.21,
+            23.07,
+            6.2,
+            -47.32
+          ],
+          [
+            -18.11,
+            3.18,
+            60.41,
+            32.87
+          ],
+          [
+            -8.13,
+            15.03,
+            53.79,
+            25.4
+          ],
+          [
+            -0.28,
+            24.7,
+            43.26,
+            20.89
+          ],
+          [
+            11.69,
+            26.77,
+            32.87,
+            12.61
+          ]
+        ],
+        "open": [
+          [
+            0,
+            10,
+            5,
+            5
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.1912,
+        "recorded": {
+          "at": "2026-10-10T19:55:07.200Z",
+          "source": "grasp-studio",
+          "frames": 85,
+          "score": 27,
+          "mirrored": true
+        },
+        "mirroredFrom": "bottle_beer/right/body/rec-20261010T195507"
+      },
+      "expected": {
+        "id": "bottle_beer/right/body/rec-20261010T195507-m-m",
+        "kind": "bottle_beer",
+        "grasp": "body",
+        "mode": "wrap",
+        "side": "right",
+        "default": false,
+        "wrist": [
+          0.05822,
+          0.08445,
+          0.08805
+        ],
+        "quat": [
+          -0.64299,
+          -0.73496,
+          -0.12192,
+          0.17758
+        ],
+        "angles": [
+          [
+            -23.6,
+            9.21,
+            23.07,
+            6.2,
+            -47.32
+          ],
+          [
+            -18.11,
+            3.18,
+            60.41,
+            32.87
+          ],
+          [
+            -8.13,
+            15.03,
+            53.79,
+            25.4
+          ],
+          [
+            -0.28,
+            24.7,
+            43.26,
+            20.89
+          ],
+          [
+            11.69,
+            26.77,
+            32.87,
+            12.61
+          ]
+        ],
+        "open": [
+          [
+            0,
+            10,
+            5,
+            5
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ],
+          [
+            0,
+            -5,
+            0,
+            0
+          ]
+        ],
+        "handLength": 0.1912,
+        "recorded": {
+          "at": "2026-10-10T19:55:07.200Z",
+          "source": "grasp-studio",
+          "frames": 85,
+          "score": 27,
+          "mirrored": true
+        },
+        "mirroredFrom": "bottle_beer/left/body/rec-20261010T195507-m"
+      }
+    }
+  ]
+}
