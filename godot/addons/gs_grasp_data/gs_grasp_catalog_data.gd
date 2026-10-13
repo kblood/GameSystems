@@ -28,6 +28,9 @@ static func validate(data: Variant) -> bool:
 			return false
 	return true
 
+static func validate_shape(shape: Variant) -> bool:
+	return _shape(shape, true)
+
 static func _prop(prop: Variant) -> bool:
 	if not _only_keys(prop, PROP_KEYS):
 		return false

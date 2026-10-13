@@ -1,0 +1,1089 @@
+{
+  "schema": "gamesystems.golden.grasp-sdf.v1",
+  "generator": "godot/tools/gen_golden.mjs",
+  "probe": "godot/tools/grasp_sdf_golden.mjs",
+  "probe_sha256": "1e67135ad6360a5edc041eff27f762075d5f26bdac6335561d797d5124be6632",
+  "sources_sha256": {
+    "extensions/grasp/catalog.js": "7bf601f573289a38352360cb6939acd9bedac97c9d2c499e0f9eb09a0d6cd6df",
+    "extensions/grasp/data/catalog.data.json": "5f302e56c96883714562f34711487e2f178ad63b4ea1a2fa51f7ca3b788aee9e"
+  },
+  "cases": [
+    {
+      "name": "bottle_beer:0",
+      "kind": "bottle_beer",
+      "point": [
+        0,
+        0,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        -1,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:1",
+      "kind": "bottle_beer",
+      "point": [
+        0.026,
+        0,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.47911052620395167,
+        -0.8777545805523163,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:2",
+      "kind": "bottle_beer",
+      "point": [
+        0,
+        0.2615,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:3",
+      "kind": "bottle_beer",
+      "point": [
+        0.0305,
+        0.003,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.7079451000998546,
+        -0.7062674672138077,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:4",
+      "kind": "bottle_beer",
+      "point": [
+        0.0325,
+        0.01,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9899494936611687,
+        -0.1414213562372951,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:5",
+      "kind": "bottle_beer",
+      "point": [
+        0.0325,
+        0.135,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9987646690775225,
+        0.0496903994999747,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:6",
+      "kind": "bottle_beer",
+      "point": [
+        0.031,
+        0.15,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9891461745793145,
+        0.14693483356613588,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:7",
+      "kind": "bottle_beer",
+      "point": [
+        0.027,
+        0.17,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9658056887543502,
+        0.2592669889703179,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:8",
+      "kind": "bottle_beer",
+      "point": [
+        0.02,
+        0.19,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9373297481376882,
+        0.34844360125583845,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:9",
+      "kind": "bottle_beer",
+      "point": [
+        0.014,
+        0.205,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9668352625463638,
+        0.25540081263947456,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:10",
+      "kind": "bottle_beer",
+      "point": [
+        0.0122,
+        0.22,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9979564524719942,
+        0.06389772272555962,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:11",
+      "kind": "bottle_beer",
+      "point": [
+        0.012,
+        0.245,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9937103003388443,
+        -0.11198142256858323,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:12",
+      "kind": "bottle_beer",
+      "point": [
+        0.0132,
+        0.25,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9880971724676205,
+        -0.15383100390198753,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:13",
+      "kind": "bottle_beer",
+      "point": [
+        0.014,
+        0.2615,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.7312309832444626,
+        0.6821299356745283,
+        0
+      ]
+    },
+    {
+      "name": "bottle_beer:14",
+      "kind": "bottle_beer",
+      "point": [
+        0.01,
+        0.05,
+        0.02
+      ],
+      "distance": -0.010139320225002104,
+      "normal": [
+        0.4472114488987308,
+        0,
+        0.8944282642973094
+      ]
+    },
+    {
+      "name": "bottle_beer:15",
+      "kind": "bottle_beer",
+      "point": [
+        -0.08,
+        0.14,
+        0.06
+      ],
+      "distance": 0.06766252893427926,
+      "normal": [
+        -0.7960297904719276,
+        0.09950374171968532,
+        0.5970222592709596
+      ]
+    },
+    {
+      "name": "bottle_beer:16",
+      "kind": "bottle_beer",
+      "point": [
+        0.2,
+        0.3,
+        -0.1
+      ],
+      "distance": 0.21261624602693632,
+      "normal": [
+        0.879571507955711,
+        0.18150061859551048,
+        -0.43978572946602434
+      ]
+    },
+    {
+      "name": "bottle_wine:0",
+      "kind": "bottle_wine",
+      "point": [
+        0,
+        0,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        -1,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:1",
+      "kind": "bottle_wine",
+      "point": [
+        0.03,
+        0,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.470023023510298,
+        -0.8826541550178291,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:2",
+      "kind": "bottle_wine",
+      "point": [
+        0,
+        0.35,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:3",
+      "kind": "bottle_wine",
+      "point": [
+        0.0355,
+        0.003,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.6584000502288824,
+        -0.7526681698189485,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:4",
+      "kind": "bottle_wine",
+      "point": [
+        0.0375,
+        0.012,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9938837346736193,
+        -0.11043152607484277,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:5",
+      "kind": "bottle_wine",
+      "point": [
+        0.0375,
+        0.19,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9994473611072816,
+        0.033241124765735895,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:6",
+      "kind": "bottle_wine",
+      "point": [
+        0.0365,
+        0.205,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9929102958092574,
+        0.11886607790271014,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:7",
+      "kind": "bottle_wine",
+      "point": [
+        0.033,
+        0.225,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9738360319897525,
+        0.22725180482991364,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:8",
+      "kind": "bottle_wine",
+      "point": [
+        0.027,
+        0.245,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9442236637140358,
+        0.3293048327650892,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:9",
+      "kind": "bottle_wine",
+      "point": [
+        0.02,
+        0.262,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9357508383228322,
+        0.3526618331746668,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:10",
+      "kind": "bottle_wine",
+      "point": [
+        0.015,
+        0.277,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9690825171157069,
+        0.24673685379506166,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:11",
+      "kind": "bottle_wine",
+      "point": [
+        0.0128,
+        0.29,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9960662265687131,
+        0.08861191956596597,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:12",
+      "kind": "bottle_wine",
+      "point": [
+        0.0125,
+        0.325,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.9999985309781425,
+        -0.0017140716311711854,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:13",
+      "kind": "bottle_wine",
+      "point": [
+        0.0128,
+        0.35,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0.711336466130271,
+        0.702851642918545,
+        0
+      ]
+    },
+    {
+      "name": "bottle_wine:14",
+      "kind": "bottle_wine",
+      "point": [
+        0.01,
+        0.05,
+        0.02
+      ],
+      "distance": -0.015139320225002102,
+      "normal": [
+        0.4472114488987308,
+        0,
+        0.8944282642973094
+      ]
+    },
+    {
+      "name": "bottle_wine:15",
+      "kind": "bottle_wine",
+      "point": [
+        -0.08,
+        0.14,
+        0.06
+      ],
+      "distance": 0.0625,
+      "normal": [
+        -0.8000000403199174,
+        0,
+        0.5999999462401063
+      ]
+    },
+    {
+      "name": "bottle_wine:16",
+      "kind": "bottle_wine",
+      "point": [
+        0.2,
+        0.3,
+        -0.1
+      ],
+      "distance": 0.21088476539067594,
+      "normal": [
+        0.8943943470318537,
+        0.008571113994273565,
+        -0.44719714668405597
+      ]
+    },
+    {
+      "name": "mug:0",
+      "kind": "mug",
+      "point": [
+        0,
+        0,
+        0
+      ],
+      "distance": -0.0525,
+      "normal": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mug:1",
+      "kind": "mug",
+      "point": [
+        0.055,
+        0,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mug:2",
+      "kind": "mug",
+      "point": [
+        0,
+        0.0525,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "mug:3",
+      "kind": "mug",
+      "point": [
+        0,
+        -0.0525,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        -1,
+        0
+      ]
+    },
+    {
+      "name": "mug:4",
+      "kind": "mug",
+      "point": [
+        0.079,
+        0.037,
+        0
+      ],
+      "distance": -0.0065,
+      "normal": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mug:5",
+      "kind": "mug",
+      "point": [
+        0.1065,
+        0.037,
+        0
+      ],
+      "distance": -0.0005000000000000083,
+      "normal": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mug:6",
+      "kind": "mug",
+      "point": [
+        0.079,
+        0.0435,
+        0
+      ],
+      "distance": -8.673617379884035e-19,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "mug:7",
+      "kind": "mug",
+      "point": [
+        0.079,
+        0.037,
+        0.009
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "mug:8",
+      "kind": "mug",
+      "point": [
+        0.079,
+        -0.037,
+        0
+      ],
+      "distance": -0.0065,
+      "normal": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mug:9",
+      "kind": "mug",
+      "point": [
+        0.1065,
+        -0.037,
+        0
+      ],
+      "distance": -0.0005000000000000083,
+      "normal": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mug:10",
+      "kind": "mug",
+      "point": [
+        0.079,
+        -0.0305,
+        0
+      ],
+      "distance": -8.673617379884035e-19,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "mug:11",
+      "kind": "mug",
+      "point": [
+        0.079,
+        -0.037,
+        0.009
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "mug:12",
+      "kind": "mug",
+      "point": [
+        0.1,
+        0,
+        0
+      ],
+      "distance": -0.007,
+      "normal": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mug:13",
+      "kind": "mug",
+      "point": [
+        0.10700000000000001,
+        0,
+        0
+      ],
+      "distance": 6.071532165918825e-18,
+      "normal": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mug:14",
+      "kind": "mug",
+      "point": [
+        0.1,
+        0.04,
+        0
+      ],
+      "distance": -0.003499999999999997,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "mug:15",
+      "kind": "mug",
+      "point": [
+        0.1,
+        0,
+        0.009
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "mug:16",
+      "kind": "mug",
+      "point": [
+        0.01,
+        0.05,
+        0.02
+      ],
+      "distance": -0.0024999999999999953,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "mug:17",
+      "kind": "mug",
+      "point": [
+        -0.08,
+        0.14,
+        0.06
+      ],
+      "distance": 0.09839334327077216,
+      "normal": [
+        -0.36587839909452086,
+        0.8892877907287161,
+        0.2744088598002436
+      ]
+    },
+    {
+      "name": "mug:18",
+      "kind": "mug",
+      "point": [
+        0.2,
+        0.3,
+        -0.1
+      ],
+      "distance": 0.28777682325024023,
+      "normal": [
+        0.32490454185189566,
+        0.8913157053598225,
+        -0.31621725453069677
+      ]
+    },
+    {
+      "name": "can:0",
+      "kind": "can",
+      "point": [
+        0,
+        0,
+        0
+      ],
+      "distance": -0.037,
+      "normal": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "can:1",
+      "kind": "can",
+      "point": [
+        0.037,
+        0,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "can:2",
+      "kind": "can",
+      "point": [
+        0,
+        0.0625,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "can:3",
+      "kind": "can",
+      "point": [
+        0,
+        -0.0625,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        -1,
+        0
+      ]
+    },
+    {
+      "name": "can:4",
+      "kind": "can",
+      "point": [
+        0.01,
+        0.05,
+        0.02
+      ],
+      "distance": -0.012499999999999997,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "can:5",
+      "kind": "can",
+      "point": [
+        -0.08,
+        0.14,
+        0.06
+      ],
+      "distance": 0.09987617333478492,
+      "normal": [
+        -0.5046248539636571,
+        0.7759608382561484,
+        0.3784686701101867
+      ]
+    },
+    {
+      "name": "can:6",
+      "kind": "can",
+      "point": [
+        0.2,
+        0.3,
+        -0.1
+      ],
+      "distance": 0.30204030685738215,
+      "normal": [
+        0.5525957592716758,
+        0.7863188970214414,
+        -0.2762978809581136
+      ]
+    },
+    {
+      "name": "carton:0",
+      "kind": "carton",
+      "point": [
+        0,
+        0,
+        0
+      ],
+      "distance": -0.07,
+      "normal": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "carton:1",
+      "kind": "carton",
+      "point": [
+        0.11,
+        0,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "carton:2",
+      "kind": "carton",
+      "point": [
+        0,
+        0.07,
+        0
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "carton:3",
+      "kind": "carton",
+      "point": [
+        0,
+        0,
+        0.08
+      ],
+      "distance": 0,
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "carton:4",
+      "kind": "carton",
+      "point": [
+        0.01,
+        0.05,
+        0.02
+      ],
+      "distance": -0.020000000000000004,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "carton:5",
+      "kind": "carton",
+      "point": [
+        -0.08,
+        0.14,
+        0.06
+      ],
+      "distance": 0.07,
+      "normal": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "carton:6",
+      "kind": "carton",
+      "point": [
+        0.2,
+        0.3,
+        -0.1
+      ],
+      "distance": 0.24779023386727733,
+      "normal": [
+        0.36321042195304026,
+        0.9282044668085928,
+        -0.08071342627636584
+      ]
+    },
+    {
+      "name": "extreme:box",
+      "shape": {
+        "type": "box",
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      "point": [
+        1e+200,
+        0,
+        0
+      ],
+      "distance": 1e+200,
+      "normal": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "extreme:cylinder",
+      "shape": {
+        "type": "cylinder",
+        "radius": 1,
+        "half": 1
+      },
+      "point": [
+        1e+200,
+        0,
+        0
+      ],
+      "distance": 1e+200,
+      "normal": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "extreme:lathe",
+      "shape": {
+        "type": "lathe",
+        "profile": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0.5
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "point": [
+        1e+200,
+        0,
+        0
+      ],
+      "distance": 1e+200,
+      "normal": [
+        0,
+        -1,
+        0
+      ]
+    }
+  ]
+}

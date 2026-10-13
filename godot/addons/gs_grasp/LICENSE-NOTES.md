@@ -28,3 +28,9 @@ ranges/comfort data through `gs_grasp_data`; no joint-limit table is duplicated 
 this addon. Its golden invokes the public JS function for the canonical bake and
 synthetic edge rows. The tests and probe are original GameSystems MIT work,
 Copyright (c) 2026 Kasper Olesen.
+
+`GSGraspShapeSdf` ports the MIT GameSystems `extensions/grasp/catalog.js`
+`signedDistance` and `surfaceNormal` functions and uses shapes from the shared
+`gs_grasp_data` catalog. The implementation, golden probe and tests are original
+GameSystems MIT work, Copyright (c) 2026 Kasper Olesen; the golden invokes those
+public JS functions and stores sampled outputs rather than duplicating the catalog.

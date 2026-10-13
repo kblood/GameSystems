@@ -16,8 +16,8 @@ Golden-freshness og diff-check passerer. Typed arrays med string-nøgler og valg
 boolean default er parity-scope; malformed input giver null, ikke JS-coercion.
 Source-porten er Sol-reviewed og synket til Nightfall Godot `75823df`; target består
 2.392/2.392 mergechecks, nearest-regressionen 2.071/2.071, og golden-/sync-checks passerer.
-Variantvalg, native recorded-only, avatar-konvertering, kontakt, clamp/SDF, drive/kast
-og runtime-integration er fortsat åbne. Clamp er nu under implementering i næste afsnit.
+Variantvalg, native recorded-only, avatar-konvertering, kontakt, drive/kast og
+runtime-integration er fortsat åbne. Clamp- og SDF-runderne står nedenfor.
 
 ## G4 hard-range finger clamping — 2026-10-13
 
@@ -35,6 +35,26 @@ nu clamp-, merge- og nearest-portens parity-tests; målrettet native runner best
 med stabil source digest. Addon-sync-check og golden freshness passerer. Denne port er
 fortsat en isoleret utility og beviser ikke kontakt, closure, kvalitetspolitik,
 performance i grab-loop eller headset-fit.
+
+## G4 catalog signed-distance and normals — 2026-10-13
+
+`GSGraspShapeSdf` ports the public catalog `signedDistance` for centered boxes and
+cylinders, slope-corrected +Y lathe profiles, and min-union `parts`. It also ports the
+central-difference `surfaceNormal` with the 0.1 mm default step. The utility reads
+validated shape data from `gs_grasp_data`; shape and finite-point validation run on
+each call. No grab-loop or physics integration is made, and no performance budget is
+claimed. Invalid Godot input returns null; empty/invalid shape definitions are not
+part of the valid JS catalog domain.
+
+The public JS functions generate 70 deterministic samples across the full current
+catalog, exercising primitive extents, union components, and `1e200` finite positions
+for overflow-safe `Math.hypot` parity. Godot 4.7.2 passes **425/425** value, normal,
+and invalid-input checks (`1e-10 m` distance, `1e-7` normal).
+Sol review approved without blocking findings. The utility is synced into Nightfall
+Godot and registered in its regular `gs` suite; the targeted native runner passed 4/4
+with a stable source digest. Addon sync and golden freshness pass. This does not
+establish real-mesh contact, SDF accuracy against assets, or Quest/Steam Frame
+performance.
 
 ## G4 beslutning: behold native controller-lookup — 2026-10-13
 

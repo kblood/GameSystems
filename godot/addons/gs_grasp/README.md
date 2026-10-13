@@ -1,6 +1,6 @@
 # gs_grasp
 
-The G4 components are `GSNearestGrasp`, `GSGraspMerge` and `GSGraspClamp`. The selector is a stateless port of the
+The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp` and `GSGraspShapeSdf`. The selector is a stateless port of the
 public JavaScript `baked_grasps.nearestPose` scoring/selection operation. The caller
 owns the candidate library and previous selection. This addon does not maintain a
 global grasp library or integrate a native game's grab loop.
@@ -99,6 +99,21 @@ JSON on each call. This utility does not choose grasp quality, apply `CLAMP_EXEM
 memoize results, close fingers to contact or alter the active game hand path.
 `grasp_clamp.golden.json` is generated from the public JS function for all 255 baked
 poses plus missing/partial rows and upper/lower extremes.
+
+## Catalog signed distance
+
+`GSGraspShapeSdf.signed_distance(shape, point)` ports catalog.js SDF for centered
+boxes/cylinders, +Y lathes and flat unions (`parts`). Coordinates and results are
+metres in item-local space; negative is inside. `surface_normal(shape, point, step)`
+uses centered finite differences and defaults to a 0.1 mm step. Both validate the
+shape and finite 3D point on each call and return `null` for malformed input. This
+is approximate contact geometry: unions use `min`, not a smoothed blend, and lathes
+use the existing slope-corrected radial silhouette. No grab-loop or physics integration
+is included, and no device performance budget is claimed.
+
+The SDF golden calls the public JS functions for deterministic points spanning every
+catalog shape, including every component of union shapes and large finite coordinates.
+Godot checks distance within `1e-10 m` and normals within `1e-7` per component.
 
 ## Merging baked and recorded libraries
 
