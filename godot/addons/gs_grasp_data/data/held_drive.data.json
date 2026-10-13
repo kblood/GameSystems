@@ -1,0 +1,9 @@
+{
+  "schema": "gamesystems.grasp-held-drive-data.v1",
+  "STIFFNESS": 900,
+  "DAMPING": 60,
+  "MAX_ACCELERATION": 90,
+  "MAX_TORQUE": 1.5,
+  "MAX_HOLD_FORCE": 120,
+  "HAND_MOTION_SAMPLES": 2
+}

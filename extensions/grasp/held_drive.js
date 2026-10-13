@@ -4,12 +4,13 @@
 // throw history's peak, which overshoots when the hand stops) and include the hand's spin: the driven point (the
 // prop's centre of mass) moves with v + w x r (carriedVelocity), so the damping no longer fights a wrist turn.
 import { add, sub, cross } from './math.js';
+import DRIVE_DATA from './data/held_drive.data.json' with { type: 'json' };
 
-export const STIFFNESS = 900;
-export const DAMPING = 60;
-export const MAX_ACCELERATION = 90; // m/s^2
-export const MAX_TORQUE = 1.5; // N m
-export const MAX_HOLD_FORCE = 120; // N
+export const STIFFNESS = DRIVE_DATA.STIFFNESS;
+export const DAMPING = DRIVE_DATA.DAMPING;
+export const MAX_ACCELERATION = DRIVE_DATA.MAX_ACCELERATION; // m/s^2
+export const MAX_TORQUE = DRIVE_DATA.MAX_TORQUE; // N m
+export const MAX_HOLD_FORCE = DRIVE_DATA.MAX_HOLD_FORCE; // N
 
 export function accelerationLimit(mass) { return Math.min(MAX_ACCELERATION, MAX_HOLD_FORCE / Math.max(mass, 0.001)); }
 
@@ -34,7 +35,7 @@ export function driveAngular({ angularError, angularVelocity, targetSpin = [0, 0
 
 /** Samples averaged for the hand motion the drive follows: 2 cuts 2 mm tracking jitter in a held prop to ~60 % and adds
  * half a frame of velocity lag (1 = least overshoot when the hand stops, 3 = smoothest). */
-export const HAND_MOTION_SAMPLES = 2;
+export const HAND_MOTION_SAMPLES = DRIVE_DATA.HAND_MOTION_SAMPLES;
 export function createHandMotion() { return { samples: [], linear: [0, 0, 0], angular: [0, 0, 0] }; }
 /** Add one hand velocity sample (linear m/s, angular rad/s, world) over dt; updates motion.linear/angular (dt-weighted mean). */
 export function pushHandMotion(motion, linear, angular, dt) {

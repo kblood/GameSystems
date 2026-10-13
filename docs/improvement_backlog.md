@@ -1,5 +1,28 @@
 # Løbende forbedringer af GameSystems
 
+## G3 held-drive-konstanter som fælles data — 2026-10-13
+
+De seks offentlige skalarer fra `held_drive.js` ligger nu i
+`extensions/grasp/data/held_drive.data.json`: `STIFFNESS`, `DAMPING`,
+`MAX_ACCELERATION`, `MAX_TORQUE`, `MAX_HOLD_FORCE` og `HAND_MOTION_SAMPLES`.
+Alle eksportnavne og værdier bevares. JS-regressionen fastholder en SHA-256 fra de
+oprindelige eksporter samt kendte lineære/vinklede spring-resultater og det vægtede
+vindue med to håndmålinger. Algoritmerne er uændrede.
+
+`GSGraspHeldDriveData` indlæser sit eget skema i `gs_grasp_data` og afviser manglende
+felter, ikke-endelige/forkert typede tal, negative tuningværdier og et sample-antal,
+der ikke er et positivt heltal. Golden-generatoren bruger JS-eksporterne og registrerer
+hashes for datafilen, held-drive-modulet og dets math-afhængighed. Dette er en datalæser;
+Godot-drive/sampling-algoritmer og fysikadaptere er ikke ændret.
+
+Fokuseret verifikation: Godot 4.7.2 **55/55**; lokale JS-checks **18/18**, inklusive
+historiske værdier, algoritmeoutput, demoens rekursive data-sync og eksisterende
+avatar-/grasp-/optagelsesflow. Golden-freshness og `git diff --check` passerer.
+Spilkopierne er endnu ikke synkroniseret for dette trin; Contracts-filsammenligningen
+er eksplicit udeladt fra den lokale kørsel og skal bestå efter integrationssync.
+G3 mangler fortsat katalog, kvalitetsdata og Godot-kontrakter for de eksisterende
+bake-/recording-/reference-hand-filer.
+
 ## G3 closure-defaults som selvstændig datakontrakt — 2026-10-13
 
 `CLOSURE`, `PAD_RADIUS`, `REFERENCE_HAND` og `THUMB_TILT` ligger nu i den versionerede

@@ -20,3 +20,10 @@ does not import CharacterCreator runtime code or change those measurements.
 Reference-hand lengths/vectors and closure contact lengths are metres. Pad radii
 are fractions of hand length, thumb tilt is radians, opposition is degrees, and
 overshoot/backoff/step are dimensionless amounts along the finger-row blend.
+
+`held_drive.data.json` preserves all six public scalar constants from GameSystems
+`extensions/grasp/held_drive.js` (MIT), whose module header identifies its origin as
+a port of the Godot held-drive implementation. No force or sampling algorithm is
+copied into the Godot data reader. Spring stiffness is acceleration-normalized
+(`s^-2`), damping is `s^-1`, acceleration is `m/s^2`, torque is `N m`, force is `N`,
+and the motion window is a whole-number sample count.

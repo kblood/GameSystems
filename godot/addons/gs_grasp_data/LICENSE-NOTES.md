@@ -14,3 +14,8 @@
   documented in `extensions/grasp/closure.js`; no CharacterCreator runtime code is copied.
 - `data/closure.golden.json` derives from those public JS exports and records hashes
   for the closure module and its local dependencies. Its reader validates data only.
+- `data/held_drive.data.json` preserves the six scalar defaults from the MIT
+  GameSystems held-drive JS module, originally a port of the Godot held-drive code.
+  `data/held_drive.golden.json` derives from the JS exports and hashes the data,
+  module and math dependency. The reader/tests are original GameSystems MIT work;
+  no drive or sampling algorithm is ported here.

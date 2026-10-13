@@ -1,0 +1,20 @@
+{
+  "schema": "gamesystems.golden.grasp-held-drive-data.v1",
+  "generator": "godot/tools/gen_golden.mjs",
+  "source": "extensions/grasp/data/held_drive.data.json",
+  "source_sha256": "f3c246b0cde0753c5a095f8d558c0dc0eb358aa5fff89fd36935fcf21653d067",
+  "sources_sha256": {
+    "extensions/grasp/data/held_drive.data.json": "f3c246b0cde0753c5a095f8d558c0dc0eb358aa5fff89fd36935fcf21653d067",
+    "extensions/grasp/held_drive.js": "5bcc5303c78a740e2d5988436f75d2879427c2f0743c1c9cf4b2a3b81680db8a",
+    "extensions/grasp/math.js": "975799db1b6bbe9835d0a1c800363e3bbefed4b86a4b312d7ccbdcb306ee5530"
+  },
+  "contract": {
+    "schema": "gamesystems.grasp-held-drive-data.v1",
+    "STIFFNESS": 900,
+    "DAMPING": 60,
+    "MAX_ACCELERATION": 90,
+    "MAX_TORQUE": 1.5,
+    "MAX_HOLD_FORCE": 120,
+    "HAND_MOTION_SAMPLES": 2
+  }
+}
