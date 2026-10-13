@@ -4,6 +4,9 @@ extends RefCounted
 
 const D2R := PI / 180.0
 const ShapeSdf := preload("res://addons/gs_grasp/gs_grasp_shape_sdf.gd")
+const ClosureDataReader = preload("res://addons/gs_grasp_data/gs_grasp_closure_data.gd")
+const ValidatorDataReader = preload("res://addons/gs_grasp_data/gs_grasp_validator_data.gd")
+const JOINT_KEYS := ["dyaw", "pitch", "bend1", "bend2", "twist"]
 const DEFAULT_THUMB_TILT := PI / 3.0
 const DEFAULT_REFERENCE_HAND := {
 	"length": 0.203,
@@ -21,6 +24,8 @@ const DEFAULT_PAD_RADIUS := {
 	"Little": [0.044, 0.042, 0.04],
 }
 const FINGERS := ["Thumb", "Index", "Middle", "Ring", "Little"]
+static var _closure_defaults: Dictionary = {}
+static var _hard_ranges: Dictionary = {}
 
 ## Build hand-space finger, palm and thenar geometry from a measured profile or a rest-hand joint fixture.
 ## Supports the public closure.handGeometry format; lengths and points are rig-space metres.
@@ -209,6 +214,164 @@ static func place_palm(pose: Dictionary, hand: Dictionary, shape: Variant = null
 		wrist = _add(wrist, _scale(normal, -normal_offset))
 		gaps = _palm_gaps(hand, wrist, orient, shape, effective_thumb_row)
 	return {"wrist": wrist, "quat": orient, "palmGap": gaps.palm, "thenarGap": gaps.thenar}
+
+## Close one finger row from its open approach toward its baked shape until the skin samples reach the item SDF.
+## Returns the target row, three shape parameters, touching segment indices and backedOff/stuck flags. This is a pure
+## helper; it does not modify a hand or pose and does not perform thumb CMC search.
+static func close_finger(name: String, finger: Dictionary, open_row: Array, closed_row: Array, shape: Dictionary,
+		wrist: Array, quat: Array, scale: float = 1.0, options: Dictionary = {}) -> Dictionary:
+	var opts: Dictionary = _load_closure_defaults().duplicate(true)
+	opts.merge(options, true)
+	var hard: Dictionary = _load_hard_ranges()
+	var squeeze := float(opts.squeeze)
+	var deep := -squeeze
+	var is_thumb := name == "Thumb"
+	var thumb_overshoot: Variant = opts.get("thumbOvershoot")
+	if thumb_overshoot == null:
+		thumb_overshoot = opts.overshoot
+	var max_t := 1.0 + (float(thumb_overshoot) if is_thumb else float(opts.overshoot))
+	var free := bool(opts.get("free", false))
+	var twisted := is_thumb and (open_row.size() > 4 or closed_row.size() > 4)
+	var twist_open := float(open_row[4]) if open_row.size() > 4 else 0.0
+	var twist_closed := float(closed_row[4]) if closed_row.size() > 4 else 0.0
+	var parameters := [1.0, 1.0, 1.0]
+	var gaps: Array = [INF, INF, INF]
+	var touching: Array[int] = []
+	var first_free := 0
+	var backed_off := false
+	var initial_hit := _close_reach(parameters, 0, deep, name, finger, open_row, closed_row, hard,
+		free, twisted, twist_open, twist_closed, shape, wrist, quat, scale, gaps)
+	if initial_hit >= 0:
+		var depth0 := minf(float(gaps[0]), minf(float(gaps[1]), float(gaps[2])))
+		var delta := float(opts.step) / 2.0
+		var previous := 1.0
+		var t := 1.0
+		var clear := false
+		while t > -float(opts.backoff) + 1e-9:
+			t = maxf(-float(opts.backoff), t - delta)
+			_set_close_parameter(parameters, 0, t)
+			var hit := _close_reach(parameters, 0, deep, name, finger, open_row, closed_row, hard,
+				free, twisted, twist_open, twist_closed, shape, wrist, quat, scale, gaps)
+			if hit < 0:
+				clear = true
+				break
+			var depth := minf(float(gaps[0]), minf(float(gaps[1]), float(gaps[2])))
+			if depth < depth0 - squeeze:
+				break
+			previous = t
+		if not clear:
+			_set_close_parameter(parameters, 0, 1.0)
+			_set_close_parameter(parameters, 1, 1.0)
+			_set_close_parameter(parameters, 2, 1.0)
+			gaps = [INF, INF, INF]
+			initial_hit = _close_reach(parameters, 0, deep, name, finger, open_row, closed_row, hard,
+				free, twisted, twist_open, twist_closed, shape, wrist, quat, scale, gaps)
+			if depth0 >= -float(opts.tolerate):
+				return {"row": _close_row_at(name, open_row, closed_row, parameters, hard, free, twisted, twist_open, twist_closed),
+					"t": [1.0, 1.0, 1.0], "touching": [initial_hit], "backedOff": false, "stuck": false}
+			return {"row": _close_row_at(name, open_row, closed_row, parameters, hard, free, twisted, twist_open, twist_closed),
+				"t": [1.0, 1.0, 1.0], "touching": [], "backedOff": true, "stuck": true}
+		var outside := t
+		var deeper := previous
+		for _iteration: int in int(opts.bisect):
+			var middle := (outside + deeper) / 2.0
+			_set_close_parameter(parameters, 0, middle)
+			if _close_reach(parameters, 0, deep, name, finger, open_row, closed_row, hard, free,
+					twisted, twist_open, twist_closed, shape, wrist, quat, scale, gaps) >= 0:
+				deeper = middle
+			else:
+				outside = middle
+		_set_close_parameter(parameters, 0, deeper)
+		var contact_segment := _close_reach(parameters, 0, deep, name, finger, open_row, closed_row, hard,
+			free, twisted, twist_open, twist_closed, shape, wrist, quat, scale, gaps)
+		_set_close_parameter(parameters, 0, outside)
+		touching.append(contact_segment if contact_segment >= 0 else initial_hit)
+		first_free = int(touching[0]) + 1
+		backed_off = true
+	else:
+		var near_hit := _close_reach(parameters, 0, float(opts.touch), name, finger, open_row, closed_row, hard,
+			free, twisted, twist_open, twist_closed, shape, wrist, quat, scale, gaps)
+		if near_hit >= 0:
+			touching.append(near_hit)
+			first_free = near_hit + 1
+	while first_free < 3:
+		var start := float(parameters[first_free])
+		var previous := start
+		var hit := -1
+		var t := start
+		while t < max_t:
+			t = minf(max_t, t + float(opts.step))
+			_set_close_parameter(parameters, first_free, t)
+			hit = _close_reach(parameters, first_free, deep, name, finger, open_row, closed_row, hard,
+				free, twisted, twist_open, twist_closed, shape, wrist, quat, scale, gaps)
+			if hit >= 0:
+				break
+			previous = t
+		if hit < 0:
+			_set_close_parameter(parameters, first_free, start)
+			break
+		var low := previous
+		var high := t
+		for _iteration: int in int(opts.bisect):
+			var middle := (low + high) / 2.0
+			_set_close_parameter(parameters, first_free, middle)
+			if _close_reach(parameters, first_free, deep, name, finger, open_row, closed_row, hard,
+					free, twisted, twist_open, twist_closed, shape, wrist, quat, scale, gaps) >= 0:
+				high = middle
+			else:
+				low = middle
+		_set_close_parameter(parameters, first_free, high)
+		hit = _close_reach(parameters, first_free, deep, name, finger, open_row, closed_row, hard,
+			free, twisted, twist_open, twist_closed, shape, wrist, quat, scale, gaps)
+		touching.append(hit)
+		first_free = hit + 1
+	return {"row": _close_row_at(name, open_row, closed_row, parameters, hard, free, twisted, twist_open, twist_closed),
+		"t": parameters.duplicate(), "touching": touching, "backedOff": backed_off, "stuck": false}
+
+static func _close_reach(parameters: Array, from_segment: int, limit: float, name: String, finger: Dictionary,
+		open_row: Array, closed_row: Array, hard: Dictionary, free: bool, twisted: bool,
+		twist_open: float, twist_closed: float, shape: Dictionary, wrist: Array, quat: Array,
+		scale: float, gaps: Array) -> int:
+	var row := _close_row_at(name, open_row, closed_row, parameters, hard, free, twisted, twist_open, twist_closed)
+	var measured := segment_gaps(finger_chain(finger, row), finger, shape, wrist, quat, scale, from_segment)
+	for segment: int in 3:
+		gaps[segment] = measured[segment]
+	for segment: int in range(from_segment, 3):
+		if float(gaps[segment]) <= limit:
+			return segment
+	return -1
+
+static func _close_row_at(name: String, open_row: Array, closed_row: Array, parameters: Array, hard: Dictionary,
+		free: bool, twisted: bool, twist_open: float, twist_closed: float) -> Array:
+	var t0 := minf(1.0, float(parameters[0])) if name == "Thumb" else float(parameters[0])
+	var row: Array = [
+		_limited_row_value(name, 0, float(open_row[0]) + (float(closed_row[0]) - float(open_row[0])) * t0, hard, free),
+		_limited_row_value(name, 1, float(open_row[1]) + (float(closed_row[1]) - float(open_row[1])) * t0, hard, free),
+		_limited_row_value(name, 2, float(open_row[2]) + (float(closed_row[2]) - float(open_row[2])) * float(parameters[1]), hard, free),
+		_limited_row_value(name, 3, float(open_row[3]) + (float(closed_row[3]) - float(open_row[3])) * float(parameters[2]), hard, free)]
+	if twisted:
+		row.append(_limited_row_value(name, 4, twist_open + (twist_closed - twist_open) * t0, hard, free))
+	return row
+
+static func _limited_row_value(name: String, joint: int, value: float, hard: Dictionary, free: bool) -> float:
+	if free:
+		return value
+	var bounds: Array = hard[name][JOINT_KEYS[joint]]
+	return clampf(value, float(bounds[0]), float(bounds[1]))
+
+static func _set_close_parameter(parameters: Array, from_segment: int, value: float) -> void:
+	for index: int in range(from_segment, 3):
+		parameters[index] = value
+
+static func _load_closure_defaults() -> Dictionary:
+	if _closure_defaults.is_empty():
+		_closure_defaults = ClosureDataReader.load_data().get("CLOSURE", {})
+	return _closure_defaults
+
+static func _load_hard_ranges() -> Dictionary:
+	if _hard_ranges.is_empty():
+		_hard_ranges = ValidatorDataReader.load_data().get("HARD", {})
+	return _hard_ranges
 
 static func _palm_anchor(pose: Dictionary, side: String, reference: Dictionary) -> Array:
 	var factor := 1.0

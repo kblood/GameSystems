@@ -7,6 +7,7 @@ const SegmentGapGoldenPath := "res://addons/gs_grasp/tests/grasp_segment_gaps.go
 const ReferenceHandGoldenPath := "res://addons/gs_grasp_data/data/reference_hand.golden.json"
 const ProfileGeometryGoldenPath := "res://addons/gs_grasp/tests/grasp_profile_geometry.golden.json"
 const PlacePalmGoldenPath := "res://addons/gs_grasp/tests/grasp_place_palm.golden.json"
+const CloseFingerGoldenPath := "res://addons/gs_grasp/tests/grasp_close_finger.golden.json"
 var passed := 0
 var failed := 0
 
@@ -106,6 +107,20 @@ func _initialize() -> void:
 		check(row.hand == hand_before, row.name + " hand unchanged")
 		check(row.options == options_before, row.name + " options unchanged")
 		check(row.offset == offset_before, row.name + " offset unchanged")
-	print("GS_GRASP_CLOSURE_TESTS passed=%d failed=%d cases=%d finger_chain=%d place_wrist=%d segment_gap=%d hand_geometry=%d place_palm=%d" % [passed, failed,
-		golden.cases.size() + wrist_golden.cases.size() + gap_cases + hand_cases + palm_golden.cases.size(), golden.cases.size(), wrist_golden.cases.size(), gap_cases, hand_cases, palm_golden.cases.size()])
+	var close_golden: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(CloseFingerGoldenPath))
+	check(close_golden.get("schema") == "gamesystems.golden.grasp-close-finger.v1", "close finger golden schema")
+	for row: Dictionary in close_golden.cases:
+		var finger_before: Dictionary = row.finger.duplicate(true)
+		var open_before: Array = row.open_row.duplicate(true)
+		var closed_before: Array = row.closed_row.duplicate(true)
+		var options_before: Dictionary = row.options.duplicate(true)
+		var actual := Closure.close_finger(row.finger_name, row.finger, row.open_row, row.closed_row, row.shape,
+			row.wrist, row.quat, float(row.scale), row.options)
+		compare(row.expected, actual, row.name)
+		check(row.finger == finger_before, row.name + " finger unchanged")
+		check(row.open_row == open_before, row.name + " open row unchanged")
+		check(row.closed_row == closed_before, row.name + " closed row unchanged")
+		check(row.options == options_before, row.name + " options unchanged")
+	print("GS_GRASP_CLOSURE_TESTS passed=%d failed=%d cases=%d finger_chain=%d place_wrist=%d segment_gap=%d hand_geometry=%d place_palm=%d close_finger=%d" % [passed, failed,
+		golden.cases.size() + wrist_golden.cases.size() + gap_cases + hand_cases + palm_golden.cases.size() + close_golden.cases.size(), golden.cases.size(), wrist_golden.cases.size(), gap_cases, hand_cases, palm_golden.cases.size(), close_golden.cases.size()])
 	quit(1 if failed else 0)

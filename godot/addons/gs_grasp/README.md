@@ -35,13 +35,21 @@ close fingers or search closure angles. Each SDF sample currently validates the 
 profile that cost before running many candidate placements or moving this helper into a
 per-frame path.
 
+`GSGraspClosure.close_finger(name, finger, open_row, closed_row, shape, wrist, quat,
+scale, options)` closes one finger along its baked row, backing out of excessive
+penetration and curling free joints until segment skin samples contact the SDF. It
+returns the row, interpolation parameters, touching segments and backoff/stuck flags.
+It does not run thumb CMC search or integrate all five fingers into a grasp.
+
 The JS goldens cover 26 baked/synthetic finger-chain cases, 15 baked/recorded wrist
 placement cases, 8 segment-gap cases, 6 reference-hand geometry cases, 8 explicit
-profile/raw-rest edge cases and 26 palm-placement cases. They include twist, axis
-fallback, custom reference geometry, invalid recorded-length fallback, distal-only
-samples, palm/thenar patches and thumb-row movement, pad overrides, clearance offsets,
-and null/zero optional-field fallback. Godot 4.7.2 passes **8,098 assertions**; this
-does not complete finger-closure search or imply physical skin contact.
+profile/raw-rest edge cases, 26 palm-placement cases and 90 finger-closure cases. They
+include twist, axis fallback, custom reference geometry, invalid recorded-length
+fallback, distal-only samples, palm/thenar patches and thumb-row movement, pad
+overrides, clearance offsets, penetration backoff, segment-by-segment contact, free rows
+including proximal and middle contact, out-of-range free rows, and null/zero
+optional-field fallback. Godot 4.7.2 passes **10,149 assertions**; this
+does not complete five-finger closure search or imply physical skin contact.
 
 ```gdscript
 const Selector = preload("res://addons/gs_grasp/gs_nearest_grasp.gd")

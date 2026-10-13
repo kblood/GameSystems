@@ -1,5 +1,17 @@
 # Løbende forbedringer af GameSystems
 
+## G4 kontaktlukning for én finger — 2026-10-13
+
+`GSGraspClosure.close_finger` porter JS' `closeFinger`: fingerens bagte række lukkes
+mod SDF-kontakt, for dyb indtrængning bakkes ud langs den samme fingerform, og frie
+led fortsætter separat efter proximal kontakt. Joint-rækker clamped mod G3's delte
+hard-ranges; `free` understøtter bake-undtagelser, og tommelfingerens twist følger CMC.
+90 JS-oracle cases dækker begge hænder, flere størrelser, alle fem fingre, proximal- og
+middle-segment kontakt, twist, backoff, fri række uden for hard-ranges og nullish
+thumb-overshoot fallback. Closure-suiten består nu **10.149/10.149** assertions.
+Samlet lukning/gradering af fem fingre, CMC-søgning, bounded placement-search og
+runtime-integration mangler fortsat.
+
 ## G4 palm-anchor og thenar-clearance placement — 2026-10-13
 
 `GSGraspClosure.place_palm` porter JS' `palmAnchor`, palm-patch afstanden og thenar-fit.
