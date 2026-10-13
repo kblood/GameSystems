@@ -35,6 +35,12 @@ contact classifier or object-release integration. The golden invokes the public 
 functions; the GDScript, generator probe and tests are original GameSystems MIT work,
 Copyright (c) 2026 Kasper Olesen.
 
+`GSGraspValidator` ports the public `validateRows` diagnostic from MIT GameSystems
+`extensions/grasp/grasp_validator.js` and reads ranges/comfort data from `gs_grasp_data`.
+It does not clamp, score/select runtime quality or implement contact. The golden calls
+the public validator over baked and synthetic rows; the GDScript, generator probe and
+tests are original GameSystems MIT work, Copyright (c) 2026 Kasper Olesen.
+
 `GSGraspHeldDrive` ports the public math/sampling helpers from MIT GameSystems
 `extensions/grasp/held_drive.js` and reads tuning from `gs_grasp_data`. It does not
 include host physics integration or the Nightfall runtime's drive implementation.

@@ -1,5 +1,17 @@
 # Løbende forbedringer af GameSystems
 
+## G4 row-validator diagnostics — 2026-10-13
+
+`GSGraspValidator.validate_rows` porter JS `validateRows` som selvstændig diagnostic:
+hard-range failures, comfort-normaliseret kvadratsum, thumb/DIP-PIP/neighbor-warnings og
+`ok`-resultat. Den læser de delte HARD/COMFORT-data og ændrer ikke rækker, clamping,
+quality selection eller runtime-acceptance. Golden sammenligner alle 255 baked poses
+plus ni fokuserede invalid/tolerance/coupling/neighbor/twist-tilfælde, herunder INF og
+neighbor-warning når en mellemfinger mangler. Godot 4.7.2 består **4.789/4.789** checks
+(`1e-9` relativ tolerance). Sol har godkendt algoritmen og de ekstra regressioner.
+Nightfall addon-sync og den målrettede gs-suite består 8/8;
+det beviser ikke faktisk avatar-/kontaktkvalitet.
+
 ## G4 throw-release sampling — 2026-10-13
 
 `GSGraspThrowRelease` porter JS-vinduet for recent peak-speed smoothing,

@@ -16,7 +16,7 @@ import { tierFor, normalizeTier } from '../../extensions/host/quality.js';
 import { JOINT_NAMES } from '../../extensions/humanoid/canonical.js';
 import { MPFB_ROOT_BONE } from '../../extensions/humanoid/rig.js';
 import { MPFB_GAME_ENGINE, VRM_HUMANOID, VRM0_HUMANOID, mixamoBoneMap } from '../../extensions/humanoid/bone_maps.js';
-import { HARD, COMFORT, GATES } from '../../extensions/grasp/grasp_validator.js';
+import { HARD, COMFORT, GATES, FINGERS, validateRows } from '../../extensions/grasp/grasp_validator.js';
 import { CLOSURE, PAD_RADIUS, REFERENCE_HAND, THUMB_TILT } from '../../extensions/grasp/closure.js';
 import { STIFFNESS, DAMPING, MAX_ACCELERATION, MAX_TORQUE, MAX_HOLD_FORCE, HAND_MOTION_SAMPLES,
   accelerationLimit, driveAcceleration, driveAngular, createHandMotion, pushHandMotion, carriedVelocity } from '../../extensions/grasp/held_drive.js';
@@ -230,6 +230,38 @@ async function graspThrowReleaseGolden() {
       cases, pushes, push_steps, pose_cases } };
 }
 
+async function graspValidateRowsGolden() {
+  const names = ['grasp_validator.js', 'data/validator.data.json', 'baked_grasps.js', 'baked_grasps.data.json'];
+  const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
+    const path = resolve(ROOT, 'extensions/grasp', name);
+    return [rel(path), await sha256(path)];
+  })));
+  const cases = BAKED.poses.map(pose => ({ name: `baked:${pose.id}`,
+    input: Object.fromEntries(FINGERS.map((finger, index) => [finger, pose.angles[index]])) }));
+  const comfort = Object.fromEntries(FINGERS.map(finger => [finger, [...COMFORT[finger].centre]]));
+  const missing = structuredClone(comfort); delete missing.Index;
+  const range = structuredClone(comfort); range.Index[1] = HARD.Index.pitch[1] + 0.02;
+  const tolerance = structuredClone(comfort); tolerance.Index[1] = HARD.Index.pitch[1] + 0.005;
+  const hyperextension = structuredClone(comfort); hyperextension.Thumb[3] = -20;
+  const coupling = structuredClone(comfort); coupling.Index[2] = 40; coupling.Index[3] = 0;
+  const neighbour = structuredClone(comfort); neighbour.Index[1] = 0; neighbour.Middle[1] = 50;
+  const missingMiddleNeighbour = structuredClone(comfort); delete missingMiddleNeighbour.Middle;
+  missingMiddleNeighbour.Index[1] = 0; missingMiddleNeighbour.Ring[1] = 50;
+  const badRow = structuredClone(comfort); badRow.Ring = [0, 0, 0, true];
+  const twist = structuredClone(comfort); twist.Thumb.push(HARD.Thumb.twist[1] + 1);
+  cases.push(
+    { name: 'missing-row', input: missing }, { name: 'outside-hard-range', input: range },
+    { name: 'within-range-tolerance', input: tolerance }, { name: 'thumb-hyperextension-warning', input: hyperextension },
+    { name: 'dip-pip-coupling-warning', input: coupling }, { name: 'neighbour-pitch-warning', input: neighbour },
+    { name: 'neighbour-warning-with-missing-middle', input: missingMiddleNeighbour },
+    { name: 'nonfinite-or-wrong-type-row', input: badRow }, { name: 'thumb-twist-range', input: twist },
+  );
+  for (const row of cases) row.expected = validateRows(row.input);
+  return { path: resolve(ROOT, 'godot/addons/gs_grasp/tests/grasp_validator.golden.json'), pretty: true,
+    data: { schema: 'gamesystems.golden.grasp-validator-rows.v1', generator: 'godot/tools/gen_golden.mjs',
+      sources_sha256, cases } };
+}
+
 async function graspCatalogGolden() {
   const source = resolve(ROOT, 'extensions/grasp/data/catalog.data.json');
   const contract = JSON.parse(await readFile(source, 'utf8'));
@@ -424,7 +456,7 @@ async function graspVariantsGolden() {
 
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), await graspHeldDriveMathGolden(), await graspThrowReleaseGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden(), await graspClampGolden(), await graspSdfGolden(), await graspVariantsGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), await graspHeldDriveMathGolden(), await graspThrowReleaseGolden(), await graspValidateRowsGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden(), await graspClampGolden(), await graspSdfGolden(), await graspVariantsGolden()]) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)

@@ -4,9 +4,9 @@
 
 G4 currently has source ports for `GSGraspMerge.merge_poses`, `GSGraspClamp.clamp_rows`,
 catalog `GSGraspShapeSdf` distance/normals, stateless `GSGraspVariants` selection,
-`GSGraspHeldDrive` math/sampling and `GSGraspThrowRelease` sampling/math. Nearest,
-merge, clamp, SDF, variants, held-drive and throw-release are Sol-reviewed; their source
-and consumer sync are complete.
+`GSGraspHeldDrive` math/sampling, `GSGraspThrowRelease` sampling/math and
+`GSGraspValidator.validate_rows`. Nearest, merge, clamp, SDF, variants, held-drive and
+throw-release and validator are Sol-reviewed; their source and consumer sync are complete.
 Merge preserves public JS ordering, duplicate/default policy and shallow identity,
 including existing key/marker collision semantics; Sol review and Nightfall Godot
 consumer sync are complete. Clamp applies the shared hard finger ranges and comfort
@@ -274,7 +274,7 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 | G1 (færdig 2026-10-11) | `gs_host` + sync | `GameSystems/godot/addons/gs_host`, sync-script med `SOURCE.json` + `--check` (genbrug formatet fra `addons/game_systems`), `tier_for`-golden. Contracts-Godot får en `GSHost` i missionsscenen og sender core-events | headless-test: load/fejlisolering/tiers; `run_native_suite.py` grøn |
 | G2 (færdig 2026-10-12) | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`; sceneejet manager, asset-/quality-options, stabil API og `broken`-event i `GSHost` | Nightfall-adapter bruger den synkede addon; legacy-flaskekopi fjernet; bottle- og `--only game-systems`-suiter grønne |
 | G3 (færdig 2026-10-13) | Fælles data-kontrakt | Humanoid maps, validatorens `HARD`/`COMFORT`/`GATES`, closure-defaults, held-drive-skalarer, katalog og kvalitetspolicy er versioneret JSON med Godot-readers og JS-goldens. Reference-hand, recordings og bake har strukturelle readers. Afledt geometri, recording/bake-algoritmer, avatar-fit og headsetparitet er ikke bevist og ligger i senere trin | Source/consumer-kopier og manifests matcher; alle G3-readers og goldens passerer; WebXR-suiterne passerer; G3-afgrænsningen er dokumenteret |
-| G4 (påbegyndt) | `gs_grasp` kerne | Nearest, merge/default, `clamp_rows`, catalog SDF/normal, stateless variantvalg, held-drive-math og kastets sample-/release-math er source-ports og Sol-reviewed. Native hot-path-substitution er afvist indtil separat scoring/performance-kontrakt. Resterer: recording validation/conversion, validatorudfald, closure/contact og runtime-integration | Selector: 296 JS-cases, 2.071 Godot-checks; merge: 21 cases, 2.392; clamp: 259 cases, 7.008; SDF: 70 cases, 425; variants: 16 cases, 9.347; held-drive: 45 checks; throw-release: 4 JS-cases, 183 Godot-checks; målrettet suite 7/7, G4-runtime-paritet mangler |
+| G4 (påbegyndt) | `gs_grasp` kerne | Nearest, merge/default, `clamp_rows`, catalog SDF/normal, stateless variantvalg, held-drive-math, kastets sample-/release-math og rækkevalidator er Sol-reviewed source-ports, synket til consumer. Native hot-path-substitution er afvist indtil separat scoring/performance-kontrakt. Resterer: recording validation/conversion, closure/contact og runtime-integration | Selector: 296 cases, 2.071 checks; merge: 21 cases, 2.392; clamp: 259 cases, 7.008; SDF: 70 cases, 425; variants: 16 cases, 9.347; held-drive: 45 checks; throw-release: 4 cases, 183 checks; validator: 264 JS-cases, 4.789 checks; målrettet suite 8/8 efter sync, G4-runtime-paritet mangler |
 | G5 | `gs_humanoid` + `gs_character_cc` | Canonical skelet, bone maps → `Skeleton3D`, `rest_hand()`. CC-karakter bag `GSCharacter` | karakter-kontrakt-test i Godot; `rest_hand` = JS-golden |
 | G6 | Lukning-til-kontakt + optagelser | Port af `closure.js` og `record.js` (`place_wrist`, `close_to_contact`, `mirror_pose`). Erstat `baked_grasps_*.json` pr. kropstype med én bagning + lukning | golden ≤ tolerance; et Studio-greb vises i Godot; 4 af 5 bagefiler kan slettes |
 | G7 | `gs_avatar` | VR-IK, kalibrering, fingermapping (OpenXR → rækker) bag samme API. Beslut port af `vrik.js` vs. Godots IK-modifiers | Godot-avatar-tests grønne; fingre fra hand tracking = JS-golden |

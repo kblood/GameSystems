@@ -1,6 +1,6 @@
 # gs_grasp
 
-The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp`, `GSGraspShapeSdf`, `GSGraspVariants`, `GSGraspHeldDrive` and `GSGraspThrowRelease`. The selector is a stateless port of the
+The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp`, `GSGraspShapeSdf`, `GSGraspVariants`, `GSGraspHeldDrive`, `GSGraspThrowRelease` and `GSGraspValidator`. The selector is a stateless port of the
 public JavaScript `baked_grasps.nearestPose` scoring/selection operation. The caller
 owns the candidate library and previous selection. This addon does not maintain a
 global grasp library or integrate a native game's grab loop.
@@ -215,6 +215,28 @@ passes **45 checks** with `2e-5` Vector3 tolerance. This utility computes math o
 it does not apply forces, integrate inertia, choose grasp targets or replace the
 Nightfall physics-driven held-object loop. No headset performance budget or in-game
 parity is claimed.
+
+## Validating finger rows
+
+`GSGraspValidator.validate_rows(rows)` ports the public JS `validateRows` diagnostic.
+It checks every canonical finger row against the shared hard ranges (with the same
+0.01-degree comparison tolerance), sums squared comfort-normalized distance, reports
+hard failures, and emits warnings for thumb hyperextension, DIP/PIP coupling and
+neighboring-finger pitch differences. The result has `ok`, `hard`, `warn` and `cost`
+fields. Input/output row values are degrees; `cost` is dimensionless.
+
+This does not clamp rows, reject a grasp in a runtime, select quality, solve contact
+or mutate input. Missing, wrong-length, non-array or non-finite rows are reported as
+`rule: "missing"`, matching the JS validator's fail result. Non-dictionary top-level
+input therefore reports five missing fingers; malformed tuning returns `null`.
+The default validated range/comfort contract is cached after first load; supplied
+nonempty data is validated on each call. Non-finite accumulated cost fails closed.
+
+The public-JS golden covers all 255 baked poses and nine focused cases for missing and
+invalid rows, hard-bound tolerance, hyperextension, DIP/PIP coupling, neighbor pitch
+with and without an intermediate row, and thumb twist. Godot 4.7.2 passes **4,789 checks** with `1e-9` relative numeric
+tolerance. This verifies diagnostic parity only, not anatomy quality or runtime
+acceptance.
 
 ## Throw release sampling
 
