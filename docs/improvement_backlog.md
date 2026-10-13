@@ -22,6 +22,17 @@ Fokuseret kørsel består **18/18** i både native- og snapshot-runnerne. Backpa
 runtime-dokumentation beskriver dækningsgrænserne; headsetovergang og fysisk komfort
 er stadig ikke valideret.
 
+## Reproducerbar Blender-eksport af våben — 2026-10-13
+
+Våbenbyggeren fjernede nu UV-lag fra texture-free PBR-meshes og afviser ved
+eksportkontrol, hvis `TEXCOORD_0` sniger sig ind igen. Dokumenterede Blender-kørsler
+bruger `PYTHONHASHSEED=0` og én tråd. To isolerede genbygninger af Morrow, Tern, Rook
+og Shear gav byte-identiske GLB-, katalog- og valideringsfiler; modellerne blev samlet
+ca. **30 % mindre** (1.069.040 → 742.844 bytes). Våbenkatalog, rifle/pistol-varianter,
+backpack-våben og Shear XR-replay bestod **4/4 Godot-processer** på Godot 4.7.2. Sol
+har reviewed og godkendt kode, assets og dokumentation. Blender-/Godot-headsetvisning og
+håndpasform er stadig ikke valideret.
+
 ## Brandstationsdemo: første scenarie-målsætning — 2026-10-13
 
 Brandstationsdemoen viser nu en scenarie-status: **aktiv** indtil pallet, spredningskasse
