@@ -24,10 +24,11 @@ joint break/failsafe behavior.
 ## VR-specific rules
 
 The player can physically move hands faster and farther than a plausible body can
-follow. Do not use the torso to pull tracked hands back. Instead, let the avatar body
-stretch within a designed limit, soften the body response, or fade to a tracked-hand
-representation. Avoid camera motion from body collision or ragdoll correction. The
-tracked headset pose remains the camera authority.
+follow. Do not use the torso to pull tracked hands back. Instead, use bounded shoulder
+and torso pose accommodation, soften the body response, or fade to a tracked-hand
+representation. Keep that accommodation within authored limits; do not scale bone
+lengths without a deliberate stylized design. Avoid camera motion from body collision or
+ragdoll correction. The tracked headset pose remains the camera authority.
 
 For NPCs, attacks and reactions must stay legible in the headset. Keep collision near
 the face bounded, avoid sudden knockback toward the camera, and do not let a solver push

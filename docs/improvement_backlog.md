@@ -1,5 +1,16 @@
 # Løbende forbedringer af GameSystems
 
+## Godot OpenXR- og VR-guide-review — 2026-10-13
+
+Sol-reviewet fandt en fejl i recenter-rådet: appen må ikke kalde `center_on_hmd()` for
+Local eller Local Floor, hvor runtime flytter kameraet; Stage bevarer origin, så appen
+skal reagere på signalet. `godot_openxr.md` skelner nu eksplicit mellem rummene, herunder
+orienterings-only recenter efter virtuel bevægelse. `active_ragdolls.md` præciserer, at
+avatarens tilpasning er bounded skulder-/torso-pose, ikke fri knoglelængdeskala. Sol har
+godkendt begge rettelser mod Godots 4.7-dokumentation. Alle **10** VR-guiders lokale links
+løser, og `git diff --check` passerer. De øvrige seks guider i Sol-reviewet havde ingen
+handlingskrævende fund.
+
 ## Brandstationsdemo: første scenarie-målsætning — 2026-10-13
 
 Brandstationsdemoen viser nu en scenarie-status: **aktiv** indtil pallet, spredningskasse
@@ -15,7 +26,7 @@ alle tre profiler med vand tilbage; tiden til missionstatus stiger monotont (2,6
 og brugt reserveandel stiger også (ca. 2,1 / 3,1 / 80,8 %). Sikkerhedsgrænsen for naborummet
 er konstant på tværs af presets. Godot 4.7.2-testen består nu **45/45**; den dækker faktisk
 burn-rate, succes med endelig væskemængde, tid og relativ ressourcebelastning, standard-default,
-ugyldigt preset og synlig missionstatus. Sol-review af denne end-to-end accept afventer.
+ugyldigt preset og synlig missionstatus. Sol-review godkendt.
 **N** starter nu en frisk missionrunde ved at genetablere kernel- og visual-state, væskeblandinger,
 finite supplies, batteri/net/sikring og dør; den valgte sværhedsgrad bevares. Regressionen
 producerer først faktisk vand-spray med visual og kildekvittering, muterer derefter scenariet til

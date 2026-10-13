@@ -57,13 +57,23 @@ throws an object or fires a weapon. On focus regain, reacquire fresh poses and r
 controls to return to neutral before re-arming held actions. Handle stopping/loss-pending
 the same way before tearing down session-owned state.
 
-`pose_recentered` has no transform argument; it reports that the user queued a recenter.
-The runtime may change the pose reference, so invalidate pose-history, velocity and
-cached reference-space data, then rebuild from fresh tracked poses. Avoid applying a
-second recenter to the tracked camera/origin. Recalibrate only app-owned state that
-depends on the old reference frame.
-These signals are documented by Godot's
+`pose_recentered` has no transform argument; it reports that the user requested a
+recenter. The required response depends on the configured OpenXR reference space:
+
+- With **Local** or **Local Floor**, the runtime moves the tracked camera relative to
+  the origin. Do not also call `XRServer.center_on_hmd()`.
+- With **Stage**, the runtime keeps the stage origin fixed. Handle the signal in the app;
+  Godot documents `XRServer.center_on_hmd()` as one option. If the player has moved
+  virtually, consider resetting orientation only so recenter does not teleport them to
+  the stage origin.
+
+In every mode, invalidate pose-history, velocity and cached reference-space data, then
+rebuild from fresh tracked poses. Recalibrate only app-owned state that depends on the
+old reference frame. These signals and reference-space behaviors are documented by Godot's
 [OpenXRInterface](https://docs.godotengine.org/en/4.7/classes/class_openxrinterface.html).
+See the [OpenXR settings reference](https://docs.godotengine.org/en/4.7/tutorials/xr/openxr_settings.html)
+and [XR start-script guidance](https://docs.godotengine.org/en/4.7/tutorials/xr/a_better_xr_start_script.html)
+for the reference-space-specific recenter behavior and example handler.
 
 ## Locomotion and interaction
 
