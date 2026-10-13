@@ -10,16 +10,29 @@ const vendored = fileURLToPath(new URL('../src/vendor/extensions/grasp/', import
 const source = fileURLToPath(new URL('../../extensions/grasp/', import.meta.url));
 const contracts = resolve(process.env.CONTRACTS_DIR || fileURLToPath(new URL('../../../NightfallContractsWebXR-interaction', import.meta.url)), 'src/extensions/grasp');
 
+function runtimeFiles(dir) {
+  const files = readdirSync(dir, { withFileTypes: true }).filter(e => e.isFile() && e.name !== 'SYNCED.json').map(e => e.name);
+  const walk = (folder, prefix) => {
+    for (const e of readdirSync(folder, { withFileTypes: true })) {
+      const rel = `${prefix}/${e.name}`;
+      if (e.isDirectory()) walk(resolve(folder, e.name), rel); else if (rel.startsWith('data/')) files.push(rel);
+    }
+  };
+  const data = resolve(dir, 'data');
+  if (existsSync(data)) walk(data, 'data');
+  return files.sort();
+}
+
 test('only the runtime files are synced (no tools), byte-identical to GameSystems/extensions/grasp', () => {
-  const files = readdirSync(vendored).sort();
-  assert.ok(!files.includes('tools'));
-  assert.deepEqual(files, readdirSync(source, { withFileTypes: true }).filter(e => e.isFile()).map(e => e.name).sort());
+  const files = runtimeFiles(vendored);
+  assert.ok(!existsSync(resolve(vendored, 'tools')), 'offline tooling is not copied into the runtime');
+  assert.deepEqual(files, runtimeFiles(source));
   for (const f of files) assert.ok(readFileSync(resolve(vendored, f)).equals(readFileSync(resolve(source, f))), f);
 });
 
 test('the Contracts game uses the same grasp files (its src/extensions/grasp)', { skip: !existsSync(contracts) && 'Contracts not next to GameSystems' }, () => {
-  const files = readdirSync(vendored);
-  assert.deepEqual(readdirSync(contracts).filter(f => f !== 'SYNCED.json').sort(), files.sort(), 'same file set (run npm run sync:extensions in Contracts)');
+  const files = runtimeFiles(vendored);
+  assert.deepEqual(runtimeFiles(contracts), files, 'same file set (run npm run sync:extensions in Contracts)');
   for (const f of files) assert.ok(readFileSync(resolve(vendored, f)).equals(readFileSync(resolve(contracts, f))), `${f} differs: run npm run sync:extensions in Contracts`);
 });
 

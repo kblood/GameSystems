@@ -9,10 +9,32 @@ canonical-led og fire rig-maps. JS-golden fastholder samtidig de fire maps' hist
 52-leds værdier. Det giver et selvstændigt, headless-testbart dataprodukt før den større
 Skeleton3D-/retargeting-port.
 
-Verifikation: Godot 4.7.2 **10/10**, hele GameSystems WebXR-demoen **564/564**, den
+Verifikation: Godot 4.7.2 **10/10**, hele GameSystems WebXR-demoen **566/566**, den
 fokuserede JS-kontraktstest **1/1**, og `node godot/tools/gen_golden.mjs --check`
 består. G3 er ikke færdig: graspens bake-, recording- og reference-data har endnu ikke
 Godot-side schema-/forbrugstests eller dækkende cross-runtime golden.
+
+## G3 grasp-validator-data og nested sync — 2026-10-13
+
+Validatorens `HARD`, `COMFORT` og `GATES` er flyttet til
+`extensions/grasp/data/validator.data.json`; JavaScript beholder de samme mutable
+eksporter. `gs_grasp_data` indlæser og strukturtjekker grader, fingergrænser, komfort-
+bånd og kontaktgrænser, uden at implementere G4-clamping eller kontaktalgoritmer.
+Godot-goldenen bygges fra validatorens offentlige JS-eksporter, og JS-regressionen
+fastholder den historiske SHA-256 samt kendte clamp/fallback-værdier.
+
+For at datafilen når forbrugerne spejler shared sync-helperen og Contracts WebXR-syncen
+nu den eksplicit tilladte `grasp/data/`-mappe, samtidig med at `grasp/tools/` forbliver
+udeladt. Demoens og Grasp Studios midlertidige grasp-fixtures kopierer nu undermapper
+rekursivt.
+
+Verifikation: Godot 4.7.2 **35/35** for validator-data og **10/10** for humanoid maps;
+GameSystems WebXR-demo **566/566**, Nightfall Contracts WebXR **375/375**, Grasp Studio
+**17/17**, og begge WebXR-/Studio-produktionsbuilds lykkes (med eksisterende Vite-chunk- og
+worker-advarsler). Nightfall Contracts Godot-kopien passerer samme data-test **35/35**
+med `--xr-mode off`. Golden-generatorens `--check` og Contracts'
+`sync_extensions --check` passerer. G3 er stadig åben for katalog-/closure-/held-drive-
+data, kvalitetsniveauer og Godot-validering af de allerede JSON-formaterede greb.
 
 ## Godot OpenXR- og VR-guide-review — 2026-10-13
 

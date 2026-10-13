@@ -2,7 +2,7 @@
 // server or a test run does not trigger reloads or expose half-written files (helpers: ../../scripts/sync_lib.mjs,
 // shared with apps/grasp-studio).
 //   - GameSystems extensions (host, adapters, bottles, grasp, humanoid, avatar, character-cc) -> src/vendor/extensions
-//     (top-level files only; grasp's tools/ folder is offline tooling). The three.js liquid/design helpers that used to be
+//     (top-level modules plus grasp/data; grasp's tools/ folder is offline tooling). The three.js liquid/design helpers that used to be
 //     copied from shaders/three and designs/three live in the bottles extension since extensions plan step 8.
 //   - optional: the character-cc extension's generated CharacterCreator files from the Contracts game (an MIT snapshot it
 //     generates with its own npm run sync): vendor/cc -> src/vendor/extensions/character-cc/vendor/cc, and the avatar's

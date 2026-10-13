@@ -33,9 +33,13 @@ G3 remains in progress. Its first verified slice puts humanoid canonical-to-rig 
 `extensions/humanoid/bone_maps.data.json` and loads them through the standalone
 `godot/addons/gs_humanoid` reader. A generated Godot contract and golden are checked
 against the JS extension's exports; the JS test also pins all four 52-joint maps to
-their pre-migration values. Godot 4.7.2 headless tests pass 10/10. The baked, recorded
-and reference grasp data were already JSON inputs, but their schemas and Godot-side
-consumption remain to be covered before G3 is complete.
+their pre-migration values. Validator `HARD`, `COMFORT` and `GATES` are now a second
+versioned JSON contract, read by `godot/addons/gs_grasp_data`; its golden is derived
+from the JS exports. Godot 4.7.2 source tests pass 10/10 for humanoid maps and 35/35
+for validator data. The baked, recorded and reference grasp data were already JSON
+inputs, but their schemas and Godot-side consumption remain to be covered. Other
+JS-owned data still to extract includes the grasp catalog, closure/pad settings,
+reference-hand constants, held-drive settings and quality levels.
 
 Historisk status (2026-10-12): **G0 afklaret, G1 og G2 implementeret og versioneret**; G3 (fælles grebs-/skeletdata) var næste planlagte porttrin.
 Status (2026-10-10): undersøgelse, ingen kode ændret i `NightfallContractsGodot*` eller i `GameSystems/extensions`. Relateret: [extensions_plan.md](extensions_plan.md) (trin 1–9), [grab_findings.md](grab_findings.md).
@@ -132,9 +136,14 @@ om en "reusable addons/nightfall_characters component" skal derfor opdateres. De
 | c) Fælles kerne i Rust/C (GDExtension + WASM) | **Ikke nu.** Det kræver toolchain og CI til win64, linux-x64, linux-arm64 og wasm, og WebXR-siden skulle skrives om fra ren ESM til WASM. Værktøjerne (lab, studio, node-tests) skulle også om. Overvej det kun for en senere hot path (fx `high`-lukning hver frame på mange hænder), hvis profilering på Steam Frame viser behov. Interfacet fra a) holdes så rent, at kernen kan byttes. |
 
 Detaljer for a):
-- Konstanter, der i dag ligger i JS, flyttes til JSON i `extensions/grasp/data/`: `HARD`/`COMFORT`/`GATES` (validator), `CATALOG` (shapes/SDF),
-  `CLOSURE`/`PAD_RADIUS`/`REFERENCE_HAND`, held-drive-konstanter, kvalitetsniveauer, bone maps (`humanoid/bone_maps.js`) og `finger_profiles.json`.
-  JS-modulerne læser dem (ét skridt i GameSystems, ingen adfærdsændring), og Godot-sync kopierer samme filer.
+- Implementeret i G3 indtil nu: humanoid bone maps (`extensions/humanoid/bone_maps.data.json`) og grasp-validatorens
+  `HARD`/`COMFORT`/`GATES` (`extensions/grasp/data/validator.data.json`). JS bevarer eksportnavnene, og begge datasæt har
+  Godot-readers samt golden-filer fra offentlige JS-eksporter. JSON flyttes ind i app-kopiernes runtime gennem de
+  eksplicit tilladte sync-stier; `grasp/tools/` forbliver offline.
+- Resterende JS-konstanter/data til G3: `CATALOG` (shapes/SDF), `CLOSURE`/`PAD_RADIUS`/`REFERENCE_HAND`, held-drive-
+  konstanter og kvalitetsniveauer. `baked_grasps.data.json`, `recorded_grasps.json` og `reference_hand.json` findes allerede,
+  men mangler Godot-side kontrakt-/forbrugstests. `extensions/grasp/finger_profiles.json` fandtes ikke ved kontrol
+  2026-10-13; behold det ikke som antaget input uden nyt kildebevis.
 - `tools/golden/*.mjs` genererer golden-filer fra JS: `clampRows`, `validateRows`, `signedDistance` i et punktgitter pr. kind,
   `fingerChain` FK, `closeToContact` for N poser × 3 håndskalaer, `rowsFromJoints`/`mirrorPose`, `driveAcceleration`, `releaseVelocity`, `tier_for`.
   Godot-tests (headless, i `tests/run_native_suite.py`) skal ramme dem: vinkler ≤ 0,1°, positioner ≤ 0,1 mm, SDF ≤ 0,05 mm.
@@ -197,7 +206,7 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 | G0 | Afklaring | Brugerens svar på spørgsmålene nedenfor. Ret kortlægningen i denne fil (fingerkonvention, worktree-status, `-blood`/`-npcai`). Vælg hvilke `r2-*`/`pkg-*` der merges først | beslutninger skrevet her |
 | G1 (færdig 2026-10-11) | `gs_host` + sync | `GameSystems/godot/addons/gs_host`, sync-script med `SOURCE.json` + `--check` (genbrug formatet fra `addons/game_systems`), `tier_for`-golden. Contracts-Godot får en `GSHost` i missionsscenen og sender core-events | headless-test: load/fejlisolering/tiers; `run_native_suite.py` grøn |
 | G2 (færdig 2026-10-12) | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`; sceneejet manager, asset-/quality-options, stabil API og `broken`-event i `GSHost` | Nightfall-adapter bruger den synkede addon; legacy-flaskekopi fjernet; bottle- og `--only game-systems`-suiter grønne |
-| G3 (påbegyndt) | Fælles data-kontrakt | Humanoid maps ligger i JSON; `gs_humanoid` indlæser skemaet og sammenligner med en golden genereret fra JS-eksporter. Grasp bake/record/reference er allerede JSON, men mangler kontrakt- og Godot-konsumenttest | JS-tests uændrede; synkroniserede kopier matcher; humanoid-JSON + Godot-reader/golden matcher JS; grasp-JSON-kontrakter er valideret på begge runtimes |
+| G3 (påbegyndt) | Fælles data-kontrakt | Humanoid maps og validatorens `HARD`/`COMFORT`/`GATES` er versioneret JSON med Godot-readers og golden fra JS-eksporter. Grasp bake/record/reference findes allerede som JSON, men mangler kontrakt- og Godot-konsumenttest; katalog, closure/pad, reference-hand-konstanter, held-drive og kvalitetsniveauer ligger stadig i JS | JS-tests uændrede; synkroniserede kopier matcher; data-readers/goldens matcher JS; de resterende grasp-data har stabile formater og Godot-kontrakter |
 | G4 | `gs_grasp` kerne | Port: katalog/SDF, validator (`clamp_rows`), `baked_grasps` (nearest + hysterese, `merge_poses`), held-drive, kast | golden-tests ≤ tolerance; Godot-greb uændrede i `test`-suiten |
 | G5 | `gs_humanoid` + `gs_character_cc` | Canonical skelet, bone maps → `Skeleton3D`, `rest_hand()`. CC-karakter bag `GSCharacter` | karakter-kontrakt-test i Godot; `rest_hand` = JS-golden |
 | G6 | Lukning-til-kontakt + optagelser | Port af `closure.js` og `record.js` (`place_wrist`, `close_to_contact`, `mirror_pose`). Erstat `baked_grasps_*.json` pr. kropstype med én bagning + lukning | golden ≤ tolerance; et Studio-greb vises i Godot; 4 af 5 bagefiler kan slettes |

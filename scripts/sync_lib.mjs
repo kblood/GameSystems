@@ -56,17 +56,22 @@ export const topLevelFiles = async dir => (await readdir(dir, { withFileTypes: t
 
 /** Extensions whose subfolders are generated per game (never copied from GameSystems, never removed by syncExtensions). */
 export const GENERATED_DIRS = { 'character-cc': ['vendor', 'assets'] };
+/** Source subfolders that are part of a shared extension's public data (offline tooling stays private). */
+export const SYNC_SUBDIRS = { grasp: ['data'] };
 
 /**
- * Mirror GameSystems extensions into `vendorDir/extensions/<name>`, top-level files only (an extension is a flat set of
- * modules; grasp's tools/ folder is offline tooling). Subfolders in GENERATED_DIRS are left alone. Returns the number of
- * changed files.
+ * Mirror GameSystems extensions into `vendorDir/extensions/<name>`, top-level modules plus explicitly listed data
+ * subfolders (grasp's tools/ folder is offline tooling). Subfolders in GENERATED_DIRS are left alone. Returns the number
+ * of changed files.
  */
 export async function syncExtensions(gameSystems, vendorDir, names) {
   let changed = 0;
   for (const name of names) {
     const from = resolve(gameSystems, 'extensions', name);
-    changed += await mirror(from, resolve(vendorDir, 'extensions', name), await topLevelFiles(from), { keepDirs: GENERATED_DIRS[name] ?? [] });
+    const files = await topLevelFiles(from);
+    for (const subdir of SYNC_SUBDIRS[name] ?? [])
+      files.push(...(await listFiles(resolve(from, subdir))).map(file => relative(from, file)));
+    changed += await mirror(from, resolve(vendorDir, 'extensions', name), files, { keepDirs: GENERATED_DIRS[name] ?? [] });
   }
   return changed;
 }

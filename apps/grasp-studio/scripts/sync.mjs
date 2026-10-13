@@ -1,5 +1,5 @@
 // Copies shared code into Grasp Studio (helpers shared with the bottle demo: ../../../scripts/sync_lib.mjs):
-//   - GameSystems extensions host, grasp, humanoid, avatar, character-cc -> src/vendor/extensions (top-level files only;
+//   - GameSystems extensions host, grasp, humanoid, avatar, character-cc -> src/vendor/extensions (top-level modules plus grasp/data;
 //     generated, gitignored)
 //   - optional: character-cc's generated CharacterCreator files from the Contracts game (vendor/cc, an MIT snapshot) and
 //     the twin's assets -> public/avatar-assets, for the avatar twin (src/avatar.js). Without them the studio runs with

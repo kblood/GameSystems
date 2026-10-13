@@ -3,12 +3,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { mkdtemp, readFile, writeFile, copyFile, readdir, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, copyFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { graspStore, applyAction, readLibrary, serializeLibrary, emptyLibrary, sameMachine, uniqueId } from '../server/grasp_store.mjs';
 import { createStudio, syntheticHands } from '../src/studio.js';
+import { listFiles } from '../../../scripts/sync_lib.mjs';
 
 const extensionDir = fileURLToPath(new URL('../src/vendor/extensions/grasp/', import.meta.url));
 
@@ -113,7 +114,11 @@ test('a grasp saved through the endpoint is in the grasp library a game loads (d
   const dir = await mkdtemp(join(tmpdir(), 'grasp-studio-ext-'));
   const srv = await serve(join(dir, 'recorded_grasps.json'));
   try {
-    for (const f of await readdir(extensionDir)) await copyFile(join(extensionDir, f), join(dir, f));
+    for (const source of await listFiles(extensionDir)) {
+      const f = relative(extensionDir, source), target = join(dir, f);
+      await mkdir(dirname(target), { recursive: true });
+      await copyFile(source, target);
+    }
     // Start from an empty library: the synced copy holds whatever was really recorded in the studio.
     const synced = JSON.parse(await readFile(join(dir, 'recorded_grasps.json'), 'utf8'));
     await writeFile(join(dir, 'recorded_grasps.json'), JSON.stringify({ ...synced, poses: [] }));

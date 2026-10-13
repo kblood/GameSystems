@@ -16,22 +16,12 @@
 // The hard ranges are the plugin's own LIMITS (src/ik/fingers.js, "common anatomical ranges"); COMFORT is the band a
 // relaxed grip stays in, tighter and used for scoring, never for rejecting.
 
+import VALIDATOR_DATA from './data/validator.data.json' with { type: 'json' };
+
 export const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
-export const HARD = {
-  Thumb: { dyaw: [-55, 30], pitch: [-35, 65], bend1: [-25, 80], bend2: [-25, 95], twist: [-45, 45] },
-  Index: { dyaw: [-15, 25], pitch: [-25, 95], bend1: [-5, 115], bend2: [-10, 90] },
-  Middle: { dyaw: [-15, 15], pitch: [-25, 95], bend1: [-5, 115], bend2: [-10, 90] },
-  Ring: { dyaw: [-20, 12], pitch: [-25, 98], bend1: [-5, 115], bend2: [-10, 90] },
-  Little: { dyaw: [-30, 15], pitch: [-30, 100], bend1: [-5, 115], bend2: [-10, 90] },
-};
+export const HARD = VALIDATOR_DATA.HARD;
 // Relaxed power-grasp centre per digit and the half width (deg) over which the comfort cost reaches 1.
-export const COMFORT = {
-  Thumb: { centre: [-10, 25, 25, 20], width: [35, 40, 45, 50] },
-  Index: { centre: [0, 50, 55, 35], width: [15, 45, 55, 45] },
-  Middle: { centre: [0, 55, 60, 40], width: [10, 45, 55, 45] },
-  Ring: { centre: [0, 55, 60, 40], width: [12, 45, 55, 45] },
-  Little: { centre: [0, 55, 60, 40], width: [20, 45, 55, 45] },
-};
+export const COMFORT = VALIDATOR_DATA.COMFORT;
 const KEYS = ['dyaw', 'pitch', 'bend1', 'bend2'];
 export const HYPEREXTENSION_WARN_DEG = -12; // thumb IP past this reads as a bent-back stub
 export const DIP_PER_PIP = { min: 0.35, max: 1.0, slack: 8 }; // bend2 vs bend1 once the finger is actually flexed
@@ -135,7 +125,7 @@ export function maxContactGapDeg(angles) {
   return gap * 180 / Math.PI;
 }
 
-export const GATES = { wristErrorMm: 4.0, penetrationMm: 3.0, palmGapMaxMm: 6.0, palmGapMinMm: -3.0, tipTouchMm: 3.5, minFingersTouching: 3, minOppositionDeg: 120 };
+export const GATES = VALIDATOR_DATA.GATES;
 
 /**
  * One verdict from skin metrics (hand_contact.contactMetrics + lab extras) and rows.

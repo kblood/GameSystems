@@ -5,10 +5,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { existsSync } from 'node:fs';
-import { mkdtemp, readdir, copyFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, copyFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { listFiles } from '../../scripts/sync_lib.mjs';
 
 const vendored = fileURLToPath(new URL('../src/vendor/extensions/grasp/', import.meta.url));
 const studioDir = fileURLToPath(new URL('../../apps/grasp-studio/', import.meta.url));
@@ -23,7 +24,13 @@ test('a studio recording saved through the endpoint preserves bakes and closes o
   await new Promise(ok => server.listen(0, '127.0.0.1', ok));
   try {
     // This endpoint test owns a fresh recording store, independent of artists' existing recordings.
-    for (const f of await readdir(vendored)) if(f!=='recorded_grasps.json')await copyFile(join(vendored, f), join(dir, f));
+    for (const source of await listFiles(vendored)) {
+      const f = relative(vendored, source);
+      if (f === 'recorded_grasps.json') continue;
+      const target = join(dir, f);
+      await mkdir(dirname(target), { recursive: true });
+      await copyFile(source, target);
+    }
     // "Record": the studio model with a synthetic tracked hand (25 XR joints) holding the beer bottle.
     const studio = createStudio();
     studio.setItem([0.1, 0.9, -0.4], [0, 0, 0, 1]);

@@ -11,6 +11,7 @@ import { tierFor, normalizeTier } from '../../extensions/host/quality.js';
 import { JOINT_NAMES } from '../../extensions/humanoid/canonical.js';
 import { MPFB_ROOT_BONE } from '../../extensions/humanoid/rig.js';
 import { MPFB_GAME_ENGINE, VRM_HUMANOID, VRM0_HUMANOID, mixamoBoneMap } from '../../extensions/humanoid/bone_maps.js';
+import { HARD, COMFORT, GATES } from '../../extensions/grasp/grasp_validator.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const sha256 = async path => createHash('sha256').update(await readFile(path)).digest('hex');
@@ -62,9 +63,25 @@ async function humanoidBoneMapsGolden() {
   ];
 }
 
+async function graspValidatorGolden() {
+  const source = resolve(ROOT, 'extensions/grasp/data/validator.data.json');
+  const contract = JSON.parse(await readFile(source, 'utf8'));
+  const expected = { schema: 'gamesystems.grasp-validator-data.v1', HARD, COMFORT, GATES };
+  deepStrictEqual(contract, expected, 'Grasp validator data differs from the public JS API');
+  const sources = [source, resolve(ROOT, 'extensions/grasp/grasp_validator.js')];
+  const sources_sha256 = Object.fromEntries(await Promise.all(sources.map(async path => [rel(path), await sha256(path)])));
+  return [
+    { path: resolve(ROOT, 'godot/addons/gs_grasp_data/data/validator.data.json'), data: contract, pretty: true },
+    { path: resolve(ROOT, 'godot/addons/gs_grasp_data/data/validator.golden.json'), data: {
+      schema: 'gamesystems.golden.grasp-validator-data.v1', generator: 'godot/tools/gen_golden.mjs',
+      source: rel(source), source_sha256: await sha256(source), sources_sha256, contract: expected,
+    }, pretty: true },
+  ];
+}
+
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden()]) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)
