@@ -1,24 +1,28 @@
 # Plan: Godot-versionen af Contracts på de fælles extensions
 
-## Current verified state — 2026-10-12
+## Current verified state — 2026-10-13
 
-This status supersedes older worktree/branch references and the historical table below.
-`gs_host` was merged into `GameSystems/main` in commit `5234a29`; the reusable gear ledger
-was merged in `155ad21`. The current source also contains `gs_weapon_catalog` and
-`gs_resource_adapters`. The gear ledger and scene adapter now include safe
-consumption/unregistration and scene-exit cleanup; these source changes are staged
-but not yet committed. Ledger tests cover the `equipped` weapon owner through transfer,
-checkpoint restore and reset. Their independent source tests pass 57/57 and 65/65, and
-the source addon sync check against NightfallContractsGodot passes. The five current
-Godot addon contract scripts pass 213 checks total on Godot 4.7.2.
+This status supersedes the older worktree/branch references and historical mapping below.
+`GameSystems/main` tracks `kblood/GameSystems`; the native game remains the separate
+`kblood/NightfallContractsGodot` repository. There are no registered side worktrees in
+either checkout. WebXR remains its own project. The older mapping below is a dated
+architecture snapshot; use this section and the linked addon READMEs for current state.
+
+`gs_host` and the reusable gear ledger are committed. The current source also contains
+the scene inventory adapter, resource adapters, weapon catalog/loadout, bottles,
+backpack, cameras, thermal/portals, fire spread, sprinklers, electricity and thermal
+adapters. The gear ledger and scene adapter include safe consumption/unregistration,
+checkpoint handling and scene-exit cleanup. The `equipped` owner is covered through
+transfer, restore and reset. On Godot 4.7.2, the latest direct source tests pass:
+gear ledger **59/59**, scene adapter **82/82**, sprinkler kernel **54/54**, and the
+fire-station integration **36/36**. These are headless source contracts, not headset
+acceptance.
 
 `gs_bottles` has been ported as a source addon and synced to Nightfall with its adapter,
-quality and `broken`-event integration. Current work extends its per-pour quality tiers.
-Resource adapters and the weapon catalog are parallel additions, not evidence that the
-remaining extension ports are complete. The primary Godot game, GameSystems source,
-and WebXR game each track their own `main`; old duplicate Godot branches were verified
-as ancestors of kblood's Godot `main` and cleaned up. See
-[`improvement_backlog.md`](improvement_backlog.md) for the current per-task record.
+quality and `broken`-event integration. Its source contract and Nightfall sync are
+separate from the older `extensions/` port plan. The source of truth for ongoing
+concrete tasks is [`improvement_backlog.md`](improvement_backlog.md); remaining ports
+must be assessed there rather than inferred from this historical table.
 
 `gs_backpack` now also provides reusable approach validation, the gated inventory
 interaction bridge, and the bounded local-space handle-pull policy. Its source contracts

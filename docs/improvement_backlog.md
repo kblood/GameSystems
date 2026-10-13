@@ -1345,3 +1345,15 @@ måleticks og kræver, at spray og runoff faktisk sker. En gentagelse målte 6.7
 inkluderer simulation og demo-stateopdateringer, men ingen rendering; Steam Frame og
 headset-framebudget er fortsat umålt. Gentag med
 `godot/demos/sprinkler_fire/benchmark_fire_station.gd`.
+
+## Afsluttet sprinklerintegration til brændende dieselpyt — 2026-10-13
+
+Det automatiske vandhoved i brandstationsdemoen inkluderer nu dieselpyt-brandproxyen
+blandt sine tre mål. Den ligger ca. 3,29 m fra hovedet og modtager sin andel af den
+begrænsede vandmængde; efter tilstrækkelig dosis når vådheden slukningsgrænsen, mens de
+resterende 800 ml diesel bevares. En integrationstest tænder pytten, aktiverer
+sprinkleren og kontrollerer både thermal-kvitteringen, slukning og typed fuel-ledger.
+
+Verifikation på Godot 4.7.2: brandstationsdemo **36/36**, sprinklerkerne **54/54**.
+Sol reviewede target-rækkevidde, dosisfordeling og fuel-regnskab og godkendte ændringen.
+Headsetvalidering af sprinklerens visuelle dækning er fortsat åben.
