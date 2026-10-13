@@ -1,7 +1,7 @@
 # gs_grasp_data
 
 This data-only G3 addon has separate readers for validator ranges/gates, closure
-defaults, held-drive tuning, prop catalogs and the recorded-grasp reference rest hand.
+defaults, held-drive tuning, prop catalogs, the reference rest hand and recorded grasps.
 Each reads a versioned JSON contract shared with JavaScript. Generated goldens record
 the source data and public JS exports or API outputs.
 
@@ -52,8 +52,28 @@ direct side/scale/segment-length correspondences. They do not reconstruct or ver
 the derived profile, palm, axes or thenar geometry. Those outputs are captured for
 later algorithm tests; JS regressions pin current geometry, caching and scaling.
 
+`GSGraspRecordedData` reads a generated copy of the unchanged canonical
+`extensions/grasp/recorded_grasps.json`. The strict document requires its versioned
+schema and poses array, with an optional text note. Each pose requires nonempty
+id/kind/grasp, left/right side, finite wrist and approximately unit `[x,y,z,w]`
+quaternion (the JS `1e-3` tolerance), and five `angles`/`open` digit rows. Rows contain
+four degree values; the thumb may contain a fifth twist value. Optional hand length
+must be strictly between 0.08 and 0.35 metres. Optional mode/mirror-origin text,
+default/mirrored booleans, palm vector and recording metadata are type-checked;
+metadata requires source/timestamp text, with optional nonnegative integer frames
+and finite score in [0, 100]. Timestamp text is preserved, not date-parsed.
+
+This canonical-artifact reader rejects the entire document if any pose is invalid,
+requires the schema and rejects unknown fields. JS `recordedPoses` instead filters
+geometry failures, permits an omitted schema and does not validate metadata. The
+golden therefore preserves the raw document, filtered public `RECORDED` array and
+accepted/rejected indices separately. All ten current records pass the JS filter.
+Structural validity does not imply anatomical/contact quality: raw rows, including
+thumb twists outside `HARD`, are preserved for the existing runtime clamp. Duplicate
+ids are retained as data; variant merging remains the JS runtime's responsibility.
+
 The readers do not clamp finger rows, score grasps, calculate contacts, solve closure,
-apply drive forces, sample hand motion or convert coordinates. Algorithm ports and
+apply drive forces, sample/capture/mirror recordings or convert coordinates. Algorithm ports and
 their parity tests remain separate G4/G6 work.
 
 ```gdscript
@@ -67,6 +87,8 @@ var catalog := GSGraspCatalogData.load_data()
 var beer_shape: Dictionary = catalog["CATALOG"]["bottle_beer"]["shape"]
 var reference := GSGraspReferenceHandData.load_data()
 var left_rest: Dictionary = reference["hands"]["left"]
+var recordings := GSGraspRecordedData.load_data()
+var raw_poses: Array = recordings["poses"]
 ```
 
 Run the source contract with Godot 4.7+:
@@ -77,4 +99,5 @@ godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp
 godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_held_drive_data_tests.gd
 godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_catalog_data_tests.gd
 godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_reference_hand_data_tests.gd
+godot --headless --path godot --script res://addons/gs_grasp_data/tests/gs_grasp_recorded_data_tests.gd
 ```

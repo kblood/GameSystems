@@ -1,5 +1,27 @@
 # Løbende forbedringer af GameSystems
 
+## G3 optagede greb: rå dokument og filtreret API hver for sig — 2026-10-13
+
+Den kanoniske `extensions/grasp/recorded_grasps.json` og dens JS-forbrugere er
+uændrede. `GSGraspRecordedData` validerer en genereret kopi med eksplicit schema,
+posefelter, normaliseret quaternion, fem fingerrækker (valgfri femte tommeltwist),
+håndlængde og typed valgfri Grasp Studio-metadata. Ukendte felter og ugyldige poser
+afviser dokumentet samlet. Vinkler anatomisk uden for `HARD` bevares som rådata.
+
+JS `RECORDED` bruger `recordedPoses`/`isPose`, som filtrerer geometri-fejl og ikke
+validerer metadata. Goldenen gemmer derfor rå dokument, offentligt filtreret array
+og accepterede/afviste rå indeks separat. De nuværende ti poser accepteres alle i JS;
+regressioner dækker også blandede ugyldige input og duplikater, historiske hashes,
+mutable records i et frosset array og uændret opt-in/defaultvalg. Proveniensen er
+Grasp Studios dev-server-optagelser og markerede spejlinger, ikke reference-håndens
+CharacterCreator-fixture. Ingen optagelses-, spejlings-, closure- eller SDF-algoritme
+er portet til Godot.
+
+Verifikation: Godot 4.7.2 **58/58**, fokuseret JS **26/26** inklusive Contracts-
+filsammenligningen, golden-freshness og `git diff --check` passerer. WebXR-runtime
+har ingen ændringer; Godot-addon-kopien er endnu ikke synkroniseret til spillet.
+G3 er fortsat åben for bake-dokumentets kontrakt og kvalitetsdata.
+
 ## G3 reference-hånd: valideret rådata uden ny kildekopi — 2026-10-13
 
 `extensions/grasp/reference_hand.json` forbliver den uændrede kanoniske kilde. En

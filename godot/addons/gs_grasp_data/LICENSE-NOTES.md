@@ -37,3 +37,13 @@
   tests cover raw structure and direct field correspondences; derived geometry is
   recorded for later algorithm conformance work. The reader/tests are original
   GameSystems work under the repository's MIT licence.
+- `data/recorded_grasps.data.json` copies the existing canonical
+  `extensions/grasp/recorded_grasps.json`, whose note and per-pose metadata identify
+  GameSystems Grasp Studio recordings saved by its dev-server endpoint, including
+  explicitly marked mirrored variants. These records are GameSystems MIT data;
+  they are not attributed to CharacterCreator's reference-hand fixture.
+- `data/recorded_grasps.golden.json` records the raw document separately from the
+  public JS `RECORDED` array, which filters invalid geometry through `isPose`.
+  Accepted/rejected raw indices and dependency hashes preserve that distinction.
+  The reader and tests are original GameSystems MIT work, with no capture, mirror,
+  recording, closure or SDF algorithm port.
