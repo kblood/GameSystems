@@ -58,3 +58,10 @@ public JS functions and stores sampled outputs rather than duplicating the catal
 Its golden exercises the public JS `setGraspVariants` API and restores its module state;
 the Godot utility itself is stateless. Probe/tests are original GameSystems MIT work,
 Copyright (c) 2026 Kasper Olesen.
+
+`GSGraspRecordedPoses` ports the public `isPose` and `recordedPoses` runtime filtering
+from MIT GameSystems `extensions/grasp/record.js`. It intentionally skips invalid
+individual entries and ignores optional metadata, unlike the stricter G3 source-file
+reader. Its golden calls the public JS functions on synthetic documents; the
+GDScript, probe and tests are original GameSystems MIT work, Copyright (c) 2026
+Kasper Olesen.

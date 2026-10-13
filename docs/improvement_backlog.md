@@ -1,5 +1,14 @@
 # Løbende forbedringer af GameSystems
 
+## G4 recorded-pose filtering — 2026-10-13
+
+`GSGraspRecordedPoses` porter `isPose` og `recordedPoses` fra `record.js`: hver pose
+valideres uafhængigt og ugyldige entries filtreres fra, mens rækkefølge, falsy/manglende
+schema og metadataadfærd følger JS. Den strengere G3 `GSGraspRecordedData`-læser forbliver
+uændret og afviser fortsat ugyldige kildedokumenter som helhed. Golden dækker tretten
+dokumentvarianter samt ugyldige felter, quaternion-grænse og Godot-`INF`/`NAN`/bool-regressioner.
+Konvertering, lukning, scoring og consumer-library-installation er ikke del af denne port.
+
 ## G4 row-validator diagnostics — 2026-10-13
 
 `GSGraspValidator.validate_rows` porter JS `validateRows` som selvstændig diagnostic:
@@ -234,7 +243,7 @@ posefelter, normaliseret quaternion, fem fingerrækker (valgfri femte tommeltwis
 håndlængde og typed valgfri Grasp Studio-metadata. Ukendte felter og ugyldige poser
 afviser dokumentet samlet. Vinkler anatomisk uden for `HARD` bevares som rådata.
 
-JS `RECORDED` bruger `recordedPoses`/`isPose`, som filtrerer geometri-fejl og ikke
+JS `RECORDED` bruger `recordedPoses`/`isPose`, som filtrerer strukturelle posefejl og ikke
 validerer metadata. Goldenen gemmer derfor rå dokument, offentligt filtreret array
 og accepterede/afviste rå indeks separat. De nuværende ti poser accepteres alle i JS;
 regressioner dækker også blandede ugyldige input og duplikater, historiske hashes,

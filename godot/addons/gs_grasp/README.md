@@ -137,6 +137,21 @@ The JS oracle covers 16 selections and restores the source module's previous var
 after generating fixtures. Godot 4.7.2 passes **9,347 assertions**; this verifies the
 selection policy only, not a live runtime switch or recorded-only mode.
 
+## Filtering recorded poses
+
+`GSGraspRecordedPoses.is_pose(value)` and `recorded_poses(document)` port the JS
+runtime's usable-pose filter. They validate required identity fields, side, finite
+wrist/quaternion/row values, near-unit quaternion and optional hand length, then skip
+invalid entries while preserving recording order. Unrelated optional metadata is
+ignored, matching JS. This is deliberately less strict than the G3
+`GSGraspRecordedData` source-file validator, which validates the complete document
+and metadata before accepting it.
+
+The JS golden covers missing/falsy/wrong schemas, malformed document shapes, valid
+and invalid poses, quaternion tolerance edges, thumb twist rows and ignored metadata.
+The utility only filters and does not merge, convert, score or install a runtime
+library.
+
 ## Merging baked and recorded libraries
 
 `GSGraspMerge.merge_poses(baked: Array, recorded: Array) -> Variant` ports the public
