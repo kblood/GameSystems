@@ -11,6 +11,17 @@ godkendt begge rettelser mod Godots 4.7-dokumentation. Alle **10** VR-guiders lo
 løser, og `git diff --check` passerer. De øvrige seks guider i Sol-reviewet havde ingen
 handlingskrævende fund.
 
+## XR-profilskift ind i standardtest-runneren — 2026-10-13
+
+Nightfalls `test_xr_profile_transitions.gd` dækkede allerede controller-/håndprofilskift,
+tracker-erstatning, friske inputkanter og afbrudt backpack-træk, men stod uden for
+`run_native_suite.py`'s registrerede checks. En `xr-input`-suite gør den nu automatisk
+synlig for native- og fast-test-runnerne og knytter ejerskab til Godot OpenXR-guiden.
+`owner_doc`-stien følger den eksisterende repo-relative konvention og er godkendt af Sol.
+Fokuseret kørsel består **18/18** i både native- og snapshot-runnerne. Backpakkens
+runtime-dokumentation beskriver dækningsgrænserne; headsetovergang og fysisk komfort
+er stadig ikke valideret.
+
 ## Brandstationsdemo: første scenarie-målsætning — 2026-10-13
 
 Brandstationsdemoen viser nu en scenarie-status: **aktiv** indtil pallet, spredningskasse
