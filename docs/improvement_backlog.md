@@ -1,5 +1,19 @@
 # Løbende forbedringer af GameSystems
 
+## Aktuel G3-integrationsstatus — 2026-10-13
+
+De syv `gs_grasp_data`-datakontrakter er nu pushet i GameSystems og synkroniseret til
+Nightfall Godot, inklusive seneste bake-kontrakt (`GameSystems 9995834`, Godot
+`ed83b27`). GameSystems WebXR bestod **579/579** før denne Godot-only addon-sync;
+Nightfall WebXR bestod **375/375** efter sine runtime-datasynkroniseringer. Dens
+manifester blev derefter opdateret til `GameSystems 9995834` i `a367ecc`; extension-
+og addon-`--check` passerede i alle tre worktrees. Bake-kopien i Nightfall Godot
+består **300/300**.
+
+G3 mangler stadig fælles quality-data og en afsluttende kontrol af kontraktgrænserne.
+Disse læsere validerer data; de porterer ikke Godots grebs-, kontakt-, SDF-, bake- eller
+håndgeometrialgoritmer. Headset-/asset-paritet kræver særskilt evidens.
+
 ## G3 bake-kontrakt med komplette offentlige records — 2026-10-13
 
 `GSGraspBakedData` læser en genereret kopi af den uændrede
@@ -18,10 +32,12 @@ Reference-hand-fixturet er en separat kilde og forveksles ikke med bake-avataren
 operatorScale/rest-konventioner.
 
 Verifikation: Godot 4.7.2 **300/300**, fokuseret JS **28/28** inklusive Contracts-
-filsammenligningen, golden-freshness og `git diff --check` passerer. Canonical JSON
-og JS-runtime har ingen ændringer; native-addon-sync til spillet er stadig udestående.
-G3 mangler kvalitetsdata og en samlet afslutningsaudit; senere algoritme-/headset-
-validering er fortsat særskilt arbejde.
+filsammenligningen, golden-freshness og `git diff --check` passerer. Kilden er pushet
+som GameSystems `9995834`, addon-kopien som Nightfall Godot `ed83b27`; target-testen
+består **300/300**, og addon-sync-checken passerer. WebXR runtimefilerne er uændrede;
+manifestrevisionen blev ajourført i Nightfall WebXR `a367ecc`, hvor sync-checken også
+passerer. G3 mangler kvalitetsdata og en samlet afslutningsaudit; senere algoritme-/
+headset-validering er fortsat særskilt arbejde.
 
 ## G3 optagede greb: rå dokument og filtreret API hver for sig — 2026-10-13
 
@@ -41,9 +57,11 @@ CharacterCreator-fixture. Ingen optagelses-, spejlings-, closure- eller SDF-algo
 er portet til Godot.
 
 Verifikation: Godot 4.7.2 **58/58**, fokuseret JS **26/26** inklusive Contracts-
-filsammenligningen, golden-freshness og `git diff --check` passerer. WebXR-runtime
-har ingen ændringer; Godot-addon-kopien er endnu ikke synkroniseret til spillet.
-G3 er fortsat åben for bake-dokumentets kontrakt og kvalitetsdata.
+filsammenligningen, golden-freshness og `git diff --check` passerer. Kilden er pushet
+som GameSystems `61ec5af`, Godot-kopien som `a207e74`; Godot target-test og sync-check
+passerer. WebXR runtimefilerne er uændrede, og manifests følger nu GameSystems
+`9995834` (`a367ecc`); Contracts-sync-checken passerer. G3 er fortsat åben for
+kvalitetsdata og den samlede kontrakt-/algoritmeaudit.
 
 ## G3 reference-hånd: valideret rådata uden ny kildekopi — 2026-10-13
 
@@ -63,11 +81,11 @@ samt caching, uafhængige sider og skalaadfærd. Fixturets eksisterende Characte
 proveniens fra MIT-character-pluginet bevares; ingen CharacterCreator-runtime kopieres.
 
 Verifikation: Godot 4.7.2 **78/78**, fokuseret JS **23/23** inklusive eksisterende
-Contracts-filsammenligning, golden-freshness og `git diff --check` passerer. Ingen
-WebXR-runtimefiler er ændret, og den eksisterende top-level sync ejer fortsat fixturet.
-Den nye Godot-addon-kopi er endnu ikke synkroniseret til spillet. G3 mangler fortsat
-kvalitetsdata og kontrakter for bake-/recording-filerne; Godot-geometriens algoritme-
-paritet hører fortsat til senere porttrin.
+Contracts-filsammenligning, golden-freshness og `git diff --check` passerer. Kilden er
+pushet som GameSystems `ae3d8d9`, Godot-kopien som `c74c1bc`; target-test og sync-check
+passerer. Ingen WebXR-runtimefiler ændredes; dens manifests er ajourført til den
+aktuelle GameSystems-revision i `a367ecc`. G3 mangler kvalitetsdata og samlet audit;
+Godot-geometriens algoritmeparitet hører fortsat til senere porttrin.
 
 ## G3 propkatalog som fælles data — 2026-10-13
 
@@ -84,12 +102,11 @@ fra JS-eksporterne med kildehashes; closure-goldenen registrerer også det nye k
 som transitiv afhængighed. JS-testen fastholder en hash taget før udtrækket og 18
 oprindelige SDF-resultater på indersider, grænser, skuldre og krusets forskudte håndtag.
 
-Fokuseret kildeverifikation: Godot 4.7.2 **49/49**, lokale JS-checks **20/20**,
-golden-freshness og `git diff --check` passerer. Demoens rekursive data-sync er dækket.
-Spil-repoerne er endnu ikke synkroniseret for dette trin; Contracts-filsammenligningen
-er eksplicit udeladt fra den fokuserede kørsel og skal bestå efter integrationssync.
-G3 er fortsat åben for kvalitetsdata og Godot-kontrakter til de allerede eksisterende
-bake-/recording-/reference-hand-filer.
+Verifikation: Godot 4.7.2 **49/49**, lokale JS-checks **20/20**, GameSystems WebXR
+**572/572**, Nightfall WebXR **375/375**, golden-freshness og sync-checks passerer.
+Kilden er GameSystems `88273b0`, Godot-kopien `f8a0ab8`; Nightfall WebXR fik de
+synkroniserede data samt ajourført manifest i `a367ecc`. G3 er fortsat åben for
+kvalitetsdata og den samlede port-/algoritmeaudit.
 
 ## G3 held-drive-konstanter som fælles data — 2026-10-13
 
@@ -106,13 +123,11 @@ der ikke er et positivt heltal. Golden-generatoren bruger JS-eksporterne og regi
 hashes for datafilen, held-drive-modulet og dets math-afhængighed. Dette er en datalæser;
 Godot-drive/sampling-algoritmer og fysikadaptere er ikke ændret.
 
-Fokuseret verifikation: Godot 4.7.2 **55/55**; lokale JS-checks **18/18**, inklusive
-historiske værdier, algoritmeoutput, demoens rekursive data-sync og eksisterende
-avatar-/grasp-/optagelsesflow. Golden-freshness og `git diff --check` passerer.
-Spilkopierne er endnu ikke synkroniseret for dette trin; Contracts-filsammenligningen
-er eksplicit udeladt fra den lokale kørsel og skal bestå efter integrationssync.
-G3 mangler fortsat katalog, kvalitetsdata og Godot-kontrakter for de eksisterende
-bake-/recording-/reference-hand-filer.
+Fokuseret verifikation: Godot 4.7.2 **55/55**; lokale JS-checks **18/18**, GameSystems
+WebXR **570/570**, Nightfall WebXR **375/375**, golden-freshness og sync-checks passerer.
+Kilden er GameSystems `f368638`, Godot-kopien `7fcd4cc`, og Nightfall WebXR har
+held-drive-data samt opdaterede manifests (`a975d83`). G3 mangler fortsat
+kvalitetsdata og samlet audit; held-drive-/sampling-algoritmerne er ikke porteret.
 
 ## G3 closure-defaults som selvstændig datakontrakt — 2026-10-13
 
@@ -129,13 +144,11 @@ og brøkdele af iterationsantal. Godot-goldenen kommer fra JS-eksporterne og reg
 hashes for closure-modulet og alle dets lokale importafhængigheder. Ingen closure-,
 fingermodel- eller koordinatkonverteringsalgoritme er portet i dette trin.
 
-Fokuseret kildeverifikation: Godot 4.7.2 **38/38** for closure-data og **35/35** for
-validator-data; **16/16** lokale JS-checks for data, demo-sync, grasp, avatar-grasp og
-optagelsesflow; golden-generatorens `--check` passerer. Spil-repoerne er endnu ikke
-synkroniseret for denne slice. Contracts-sammenligningen fejlede som forventet på den
-manglende nye fil og er eksplicit udeladt fra den fokuserede lokale kørsel. Den skal
-bestå efter integrationssync. G3 mangler fortsat katalog, held-drive, kvalitetsdata
-og Godot-kontrakter for de eksisterende bake-/recording-/reference-hand-filer.
+Fokuseret verifikation: Godot 4.7.2 **38/38** for closure-data og **35/35** for
+validator-data; **16/16** lokale JS-checks, GameSystems WebXR **568/568** og Nightfall
+WebXR **375/375**. Kilden er GameSystems `350e2c0`, Godot-kopien `a507998`, WebXR-
+synkroniseringen `c32a637`; golden- og sync-checks passerer. G3 mangler fortsat
+samlet audit og Godot-algoritmeparitet for closure/contact.
 
 ## G3 humanoid-data: første Godot-forbruger — 2026-10-13
 
@@ -146,10 +159,10 @@ canonical-led og fire rig-maps. JS-golden fastholder samtidig de fire maps' hist
 52-leds værdier. Det giver et selvstændigt, headless-testbart dataprodukt før den større
 Skeleton3D-/retargeting-port.
 
-Verifikation: Godot 4.7.2 **10/10**, hele GameSystems WebXR-demoen **566/566**, den
-fokuserede JS-kontraktstest **1/1**, og `node godot/tools/gen_golden.mjs --check`
-består. G3 er ikke færdig: graspens bake-, recording- og reference-data har endnu ikke
-Godot-side schema-/forbrugstests eller dækkende cross-runtime golden.
+Verifikation ved første humanoid-slice: Godot 4.7.2 **10/10**, GameSystems WebXR-demoen
+**566/566**, fokuseret JS **1/1** og `gen_golden.mjs --check`. De efterfølgende G3-
+poster ovenfor dækker nu også validator, closure, held-drive, catalog, reference hånd,
+recordings og baked data med egne schema-tests og goldens.
 
 ## G3 grasp-validator-data og nested sync — 2026-10-13
 
