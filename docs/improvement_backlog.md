@@ -1,5 +1,25 @@
 # Løbende forbedringer af GameSystems
 
+## G4 første kerneport: nærmeste greb — 2026-10-13
+
+`gs_grasp/GSNearestGrasp` er en selvstændig, stateless port af JS `nearestPose`:
+afstand i meter plus vinkel i radianer vægtet med 0,05 m/rad, tidligere ID's
+0,01 m bonus, valgfri grasp-/predicatefiltrering og første kandidat ved præcis
+cost-lighed. Kalders ordnede posearray kan komme fra `GSGraspBakedData`; den valgte
+Dictionary beholder sin identitet. Ingen global library-/merge-state er introduceret.
+
+Den reelle JS-API genererer 296 parity-cases: alle 255 baked håndled, 20 forskudte
+queries og 21 syntetiske kanttilfælde. Godot 4.7.2 består **2.071/2.071** checks,
+inklusive quaternion-fortegn, filtre/kaldsrækkefølge, hysterese, ties, ingen kandidater,
+ingen mutation og fejlede input. Numeric tolerance er `1e-10`; generator-check og
+`git diff --check` passerer. Godots typed API og fail-closed validering adskiller sig
+bevidst fra JS ved ugyldige input; README beskriver grænsen og enhederne.
+
+Sol har godkendt source-porten. Nightfall packaging/runtime-integration afventer. G4 er
+fortsat åben for merge/default-policy, clamp, katalog/SDF, held-drive og kast;
+closure/kontakt, avatar- og headsetparitet er heller ikke bevist. Ingen grab-loop er
+ændret, og addon-sync til Nightfall er næste trin.
+
 ## G3 fælles grasp-data: afsluttende kontrakt- og consumer-audit — 2026-10-13
 
 G3's data-only kontraktfase er afsluttet. GameSystems `0d8b20b`, Nightfall Godot

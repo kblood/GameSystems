@@ -2,6 +2,15 @@
 
 ## Current verified state — 2026-10-13
 
+G4 has begun with the standalone [`gs_grasp` nearest selector](../godot/addons/gs_grasp/README.md).
+The pure caller-owned-library API preserves JS distance/angle scoring, previous-ID
+bonus, filters, input order and original pose identity. Its JS-generated golden has
+296 cases; Godot 4.7.2 passes 2,071 assertions at `1e-10` numeric tolerance. Malformed
+inputs fail closed within the typed Godot API, an explicit divergence from unchecked
+JS. Sol approved the source port; Nightfall packaging/runtime integration remains open.
+This does not complete G4 or demonstrate
+clamping, SDF/contact, drive/throwing, avatar fit or headset parity.
+
 This status supersedes the older worktree/branch references and historical mapping below.
 `GameSystems/main` tracks `kblood/GameSystems`; the native game remains the separate
 `kblood/NightfallContractsGodot` repository. There are no registered side worktrees in
@@ -30,8 +39,8 @@ pass 34 handle/approach checks and 10 bridge checks; Nightfall keeps collision s
 body anchors, presentation, and XR input in its host adapter.
 
 G3's data-only contract phase is complete. Humanoid canonical-to-rig maps live in
-`extensions/humanoid/bone_maps.data.json` and loads them through the standalone
-`godot/addons/gs_humanoid` reader. A generated Godot contract and golden are checked
+`extensions/humanoid/bone_maps.data.json`; the standalone `godot/addons/gs_humanoid`
+reader loads them. A generated Godot contract and golden are checked
 against the JS extension's exports; the JS test also pins all four 52-joint maps to
 their pre-migration values. Validator `HARD`, `COMFORT` and `GATES` are now a second
 versioned JSON contract, read by `godot/addons/gs_grasp_data`; its golden is derived
@@ -247,7 +256,7 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 | G1 (færdig 2026-10-11) | `gs_host` + sync | `GameSystems/godot/addons/gs_host`, sync-script med `SOURCE.json` + `--check` (genbrug formatet fra `addons/game_systems`), `tier_for`-golden. Contracts-Godot får en `GSHost` i missionsscenen og sender core-events | headless-test: load/fejlisolering/tiers; `run_native_suite.py` grøn |
 | G2 (færdig 2026-10-12) | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`; sceneejet manager, asset-/quality-options, stabil API og `broken`-event i `GSHost` | Nightfall-adapter bruger den synkede addon; legacy-flaskekopi fjernet; bottle- og `--only game-systems`-suiter grønne |
 | G3 (færdig 2026-10-13) | Fælles data-kontrakt | Humanoid maps, validatorens `HARD`/`COMFORT`/`GATES`, closure-defaults, held-drive-skalarer, katalog og kvalitetspolicy er versioneret JSON med Godot-readers og JS-goldens. Reference-hand, recordings og bake har strukturelle readers. Afledt geometri, recording/bake-algoritmer, avatar-fit og headsetparitet er ikke bevist og ligger i senere trin | Source/consumer-kopier og manifests matcher; alle G3-readers og goldens passerer; WebXR-suiterne passerer; G3-afgrænsningen er dokumenteret |
-| G4 | `gs_grasp` kerne | Port: katalog/SDF, validator (`clamp_rows`), `baked_grasps` (nearest + hysterese, `merge_poses`), held-drive, kast | golden-tests ≤ tolerance; Godot-greb uændrede i `test`-suiten |
+| G4 (påbegyndt) | `gs_grasp` kerne | Nearest + hysterese har source-port/golden og Sol-review; Nightfall packaging/runtime-integration afventer. Resterer: katalog/SDF, validator (`clamp_rows`), `merge_poses`, held-drive, kast | Selector: 296 JS-cases, 2.071 Godot-checks, tolerance `1e-10`; samlet Godot-grebs-/consumer-paritet endnu ikke verificeret |
 | G5 | `gs_humanoid` + `gs_character_cc` | Canonical skelet, bone maps → `Skeleton3D`, `rest_hand()`. CC-karakter bag `GSCharacter` | karakter-kontrakt-test i Godot; `rest_hand` = JS-golden |
 | G6 | Lukning-til-kontakt + optagelser | Port af `closure.js` og `record.js` (`place_wrist`, `close_to_contact`, `mirror_pose`). Erstat `baked_grasps_*.json` pr. kropstype med én bagning + lukning | golden ≤ tolerance; et Studio-greb vises i Godot; 4 af 5 bagefiler kan slettes |
 | G7 | `gs_avatar` | VR-IK, kalibrering, fingermapping (OpenXR → rækker) bag samme API. Beslut port af `vrik.js` vs. Godots IK-modifiers | Godot-avatar-tests grønne; fingre fra hand tracking = JS-golden |

@@ -1,0 +1,9308 @@
+{
+  "schema": "gamesystems.golden.nearest-grasp.v1",
+  "generator": "godot/tools/gen_golden.mjs",
+  "probe": "godot/tools/nearest_grasp_golden.mjs",
+  "probe_sha256": "46846422323a698cf4c9730800fe1bc31d06db9237142b3f5135714b10ee308e",
+  "sources_sha256": {
+    "extensions/grasp/baked_grasps.data.json": "6e253435445e2bcfe3117ad8714e2c93ad585a46e26da4822fefb64bd88d88af",
+    "extensions/grasp/baked_grasps.js": "06f8f653b3ad5f2289613f9449b9a373a9409eb7be0905cfa42d077d9cd9ecaf",
+    "extensions/grasp/data/quality.data.json": "25a8c3a3fa8f5aef267ad2efc40c132e872d2b1c5ab791a7050bb7942b26f3d6",
+    "extensions/grasp/recorded_grasps.json": "7927605241d292ba7a367c4d8c752cf18f40e353b664c1a024c9b28673cfeb3c",
+    "extensions/grasp/record.js": "addf91980a7403cd4b930562614aa96e04fb9d99b8955f9d683d6da4ff8b2e84",
+    "extensions/grasp/reference_hand.json": "94bbd44fc445f105bbac261506609c1fc701aa6a3700387f64d732837cc973ab",
+    "extensions/grasp/closure.js": "36f7db257179e244163422eb39487060b8d1cfce776c3facad303310d4fdc2f0",
+    "extensions/grasp/data/closure.data.json": "f605e05e7eafa04828541ceeb8bcf660626a22705d52acf6f21e0f18d37c7f3a",
+    "extensions/grasp/catalog.js": "7bf601f573289a38352360cb6939acd9bedac97c9d2c499e0f9eb09a0d6cd6df",
+    "extensions/grasp/data/catalog.data.json": "5f302e56c96883714562f34711487e2f178ad63b4ea1a2fa51f7ca3b788aee9e",
+    "extensions/grasp/contact.js": "08a2c2d2c885a3a419c8434d37aa69a0c3f19e89092393445ca785f7943283fc",
+    "extensions/grasp/grasp_validator.js": "fd7ad39311e1507781ff46f765e06fb3bdae6aa89b3ec4e61c01d76243c536f7",
+    "extensions/grasp/data/validator.data.json": "cb2c14b5eb7bd0a8cadeaf80c7b70f5685290f7811b83f53b31b9c3a795948b7",
+    "extensions/grasp/math.js": "975799db1b6bbe9835d0a1c800363e3bbefed4b86a4b312d7ccbdcb306ee5530"
+  },
+  "constants": {
+    "ANGLE_WEIGHT": 0.05,
+    "HYSTERESIS": 0.01
+  },
+  "cases": [
+    {
+      "name": "baked_0_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.06229,
+          0.09732,
+          0.07622
+        ],
+        "quat": [
+          -0.73172,
+          -0.68157,
+          0.00478,
+          -0.00582
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r000_t+1",
+        "index": 0,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_0_offset_sign",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.07529,
+          0.09032,
+          0.09722
+        ],
+        "quat": [
+          0.73172,
+          0.68157,
+          -0.00478,
+          0.00582
+        ]
+      },
+      "options": {
+        "previousId": "bottle_beer/right/body/o+0.0000_r000_t+1",
+        "grasp": "body"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r000_t+1",
+        "index": 0,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_1_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.09764,
+          0.09586,
+          0.00999
+        ],
+        "quat": [
+          -0.67873,
+          -0.62726,
+          0.27027,
+          0.26987
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r045_t+1",
+        "index": 1,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_2_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.07718,
+          0.09725,
+          -0.062
+        ],
+        "quat": [
+          -0.50863,
+          -0.4913,
+          0.5023,
+          0.4976
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r090_t+1",
+        "index": 2,
+        "cost": 0.00041912081449737215,
+        "distance": 0,
+        "angle": 0.008382416289947443
+      }
+    },
+    {
+      "name": "baked_3_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.06153,
+          0.09904,
+          -0.07677
+        ],
+        "quat": [
+          -0.00998,
+          0.00959,
+          0.74204,
+          0.67022
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r180_t+1",
+        "index": 3,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_4_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.07487,
+          0.09682,
+          0.06281
+        ],
+        "quat": [
+          0.53097,
+          0.4704,
+          0.53305,
+          0.46115
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r270_t+1",
+        "index": 4,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_5_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.06287,
+          0.09968,
+          -0.07548
+        ],
+        "quat": [
+          0,
+          0,
+          -0.69016,
+          0.72366
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r000_t-1",
+        "index": 5,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_6_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.00971,
+          0.09616,
+          -0.09741
+        ],
+        "quat": [
+          -0.26276,
+          0.27855,
+          -0.63543,
+          0.67051
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r045_t-1",
+        "index": 6,
+        "cost": 0.0004926443857908425,
+        "distance": 0,
+        "angle": 0.00985288771581685
+      }
+    },
+    {
+      "name": "baked_7_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.09738,
+          0.09967,
+          0.0084
+        ],
+        "quat": [
+          -0.63289,
+          0.67329,
+          -0.26076,
+          0.27953
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r135_t-1",
+        "index": 7,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_8_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.06152,
+          0.09992,
+          0.07622
+        ],
+        "quat": [
+          0.68656,
+          -0.727,
+          0.00025,
+          0.01069
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r180_t-1",
+        "index": 8,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_9_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0108,
+          0.09717,
+          0.09708
+        ],
+        "quat": [
+          -0.62863,
+          0.67102,
+          0.27448,
+          -0.28145
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r225_t-1",
+        "index": 9,
+        "cost": 0.0002493913234965076,
+        "distance": 0,
+        "angle": 0.004987826469930152
+      }
+    },
+    {
+      "name": "baked_10_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.09768,
+          0.09648,
+          -0.01036
+        ],
+        "quat": [
+          0.26766,
+          -0.27135,
+          -0.64469,
+          0.66265
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0000_r315_t-1",
+        "index": 10,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_11_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0745,
+          0.07193,
+          -0.06335
+        ],
+        "quat": [
+          -0.51659,
+          -0.4806,
+          0.51678,
+          0.48487
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o-0.0253_r090_t+1",
+        "index": 11,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_12_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.00875,
+          0.07195,
+          -0.09743
+        ],
+        "quat": [
+          -0.28055,
+          -0.2567,
+          0.67008,
+          0.63749
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o-0.0253_r135_t+1",
+        "index": 12,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_13_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.06314,
+          0.072,
+          -0.07475
+        ],
+        "quat": [
+          0.00053,
+          -0.00056,
+          0.72703,
+          0.68661
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o-0.0253_r180_t+1",
+        "index": 13,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_13_offset_sign",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.050140000000000004,
+          0.06499999999999999,
+          -0.05374999999999999
+        ],
+        "quat": [
+          -0.00053,
+          0.00056,
+          -0.72703,
+          -0.68661
+        ]
+      },
+      "options": {
+        "previousId": "bottle_beer/right/body/o-0.0253_r180_t+1",
+        "grasp": "body"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o-0.0253_r180_t+1",
+        "index": 13,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_14_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.09713,
+          0.07206,
+          -0.01163
+        ],
+        "quat": [
+          0.26599,
+          0.25937,
+          0.69175,
+          0.61924
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o-0.0253_r225_t+1",
+        "index": 14,
+        "cost": 0.00007521968004721652,
+        "distance": 0,
+        "angle": 0.0015043936009443305
+      }
+    },
+    {
+      "name": "baked_15_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.06269,
+          0.07199,
+          -0.0745
+        ],
+        "quat": [
+          -0.00402,
+          -0.00349,
+          -0.65603,
+          0.75472
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o-0.0253_r000_t-1",
+        "index": 15,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_16_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.07587,
+          0.07213,
+          -0.0629
+        ],
+        "quat": [
+          -0.47702,
+          0.51899,
+          -0.48026,
+          0.52197
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o-0.0253_r090_t-1",
+        "index": 16,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_17_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.09772,
+          0.07181,
+          0.01044
+        ],
+        "quat": [
+          -0.6264,
+          0.67957,
+          -0.26791,
+          0.27209
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o-0.0253_r135_t-1",
+        "index": 17,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_18_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.06208,
+          0.12236,
+          0.07579
+        ],
+        "quat": [
+          -0.72278,
+          -0.69107,
+          -0.00288,
+          -0.00325
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0253_r000_t+1",
+        "index": 18,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_19_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.09785,
+          0.12765,
+          0.01031
+        ],
+        "quat": [
+          -0.66496,
+          -0.64149,
+          0.26775,
+          0.27317
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0253_r045_t+1",
+        "index": 19,
+        "cost": 0.00037059163128772086,
+        "distance": 0,
+        "angle": 0.007411832625754417
+      }
+    },
+    {
+      "name": "baked_20_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.01108,
+          0.12373,
+          -0.09715
+        ],
+        "quat": [
+          -0.28749,
+          -0.26853,
+          0.67014,
+          0.6294
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0253_r135_t+1",
+        "index": 20,
+        "cost": 0.00042800499956411307,
+        "distance": 0,
+        "angle": 0.008560099991282261
+      }
+    },
+    {
+      "name": "baked_21_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0585,
+          0.1226,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0253_r180_t+1",
+        "index": 21,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_22_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.07466,
+          0.12106,
+          0.06292
+        ],
+        "quat": [
+          0.52666,
+          0.47316,
+          0.51748,
+          0.48059
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/body/o+0.0253_r270_t+1",
+        "index": 22,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_23_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.01045,
+          0.09917,
+          -0.09838
+        ],
+        "quat": [
+          -0.27768,
+          0.25346,
+          -0.65954,
+          0.65089
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0000_r045_t+1",
+        "index": 23,
+        "cost": 0.0001443814517894104,
+        "distance": 0,
+        "angle": 0.0028876290357882075
+      }
+    },
+    {
+      "name": "baked_24_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.07444,
+          0.097,
+          -0.06297
+        ],
+        "quat": [
+          -0.52678,
+          0.46974,
+          -0.52955,
+          0.47056
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0000_r090_t+1",
+        "index": 24,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_25_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.07595,
+          0.09878,
+          0.06228
+        ],
+        "quat": [
+          -0.509,
+          0.49024,
+          0.52047,
+          -0.47926
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0000_r270_t+1",
+        "index": 25,
+        "cost": 0.000302453417466116,
+        "distance": 0,
+        "angle": 0.006049068349322319
+      }
+    },
+    {
+      "name": "baked_26_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.09755,
+          0.09967,
+          0.01128
+        ],
+        "quat": [
+          -0.63861,
+          -0.67275,
+          0.2542,
+          0.27381
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0000_r045_t-1",
+        "index": 26,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_26_offset_sign",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.11055,
+          0.09266999999999999,
+          0.03228
+        ],
+        "quat": [
+          0.63861,
+          0.67275,
+          -0.2542,
+          -0.27381
+        ]
+      },
+      "options": {
+        "previousId": "bottle_beer/left/body/o+0.0000_r045_t-1",
+        "grasp": "body"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0000_r045_t-1",
+        "index": 26,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_27_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.01027,
+          0.09815,
+          -0.09704
+        ],
+        "quat": [
+          -0.27108,
+          -0.28673,
+          0.62332,
+          0.67511
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0000_r135_t-1",
+        "index": 27,
+        "cost": 0.00006421837852983163,
+        "distance": 0,
+        "angle": 0.0012843675705966325
+      }
+    },
+    {
+      "name": "baked_28_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.07532,
+          0.10023,
+          0.06268
+        ],
+        "quat": [
+          0.47365,
+          0.52562,
+          0.48029,
+          0.51836
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0000_r270_t-1",
+        "index": 28,
+        "cost": 0.0002727417205214142,
+        "distance": 0,
+        "angle": 0.005454834410428284
+      }
+    },
+    {
+      "name": "baked_29_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.06303,
+          0.07198,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.75715,
+          -0.65325
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o-0.0253_r000_t+1",
+        "index": 29,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_30_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.01034,
+          0.07206,
+          -0.09747
+        ],
+        "quat": [
+          -0.28187,
+          0.26506,
+          -0.66651,
+          0.63722
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o-0.0253_r045_t+1",
+        "index": 30,
+        "cost": 0.00038964110675896547,
+        "distance": 0,
+        "angle": 0.007792822135179309
+      }
+    },
+    {
+      "name": "baked_31_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.09749,
+          0.07195,
+          0.01028
+        ],
+        "quat": [
+          -0.67762,
+          0.63072,
+          -0.27183,
+          0.26292
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o-0.0253_r135_t+1",
+        "index": 31,
+        "cost": 0.0003143852436231955,
+        "distance": 0,
+        "angle": 0.006287704872463909
+      }
+    },
+    {
+      "name": "baked_32_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.06274,
+          0.07207,
+          0.0745
+        ],
+        "quat": [
+          -0.67502,
+          -0.73781,
+          -0.00057,
+          0.00052
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o-0.0253_r000_t-1",
+        "index": 32,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_33_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.07505,
+          0.07178,
+          -0.06344
+        ],
+        "quat": [
+          -0.47588,
+          -0.52211,
+          0.4678,
+          0.53113
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o-0.0253_r090_t-1",
+        "index": 33,
+        "cost": 0.00026292972412247386,
+        "distance": 0,
+        "angle": 0.005258594482449477
+      }
+    },
+    {
+      "name": "baked_34_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.01134,
+          0.07215,
+          -0.09738
+        ],
+        "quat": [
+          -0.26158,
+          -0.29248,
+          0.63584,
+          0.66463
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o-0.0253_r135_t-1",
+        "index": 34,
+        "cost": 0.00034090191044706735,
+        "distance": 0,
+        "angle": 0.006818038208941347
+      }
+    },
+    {
+      "name": "baked_35_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.06262,
+          0.07147,
+          -0.07472
+        ],
+        "quat": [
+          -0.00031,
+          0.00249,
+          0.66813,
+          0.74405
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o-0.0253_r180_t-1",
+        "index": 35,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_36_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.07453,
+          0.072,
+          0.06258
+        ],
+        "quat": [
+          0.46218,
+          0.53483,
+          0.4667,
+          0.53155
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o-0.0253_r270_t-1",
+        "index": 36,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_37_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.06241,
+          0.12217,
+          -0.07553
+        ],
+        "quat": [
+          0.00409,
+          -0.00041,
+          0.72419,
+          -0.6896
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0253_r000_t+1",
+        "index": 37,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_38_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0116,
+          0.1226,
+          -0.0938
+        ],
+        "quat": [
+          -0.2706,
+          0.2706,
+          -0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0253_r045_t+1",
+        "index": 38,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_39_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.09761,
+          0.12293,
+          0.01065
+        ],
+        "quat": [
+          -0.67048,
+          0.63822,
+          -0.26582,
+          0.26921
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0253_r135_t+1",
+        "index": 39,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_39_offset_sign",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.08461,
+          0.11592999999999999,
+          0.03165
+        ],
+        "quat": [
+          0.67048,
+          -0.63822,
+          0.26582,
+          -0.26921
+        ]
+      },
+      "options": {
+        "previousId": "bottle_beer/left/body/o+0.0253_r135_t+1",
+        "grasp": "body"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0253_r135_t+1",
+        "index": 39,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986873,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_40_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0581,
+          0.1226,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0253_r180_t+1",
+        "index": 40,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_41_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.01039,
+          0.12513,
+          0.09738
+        ],
+        "quat": [
+          -0.68688,
+          0.61467,
+          0.28911,
+          -0.25844
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0253_r225_t+1",
+        "index": 41,
+        "cost": 0.0001289185878775397,
+        "distance": 0,
+        "angle": 0.002578371757550794
+      }
+    },
+    {
+      "name": "baked_42_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0745,
+          0.1226,
+          0.0581
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          0.5,
+          -0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0253_r270_t+1",
+        "index": 42,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_43_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0975,
+          0.12568,
+          -0.01156
+        ],
+        "quat": [
+          -0.26186,
+          0.27678,
+          0.69004,
+          -0.61536
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/body/o+0.0253_r315_t+1",
+        "index": 43,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_44_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0472,
+          0.2253,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r000_t+1",
+        "index": 44,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_45_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.086,
+          0.2253,
+          0.0193
+        ],
+        "quat": [
+          -0.65328,
+          -0.65328,
+          0.2706,
+          0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r045_t+1",
+        "index": 45,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_46_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0745,
+          0.2253,
+          -0.0472
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r090_t+1",
+        "index": 46,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_47_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0193,
+          0.2253,
+          -0.086
+        ],
+        "quat": [
+          -0.2706,
+          -0.2706,
+          0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r135_t+1",
+        "index": 47,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_48_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0472,
+          0.2253,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r180_t+1",
+        "index": 48,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_49_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.086,
+          0.2253,
+          -0.0193
+        ],
+        "quat": [
+          0.2706,
+          0.2706,
+          0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r225_t+1",
+        "index": 49,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_50_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0745,
+          0.2253,
+          0.0472
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r270_t+1",
+        "index": 50,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_51_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0193,
+          0.2253,
+          0.086
+        ],
+        "quat": [
+          -0.65328,
+          -0.65328,
+          -0.2706,
+          -0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r315_t+1",
+        "index": 51,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_52_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0398,
+          0.2253,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          -0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r000_t-1",
+        "index": 52,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_52_offset_sign",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0528,
+          0.2183,
+          -0.05349999999999999
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          -0.70711
+        ]
+      },
+      "options": {
+        "previousId": "bottle_beer/right/neck/o+0.0000_r000_t-1",
+        "grasp": "neck"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r000_t-1",
+        "index": 52,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_53_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0246,
+          0.2253,
+          -0.0808
+        ],
+        "quat": [
+          -0.2706,
+          0.2706,
+          -0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r045_t-1",
+        "index": 53,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_54_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0745,
+          0.2253,
+          -0.0398
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r090_t-1",
+        "index": 54,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_55_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0398,
+          0.2253,
+          0.0745
+        ],
+        "quat": [
+          0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r180_t-1",
+        "index": 55,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_56_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0246,
+          0.2253,
+          0.0808
+        ],
+        "quat": [
+          -0.65328,
+          0.65328,
+          0.2706,
+          -0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r225_t-1",
+        "index": 56,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_57_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0745,
+          0.2253,
+          0.0398
+        ],
+        "quat": [
+          0.5,
+          -0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r270_t-1",
+        "index": 57,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_58_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0808,
+          0.2253,
+          -0.0246
+        ],
+        "quat": [
+          0.2706,
+          -0.2706,
+          -0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/right/neck/o+0.0000_r315_t-1",
+        "index": 58,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_59_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0472,
+          0.2253,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          -0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r000_t+1",
+        "index": 59,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_60_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0193,
+          0.2253,
+          -0.086
+        ],
+        "quat": [
+          -0.2706,
+          0.2706,
+          -0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r045_t+1",
+        "index": 60,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_61_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0745,
+          0.2253,
+          -0.0472
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r090_t+1",
+        "index": 61,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_62_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.086,
+          0.2253,
+          0.0193
+        ],
+        "quat": [
+          -0.65328,
+          0.65328,
+          -0.2706,
+          0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r135_t+1",
+        "index": 62,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_63_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0472,
+          0.2253,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r180_t+1",
+        "index": 63,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_64_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0193,
+          0.2253,
+          0.086
+        ],
+        "quat": [
+          -0.65328,
+          0.65328,
+          0.2706,
+          -0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r225_t+1",
+        "index": 64,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_65_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0745,
+          0.2253,
+          0.0472
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          0.5,
+          -0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r270_t+1",
+        "index": 65,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_65_offset_sign",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0875,
+          0.2183,
+          0.0682
+        ],
+        "quat": [
+          0.5,
+          -0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {
+        "previousId": "bottle_beer/left/neck/o+0.0000_r270_t+1",
+        "grasp": "neck"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r270_t+1",
+        "index": 65,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986873,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_66_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.086,
+          0.2253,
+          -0.0193
+        ],
+        "quat": [
+          -0.2706,
+          0.2706,
+          0.65328,
+          -0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r315_t+1",
+        "index": 66,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_67_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0398,
+          0.2253,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r000_t-1",
+        "index": 67,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_68_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0808,
+          0.2253,
+          0.0246
+        ],
+        "quat": [
+          -0.65328,
+          -0.65328,
+          0.2706,
+          0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r045_t-1",
+        "index": 68,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_69_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0745,
+          0.2253,
+          -0.0398
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r090_t-1",
+        "index": 69,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_70_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0246,
+          0.2253,
+          -0.0808
+        ],
+        "quat": [
+          -0.2706,
+          -0.2706,
+          0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r135_t-1",
+        "index": 70,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_71_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0398,
+          0.2253,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r180_t-1",
+        "index": 71,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_72_self",
+      "library": "baked",
+      "kind": "bottle_beer",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0808,
+          0.2253,
+          -0.0246
+        ],
+        "quat": [
+          0.2706,
+          0.2706,
+          0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_beer/left/neck/o+0.0000_r225_t-1",
+        "index": 72,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_73_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.10192,
+          0.1292,
+          0.00403
+        ],
+        "quat": [
+          -0.67381,
+          -0.62522,
+          0.30543,
+          0.24857
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0000_r045_t+1",
+        "index": 73,
+        "cost": 0.0003318344482463704,
+        "distance": 0,
+        "angle": 0.006636688964927407
+      }
+    },
+    {
+      "name": "baked_74_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0756,
+          0.12916,
+          -0.06813
+        ],
+        "quat": [
+          -0.52547,
+          -0.46935,
+          0.52888,
+          0.47316
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0000_r090_t+1",
+        "index": 74,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_75_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.00766,
+          0.12925,
+          -0.10147
+        ],
+        "quat": [
+          -0.29497,
+          -0.25384,
+          0.67902,
+          0.62248
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0000_r135_t+1",
+        "index": 75,
+        "cost": 0.00041091877250596455,
+        "distance": 0,
+        "angle": 0.00821837545011929
+      }
+    },
+    {
+      "name": "baked_76_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.06787,
+          0.12865,
+          -0.07587
+        ],
+        "quat": [
+          0.00149,
+          -0.0017,
+          -0.65866,
+          0.75244
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0000_r000_t-1",
+        "index": 76,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_77_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.06702,
+          0.12914,
+          0.07671
+        ],
+        "quat": [
+          0.67097,
+          -0.74148,
+          -0.00226,
+          0.00249
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0000_r180_t-1",
+        "index": 77,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_78_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.00706,
+          0.12908,
+          0.10117
+        ],
+        "quat": [
+          -0.62509,
+          0.67708,
+          0.26029,
+          -0.28823
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0000_r225_t-1",
+        "index": 78,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_78_offset_sign",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.02006,
+          0.12208,
+          0.12217
+        ],
+        "quat": [
+          0.62509,
+          -0.67708,
+          -0.26029,
+          0.28823
+        ]
+      },
+      "options": {
+        "previousId": "bottle_wine/right/body/o+0.0000_r225_t-1",
+        "grasp": "body"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0000_r225_t-1",
+        "index": 78,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_79_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.10158,
+          0.12919,
+          -0.00604
+        ],
+        "quat": [
+          0.263,
+          -0.27768,
+          -0.63794,
+          0.6684
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0000_r315_t-1",
+        "index": 79,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_80_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.06815,
+          0.09582,
+          0.07469
+        ],
+        "quat": [
+          -0.73965,
+          -0.673,
+          -0.00023,
+          0.00073
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o-0.0337_r000_t+1",
+        "index": 80,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_81_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.10177,
+          0.09557,
+          0.00934
+        ],
+        "quat": [
+          -0.69185,
+          -0.61904,
+          0.26895,
+          0.2565
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o-0.0337_r045_t+1",
+        "index": 81,
+        "cost": 0.0003661531780348136,
+        "distance": 0,
+        "angle": 0.007323063560696271
+      }
+    },
+    {
+      "name": "baked_82_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.07519,
+          0.09558,
+          -0.06857
+        ],
+        "quat": [
+          -0.52468,
+          -0.47054,
+          0.52744,
+          0.47445
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o-0.0337_r090_t+1",
+        "index": 82,
+        "cost": 0.0003807862592081503,
+        "distance": 0,
+        "angle": 0.007615725184163005
+      }
+    },
+    {
+      "name": "baked_83_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0678,
+          0.09539,
+          -0.07587
+        ],
+        "quat": [
+          -0.00212,
+          -0.00289,
+          0.73484,
+          0.67824
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o-0.0337_r180_t+1",
+        "index": 83,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_84_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.10171,
+          0.09556,
+          -0.00743
+        ],
+        "quat": [
+          0.26592,
+          0.26954,
+          0.67926,
+          0.62868
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o-0.0337_r225_t+1",
+        "index": 84,
+        "cost": 0.0002025833508368605,
+        "distance": 0,
+        "angle": 0.00405166701673721
+      }
+    },
+    {
+      "name": "baked_85_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.07464,
+          0.09556,
+          -0.06873
+        ],
+        "quat": [
+          -0.46018,
+          0.53092,
+          -0.47166,
+          0.53282
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o-0.0337_r090_t-1",
+        "index": 85,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_86_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.06904,
+          0.09569,
+          0.0745
+        ],
+        "quat": [
+          0.67433,
+          -0.73842,
+          0.00324,
+          0.00296
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o-0.0337_r180_t-1",
+        "index": 86,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_87_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.00512,
+          0.0956,
+          0.10148
+        ],
+        "quat": [
+          -0.62645,
+          0.6795,
+          0.26116,
+          -0.27861
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o-0.0337_r225_t-1",
+        "index": 87,
+        "cost": 0.0004913211633973093,
+        "distance": 0,
+        "angle": 0.009826423267946185
+      }
+    },
+    {
+      "name": "baked_88_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.07402,
+          0.09551,
+          0.06839
+        ],
+        "quat": [
+          0.45862,
+          -0.5382,
+          -0.45862,
+          0.5382
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o-0.0337_r270_t-1",
+        "index": 88,
+        "cost": 0.0005815711076886423,
+        "distance": 0,
+        "angle": 0.011631422153772846
+      }
+    },
+    {
+      "name": "baked_89_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.10128,
+          0.0956,
+          -0.00679
+        ],
+        "quat": [
+          0.26525,
+          -0.26849,
+          -0.62725,
+          0.68126
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o-0.0337_r315_t-1",
+        "index": 89,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_90_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0745,
+          0.16641,
+          -0.06844
+        ],
+        "quat": [
+          -0.52163,
+          -0.47739,
+          0.52163,
+          0.47739
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0337_r090_t+1",
+        "index": 90,
+        "cost": 0.00019297671247093878,
+        "distance": 0,
+        "angle": 0.003859534249418775
+      }
+    },
+    {
+      "name": "baked_91_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.00846,
+          0.16394,
+          -0.10121
+        ],
+        "quat": [
+          -0.30115,
+          -0.25724,
+          0.65888,
+          0.63954
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0337_r135_t+1",
+        "index": 91,
+        "cost": 0.00019969480026297323,
+        "distance": 0,
+        "angle": 0.003993896005259464
+      }
+    },
+    {
+      "name": "baked_91_offset_sign",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.02146,
+          0.15694,
+          -0.08020999999999999
+        ],
+        "quat": [
+          0.30115,
+          0.25724,
+          -0.65888,
+          -0.63954
+        ]
+      },
+      "options": {
+        "previousId": "bottle_wine/right/body/o+0.0337_r135_t+1",
+        "grasp": "body"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0337_r135_t+1",
+        "index": 91,
+        "cost": 0.01587069010624985,
+        "distance": 0.025670995305986877,
+        "angle": 0.003993896005259464
+      }
+    },
+    {
+      "name": "baked_92_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.00637,
+          0.16476,
+          0.10186
+        ],
+        "quat": [
+          -0.68769,
+          -0.61767,
+          -0.27843,
+          -0.26085
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0337_r315_t+1",
+        "index": 92,
+        "cost": 0.00007037044977176072,
+        "distance": 0,
+        "angle": 0.0014074089954352145
+      }
+    },
+    {
+      "name": "baked_93_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.00905,
+          0.16068,
+          -0.10141
+        ],
+        "quat": [
+          -0.25289,
+          0.30261,
+          -0.63528,
+          0.664
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0337_r045_t-1",
+        "index": 93,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_94_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.00773,
+          0.16014,
+          0.10227
+        ],
+        "quat": [
+          -0.64438,
+          0.662,
+          0.26036,
+          -0.2806
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/body/o+0.0337_r225_t-1",
+        "index": 94,
+        "cost": 0.0003667698880750021,
+        "distance": 0,
+        "angle": 0.007335397761500042
+      }
+    },
+    {
+      "name": "baked_95_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.10224,
+          0.1292,
+          -0.00621
+        ],
+        "quat": [
+          -0.27258,
+          0.27213,
+          0.66786,
+          -0.63687
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0000_r315_t+1",
+        "index": 95,
+        "cost": 0.0003171814691000924,
+        "distance": 0,
+        "angle": 0.006343629382001848
+      }
+    },
+    {
+      "name": "baked_96_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.06844,
+          0.1295,
+          0.07558
+        ],
+        "quat": [
+          -0.65792,
+          -0.75309,
+          -0.00321,
+          -0.00192
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0000_r000_t-1",
+        "index": 96,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_97_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.06679,
+          0.12925,
+          -0.07641
+        ],
+        "quat": [
+          -0.00233,
+          -0.01039,
+          0.68533,
+          0.72816
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0000_r180_t-1",
+        "index": 97,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_98_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.10178,
+          0.12917,
+          -0.00658
+        ],
+        "quat": [
+          0.26023,
+          0.27704,
+          0.6318,
+          0.67554
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0000_r225_t-1",
+        "index": 98,
+        "cost": 0.0002703295109700996,
+        "distance": 0,
+        "angle": 0.0054065902194019915
+      }
+    },
+    {
+      "name": "baked_99_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.00673,
+          0.12926,
+          0.10093
+        ],
+        "quat": [
+          0.63849,
+          0.66804,
+          0.2563,
+          0.28349
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0000_r315_t-1",
+        "index": 99,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_100_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.06874,
+          0.09557,
+          -0.07525
+        ],
+        "quat": [
+          -0.00106,
+          0.0007,
+          0.73843,
+          -0.67434
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r000_t+1",
+        "index": 100,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_101_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0745,
+          0.09558,
+          -0.06906
+        ],
+        "quat": [
+          -0.52349,
+          0.47535,
+          -0.52349,
+          0.47535
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r090_t+1",
+        "index": 101,
+        "cost": 0.00015458332626599344,
+        "distance": 0,
+        "angle": 0.0030916665253198686
+      }
+    },
+    {
+      "name": "baked_102_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.10237,
+          0.0956,
+          0.00541
+        ],
+        "quat": [
+          -0.70093,
+          0.60335,
+          -0.29168,
+          0.24408
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r135_t+1",
+        "index": 102,
+        "cost": 0.0005223759379116834,
+        "distance": 0,
+        "angle": 0.010447518758233668
+      }
+    },
+    {
+      "name": "baked_103_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0684,
+          0.09575,
+          0.07455
+        ],
+        "quat": [
+          -0.73883,
+          0.67389,
+          0.00171,
+          0.00188
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r180_t+1",
+        "index": 103,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_104_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.00786,
+          0.09526,
+          0.10166
+        ],
+        "quat": [
+          -0.66783,
+          0.63416,
+          0.28898,
+          -0.26143
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r225_t+1",
+        "index": 104,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_104_offset_sign",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.02086,
+          0.08825999999999999,
+          0.12266
+        ],
+        "quat": [
+          0.66783,
+          -0.63416,
+          -0.28898,
+          0.26143
+        ]
+      },
+      "options": {
+        "previousId": "bottle_wine/left/body/o-0.0337_r225_t+1",
+        "grasp": "body"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r225_t+1",
+        "index": 104,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_105_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.10199,
+          0.09551,
+          0.00765
+        ],
+        "quat": [
+          -0.62921,
+          -0.6767,
+          0.27667,
+          0.26386
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r045_t-1",
+        "index": 105,
+        "cost": 0.00026447691916601693,
+        "distance": 0,
+        "angle": 0.005289538383320338
+      }
+    },
+    {
+      "name": "baked_106_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0756,
+          0.09496,
+          -0.06822
+        ],
+        "quat": [
+          -0.46316,
+          -0.53163,
+          0.47151,
+          0.52965
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r090_t-1",
+        "index": 106,
+        "cost": 0.00017634627316337915,
+        "distance": 0,
+        "angle": 0.0035269254632675825
+      }
+    },
+    {
+      "name": "baked_107_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.00815,
+          0.09551,
+          -0.10226
+        ],
+        "quat": [
+          -0.25677,
+          -0.29821,
+          0.63444,
+          0.6653
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r135_t-1",
+        "index": 107,
+        "cost": 0.00018758467506372364,
+        "distance": 0,
+        "angle": 0.003751693501274473
+      }
+    },
+    {
+      "name": "baked_108_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.10174,
+          0.09547,
+          -0.0076
+        ],
+        "quat": [
+          0.26114,
+          0.26827,
+          0.63779,
+          0.6731
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r225_t-1",
+        "index": 108,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_109_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.00691,
+          0.09557,
+          0.10161
+        ],
+        "quat": [
+          0.62371,
+          0.67965,
+          0.25293,
+          0.2917
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o-0.0337_r315_t-1",
+        "index": 109,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_110_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.07444,
+          0.16157,
+          -0.06825
+        ],
+        "quat": [
+          -0.52636,
+          0.47304,
+          -0.51662,
+          0.48196
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0337_r090_t+1",
+        "index": 110,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_111_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.101,
+          0.16168,
+          0.00651
+        ],
+        "quat": [
+          -0.70165,
+          0.60632,
+          -0.28289,
+          0.24503
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0337_r135_t+1",
+        "index": 111,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_112_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0078,
+          0.1629,
+          0.0976
+        ],
+        "quat": [
+          -0.65328,
+          0.65328,
+          0.2706,
+          -0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0337_r225_t+1",
+        "index": 112,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_113_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.06752,
+          0.15895,
+          0.0746
+        ],
+        "quat": [
+          -0.66306,
+          -0.74852,
+          0.00694,
+          -0.00574
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0337_r000_t-1",
+        "index": 113,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_114_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.10183,
+          0.16099,
+          0.00637
+        ],
+        "quat": [
+          -0.63753,
+          -0.66909,
+          0.27003,
+          0.2701
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0337_r045_t-1",
+        "index": 114,
+        "cost": 0.000277852568221812,
+        "distance": 0,
+        "angle": 0.005557051364436239
+      }
+    },
+    {
+      "name": "baked_115_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.07448,
+          0.16033,
+          -0.0685
+        ],
+        "quat": [
+          -0.48103,
+          -0.5181,
+          0.47889,
+          0.52042
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/body/o+0.0337_r090_t-1",
+        "index": 115,
+        "cost": 0.00044543498746796577,
+        "distance": 0,
+        "angle": 0.008908699749359315
+      }
+    },
+    {
+      "name": "baked_116_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.047,
+          0.2992,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r000_t+1",
+        "index": 116,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_117_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0859,
+          0.2992,
+          0.0195
+        ],
+        "quat": [
+          -0.65328,
+          -0.65328,
+          0.2706,
+          0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r045_t+1",
+        "index": 117,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_117_offset_sign",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0989,
+          0.2922,
+          0.0405
+        ],
+        "quat": [
+          0.65328,
+          0.65328,
+          -0.2706,
+          -0.2706
+        ]
+      },
+      "options": {
+        "previousId": "bottle_wine/right/neck/o+0.0000_r045_t+1",
+        "grasp": "neck"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r045_t+1",
+        "index": 117,
+        "cost": 0.015858782447094114,
+        "distance": 0.025670995305986873,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_118_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0745,
+          0.2992,
+          -0.047
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r090_t+1",
+        "index": 118,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_119_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0195,
+          0.2992,
+          -0.0859
+        ],
+        "quat": [
+          -0.2706,
+          -0.2706,
+          0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r135_t+1",
+        "index": 119,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_120_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.047,
+          0.2992,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r180_t+1",
+        "index": 120,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_121_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0859,
+          0.2992,
+          -0.0195
+        ],
+        "quat": [
+          0.2706,
+          0.2706,
+          0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r225_t+1",
+        "index": 121,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_122_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0745,
+          0.2992,
+          0.047
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r270_t+1",
+        "index": 122,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_123_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0195,
+          0.2992,
+          0.0859
+        ],
+        "quat": [
+          -0.65328,
+          -0.65328,
+          -0.2706,
+          -0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r315_t+1",
+        "index": 123,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_124_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.04,
+          0.2992,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          -0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r000_t-1",
+        "index": 124,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_125_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0745,
+          0.2992,
+          0.04
+        ],
+        "quat": [
+          0.5,
+          -0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/right/neck/o+0.0000_r270_t-1",
+        "index": 125,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_126_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.047,
+          0.2992,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          -0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r000_t+1",
+        "index": 126,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_127_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0195,
+          0.2992,
+          -0.0859
+        ],
+        "quat": [
+          -0.2706,
+          0.2706,
+          -0.65328,
+          0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r045_t+1",
+        "index": 127,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_128_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0745,
+          0.2992,
+          -0.047
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r090_t+1",
+        "index": 128,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_129_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0859,
+          0.2992,
+          0.0195
+        ],
+        "quat": [
+          -0.65328,
+          0.65328,
+          -0.2706,
+          0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r135_t+1",
+        "index": 129,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_130_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.047,
+          0.2992,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r180_t+1",
+        "index": 130,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_130_offset_sign",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.034,
+          0.2922,
+          0.0955
+        ],
+        "quat": [
+          0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {
+        "previousId": "bottle_wine/left/neck/o+0.0000_r180_t+1",
+        "grasp": "neck"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r180_t+1",
+        "index": 130,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_131_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0195,
+          0.2992,
+          0.0859
+        ],
+        "quat": [
+          -0.65328,
+          0.65328,
+          0.2706,
+          -0.2706
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r225_t+1",
+        "index": 131,
+        "cost": 0.00018778714110723822,
+        "distance": 0,
+        "angle": 0.003755742822144764
+      }
+    },
+    {
+      "name": "baked_132_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0745,
+          0.2992,
+          0.047
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          0.5,
+          -0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r270_t+1",
+        "index": 132,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_133_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0859,
+          0.2992,
+          -0.0195
+        ],
+        "quat": [
+          -0.2706,
+          0.2706,
+          0.65328,
+          -0.65328
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r315_t+1",
+        "index": 133,
+        "cost": 0.00018778714110132607,
+        "distance": 0,
+        "angle": 0.003755742822026521
+      }
+    },
+    {
+      "name": "baked_134_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.04,
+          0.2992,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r000_t-1",
+        "index": 134,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_135_self",
+      "library": "baked",
+      "kind": "bottle_wine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0745,
+          0.2992,
+          0.04
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "bottle_wine/left/neck/o+0.0000_r270_t-1",
+        "index": 135,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_136_self",
+      "library": "baked",
+      "kind": "mug",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.133,
+          0,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "mug/right/handle/o+0.0000_r000_t+1",
+        "index": 136,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_137_self",
+      "library": "baked",
+      "kind": "mug",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.133,
+          0,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          -0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "mug/right/handle/o+0.0000_r000_t-1",
+        "index": 137,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_138_self",
+      "library": "baked",
+      "kind": "mug",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.133,
+          0,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          -0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "mug/left/handle/o+0.0000_r000_t+1",
+        "index": 138,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_139_self",
+      "library": "baked",
+      "kind": "mug",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.133,
+          0,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "mug/left/handle/o+0.0000_r000_t-1",
+        "index": 139,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_140_self",
+      "library": "baked",
+      "kind": "mug",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0745,
+          0,
+          0.0809
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "mug/right/body/o+0.0000_r270_t+1",
+        "index": 140,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_141_self",
+      "library": "baked",
+      "kind": "mug",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0745,
+          0,
+          -0.0809
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "mug/right/body/o+0.0000_r090_t-1",
+        "index": 141,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_142_self",
+      "library": "baked",
+      "kind": "mug",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0745,
+          0,
+          -0.0809
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "mug/left/body/o+0.0000_r090_t+1",
+        "index": 142,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_143_self",
+      "library": "baked",
+      "kind": "mug",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0745,
+          0,
+          0.0809
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "mug/left/body/o+0.0000_r270_t-1",
+        "index": 143,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_143_offset_sign",
+      "library": "baked",
+      "kind": "mug",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0615,
+          -0.007,
+          0.1019
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5
+        ]
+      },
+      "options": {
+        "previousId": "mug/left/body/o+0.0000_r270_t-1",
+        "grasp": "body"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "mug/left/body/o+0.0000_r270_t-1",
+        "index": 143,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_144_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.008,
+          0.00008,
+          -0.10154
+        ],
+        "quat": [
+          -0.30313,
+          -0.25552,
+          0.68088,
+          0.61581
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r135_t+1",
+        "index": 144,
+        "cost": 0.00020986666282687817,
+        "distance": 0,
+        "angle": 0.004197333256537563
+      }
+    },
+    {
+      "name": "baked_145_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.06784,
+          0.00014,
+          -0.07491
+        ],
+        "quat": [
+          0.00748,
+          -0.00556,
+          0.73938,
+          0.67323
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r180_t+1",
+        "index": 145,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_146_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.10221,
+          0,
+          -0.0082
+        ],
+        "quat": [
+          0.26997,
+          0.27539,
+          0.66029,
+          0.64443
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r225_t+1",
+        "index": 146,
+        "cost": 0.00026974069792153326,
+        "distance": 0,
+        "angle": 0.005394813958430665
+      }
+    },
+    {
+      "name": "baked_147_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0748,
+          -0.00005,
+          0.06693
+        ],
+        "quat": [
+          0.5259,
+          0.46568,
+          0.53026,
+          0.47476
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r270_t+1",
+        "index": 147,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_148_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.00645,
+          0.00012,
+          0.10152
+        ],
+        "quat": [
+          -0.67941,
+          -0.62505,
+          -0.27985,
+          -0.26343
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r315_t+1",
+        "index": 148,
+        "cost": 0.00025147571121012516,
+        "distance": 0,
+        "angle": 0.0050295142242025035
+      }
+    },
+    {
+      "name": "baked_149_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.06765,
+          -0.00003,
+          -0.07586
+        ],
+        "quat": [
+          -0.00178,
+          -0.00184,
+          -0.66379,
+          0.74792
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r000_t-1",
+        "index": 149,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_150_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.00727,
+          0.00001,
+          -0.10147
+        ],
+        "quat": [
+          -0.25085,
+          0.28917,
+          -0.63758,
+          0.66854
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r045_t-1",
+        "index": 150,
+        "cost": 0.00014146378807554597,
+        "distance": 0,
+        "angle": 0.002829275761510919
+      }
+    },
+    {
+      "name": "baked_151_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0745,
+          -0.00015,
+          -0.06785
+        ],
+        "quat": [
+          -0.48074,
+          0.51824,
+          -0.4784,
+          0.521
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r090_t-1",
+        "index": 151,
+        "cost": 0.0004193998781922068,
+        "distance": 0,
+        "angle": 0.008387997563844136
+      }
+    },
+    {
+      "name": "baked_152_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.06532,
+          -0.00001,
+          0.07751
+        ],
+        "quat": [
+          0.65972,
+          -0.75145,
+          -0.00694,
+          0.00791
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r180_t-1",
+        "index": 152,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_153_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.00825,
+          0.00007,
+          0.10146
+        ],
+        "quat": [
+          -0.63293,
+          0.67032,
+          0.24132,
+          -0.30304
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r225_t-1",
+        "index": 153,
+        "cost": 0.00020633471618536445,
+        "distance": 0,
+        "angle": 0.004126694323707289
+      }
+    },
+    {
+      "name": "baked_154_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.10131,
+          -0.00003,
+          -0.00854
+        ],
+        "quat": [
+          0.26654,
+          -0.27258,
+          -0.62524,
+          0.68098
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0000_r315_t-1",
+        "index": 154,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_155_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.00958,
+          -0.02169,
+          -0.10128
+        ],
+        "quat": [
+          -0.28011,
+          0.27662,
+          -0.6278,
+          0.67148
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o-0.0217_r045_t-1",
+        "index": 155,
+        "cost": 0.0001751057047433654,
+        "distance": 0,
+        "angle": 0.0035021140948673078
+      }
+    },
+    {
+      "name": "baked_156_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.07705,
+          -0.02127,
+          -0.06661
+        ],
+        "quat": [
+          -0.46366,
+          0.53583,
+          -0.48278,
+          0.51461
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o-0.0217_r090_t-1",
+        "index": 156,
+        "cost": 0.00033570836427022243,
+        "distance": 0,
+        "angle": 0.006714167285404448
+      }
+    },
+    {
+      "name": "baked_156_offset_sign",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.06405,
+          -0.02827,
+          -0.04561
+        ],
+        "quat": [
+          0.46366,
+          -0.53583,
+          0.48278,
+          -0.51461
+        ]
+      },
+      "options": {
+        "previousId": "can/right/body/o-0.0217_r090_t-1",
+        "grasp": "body"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o-0.0217_r090_t-1",
+        "index": 156,
+        "cost": 0.01600670367025709,
+        "distance": 0.02567099530598687,
+        "angle": 0.006714167285404448
+      }
+    },
+    {
+      "name": "baked_157_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.10203,
+          -0.02185,
+          0.00692
+        ],
+        "quat": [
+          -0.63336,
+          0.67116,
+          -0.25243,
+          0.29097
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o-0.0217_r135_t-1",
+        "index": 157,
+        "cost": 0.0005462423838567761,
+        "distance": 0,
+        "angle": 0.010924847677135521
+      }
+    },
+    {
+      "name": "baked_158_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.00788,
+          -0.02521,
+          0.10205
+        ],
+        "quat": [
+          -0.63928,
+          0.66818,
+          0.24724,
+          -0.28936
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o-0.0217_r225_t-1",
+        "index": 158,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_159_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.10115,
+          -0.02165,
+          -0.0082
+        ],
+        "quat": [
+          0.28266,
+          -0.25772,
+          -0.61888,
+          0.68606
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o-0.0217_r315_t-1",
+        "index": 159,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_160_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.10173,
+          0.02171,
+          0.00489
+        ],
+        "quat": [
+          -0.67114,
+          -0.62851,
+          0.2986,
+          0.2557
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0217_r045_t+1",
+        "index": 160,
+        "cost": 0.00019132697449390616,
+        "distance": 0,
+        "angle": 0.0038265394898781228
+      }
+    },
+    {
+      "name": "baked_161_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.00816,
+          0.02206,
+          -0.1011
+        ],
+        "quat": [
+          -0.28019,
+          -0.27418,
+          0.68952,
+          0.609
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0217_r135_t+1",
+        "index": 161,
+        "cost": 0.000034957116749129194,
+        "distance": 0,
+        "angle": 0.0006991423349825838
+      }
+    },
+    {
+      "name": "baked_162_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.10155,
+          0.02166,
+          -0.00801
+        ],
+        "quat": [
+          0.27392,
+          0.26716,
+          0.66058,
+          0.64593
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/right/body/o+0.0217_r225_t+1",
+        "index": 162,
+        "cost": 0.00019322011183581388,
+        "distance": 0,
+        "angle": 0.0038644022367162775
+      }
+    },
+    {
+      "name": "baked_163_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.00652,
+          0.00013,
+          -0.10157
+        ],
+        "quat": [
+          -0.29774,
+          0.2378,
+          -0.66372,
+          0.64365
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0000_r045_t+1",
+        "index": 163,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_164_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0745,
+          -0.00003,
+          -0.06815
+        ],
+        "quat": [
+          -0.52368,
+          0.47371,
+          -0.526,
+          0.474
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0000_r090_t+1",
+        "index": 164,
+        "cost": 0.00034909901713932827,
+        "distance": 0,
+        "angle": 0.006981980342786565
+      }
+    },
+    {
+      "name": "baked_165_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.10273,
+          0,
+          0.00961
+        ],
+        "quat": [
+          -0.60682,
+          0.6979,
+          -0.25609,
+          0.28128
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0000_r135_t+1",
+        "index": 165,
+        "cost": 0.0003016986394458042,
+        "distance": 0,
+        "angle": 0.006033972788916083
+      }
+    },
+    {
+      "name": "baked_166_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.00788,
+          0,
+          0.1009
+        ],
+        "quat": [
+          -0.66928,
+          0.63179,
+          0.3014,
+          -0.24913
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0000_r225_t+1",
+        "index": 166,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_167_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.07549,
+          -0.00023,
+          0.06783
+        ],
+        "quat": [
+          -0.51684,
+          0.48283,
+          0.5142,
+          -0.48513
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0000_r270_t+1",
+        "index": 167,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_168_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.1018,
+          0.00005,
+          -0.00795
+        ],
+        "quat": [
+          -0.28761,
+          0.25088,
+          0.68052,
+          -0.62548
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0000_r315_t+1",
+        "index": 168,
+        "cost": 0.0003745052255008749,
+        "distance": 0,
+        "angle": 0.007490104510017497
+      }
+    },
+    {
+      "name": "baked_169_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.07448,
+          0.00001,
+          -0.06808
+        ],
+        "quat": [
+          -0.48308,
+          -0.51528,
+          0.47112,
+          0.52836
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0000_r090_t-1",
+        "index": 169,
+        "cost": 0.00019448396315144888,
+        "distance": 0,
+        "angle": 0.0038896792630289776
+      }
+    },
+    {
+      "name": "baked_169_offset_sign",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.08748,
+          -0.0069900000000000006,
+          -0.04708
+        ],
+        "quat": [
+          0.48308,
+          0.51528,
+          -0.47112,
+          -0.52836
+        ]
+      },
+      "options": {
+        "previousId": "can/left/body/o+0.0000_r090_t-1",
+        "grasp": "body"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0000_r090_t-1",
+        "index": 169,
+        "cost": 0.015865479269138325,
+        "distance": 0.025670995305986877,
+        "angle": 0.0038896792630289776
+      }
+    },
+    {
+      "name": "baked_170_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.07485,
+          0.00007,
+          0.06786
+        ],
+        "quat": [
+          0.47864,
+          0.52092,
+          0.48672,
+          0.51249
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0000_r270_t-1",
+        "index": 170,
+        "cost": 0.00027369699808585775,
+        "distance": 0,
+        "angle": 0.005473939961717155
+      }
+    },
+    {
+      "name": "baked_171_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.06762,
+          -0.02164,
+          0.07452
+        ],
+        "quat": [
+          -0.67444,
+          -0.73821,
+          -0.01228,
+          0.00603
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o-0.0217_r000_t-1",
+        "index": 171,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_172_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.10144,
+          -0.0189,
+          0.00745
+        ],
+        "quat": [
+          -0.6254,
+          -0.68031,
+          0.27476,
+          0.26562
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o-0.0217_r045_t-1",
+        "index": 172,
+        "cost": 0.00034933955417604115,
+        "distance": 0,
+        "angle": 0.006986791083520823
+      }
+    },
+    {
+      "name": "baked_173_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.07565,
+          -0.02136,
+          -0.06719
+        ],
+        "quat": [
+          -0.47227,
+          -0.52678,
+          0.4717,
+          0.52627
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o-0.0217_r090_t-1",
+        "index": 173,
+        "cost": 0.00023982499361717565,
+        "distance": 0,
+        "angle": 0.004796499872343513
+      }
+    },
+    {
+      "name": "baked_174_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.00759,
+          -0.02152,
+          -0.10087
+        ],
+        "quat": [
+          -0.26915,
+          -0.28606,
+          0.62833,
+          0.67152
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o-0.0217_r135_t-1",
+        "index": 174,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_175_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.10172,
+          -0.02074,
+          -0.00801
+        ],
+        "quat": [
+          0.26714,
+          0.2738,
+          0.62374,
+          0.68162
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o-0.0217_r225_t-1",
+        "index": 175,
+        "cost": 0.0004973615485012346,
+        "distance": 0,
+        "angle": 0.009947230970024692
+      }
+    },
+    {
+      "name": "baked_176_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.07456,
+          -0.02174,
+          0.06798
+        ],
+        "quat": [
+          0.47431,
+          0.52473,
+          0.47742,
+          0.52131
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o-0.0217_r270_t-1",
+        "index": 176,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_177_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.00939,
+          -0.01754,
+          0.1012
+        ],
+        "quat": [
+          0.63911,
+          0.65887,
+          0.23681,
+          0.31835
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o-0.0217_r315_t-1",
+        "index": 177,
+        "cost": 0.00024626820877566473,
+        "distance": 0,
+        "angle": 0.004925364175513295
+      }
+    },
+    {
+      "name": "baked_178_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.00715,
+          0.02017,
+          -0.10186
+        ],
+        "quat": [
+          -0.29287,
+          0.24102,
+          -0.66917,
+          0.63902
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0217_r045_t+1",
+        "index": 178,
+        "cost": 0.00017166248056661777,
+        "distance": 0,
+        "angle": 0.003433249611332355
+      }
+    },
+    {
+      "name": "baked_179_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.07453,
+          0.02167,
+          -0.06792
+        ],
+        "quat": [
+          -0.51669,
+          0.48262,
+          -0.5168,
+          0.48273
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0217_r090_t+1",
+        "index": 179,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_180_self",
+      "library": "baked",
+      "kind": "can",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.10131,
+          0.02174,
+          -0.00709
+        ],
+        "quat": [
+          -0.28489,
+          0.25502,
+          0.66598,
+          -0.64053
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "can/left/body/o+0.0217_r315_t+1",
+        "index": 180,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_181_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0,
+          -0.0745,
+          -0.1095
+        ],
+        "quat": [
+          -0.70711,
+          0,
+          0,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n-z_f+y",
+        "index": 181,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_182_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0,
+          -0.0745,
+          0.1095
+        ],
+        "quat": [
+          0,
+          0.70711,
+          0.70711,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+z_f+y",
+        "index": 182,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_182_offset_sign",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.013,
+          -0.0815,
+          0.1305
+        ],
+        "quat": [
+          0,
+          -0.70711,
+          -0.70711,
+          0
+        ]
+      },
+      "options": {
+        "previousId": "carton/right/face/n+z_f+y",
+        "grasp": "face"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+z_f+y",
+        "index": 182,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_183_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.1395,
+          -0.0745,
+          0
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+x_f+y",
+        "index": 183,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_184_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.1395,
+          -0.0745,
+          0
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n-x_f+y",
+        "index": 184,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_185_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0745,
+          0,
+          -0.1095
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n-z_f+x",
+        "index": 185,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_186_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0745,
+          0,
+          -0.1095
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n-z_f-x",
+        "index": 186,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_187_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0745,
+          0,
+          0.1095
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+z_f+x",
+        "index": 187,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_188_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0745,
+          0,
+          0.1095
+        ],
+        "quat": [
+          0.5,
+          -0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+z_f-x",
+        "index": 188,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_189_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.1395,
+          0,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+x_f-z",
+        "index": 189,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_190_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.1395,
+          0,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          -0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+x_f+z",
+        "index": 190,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_191_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.1395,
+          0,
+          0.0745
+        ],
+        "quat": [
+          0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n-x_f-z",
+        "index": 191,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_192_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.1395,
+          0,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n-x_f+z",
+        "index": 192,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_193_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0745,
+          0.0995,
+          0
+        ],
+        "quat": [
+          0,
+          0.70711,
+          0,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+y_f+x",
+        "index": 193,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_194_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0745,
+          0.0995,
+          0
+        ],
+        "quat": [
+          0,
+          -0.70711,
+          0,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+y_f-x",
+        "index": 194,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_195_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0,
+          0.1015,
+          0.0745
+        ],
+        "quat": [
+          0,
+          -1,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+y_f-z",
+        "index": 195,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_195_offset_sign",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.013,
+          0.0945,
+          0.0955
+        ],
+        "quat": [
+          0,
+          1,
+          0,
+          0
+        ]
+      },
+      "options": {
+        "previousId": "carton/right/face/n+y_f-z",
+        "grasp": "face"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+y_f-z",
+        "index": 195,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_196_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0,
+          0.1015,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+y_f+z",
+        "index": 196,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_197_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0,
+          0.0745,
+          -0.1095
+        ],
+        "quat": [
+          0,
+          -0.70711,
+          0.70711,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n-z_f-y",
+        "index": 197,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_198_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0,
+          0.0745,
+          0.1095
+        ],
+        "quat": [
+          0.70711,
+          0,
+          0,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+z_f-y",
+        "index": 198,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_199_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.1395,
+          0.0745,
+          0
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n+x_f-y",
+        "index": 199,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_200_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.1395,
+          0.0745,
+          0
+        ],
+        "quat": [
+          0.5,
+          -0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/right/face/n-x_f-y",
+        "index": 200,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_201_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          -0.0745,
+          -0.1095
+        ],
+        "quat": [
+          -0.70711,
+          0,
+          0,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n-z_f+y",
+        "index": 201,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_202_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          -0.0745,
+          0.1095
+        ],
+        "quat": [
+          0,
+          0.70711,
+          0.70711,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+z_f+y",
+        "index": 202,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_203_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.1395,
+          -0.0745,
+          0
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          -0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+x_f+y",
+        "index": 203,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_204_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.1395,
+          -0.0745,
+          0
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n-x_f+y",
+        "index": 204,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_205_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0745,
+          0,
+          -0.1095
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n-z_f+x",
+        "index": 205,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_206_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0745,
+          0,
+          -0.1095
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n-z_f-x",
+        "index": 206,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_207_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0745,
+          0,
+          0.1095
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+z_f+x",
+        "index": 207,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_208_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0745,
+          0,
+          0.1095
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          0.5,
+          -0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+z_f-x",
+        "index": 208,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_208_offset_sign",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0875,
+          -0.007,
+          0.1305
+        ],
+        "quat": [
+          0.5,
+          -0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {
+        "previousId": "carton/left/face/n+z_f-x",
+        "grasp": "face"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+z_f-x",
+        "index": 208,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986877,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_209_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.1395,
+          0,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+x_f-z",
+        "index": 209,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_210_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.1395,
+          0,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          -0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+x_f+z",
+        "index": 210,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_211_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.1395,
+          0,
+          0.0745
+        ],
+        "quat": [
+          -0.70711,
+          0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n-x_f-z",
+        "index": 211,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_212_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.1395,
+          0,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n-x_f+z",
+        "index": 212,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_213_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0745,
+          0.0995,
+          0
+        ],
+        "quat": [
+          0,
+          0.70711,
+          0,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+y_f+x",
+        "index": 213,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_214_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0745,
+          0.0995,
+          0
+        ],
+        "quat": [
+          0,
+          -0.70711,
+          0,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+y_f-x",
+        "index": 214,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_215_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0.1015,
+          0.0745
+        ],
+        "quat": [
+          0,
+          -1,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+y_f-z",
+        "index": 215,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_216_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0.1015,
+          -0.0745
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+y_f+z",
+        "index": 216,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_217_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0.0745,
+          -0.1095
+        ],
+        "quat": [
+          0,
+          -0.70711,
+          0.70711,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n-z_f-y",
+        "index": 217,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_218_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0.0745,
+          0.1095
+        ],
+        "quat": [
+          0.70711,
+          0,
+          0,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+z_f-y",
+        "index": 218,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_219_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.1395,
+          0.0745,
+          0
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          0.5,
+          -0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n+x_f-y",
+        "index": 219,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_220_self",
+      "library": "baked",
+      "kind": "carton",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.1395,
+          0.0745,
+          0
+        ],
+        "quat": [
+          0.5,
+          -0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "carton/left/face/n-x_f-y",
+        "index": 220,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_221_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0797,
+          -0.024,
+          0.0465
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o+0.0000_r000_t+1",
+        "index": 221,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_221_offset_sign",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0667,
+          -0.031,
+          0.0675
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5
+        ]
+      },
+      "options": {
+        "previousId": "magazine/right/base_wrap/o+0.0000_r000_t+1",
+        "grasp": "base_wrap"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o+0.0000_r000_t+1",
+        "index": 221,
+        "cost": 0.015670995305986868,
+        "distance": 0.02567099530598687,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_222_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0455,
+          -0.024,
+          0.0797
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o+0.0000_r090_t+1",
+        "index": 222,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_223_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0455,
+          -0.024,
+          -0.0797
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o+0.0000_r270_t+1",
+        "index": 223,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_224_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0797,
+          -0.024,
+          -0.0465
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o+0.0000_r180_t+1",
+        "index": 224,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_225_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0797,
+          -0.024,
+          0.0462
+        ],
+        "quat": [
+          0.5,
+          -0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o+0.0000_r000_t-1",
+        "index": 225,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_226_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0452,
+          -0.024,
+          -0.0797
+        ],
+        "quat": [
+          0,
+          0,
+          -0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o+0.0000_r090_t-1",
+        "index": 226,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_227_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0452,
+          -0.024,
+          0.0797
+        ],
+        "quat": [
+          0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o+0.0000_r270_t-1",
+        "index": 227,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_228_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0797,
+          -0.024,
+          -0.0462
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o+0.0000_r180_t-1",
+        "index": 228,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_229_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0797,
+          -0.032,
+          0.0461
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o-0.0080_r000_t+1",
+        "index": 229,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_230_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0452,
+          -0.032,
+          0.0797
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o-0.0080_r090_t+1",
+        "index": 230,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_231_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0452,
+          -0.032,
+          -0.0797
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o-0.0080_r270_t+1",
+        "index": 231,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_232_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0797,
+          -0.032,
+          -0.0461
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o-0.0080_r180_t+1",
+        "index": 232,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_233_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0797,
+          -0.032,
+          0.0479
+        ],
+        "quat": [
+          0.5,
+          -0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o-0.0080_r000_t-1",
+        "index": 233,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_234_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0469,
+          -0.032,
+          -0.0797
+        ],
+        "quat": [
+          0,
+          0,
+          -0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o-0.0080_r090_t-1",
+        "index": 234,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_234_offset_sign",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.059899999999999995,
+          -0.039,
+          -0.05869999999999999
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          -0.70711
+        ]
+      },
+      "options": {
+        "previousId": "magazine/right/base_wrap/o-0.0080_r090_t-1",
+        "grasp": "base_wrap"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o-0.0080_r090_t-1",
+        "index": 234,
+        "cost": 0.015670995305986868,
+        "distance": 0.02567099530598687,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_235_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0469,
+          -0.032,
+          0.0797
+        ],
+        "quat": [
+          0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_wrap/o-0.0080_r270_t-1",
+        "index": 235,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_236_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0797,
+          -0.024,
+          0.0465
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          0.5,
+          -0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o+0.0000_r000_t+1",
+        "index": 236,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_237_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0455,
+          -0.024,
+          -0.0797
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          -0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o+0.0000_r090_t+1",
+        "index": 237,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_238_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0455,
+          -0.024,
+          0.0797
+        ],
+        "quat": [
+          -0.70711,
+          0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o+0.0000_r270_t+1",
+        "index": 238,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_239_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0797,
+          -0.024,
+          -0.0465
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o+0.0000_r180_t+1",
+        "index": 239,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_240_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0797,
+          -0.024,
+          0.0462
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o+0.0000_r000_t-1",
+        "index": 240,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_241_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0452,
+          -0.024,
+          0.0797
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o+0.0000_r090_t-1",
+        "index": 241,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_242_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0452,
+          -0.024,
+          -0.0797
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o+0.0000_r270_t-1",
+        "index": 242,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_243_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0797,
+          -0.024,
+          -0.0462
+        ],
+        "quat": [
+          -0.5,
+          -0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o+0.0000_r180_t-1",
+        "index": 243,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_244_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0797,
+          -0.032,
+          0.0461
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          0.5,
+          -0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o-0.0080_r000_t+1",
+        "index": 244,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_245_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0452,
+          -0.032,
+          -0.0797
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          -0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o-0.0080_r090_t+1",
+        "index": 245,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_246_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0452,
+          -0.032,
+          0.0797
+        ],
+        "quat": [
+          -0.70711,
+          0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o-0.0080_r270_t+1",
+        "index": 246,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_247_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0797,
+          -0.032,
+          -0.0461
+        ],
+        "quat": [
+          -0.5,
+          0.5,
+          -0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o-0.0080_r180_t+1",
+        "index": 247,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_247_offset_sign",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0667,
+          -0.039,
+          -0.0251
+        ],
+        "quat": [
+          0.5,
+          -0.5,
+          0.5,
+          -0.5
+        ]
+      },
+      "options": {
+        "previousId": "magazine/left/base_wrap/o-0.0080_r180_t+1",
+        "grasp": "base_wrap"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o-0.0080_r180_t+1",
+        "index": 247,
+        "cost": 0.015670995305986875,
+        "distance": 0.025670995305986873,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_248_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0797,
+          -0.032,
+          0.0479
+        ],
+        "quat": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o-0.0080_r000_t-1",
+        "index": 248,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_249_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0469,
+          -0.032,
+          0.0797
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o-0.0080_r090_t-1",
+        "index": 249,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_250_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0469,
+          -0.032,
+          -0.0797
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_wrap/o-0.0080_r270_t-1",
+        "index": 250,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_251_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          0.0773,
+          -0.043,
+          0.09
+        ],
+        "quat": [
+          -0.70711,
+          -0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_pinch/o+0.0000_r090_t+1",
+        "index": 251,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_252_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "right",
+      "local": {
+        "pos": [
+          -0.0765,
+          -0.043,
+          -0.09
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/right/base_pinch/o+0.0000_r270_t+1",
+        "index": 252,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_253_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0765,
+          -0.043,
+          -0.09
+        ],
+        "quat": [
+          0,
+          0,
+          0.70711,
+          -0.70711
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_pinch/o+0.0000_r090_t+1",
+        "index": 253,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "baked_254_self",
+      "library": "baked",
+      "kind": "magazine",
+      "side": "left",
+      "local": {
+        "pos": [
+          -0.0773,
+          -0.043,
+          0.09
+        ],
+        "quat": [
+          -0.70711,
+          0.70711,
+          0,
+          0
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "magazine/left/base_pinch/o+0.0000_r270_t+1",
+        "index": 254,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "empty",
+      "library": "synthetic",
+      "poses": [],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": null
+    },
+    {
+      "name": "wrong_side",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "right",
+          "kind": "__nearest_golden",
+          "side": "right",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": null
+    },
+    {
+      "name": "wrong_kind",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "other",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": null
+    },
+    {
+      "name": "tie_first",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.01,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "a",
+        "index": 0,
+        "cost": 0.01,
+        "distance": 0.01,
+        "angle": 0
+      }
+    },
+    {
+      "name": "tie_reversed",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.01,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "b",
+        "index": 0,
+        "cost": 0.01,
+        "distance": 0.01,
+        "angle": 0
+      }
+    },
+    {
+      "name": "hysteresis_0.0049",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0049,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {
+        "previousId": "b"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "a",
+        "index": 0,
+        "cost": 0.0049,
+        "distance": 0.0049,
+        "angle": 0
+      }
+    },
+    {
+      "name": "hysteresis_0.005",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.005,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {
+        "previousId": "b"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "b",
+        "index": 1,
+        "cost": 0.004999999999999999,
+        "distance": 0.015,
+        "angle": 0
+      }
+    },
+    {
+      "name": "hysteresis_0.0051",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0.0051,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {
+        "previousId": "b"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "b",
+        "index": 1,
+        "cost": 0.0049,
+        "distance": 0.0149,
+        "angle": 0
+      }
+    },
+    {
+      "name": "negative_cost",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {
+        "previousId": "a"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "a",
+        "index": 0,
+        "cost": -0.01,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "unknown_previous",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {
+        "previousId": "absent"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "a",
+        "index": 0,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "grasp_filter",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "handle",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {
+        "grasp": "handle"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "b",
+        "index": 1,
+        "cost": 0.02,
+        "distance": 0.02,
+        "angle": 0
+      }
+    },
+    {
+      "name": "empty_grasp_is_unfiltered",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {
+        "grasp": ""
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "a",
+        "index": 0,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "missing_grasp",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {
+        "grasp": "missing"
+      },
+      "allowed": null,
+      "filter_calls": [],
+      "expected": null
+    },
+    {
+      "name": "predicate_select",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": [
+        "b"
+      ],
+      "filter_calls": [
+        "a",
+        "b"
+      ],
+      "expected": {
+        "id": "b",
+        "index": 1,
+        "cost": 0.02,
+        "distance": 0.02,
+        "angle": 0
+      }
+    },
+    {
+      "name": "predicate_reject_all",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": [],
+      "filter_calls": [
+        "a",
+        "b"
+      ],
+      "expected": null
+    },
+    {
+      "name": "filter_order",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "handle",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "id": "r",
+          "kind": "__nearest_golden",
+          "side": "right",
+          "grasp": "handle",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {
+        "grasp": "handle"
+      },
+      "allowed": [
+        "b"
+      ],
+      "filter_calls": [
+        "b"
+      ],
+      "expected": {
+        "id": "b",
+        "index": 1,
+        "cost": 0.02,
+        "distance": 0.02,
+        "angle": 0
+      }
+    },
+    {
+      "name": "quaternion_sign",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "a",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          -1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "a",
+        "index": 0,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "quaternion_rounded_dot_clamp",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "rounded",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1.00001
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "rounded",
+        "index": 0,
+        "cost": 0,
+        "distance": 0,
+        "angle": 0
+      }
+    },
+    {
+      "name": "rotation_beats_distance",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "rotated",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "id": "b",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.02,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "b",
+        "index": 1,
+        "cost": 0.02,
+        "distance": 0.02,
+        "angle": 0
+      }
+    },
+    {
+      "name": "distance_beats_rotation",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "rotated",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "id": "far",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.2,
+            0,
+            0
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "rotated",
+        "index": 0,
+        "cost": 0.15707963267948966,
+        "distance": 0,
+        "angle": 3.141592653589793
+      }
+    },
+    {
+      "name": "three_axis_distance",
+      "library": "synthetic",
+      "poses": [
+        {
+          "id": "xyz",
+          "kind": "__nearest_golden",
+          "side": "left",
+          "grasp": "body",
+          "wrist": [
+            0.03,
+            -0.04,
+            0.12
+          ],
+          "quat": [
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "kind": "__nearest_golden",
+      "side": "left",
+      "local": {
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "quat": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "options": {},
+      "allowed": null,
+      "filter_calls": [],
+      "expected": {
+        "id": "xyz",
+        "index": 0,
+        "cost": 0.12999999999999998,
+        "distance": 0.12999999999999998,
+        "angle": 0
+      }
+    }
+  ]
+}
