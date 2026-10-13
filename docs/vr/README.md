@@ -2,10 +2,10 @@
 
 These notes are shared design and review principles for VR work across GameSystems,
 NightfallContractsGodot and the separate WebXR projects. They explain choices to make
-explicitly and failures to test for. For workspace-specific implementation notes and
-links to project evidence, see the [GameDev VR development hub](../../../VR_DEVELOPMENT.md).
-Each project's `AGENTS.md`, configuration and current implementation remain authoritative
-for project-specific behavior. Reviewed 2026-10-13.
+explicitly and failures to test for. Project-specific implementation notes and evidence
+belong to each project's own documentation. Each project's `AGENTS.md`, configuration
+and current implementation remain authoritative for project-specific behavior. Reviewed
+2026-10-13.
 
 | Guide | Use it for |
 |---|---|

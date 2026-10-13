@@ -91,7 +91,7 @@ the controller or tracked hand.
 
 ## Device checks
 
-The Steam Frame [device evidence and pending acceptance log](../../../NightfallContractsGodot/docs/STEAM_FRAME_TESTING.md)
+The NightfallContractsGodot [Steam Frame device evidence and pending acceptance log](https://github.com/kblood/NightfallContractsGodot/blob/main/docs/STEAM_FRAME_TESTING.md)
 records builds and test runs chronologically; its latest entries do not establish headset
 rendering, controller feel, comfort or frame-time acceptance. Use the latest dated section
 for current evidence, and the target project's own configuration for its build/export setup.

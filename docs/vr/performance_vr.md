@@ -25,8 +25,9 @@ loading stalls and thermal throttling. Desktop editor and simulator numbers do n
 on-device headset performance.
 
 For Steam Frame, record whether a result came from PCVR streamed from a host PC or a game
-running on the headset. Those are different performance targets. Steamworks lists Windows
-and Linux PC titles alongside on-device ARM64 Linux and Android APK execution; its current
+running on the headset. Those are different performance targets. Windows and Linux PC
+titles can be streamed from a host. On-device paths include Windows x86 via Proton/FEX,
+native ARM64 Linux and Android APK via Lepton. Valve's current
 guidance says most developers should first consider Windows x86 through Proton/FEX, while
 VR teams with an existing mobile-optimized Android build should consider that path. Pick a
 shipping path from the actual renderer, API and workload, then profile that path on-device;
