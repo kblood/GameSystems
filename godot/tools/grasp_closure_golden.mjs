@@ -1,10 +1,11 @@
 import { BAKED } from '../../extensions/grasp/baked_grasps.js';
-import { fingerChain, placeWrist, REFERENCE_HAND } from '../../extensions/grasp/closure.js';
+import { chainGaps, fingerChain, placeWrist, REFERENCE_HAND } from '../../extensions/grasp/closure.js';
+import { CATALOG } from '../../extensions/grasp/catalog.js';
 import { referenceHand } from '../../extensions/grasp/record.js';
 
 const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
 const modelForGolden = model => ({ base: model.base, len: model.len, axes: model.axes,
-  hinge: model.hinge, restYaw: model.restYaw, twistSign: model.twistSign });
+  hinge: model.hinge, restYaw: model.restYaw, twistSign: model.twistSign, radius: model.radius });
 
 export function graspClosureCases() {
   const cases = [];
@@ -59,5 +60,24 @@ export function graspPlaceWristCases() {
   const customReference = { length: 0.24, palm: [0.02, -0.04, 0.07] };
   cases.push({ name: 'custom-reference-rotated-recorded-pose', pose: customPose, hand: customHand,
     reference: customReference, expected: placeWrist(customPose, customHand, customReference) });
+  return cases;
+}
+
+export function graspSegmentGapCases() {
+  const cases = [];
+  for (const side of ['right', 'left']) {
+    const poses = BAKED.poses.filter(candidate => candidate.side === side);
+    for (const scale of [0.82, 1.17]) {
+      const hand = referenceHand(side, { scale });
+      for (const poseIndex of [0, 11]) {
+        const pose = poses[poseIndex];
+        const placed = placeWrist(pose, hand);
+        const shape = CATALOG[pose.kind].shape;
+        const fingers = Object.fromEntries(FINGERS.map(name => [name, modelForGolden(hand.fingers[name])]));
+        cases.push({ name: `${side}:${pose.id}:scale-${scale}`, hand: { scale: hand.scale, fingers }, shape,
+          placed, rows: pose.angles, expected: chainGaps(hand, shape, placed, pose.angles) });
+      }
+    }
+  }
   return cases;
 }

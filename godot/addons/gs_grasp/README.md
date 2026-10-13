@@ -17,10 +17,16 @@ search, joint-limit clamping and runtime hand integration remain separate system
 placement to a character's hand length while keeping the palm anchor in item space. It
 uses recorded `handLength` when present, otherwise the shared reference-hand length.
 
-The JS goldens cover 26 baked/synthetic finger-chain cases and 15 baked/recorded wrist
-placement cases across both hands, including twist, axis fallback, custom reference
-geometry and invalid recorded-length fallback. Godot 4.7.2 passes **691 assertions**;
-neither a broad closure-fit nor physical contact behavior is implied.
+`GSGraspClosure.segment_gaps(chain, finger, shape, wrist, quat, scale, from)` measures
+each segment's skin gap against the catalog SDF, using bone midpoint and distal-joint
+samples. It shares `GSGraspShapeSdf`; unsupported shape input leaves the affected gap at
+`INF`, so callers should validate their catalog geometry before fitting.
+
+The JS goldens cover 26 baked/synthetic finger-chain cases, 15 baked/recorded wrist
+placement cases, and 8 segment-gap cases across both hands and item scales. They include
+twist, axis fallback, custom reference geometry, invalid recorded-length fallback and
+distal-only segment sampling. Godot 4.7.2 passes **1,212 assertions**; this does not
+complete the closure search or imply physical skin contact.
 
 ```gdscript
 const Selector = preload("res://addons/gs_grasp/gs_nearest_grasp.gd")

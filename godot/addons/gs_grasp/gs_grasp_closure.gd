@@ -3,6 +3,7 @@ extends RefCounted
 ## Forward kinematics shared by grasp closure, contact fitting and tracked-hand previews.
 
 const D2R := PI / 180.0
+const ShapeSdf := preload("res://addons/gs_grasp/gs_grasp_shape_sdf.gd")
 const DEFAULT_REFERENCE_HAND := {
 	"length": 0.203,
 	"palm": [0.0, -0.0238, 0.0685],
@@ -56,6 +57,23 @@ static func finger_chain(finger: Dictionary, row: Array) -> Array:
 	var joint2 := _add(joint1, _scale(direction2, float(lengths[1])))
 	var tip := _add(joint2, _scale(direction3, float(lengths[2])))
 	return [base.duplicate(), joint1, joint2, tip]
+
+## Measure each finger segment's skin gap (metres) against item-local signed-distance geometry.
+## Samples the bone midpoint and distal joint, matching closure.segmentGaps. Earlier segments stay INF when `from` is nonzero.
+static func segment_gaps(chain: Array, finger: Dictionary, shape: Dictionary, wrist: Array, quat: Array,
+		scale: float = 1.0, from: int = 0) -> Array:
+	var gaps: Array = [INF, INF, INF]
+	for segment: int in range(clampi(from, 0, 3), 3):
+		var a: Array = chain[segment]
+		var b: Array = chain[segment + 1]
+		var midpoint := _scale(_add(a, b), 0.5)
+		var middle_distance: Variant = ShapeSdf.signed_distance(shape, _to_item_space(midpoint, wrist, quat, scale))
+		var end_distance: Variant = ShapeSdf.signed_distance(shape, _to_item_space(b, wrist, quat, scale))
+		if not _finite_number(middle_distance) or not _finite_number(end_distance):
+			continue
+		var radius: Array = finger.radius
+		gaps[segment] = minf(float(middle_distance), float(end_distance)) - float(radius[segment]) * scale
+	return gaps
 
 static func _next_direction(parent: Array, bend: float, hinge: Array, dorsal: Array, twist: float) -> Array:
 	var axis := _reject(hinge, parent)
@@ -118,3 +136,6 @@ static func _rotate_by_quaternion(vector: Array, quaternion: Array) -> Array:
 	return [float(vector[0]) + w * tx + y * tz - z * ty,
 		float(vector[1]) + w * ty + z * tx - x * tz,
 		float(vector[2]) + w * tz + x * ty - y * tx]
+
+static func _to_item_space(point: Array, wrist: Array, quat: Array, scale: float) -> Array:
+	return _add(wrist, _rotate_by_quaternion(_scale(point, scale), quat))

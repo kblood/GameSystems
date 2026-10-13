@@ -1,5 +1,14 @@
 # Løbende forbedringer af GameSystems
 
+## G4 finger-segment SDF gaps — 2026-10-13
+
+`GSGraspClosure.segment_gaps` måler hvert knoglesegments hudgab mod katalogets SDF med
+samme to prøver pr. segment som JS (`closure.js`: midtpunkt og distale led), korrekt
+placeret i item-space og skaleret med fingerens radius. 8 JS-oracle cases på tværs af
+begge hænder, greb og skalaer validerer 1.212/1.212 samlede closure-assertions, herunder
+distale fortsættelser efter et proximalt kontaktpunkt. Selve søgningen efter lukkevinkel,
+palm-/thenar-fit og fysisk runtime-kontakt er stadig åben.
+
 ## G4 place-wrist hand-length retargeting — 2026-10-13
 
 `GSGraspClosure.place_wrist` porter `closure.js`' `placeWrist`: den justerer håndleddet
