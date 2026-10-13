@@ -1,5 +1,17 @@
 # Løbende forbedringer af GameSystems
 
+## Brandstationsdemo: første scenarie-målsætning — 2026-10-13
+
+Brandstationsdemoen viser nu en scenarie-status: **aktiv** indtil pallet, spredningskasse
+og dieselpyt alle er slukket, og naborummet holder sig på højst 80 °C og 0,25 smoke density.
+Når begge mål er opfyldt, viser skærmen **secured**. Status læses fra den samme thermal-
+kerne som sprinklerne, portaludvekslingen og røgvisualerne; grænserne er demo-/spilværdier,
+ikke bygningssikkerhedskrav. Status fejler lukket, hvis et target eller naborum mangler.
+Godot 4.7.2-testen består nu **40/40** og dækker startstatus, sikker/manglende state,
+slutbetingelse samt den synlige statuslinje. Sol-review af README og backlog er godkendt.
+Næste åbne scenariearbejde er at definere testbare sværhedsprofiler og en genstartbar
+missionrunde uden at ændre kernelernes faste værdi-/kvitteringskontrakter.
+
 ## Rumåbninger til røg og varme — 2026-10-12
 
 Tilføjet `gs_thermal_portals` som et selvstændigt, bounded adapterlag over den native

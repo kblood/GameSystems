@@ -27,6 +27,9 @@ const FUSE_ID := &"pump-fuse"
 const MAIN_SWITCH_ID := &"main-switch"
 const FAULT_SWITCH_ID := &"fault-switch"
 const WATER_CAPACITY_ML := 20000.0
+const MISSION_FIRE_TARGETS: Array[StringName] = [FIRE_ID, SPREAD_FIRE_ID, SPILL_FIRE_ID]
+const MISSION_MAX_ADJACENT_TEMPERATURE_C := 80.0
+const MISSION_MAX_ADJACENT_SMOKE := 0.25
 
 var thermal: RefCounted
 var thermal_portals: RefCounted
@@ -407,7 +410,37 @@ func demo_state() -> Dictionary:
 		"diesel_spill_visible": _spill_visual.visible, "spill_fire_visible": _spill_fire_visual.visible,
 		"sprinkler_runoff_visible": _sprinkler_runoff_visual.visible,
 		"spill_status": _spill_status(),
+		"mission": mission_state(),
 		"last_puddle_result": last_puddle_result.duplicate(true)}
+
+
+## Small scenario layer for the demo; the underlying fire and room systems stay independent.
+func mission_state() -> Dictionary:
+	if thermal == null: return {"status": &"unavailable", "fires_out": 0, "fire_count": MISSION_FIRE_TARGETS.size()}
+	var fires_out := 0
+	var active_fires: Array[StringName] = []
+	var missing_fires: Array[StringName] = []
+	for id in MISSION_FIRE_TARGETS:
+		var item: Dictionary = thermal.object_state(id)
+		if item.is_empty():
+			missing_fires.append(id)
+			continue
+		if bool(item.get("burning", false)):
+			active_fires.append(id)
+		else:
+			fires_out += 1
+	var adjacent: Dictionary = thermal.room_state(ADJACENT_ROOM_ID)
+	var adjacent_temperature := float(adjacent.get("temperature_c", 20.0))
+	var adjacent_smoke := float(adjacent.get("smoke", 0.0))
+	var adjacent_safe := not adjacent.is_empty() and adjacent_temperature <= MISSION_MAX_ADJACENT_TEMPERATURE_C \
+		and adjacent_smoke <= MISSION_MAX_ADJACENT_SMOKE
+	var secured := fires_out == MISSION_FIRE_TARGETS.size() and missing_fires.is_empty() \
+		and active_fires.is_empty() and adjacent_safe
+	return {"status": &"secured" if secured else &"active", "fires_out": fires_out,
+		"fire_count": MISSION_FIRE_TARGETS.size(), "active_fires": active_fires,
+		"missing_fires": missing_fires,
+		"adjacent_safe": adjacent_safe, "adjacent_temperature_c": adjacent_temperature,
+		"adjacent_smoke": adjacent_smoke}
 
 
 func _build_scene() -> void:
@@ -572,7 +605,10 @@ func _update_status() -> void:
 	var runoff_total_ml := 0.0
 	for receipt: Dictionary in sprinkler_source_receipts.values():
 		runoff_total_ml += float(receipt.get("puddle_ml", 0.0))
-	_status_label.text = "F water head | T floor runoff | H compartment door | V valve | D diesel head | G fuel valve | B battery | S switch | X fault | C fuse | R refill\nI ignite spill | E cool spill | Door: %s  Head: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Smoke: %.2f  Adjacent: %.1f C / %.3f smoke  Fuel puddle: %.0f mL (%s)  Tank: %.0f mL  Deposited: %.0f mL" % [
+	var mission := mission_state()
+	_status_label.text = "MISSION: %s — fires out %d/%d, adjacent room %s\nF water head | T floor runoff | H compartment door | V valve | D diesel head | G fuel valve | B battery | S switch | X fault | C fuse | R refill\nI ignite spill | E cool spill | Door: %s  Head: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Smoke: %.2f  Adjacent: %.1f C / %.3f smoke  Fuel puddle: %.0f mL (%s)  Tank: %.0f mL  Deposited: %.0f mL" % [
+		String(mission.status).to_upper(), int(mission.fires_out), int(mission.fire_count),
+		"SAFE" if mission.adjacent_safe else "AT RISK",
 		"OPEN" if compartment_door_open else "CLOSED",
 		"ON" if head.get("triggered", false) else "standby", "OPEN" if valve_open else "CLOSED",
 		"ON" if main_switch_on else "OFF", "BLOWN" if electricity != null and electricity.state(FUSE_ID).blown else "OK",

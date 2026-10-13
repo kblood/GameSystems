@@ -19,6 +19,37 @@ func _run_tests() -> void:
 		and initial.battery.energy_wh == 180.0 and not initial.fuse_blown
 		and not initial.room_smoke_visual.visible and not initial.adjacent_smoke_visual.visible,
 		"scene composes an active fire, finite water supply and fused battery circuit")
+	case_result(initial.mission.status == &"active" and initial.mission.fires_out == 2
+		and initial.mission.fire_count == 3 and initial.mission.adjacent_safe,
+		"scenario begins active with the burning pallet and safe adjacent compartment objectives visible")
+	var mission_demo: Node3D = DemoScene.instantiate()
+	root.add_child(mission_demo)
+	var mission_fire: Dictionary = mission_demo.demo_state().fire
+	var cooled_fire_ml: float = mission_demo.thermal.apply_liquid(&"burning-pallet", &"water", 200.0)
+	var secured_mission: Dictionary = mission_demo.mission_state()
+	mission_demo._update_status()
+	case_result(mission_fire.burning and cooled_fire_ml == 200.0
+		and secured_mission.status == &"secured" and secured_mission.fires_out == 3
+		and secured_mission.adjacent_safe and mission_demo._status_label.text.contains("MISSION: SECURED"),
+		"scenario reports secured in its state and on-screen status only after all targets are out and the adjacent room is safe")
+	mission_demo.queue_free()
+	var unsafe_mission_demo: Node3D = DemoScene.instantiate()
+	root.add_child(unsafe_mission_demo)
+	unsafe_mission_demo.thermal.apply_liquid(&"burning-pallet", &"water", 200.0)
+	unsafe_mission_demo.thermal.configure_room(&"adjacent-room", {"smoke": 0.3})
+	var unsafe_mission: Dictionary = unsafe_mission_demo.mission_state()
+	case_result(unsafe_mission.status == &"active" and not unsafe_mission.adjacent_safe,
+		"mission remains active when the extinguished fire targets have an unsafe adjacent smoke level")
+	unsafe_mission_demo.queue_free()
+	var missing_mission_demo: Node3D = DemoScene.instantiate()
+	root.add_child(missing_mission_demo)
+	missing_mission_demo.thermal.apply_liquid(&"burning-pallet", &"water", 200.0)
+	missing_mission_demo.thermal.remove_object(&"diesel-spill-fire")
+	var missing_mission: Dictionary = missing_mission_demo.mission_state()
+	case_result(missing_mission.status == &"active" and missing_mission.fires_out == 2
+		and missing_mission.missing_fires == [&"diesel-spill-fire"],
+		"mission fails closed when a required fire target is missing from thermal state")
+	missing_mission_demo.queue_free()
 	var compartments_demo: Node3D = DemoScene.instantiate()
 	root.add_child(compartments_demo)
 	var demo_camera := compartments_demo.get_node_or_null("DemoCamera") as Camera3D

@@ -27,6 +27,12 @@ a finite battery through a switch, fuse and wires. An optional fault branch demo
 fuse trip and replacement. The scene uses simple built-in meshes so it needs no external
 assets and can run in a clean checkout.
 
+The on-screen mission is **active** until all three fire targets—the pallet, nearby crate,
+and diesel spill—are out and the adjacent compartment stays at or below 80 °C and 0.25
+smoke density. It then reads **secured**. These thresholds are scenario/gameplay cues for
+the demo, not building-safety guidance. The mission status updates from the same thermal
+state used by sprinklers, smoke visuals and the door portal.
+
 Open `fire_station_demo.tscn` from the GameSystems Godot project, or run it with:
 
 ```powershell
