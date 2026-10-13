@@ -119,7 +119,7 @@ func _ready() -> void:
 	sprinklers.register_supply(DIESEL_SUPPLY_ID, diesel_tank)
 	sprinklers.set_power_provider(pump)
 	sprinklers.add_head(HEAD_ID, {"room_id": ROOM_ID, "supply_id": SUPPLY_ID,
-		"target_ids": [FIRE_ID, SPREAD_FIRE_ID], "position": Vector3(0.0, 3.0, 0.0), "flow_ml_s": 240.0,
+		"target_ids": [FIRE_ID, SPREAD_FIRE_ID, SPILL_FIRE_ID], "position": Vector3(0.0, 3.0, 0.0), "flow_ml_s": 240.0,
 		"trigger_temperature_c": 70.0, "response_seconds": 1.5, "range_m": 4.0})
 	sprinklers.add_head(RUNOFF_HEAD_ID, {"room_id": ROOM_ID, "supply_id": SUPPLY_ID,
 		"target_ids": [], "position": Vector3(0.8, 3.0, 0.0), "flow_ml_s": 600.0,

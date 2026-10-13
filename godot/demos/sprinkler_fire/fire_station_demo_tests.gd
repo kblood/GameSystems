@@ -171,6 +171,22 @@ func _run_tests() -> void:
 		and after_quench_state.spill_fire.wetness > 0.05
 		and after_quench_state.spill_status == "WET",
 		"automatic ignition hysteresis prevents immediate hot-source relight after water quenching")
+	var sprinkler_spill_demo: Node3D = DemoScene.instantiate()
+	root.add_child(sprinkler_spill_demo)
+	var sprinkler_spill_ignition: Dictionary = sprinkler_spill_demo.ignite_diesel_spill()
+	var sprinkler_spill_triggered: bool = sprinkler_spill_demo.trigger_head()
+	var sprinkler_spill_ticks_ok := true
+	for _tick in 40:
+		sprinkler_spill_ticks_ok = sprinkler_spill_ticks_ok and bool(sprinkler_spill_demo.advance(0.1).ok)
+	var sprinkler_spill_state: Dictionary = sprinkler_spill_demo.demo_state()
+	var water_head_receipt: Dictionary = sprinkler_spill_state.sprinkler_source_receipts.get(&"sprinkler:ceiling-head", {})
+	case_result(sprinkler_spill_ignition.ok and sprinkler_spill_triggered and sprinkler_spill_ticks_ok
+		and not sprinkler_spill_state.spill_fire.burning and sprinkler_spill_state.spill_fire.wetness >= 0.8
+		and sprinkler_spill_state.diesel_puddle.diesel == 800.0
+		and water_head_receipt.get("kind", &"") == &"water"
+		and float(water_head_receipt.get("thermal_applied_ml", 0.0)) > 0.0,
+		"ceiling sprinkler water reaches and extinguishes burning diesel while preserving remaining fuel")
+	sprinkler_spill_demo.queue_free()
 	demo.puddles.withdraw(demo.diesel_puddle_id, &"diesel", 800.0)
 	demo._sync_spill_visual()
 	var water_only: Dictionary = demo.demo_state()
