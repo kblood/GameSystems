@@ -326,3 +326,66 @@ export function graspCloseAllCases() {
   }
   return cases;
 }
+
+export function graspCloseToContactCases() {
+  const cases = [];
+  const specs = [
+    { side: 'right', kind: 'bottle_beer', mode: 'wrap', scale: 0.86, search: 'mid' },
+    { side: 'left', kind: 'bottle_beer', mode: 'wrap', scale: 0.65, search: 'high',
+      id: 'bottle_beer/left/body/o+0.0000_r045_t+1' },
+    { side: 'left', kind: 'bottle_wine', mode: 'wrap', scale: 0.7,
+      id: 'bottle_wine/left/body/o+0.0337_r090_t+1', search: { normal: [0], lateral: [0, 0.12, -0.12],
+        along: [0, 0.8], pitch: [0, 20], twist: [0], margin: 0, thumbSearch: false } },
+    { side: 'left', kind: 'bottle_wine', mode: 'wrap', scale: 0.7,
+      id: 'bottle_wine/left/body/o+0.0337_r090_t+1', search: { normal: [0], lateral: [0, 0.12, -0.12],
+        along: [0, 0.8], pitch: [0, 20], twist: [0], margin: 50, thumbSearch: false } },
+    { side: 'left', kind: 'bottle_beer', mode: 'wrap', scale: 1.12, search: 'high', fixed: true },
+    { side: 'right', kind: 'bottle_wine', mode: 'wrap', scale: 0.78 },
+    { side: 'left', kind: 'carton', mode: 'flat', scale: 1.08, search: 'mid' },
+    { side: 'left', kind: 'bottle_wine', mode: 'wrap', scale: 0.7,
+      id: 'bottle_wine/left/body/o+0.0337_r090_t+1', search: { normal: [0], lateral: [0, 0.12, -0.12],
+        along: [0, 0.8], pitch: [0, 20], twist: [0], margin: 0, thumbSearch: false }, zeroPalmWidth: true },
+    { side: 'left', kind: 'bottle_wine', mode: 'wrap', scale: 0.91,
+      search: { normal: [0], lateral: [0, 0.1], along: [0], pitch: [0], twist: [0], thumbSearch: null, margin: 0 },
+      thumbFallback: true, customRows: true },
+    { side: 'right', kind: 'can', mode: 'wrap', scale: 1.06, search: 'mid', customRows: true, keep: ['Thumb'], keepRow: true },
+  ];
+  for (const [index, spec] of specs.entries()) {
+    const source = BAKED.poses.find(candidate => candidate.side === spec.side && candidate.kind === spec.kind
+      && candidate.mode === spec.mode && (!spec.id || candidate.id === spec.id)
+      && (candidate.grasp === 'body' || spec.kind === 'carton'));
+    if (!source) throw new Error(`missing closeToContact fixture: ${JSON.stringify(spec)}`);
+    const pose = { id: source.id, side: source.side, kind: source.kind, grasp: source.grasp, mode: source.mode,
+      wrist: [...source.wrist], quat: [...source.quat], open: source.open.map(row => [...row]),
+      angles: source.angles.map(row => [...row]), handLength: source.handLength };
+    const hand = referenceHand(spec.side, { scale: spec.scale });
+    if (spec.zeroPalmWidth) hand.profile.palmWidth = 0;
+    const shape = CATALOG[pose.kind].shape;
+    const callOptions = {};
+    if (spec.search != null) callOptions.search = spec.search;
+    if (spec.keep) callOptions.keep = spec.keep;
+    if (spec.customRows) {
+      const rows = { open: pose.open.map(row => [...row]), angles: pose.angles.map(row => [...row]) };
+      if (spec.keepRow) {
+        rows.open[0][2] += 2;
+        rows.angles[0][2] += 4;
+      } else {
+        rows.open[1][2] += 3;
+      }
+      callOptions.rows = rows;
+    }
+    if (spec.thumbFallback) callOptions.options = { thumbSearch: 'any' };
+    if (spec.fixed) { callOptions.wrist = pose.wrist; callOptions.quat = pose.quat; }
+    const result = closeToContact(pose, hand, shape, callOptions);
+    if (spec.customRows) {
+      const rowIndex = spec.keepRow ? 0 : 1;
+      if (result.open[rowIndex][2] !== callOptions.rows.open[rowIndex][2])
+        throw new Error('custom rows must affect returned open row');
+      if (spec.keepRow && result.angles[0][2] !== callOptions.rows.angles[0][2])
+        throw new Error('kept custom row must be preserved exactly');
+    }
+    cases.push({ name: `${index}:${spec.side}:${pose.id}:${spec.search ?? 'no-search'}${spec.fixed ? ':fixed' : ''}`,
+      pose, hand: handForGolden(hand), shape, options: callOptions, expected: result });
+  }
+  return cases;
+}

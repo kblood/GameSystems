@@ -438,6 +438,116 @@ static func close_all(hand: Dictionary, open_rows: Array, closed_rows: Array, sh
 		grade.score -= 8.0 * maxf(0.0, max_thumb_t - 1.4)
 	return {"angles": angles, "fingers": fingers, "grade": grade}
 
+## Close and grade a grasp, optionally searching a bounded set of wrist placements.
+## `pose` follows the baked/recorded pose shape (`wrist`, `quat`, `open`, `angles`, `mode`).
+## A supplied wrist+quat fixes placement and disables placement search; otherwise palm placement is fitted first.
+## `search` accepts null, "mid", "high", or an explicit dictionary with normal/lateral/along/pitch/twist arrays.
+## This is a deterministic pure helper; it does not own runtime input, collision bodies, or avatar pose.
+static func close_to_contact(pose: Dictionary, hand: Dictionary, shape: Dictionary,
+		options: Dictionary = {}) -> Dictionary:
+	var opts: Dictionary = _load_closure_defaults().duplicate(true)
+	opts.merge(options.get("options", {}), true)
+	var rows: Dictionary = options.get("rows", pose)
+	var open_rows: Array = rows.open
+	var closed_rows: Array = rows.angles
+	var keep: Array = options.get("keep", [])
+	var wrap := str(pose.get("mode", "wrap")) == "wrap"
+	var has_wrist: bool = options.get("wrist") is Array and options.get("quat") is Array
+	var given: bool = has_wrist and not (options.wrist as Array).is_empty() and not (options.quat as Array).is_empty()
+	var base: Dictionary = {"wrist": options.wrist, "quat": options.quat} if given else place_palm(
+		pose, hand, shape, opts, {}, open_rows[0])
+	var search_value: Variant = options.get("search")
+	var plan: Variant = null
+	if not given and wrap and search_value:
+		if search_value is String:
+			plan = _placement_search_plan(str(search_value))
+		elif search_value is Dictionary:
+			plan = search_value
+	var base_result := _run_placement(hand, open_rows, closed_rows, shape, base, opts, wrap, keep)
+	var best: Dictionary = base_result
+	var tried := 1
+	# Unsearched tiers make one CMC attempt if the baked thumb is stuck or misses.
+	if plan == null and not given and wrap and not bool(base_result.fingers.Thumb.get("kept", false)):
+		if bool(base_result.fingers.Thumb.get("stuck", false)) or base_result.fingers.Thumb.touching.is_empty():
+			var thumb_opts := opts.duplicate(true)
+			thumb_opts.thumbSearch = "any"
+			var thumb_result := _run_placement(hand, open_rows, closed_rows, shape, base, thumb_opts, wrap, keep)
+			tried += 1
+			if float(thumb_result.grade.score) > float(best.grade.score):
+				best = thumb_result
+	if plan != null:
+		var search_opts := opts.duplicate(true)
+		var thumb_policy: Variant = plan.get("thumbSearch")
+		search_opts.thumbSearch = opts.get("thumbSearch", false) if thumb_policy == null else thumb_policy
+		if search_opts.thumbSearch and (bool(best.fingers.Thumb.get("stuck", false)) or best.fingers.Thumb.touching.is_empty()):
+			var thumb_result := _run_placement(hand, open_rows, closed_rows, shape, base, search_opts, wrap, keep)
+			tried += 1
+			if float(thumb_result.grade.score) > float(best.grade.score):
+				best = thumb_result
+		var profile: Dictionary = hand.profile
+		var palm_width: Variant = profile.get("palmWidth")
+		var width_factor := float(palm_width) if (palm_width is int or palm_width is float) and float(palm_width) != 0.0 else 0.43 * float(profile.length)
+		var width := width_factor * float(hand.scale)
+		var length := float(profile.length) * float(hand.scale)
+		var span := maxf(0.0, float(hand.fingers.Middle.base[2]) - float(hand.palm.center[2])) * float(hand.scale)
+		var offsets := _placement_offsets(plan)
+		var winner := best
+		if float(best.grade.score) < 24.0 - 1e-9:
+			for entry: Dictionary in offsets:
+				var offset := {"normal": float(entry.dn) * length, "lateral": float(entry.dl) * width,
+					"along": float(entry.da) * span, "pitch": entry.pitch, "twist": entry.twist}
+				var placed := place_palm(pose, hand, shape, opts, offset, open_rows[0])
+				var candidate := _run_placement(hand, open_rows, closed_rows, shape, placed, search_opts, wrap, keep)
+				tried += 1
+				if float(candidate.grade.score) > float(winner.grade.score):
+					winner = candidate
+				if float(winner.grade.score) >= 24.0 - 1e-9:
+					break
+		if winner != best and float(winner.grade.score) >= float(best.grade.score) + float(plan.get("margin", 0.0)):
+			best = winner
+	var clamped_open: Array = []
+	var clamped_angles: Array = []
+	var hard: Dictionary = _load_hard_ranges()
+	for index: int in FINGERS.size():
+		var name: String = FINGERS[index]
+		clamped_open.append(open_rows[index].duplicate() if keep.has(name) else _clamp_close_row(name, open_rows[index], hard))
+		clamped_angles.append(best.angles[index].duplicate() if keep.has(name) else _clamp_close_row(name, best.angles[index], hard))
+	return {"open": clamped_open, "angles": clamped_angles, "wrist": best.placed.wrist,
+		"quat": best.placed.quat, "fingers": best.fingers, "grade": best.grade, "tried": tried}
+
+static func _run_placement(hand: Dictionary, open_rows: Array, closed_rows: Array, shape: Dictionary,
+		placed: Dictionary, options: Dictionary, wrap: bool, keep: Array) -> Dictionary:
+	var closed := close_all(hand, open_rows, closed_rows, shape, placed.wrist, placed.quat, options, wrap, keep)
+	closed.placed = placed
+	return closed
+
+static func _placement_search_plan(name: String) -> Variant:
+	if name == "mid":
+		return {"normal": [0], "lateral": [-0.12, 0, 0.12], "along": [0, 0.4, 0.8],
+			"pitch": [-10, 0, 20], "twist": [0], "margin": 1, "thumbSearch": "any"}
+	if name == "high":
+		return {"normal": [0, 0.02], "lateral": [-0.12, 0, 0.12], "along": [0, 0.4, 0.8],
+			"pitch": [-10, 0, 20], "twist": [-12, 0, 12], "margin": 1, "thumbSearch": "any"}
+	return null
+
+static func _placement_offsets(plan: Dictionary) -> Array:
+	var offsets: Array = []
+	var order := 0
+	for dn: Variant in plan.get("normal", [0]):
+		for dl: Variant in plan.get("lateral", [0]):
+			for da: Variant in plan.get("along", [0]):
+				for pitch: Variant in plan.get("pitch", [0]):
+					for twist: Variant in plan.get("twist", [0]):
+						if float(dn) != 0.0 or float(dl) != 0.0 or float(da) != 0.0 or float(pitch) != 0.0 or float(twist) != 0.0:
+							var cost := absf(float(dn)) * 20.0 + absf(float(dl)) * 4.0 + absf(float(da)) + absf(float(pitch)) / 15.0 + absf(float(twist)) / 15.0
+							offsets.append({"dn": dn, "dl": dl, "da": da, "pitch": pitch, "twist": twist, "cost": cost, "order": order})
+						order += 1
+	offsets.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if float(a.cost) == float(b.cost):
+			return int(a.order) < int(b.order)
+		return float(a.cost) < float(b.cost))
+	return offsets
+
 ## Score bone-model contacts and penetration for five rows in Thumb-to-Little order.
 static func grade_grasp(hand: Dictionary, shape: Dictionary, wrist: Array, quat: Array, angles: Array,
 		options: Dictionary = {}) -> Dictionary:

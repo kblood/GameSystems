@@ -43,7 +43,13 @@ returns the row, interpolation parameters, touching segments and backoff/stuck f
 that helper for all five fingers and returns the resulting rows, per-finger contact states
 and `grade_grasp` bone-model score. `grade_grasp` exposes the score independently.
 `thumbSearch` enables the bounded thumb CMC grid/refinement when a wrap thumb misses;
-it does not reposition the wrist.
+`close_to_contact(pose, hand, shape, options)` composes palm placement, five-finger
+closure, grading, optional thumb search, and optional bounded wrist-placement search.
+Its `search` accepts `null`, `"mid"`, `"high"`, or an explicit bounded plan. Supplying
+both `wrist` and `quat` fixes placement and disables wrist search. The result includes
+the selected placement, clamped open/closed rows, per-finger contact state, grade, and
+closure-attempt count. Plans are deterministic and cost-sorted before score evaluation;
+use them during setup or interaction transitions rather than an unbudgeted per-frame loop.
 
 The JS goldens cover 26 baked/synthetic finger-chain cases, 15 baked/recorded wrist
 placement cases, 8 segment-gap cases, 6 reference-hand geometry cases, 8 explicit
@@ -54,9 +60,12 @@ fallback, distal-only samples, palm/thenar patches and thumb-row movement, pad
 overrides, clearance offsets, penetration backoff, segment-by-segment contact, free rows
 including proximal and middle contact, out-of-range free rows, and null/zero
 optional-field fallback, wrapping thumb opposition, out-of-range thumb rows, and searched
-CMC poses both below and above the thumb-stretch threshold. Godot 4.7.2 passes **11,193
-assertions**; bounded wrist placement search and runtime integration
-remain separate work, and the bone model does not imply physical skin contact.
+CMC poses both below and above the thumb-stretch threshold. Ten JavaScript-oracle cases
+cover composed close-to-contact with mid/high/custom plans (including the full 162-attempt
+high plan), fixed placement, no search, margin acceptance/rejection, zero palm-width fallback,
+null thumb-search fallback, custom rows, keep rows, flat mode and input immutability. Godot 4.7.2 passes **13,079 assertions**;
+runtime integration and physical skin/headset parity remain separate work, and the bone
+model does not imply physical skin contact.
 
 ```gdscript
 const Selector = preload("res://addons/gs_grasp/gs_nearest_grasp.gd")

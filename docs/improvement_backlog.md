@@ -1,5 +1,17 @@
 # Løbende forbedringer af GameSystems
 
+## G4 bounded wrist placement — 2026-10-13
+
+`GSGraspClosure.close_to_contact` komponerer nu palm-anchor fit, fem-fingerlukning,
+grading og valgfri thumb-CMC-søgning med en bounded wrist-plan. `mid`, `high` og
+brugerdefinerede planer prøver offsets i deterministisk geometrisk-costorden, stopper ved fuld
+wrap-score og beholder kun en alternativ placering, når den opfylder planens margin.
+En eksplicit wrist/quaternion låser placeringen og slår wrist-søgning fra. Ti JS-oracle
+cases dækker mid/high/custom, hele 162-forsøgs high-planen, fast placering, no-search,
+margin accept/afvisning, nul-width fallback, null thumb-policy fallback, afvigende custom rows,
+keep-rækker og flat mode; Godot 4.7.2 closure-suiten består **13.079/13.079** assertions. Sol-review og Nightfall-
+consumer-sync mangler. Dette er stadig en bone/SDF model, ikke runtime- eller headsetparitet.
+
 ## G4 fem-finger-lukning og grebsvurdering — 2026-10-13
 
 `GSGraspClosure.close_all` lukker de fem fingre mod én placering med deres individuelle
