@@ -5,8 +5,11 @@ Runnable 3D composition of the native `gs_thermal`, `gs_thermal_portals`,
 `gs_bottles` typed-puddle store.
 The scene has two authored compartments joined by a hinged door. **H** opens or closes
 the door and updates `gs_thermal_portals`; a closed door stops exchange through that portal,
-while an open door transfers smoke and heat between the rooms. The status label shows the
-adjacent room's temperature and smoke level.
+while an open door transfers smoke and heat between the rooms. Bounded smoke meshes in each
+compartment scale and fade from that room's simulated smoke value, so a closed adjacent room
+stays clear and an open door makes transferred smoke visible. The status label also shows
+the adjacent room's temperature and smoke level. The camera looks through the open front of
+the cutaway so both compartment cues remain in view around the opaque side wall.
 The burning pallet can ignite a nearby crate through the room-bounded spread adapter; the
 sprinkler targets both. A persistent mixed diesel/water spill demonstrates receipt-based
 fuel ignition and water quenching through `GSPuddleFireAdapter`. The nearby burning pallet

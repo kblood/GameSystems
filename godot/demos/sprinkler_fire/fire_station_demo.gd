@@ -58,6 +58,8 @@ var _status_label: Label3D
 var _fire_visual: MeshInstance3D
 var _fire_light: OmniLight3D
 var _spread_fire_visual: MeshInstance3D
+var _room_smoke_visual: MeshInstance3D
+var _adjacent_smoke_visual: MeshInstance3D
 var _spill_fire_visual: MeshInstance3D
 var _spill_visual: MeshInstance3D
 var _sprinkler_runoff_visual: MeshInstance3D
@@ -387,6 +389,8 @@ func demo_state() -> Dictionary:
 		"spill_fire": thermal.object_state(SPILL_FIRE_ID),
 		"room": thermal.room_state(ROOM_ID),
 		"adjacent_room": thermal.room_state(ADJACENT_ROOM_ID),
+		"room_smoke_visual": _smoke_visual_state(_room_smoke_visual),
+		"adjacent_smoke_visual": _smoke_visual_state(_adjacent_smoke_visual),
 		"door_open": compartment_door_open, "door": thermal_portals.state(DOOR_ID),
 		"supply": tank.state(), "battery": battery.state(), "pump": pump.state(),
 		"head": sprinklers.head_state(HEAD_ID), "valve_open": valve_open,
@@ -423,6 +427,10 @@ func _build_scene() -> void:
 	add_child(_fire_visual)
 	_spread_fire_visual = _sphere(0.38, Vector3(0.8, 0.45, 0.0), Color(1.0, 0.43, 0.04), true)
 	add_child(_spread_fire_visual)
+	_room_smoke_visual = _smoke_volume(Vector3(0.0, 2.45, 0.0))
+	add_child(_room_smoke_visual)
+	_adjacent_smoke_visual = _smoke_volume(Vector3(3.0, 2.45, 0.0))
+	add_child(_adjacent_smoke_visual)
 	_spill_visual = MeshInstance3D.new()
 	var spill_mesh := PlaneMesh.new()
 	spill_mesh.size = Vector2(1.25, 0.72)
@@ -452,7 +460,9 @@ func _build_scene() -> void:
 	add_child(head)
 	add_child(_sphere(0.13, Vector3(0.8, 3.72, 0.0), Color(0.82, 0.84, 0.86)))
 	var camera := Camera3D.new()
-	camera.position = Vector3(7.5, 5.8, 9.0)
+	camera.name = "DemoCamera"
+	# The open front side keeps both room-smoke cues out from behind the east wall.
+	camera.position = Vector3(3.0, 5.8, 9.0)
 	camera.current = true
 	add_child(camera)
 	camera.look_at(Vector3(0.0, 1.6, 0.0), Vector3.UP)
@@ -471,14 +481,39 @@ func _build_scene() -> void:
 func _sync_fire_visual() -> void:
 	var state: Dictionary = thermal.object_state(FIRE_ID)
 	var spread_state: Dictionary = thermal.object_state(SPREAD_FIRE_ID)
+	var room_state: Dictionary = thermal.room_state(ROOM_ID)
+	var adjacent_state: Dictionary = thermal.room_state(ADJACENT_ROOM_ID)
 	var burning := bool(state.get("burning", false))
 	_fire_visual.visible = burning
 	_fire_light.visible = burning
 	_spread_fire_visual.visible = bool(spread_state.get("burning", false))
+	_sync_smoke_visual(_room_smoke_visual, float(room_state.get("smoke", 0.0)))
+	_sync_smoke_visual(_adjacent_smoke_visual, float(adjacent_state.get("smoke", 0.0)))
 	_sync_spill_visual()
 	if burning:
 		var size := 0.65 + minf(0.4, float(state.fuel) / 750.0)
 		_fire_visual.scale = Vector3.ONE * size
+
+
+func _sync_smoke_visual(visual: MeshInstance3D, density: float) -> void:
+	if not is_instance_valid(visual): return
+	var bounded_density := clampf(density, 0.0, 0.08)
+	var normalized := sqrt(bounded_density / 0.08)
+	visual.visible = bounded_density > 0.00001
+	visual.scale = Vector3.ONE * (0.45 + normalized * 0.75)
+	var material := visual.material_override as StandardMaterial3D
+	if material != null:
+		var color := material.albedo_color
+		color.a = normalized * 0.68
+		material.albedo_color = color
+
+
+func _smoke_visual_state(visual: MeshInstance3D) -> Dictionary:
+	if not is_instance_valid(visual): return {"visible": false, "opacity": 0.0, "scale": 0.0}
+	var material := visual.material_override as StandardMaterial3D
+	return {"visible": visual.visible,
+		"opacity": material.albedo_color.a if material != null else 0.0,
+		"scale": visual.scale.x}
 
 
 func _sync_spill_visual() -> void:
@@ -548,6 +583,24 @@ func _update_status() -> void:
 		float(spill_components.get("diesel", 0.0)), _spill_status(),
 		float(diesel_tank.state().components.get("diesel", 0.0)) if diesel_tank != null else 0.0,
 		runoff_total_ml]
+
+
+func _smoke_volume(location: Vector3) -> MeshInstance3D:
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.62
+	mesh.height = 1.24
+	mesh.radial_segments = 12
+	mesh.rings = 6
+	var visual := MeshInstance3D.new()
+	visual.mesh = mesh
+	visual.position = location
+	visual.visible = false
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(0.16, 0.17, 0.18, 0.0)
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	visual.material_override = material
+	return visual
 
 
 func _box(size: Vector3, location: Vector3, color: Color) -> MeshInstance3D:

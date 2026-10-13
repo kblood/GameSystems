@@ -16,10 +16,15 @@ func _run_tests() -> void:
 	root.add_child(demo)
 	var initial: Dictionary = demo.demo_state()
 	case_result(initial.fire.burning and initial.supply.components.water == 20000.0
-		and initial.battery.energy_wh == 180.0 and not initial.fuse_blown,
+		and initial.battery.energy_wh == 180.0 and not initial.fuse_blown
+		and not initial.room_smoke_visual.visible and not initial.adjacent_smoke_visual.visible,
 		"scene composes an active fire, finite water supply and fused battery circuit")
 	var compartments_demo: Node3D = DemoScene.instantiate()
 	root.add_child(compartments_demo)
+	var demo_camera := compartments_demo.get_node_or_null("DemoCamera") as Camera3D
+	case_result(demo_camera != null and demo_camera.position.x < 4.0 and demo_camera.position.z > 4.0
+		and is_equal_approx(demo_camera.position.x, compartments_demo._adjacent_smoke_visual.position.x),
+		"front cutaway camera keeps the adjacent smoke cue clear of the opaque east wall")
 	var closed_door_state: Dictionary = compartments_demo.demo_state()
 	var door_panel := compartments_demo._door_visual.get_child(0) as MeshInstance3D
 	var closed_geometry_ok := (is_zero_approx(compartments_demo._door_visual.rotation.y)
@@ -34,6 +39,11 @@ func _run_tests() -> void:
 		and is_equal_approx(float(isolated_room.smoke), 0.0)
 		and is_equal_approx(float(isolated_room.temperature_c), 20.0),
 		"closed compartment door isolates the adjacent room from fire smoke and heat")
+	var closed_smoke_visuals: Dictionary = compartments_demo.demo_state()
+	case_result(closed_smoke_visuals.room_smoke_visual.visible
+		and float(closed_smoke_visuals.room_smoke_visual.opacity) > 0.0
+		and not closed_smoke_visuals.adjacent_smoke_visual.visible,
+		"bounded smoke visuals show fire-room smoke while a closed compartment stays clear")
 	var door_key := InputEventKey.new()
 	door_key.pressed = true
 	door_key.keycode = KEY_H
@@ -53,6 +63,11 @@ func _run_tests() -> void:
 	case_result(open_room_ok and float(exposed_room.smoke) > 0.0
 		and float(exposed_room.temperature_c) > 20.0,
 		"open compartment door exchanges fire smoke and heat into the adjacent room")
+	var open_smoke_visuals: Dictionary = compartments_demo.demo_state()
+	case_result(open_smoke_visuals.room_smoke_visual.visible
+		and open_smoke_visuals.adjacent_smoke_visual.visible
+		and float(open_smoke_visuals.adjacent_smoke_visual.opacity) > 0.0,
+		"open door activates a visible smoke cue in the adjacent compartment")
 	compartments_demo.queue_free()
 	case_result(initial.diesel_puddle == {"diesel": 1200.0, "water": 600.0}
 		and initial.puddle_ledger.held_ml == 1800.0 and initial.diesel_spill_visible

@@ -798,7 +798,10 @@ Dette tab er nu rettet; maxPools begrænser aktive termiske noder og kasserer ik
 
 - Dynamisk geometry og flere materialeeffekter; overflade-/højdeafhængig, endeligt doseret skumvirkning er nu implementeret.
 - Bilens lette collision-/affjedringsintegration i WebXR-labben er nu implementeret; videre terræn-/køredynamik kræver særskilt acceptance.
-- Mere læsbar brand-/røgfeedback samt mål og sværhedsgrad i demoen.
+- Brand-/røgfeedback i Godot-branddemoen viser nu en afgrænset, lav-omkostnings røgvisual
+  pr. rum fra thermal-kernens tæthed; lukket dør holder naborummet visuelt klart, åben dør
+  aktiverer dets feedback. `fire_station_demo_tests.gd` dækker begge tilstande. Demoens mål
+  og sværhedsgrad er fortsat en separat åben opgave.
 - Videre checkpoint-dækning af asset-lifecycle, knuste beholdere, ruder og debris i spil med dynamisk destruktion.
 - Gennemgå de øvrige systemers persistens, validering, lifecycle og budgetter, når de vigtigste brandopgaver er løst.
 
