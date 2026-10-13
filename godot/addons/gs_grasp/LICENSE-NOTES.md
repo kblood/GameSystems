@@ -29,6 +29,12 @@ this addon. Its golden invokes the public JS function for the canonical bake and
 synthetic edge rows. The tests and probe are original GameSystems MIT work,
 Copyright (c) 2026 Kasper Olesen.
 
+`GSGraspHeldDrive` ports the public math/sampling helpers from MIT GameSystems
+`extensions/grasp/held_drive.js` and reads tuning from `gs_grasp_data`. It does not
+include host physics integration or the Nightfall runtime's drive implementation.
+The golden calls the public JS helpers; the probe, tests and GDScript port are original
+GameSystems MIT work, Copyright (c) 2026 Kasper Olesen.
+
 `GSGraspShapeSdf` ports the MIT GameSystems `extensions/grasp/catalog.js`
 `signedDistance` and `surfaceNormal` functions and uses shapes from the shared
 `gs_grasp_data` catalog. The implementation, golden probe and tests are original

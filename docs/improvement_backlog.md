@@ -1,5 +1,16 @@
 # Løbende forbedringer af GameSystems
 
+## G4 held-drive-math og håndbevægelse — 2026-10-13
+
+`GSGraspHeldDrive` porter de offentlige JS-funktioner for acceleration cap, implicit
+lineær/angulær drive, caller-owned håndsamples og rigid-body point-hastighed. Den læser
+de fælles held-drive-tuningdata, cacher defaultdata efter første load, afviser ugyldige
+numeriske input og ændrer ingen Nightfall-kraft-/grab-loop. Angular torque-cap og
+inertia-integration forbliver hostansvar. Godot 4.7.2 består 45 checks mod golden cases,
+genereret af de reelle JS-funktioner; Vector3-tolerance er `2e-5`. Nightfall addon-sync og
+den målrettede `gs`-suite består 6/6. Sol-review er i gang; headset/performance-budget
+og runtime-integration er ikke påvist.
+
 ## G4 merge/default-kontrakt — 2026-10-13
 
 `GSGraspMerge.merge_poses` porter JS `record.mergePoses` med originalt baked-array ved

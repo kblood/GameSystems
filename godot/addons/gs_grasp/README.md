@@ -1,6 +1,6 @@
 # gs_grasp
 
-The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp`, `GSGraspShapeSdf` and `GSGraspVariants`. The selector is a stateless port of the
+The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp`, `GSGraspShapeSdf`, `GSGraspVariants` and `GSGraspHeldDrive`. The selector is a stateless port of the
 public JavaScript `baked_grasps.nearestPose` scoring/selection operation. The caller
 owns the candidate library and previous selection. This addon does not maintain a
 global grasp library or integrate a native game's grab loop.
@@ -188,3 +188,30 @@ Godot 4.7.2: **2,392 assertions passed, 21 merge cases**. Sol-reviewed and synce
 Nightfall Godot. Variant parsing/selection, recording validation/conversion, native
 `recorded-only` behavior, avatar fitting and live-game integration are not ported by
 this utility. Existing native grasp logic is unchanged.
+
+## Held-drive math and hand-motion samples
+
+`GSGraspHeldDrive` ports the public JS `accelerationLimit`, `driveAcceleration`,
+`driveAngular`, `createHandMotion`, `pushHandMotion` and `carriedVelocity` helpers.
+Linear positions/velocities are metres and metres per second; mass is kilograms, `dt`
+seconds and output acceleration metres per second squared. Angular error is an axis-angle
+vector in radians, spin is radians per second, and output angular acceleration is radians
+per second squared. `drive_acceleration` compensates the supplied gravity and clamps
+acceleration by both `MAX_ACCELERATION` and the `MAX_HOLD_FORCE / mass` cap. Angular
+acceleration is not torque-limited; `MAX_TORQUE` remains a host-physics responsibility.
+
+Hand motion is explicit caller-owned state. `create_hand_motion()` creates a sample
+window, and `push_hand_motion()` retains the last `HAND_MOTION_SAMPLES` valid samples
+and updates a `dt`-weighted mean. `carried_velocity()` computes the point velocity
+`linear + angular × (point - pivot)`. The default JSON tuning is loaded and cached on
+first use; callers may instead supply a nonempty data Dictionary to avoid file access
+(the utility validates supplied data on every call).
+Invalid values fail closed (`null` for math results; an invalid sample leaves motion
+unchanged). Use one sample state per hand/owner and update it at a stable sampling point.
+
+The JS-generated golden covers four linear-drive cases, two angular cases, five mass
+limits, a three-step weighted sample window and carried point velocity. Godot 4.7.2
+passes **45 checks** with `2e-5` Vector3 tolerance. This utility computes math only:
+it does not apply forces, integrate inertia, choose grasp targets or replace the
+Nightfall physics-driven held-object loop. No headset performance budget or in-game
+parity is claimed.

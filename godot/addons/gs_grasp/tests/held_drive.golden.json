@@ -1,0 +1,310 @@
+{
+  "schema": "gamesystems.golden.grasp-held-drive-math.v1",
+  "generator": "godot/tools/gen_golden.mjs",
+  "source": "extensions/grasp/held_drive.js",
+  "sources_sha256": {
+    "extensions/grasp/data/held_drive.data.json": "f3c246b0cde0753c5a095f8d558c0dc0eb358aa5fff89fd36935fcf21653d067",
+    "extensions/grasp/held_drive.js": "5bcc5303c78a740e2d5988436f75d2879427c2f0743c1c9cf4b2a3b81680db8a",
+    "extensions/grasp/math.js": "975799db1b6bbe9835d0a1c800363e3bbefed4b86a4b312d7ccbdcb306ee5530"
+  },
+  "limits": [
+    {
+      "mass": 0,
+      "expected": 90
+    },
+    {
+      "mass": 0.001,
+      "expected": 90
+    },
+    {
+      "mass": 1,
+      "expected": 90
+    },
+    {
+      "mass": 6,
+      "expected": 20
+    },
+    {
+      "mass": 100,
+      "expected": 1.2
+    }
+  ],
+  "linear": [
+    {
+      "name": "stationary-gravity-compensation",
+      "input": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "targetPosition": [
+          0,
+          0,
+          0
+        ],
+        "mass": 1,
+        "dt": 0.011111111111111112
+      },
+      "expected": [
+        0,
+        9.81,
+        0
+      ]
+    },
+    {
+      "name": "moving-hand-feed-forward",
+      "input": {
+        "position": [
+          0.02,
+          -0.01,
+          0.03
+        ],
+        "velocity": [
+          0.1,
+          -0.2,
+          0
+        ],
+        "targetPosition": [
+          0.12,
+          0.03,
+          -0.04
+        ],
+        "targetVelocity": [
+          0.3,
+          0.1,
+          -0.2
+        ],
+        "mass": 0.75,
+        "dt": 0.013888888888888888
+      },
+      "expected": [
+        52.06920415224914,
+        38.58508650519032,
+        -38.615916955017305
+      ]
+    },
+    {
+      "name": "heavy-force-cap",
+      "input": {
+        "position": [
+          -0.3,
+          0.1,
+          0.2
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "targetPosition": [
+          1.7,
+          1.1,
+          -0.8
+        ],
+        "mass": 12,
+        "dt": 0.016666666666666666
+      },
+      "expected": [
+        8.131390499057696,
+        4.1654064255235435,
+        -4.065695249528848
+      ]
+    },
+    {
+      "name": "custom-gravity",
+      "input": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "targetPosition": [
+          0.01,
+          0.02,
+          0.03
+        ],
+        "mass": 2,
+        "dt": 0.008333333333333333,
+        "gravity": [
+          1,
+          -3,
+          0.5
+        ]
+      },
+      "expected": [
+        4.76,
+        14.52,
+        16.78
+      ]
+    }
+  ],
+  "angular": [
+    {
+      "name": "angular-error",
+      "input": {
+        "angularError": [
+          0.1,
+          -0.2,
+          0.05
+        ],
+        "angularVelocity": [
+          0.3,
+          0,
+          -0.1
+        ],
+        "dt": 0.011111111111111112
+      },
+      "expected": [
+        40.5,
+        -101.25,
+        28.687499999999996
+      ]
+    },
+    {
+      "name": "spin-target",
+      "input": {
+        "angularError": [
+          -0.03,
+          0.12,
+          0.08
+        ],
+        "angularVelocity": [
+          1,
+          -0.5,
+          0.2
+        ],
+        "targetSpin": [
+          -0.2,
+          0.3,
+          0.1
+        ],
+        "dt": 0.013888888888888888
+      },
+      "expected": [
+        -49.3287197231834,
+        77.73010380622839,
+        32.885813148788934
+      ]
+    }
+  ],
+  "pushes": [
+    {
+      "linear": [
+        1,
+        2,
+        3
+      ],
+      "angular": [
+        0,
+        0.5,
+        0
+      ],
+      "dt": 0.01
+    },
+    {
+      "linear": [
+        -1,
+        0,
+        2
+      ],
+      "angular": [
+        0.2,
+        0,
+        0
+      ],
+      "dt": 0.03
+    },
+    {
+      "linear": [
+        4,
+        -2,
+        0
+      ],
+      "angular": [
+        0,
+        0,
+        -1
+      ],
+      "dt": 0.02
+    }
+  ],
+  "motion_steps": [
+    {
+      "samples": 1,
+      "linear": [
+        1,
+        2,
+        3
+      ],
+      "angular": [
+        0,
+        0.5,
+        0
+      ]
+    },
+    {
+      "samples": 2,
+      "linear": [
+        -0.4999999999999999,
+        0.5,
+        2.25
+      ],
+      "angular": [
+        0.15,
+        0.125,
+        0
+      ]
+    },
+    {
+      "samples": 2,
+      "linear": [
+        1,
+        -0.7999999999999999,
+        1.2
+      ],
+      "angular": [
+        0.12,
+        0,
+        -0.39999999999999997
+      ]
+    }
+  ],
+  "carried": {
+    "linear": [
+      1,
+      2,
+      3
+    ],
+    "angular": [
+      0,
+      0,
+      2
+    ],
+    "pivot": [
+      0.1,
+      -0.2,
+      0.3
+    ],
+    "point": [
+      0.6,
+      0.4,
+      -0.1
+    ],
+    "expected": [
+      -0.20000000000000018,
+      3,
+      3
+    ]
+  }
+}

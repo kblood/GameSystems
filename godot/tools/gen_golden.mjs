@@ -18,7 +18,8 @@ import { MPFB_ROOT_BONE } from '../../extensions/humanoid/rig.js';
 import { MPFB_GAME_ENGINE, VRM_HUMANOID, VRM0_HUMANOID, mixamoBoneMap } from '../../extensions/humanoid/bone_maps.js';
 import { HARD, COMFORT, GATES } from '../../extensions/grasp/grasp_validator.js';
 import { CLOSURE, PAD_RADIUS, REFERENCE_HAND, THUMB_TILT } from '../../extensions/grasp/closure.js';
-import { STIFFNESS, DAMPING, MAX_ACCELERATION, MAX_TORQUE, MAX_HOLD_FORCE, HAND_MOTION_SAMPLES } from '../../extensions/grasp/held_drive.js';
+import { STIFFNESS, DAMPING, MAX_ACCELERATION, MAX_TORQUE, MAX_HOLD_FORCE, HAND_MOTION_SAMPLES,
+  accelerationLimit, driveAcceleration, driveAngular, createHandMotion, pushHandMotion, carriedVelocity } from '../../extensions/grasp/held_drive.js';
 import { DEFAULT_MASS, CATALOG } from '../../extensions/grasp/catalog.js';
 import { referenceHand, RECORDED_SCHEMA, recordedPoses, isPose } from '../../extensions/grasp/record.js';
 import { BAKED, RECORDED, GRASP_QUALITY, CLAMP_EXEMPT, graspQuality, setGraspQuality } from '../../extensions/grasp/baked_grasps.js';
@@ -130,6 +131,45 @@ async function graspHeldDriveGolden() {
       source: rel(source), source_sha256: await sha256(source), sources_sha256, contract: expected,
     }, pretty: true },
   ];
+}
+
+async function graspHeldDriveMathGolden() {
+  const source = resolve(ROOT, 'extensions/grasp/held_drive.js');
+  const names = ['data/held_drive.data.json', 'held_drive.js', 'math.js'];
+  const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
+    const path = resolve(ROOT, 'extensions/grasp', name);
+    return [rel(path), await sha256(path)];
+  })));
+  const vec = value => value.map(Number);
+  const linear = [
+    { name: 'stationary-gravity-compensation', input: { position: [0, 0, 0], velocity: [0, 0, 0], targetPosition: [0, 0, 0], mass: 1, dt: 1 / 90 } },
+    { name: 'moving-hand-feed-forward', input: { position: [0.02, -0.01, 0.03], velocity: [0.1, -0.2, 0], targetPosition: [0.12, 0.03, -0.04], targetVelocity: [0.3, 0.1, -0.2], mass: 0.75, dt: 1 / 72 } },
+    { name: 'heavy-force-cap', input: { position: [-0.3, 0.1, 0.2], velocity: [0, 0, 0], targetPosition: [1.7, 1.1, -0.8], mass: 12, dt: 1 / 60 } },
+    { name: 'custom-gravity', input: { position: [0, 0, 0], velocity: [0, 0, 0], targetPosition: [0.01, 0.02, 0.03], mass: 2, dt: 1 / 120, gravity: [1, -3, 0.5] } },
+  ].map(row => ({ ...row, expected: vec(driveAcceleration(row.input)) }));
+  const angular = [
+    { name: 'angular-error', input: { angularError: [0.1, -0.2, 0.05], angularVelocity: [0.3, 0, -0.1], dt: 1 / 90 } },
+    { name: 'spin-target', input: { angularError: [-0.03, 0.12, 0.08], angularVelocity: [1, -0.5, 0.2], targetSpin: [-0.2, 0.3, 0.1], dt: 1 / 72 } },
+  ].map(row => ({ ...row, expected: vec(driveAngular(row.input)) }));
+  const motion = createHandMotion();
+  const pushes = [
+    { linear: [1, 2, 3], angular: [0, 0.5, 0], dt: 0.01 },
+    { linear: [-1, 0, 2], angular: [0.2, 0, 0], dt: 0.03 },
+    { linear: [4, -2, 0], angular: [0, 0, -1], dt: 0.02 },
+  ];
+  const motion_steps = pushes.map(row => {
+    pushHandMotion(motion, row.linear, row.angular, row.dt);
+    return { samples: motion.samples.length, linear: vec(motion.linear), angular: vec(motion.angular) };
+  });
+  const carried = { linear: [1, 2, 3], angular: [0, 0, 2], pivot: [0.1, -0.2, 0.3], point: [0.6, 0.4, -0.1] };
+  return {
+    path: resolve(ROOT, 'godot/addons/gs_grasp/tests/held_drive.golden.json'), pretty: true,
+    data: { schema: 'gamesystems.golden.grasp-held-drive-math.v1', generator: 'godot/tools/gen_golden.mjs',
+      source: rel(source), sources_sha256,
+      limits: [0, 0.001, 1, 6, 100].map(mass => ({ mass, expected: accelerationLimit(mass) })),
+      linear, angular, pushes, motion_steps,
+      carried: { ...carried, expected: vec(carriedVelocity(carried.linear, carried.angular, carried.pivot, carried.point)) } },
+  };
 }
 
 async function graspCatalogGolden() {
@@ -326,7 +366,7 @@ async function graspVariantsGolden() {
 
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden(), await graspClampGolden(), await graspSdfGolden(), await graspVariantsGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), await graspHeldDriveMathGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden(), await graspClampGolden(), await graspSdfGolden(), await graspVariantsGolden()]) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)
