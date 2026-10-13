@@ -9,25 +9,10 @@
 // Bottle profiles are the GameSystems bottle_beer/bottle_wine glass silhouettes (MIT, Kasper Olesen),
 // measured offline from the bottle_beer/bottle_wine GLB glass vertices (max radius per height); origin at the base centre, like the bake.
 
-export const DEFAULT_MASS = 0.32;
+import CATALOG_DATA from './data/catalog.data.json' with { type: 'json' };
 
-const BEER_PROFILE = [[0, 0.026], [0.003, 0.0305], [0.01, 0.0325], [0.135, 0.0325], [0.15, 0.031], [0.17, 0.027], [0.19, 0.02], [0.205, 0.014], [0.22, 0.0122], [0.245, 0.012], [0.25, 0.0132], [0.2615, 0.0140]];
-const WINE_PROFILE = [[0, 0.03], [0.003, 0.0355], [0.012, 0.0375], [0.19, 0.0375], [0.205, 0.0365], [0.225, 0.033], [0.245, 0.027], [0.262, 0.02], [0.277, 0.015], [0.29, 0.0128], [0.325, 0.0125], [0.35, 0.0128]];
-
-export const CATALOG = {
-  bottle_beer: { label: 'Beer bottle', mass: 0.55, breakable: true, grip: 'wrap', glass: 0x5b3a12, fill: 0.7, liquid: 0xd88a14,
-    shape: { type: 'lathe', profile: BEER_PROFILE } },
-  bottle_wine: { label: 'Wine bottle', mass: 0.74, breakable: true, grip: 'wrap', glass: 0x23422b, fill: 0.38, liquid: 0x5a0d1c,
-    shape: { type: 'lathe', profile: WINE_PROFILE } },
-  mug: { label: 'Mug', mass: DEFAULT_MASS, grip: 'wrap', color: 0xc6853a,
-    shape: { type: 'parts', parts: [
-      { type: 'cylinder', radius: 0.055, half: 0.0525, at: [0, 0, 0] },
-      { type: 'box', size: [0.055, 0.013, 0.018], at: [0.079, 0.037, 0] },
-      { type: 'box', size: [0.055, 0.013, 0.018], at: [0.079, -0.037, 0] },
-      { type: 'box', size: [0.014, 0.08, 0.018], at: [0.1, 0, 0] }] } },
-  can: { label: 'Can', mass: DEFAULT_MASS, grip: 'wrap', color: 0x3d70a0, shape: { type: 'cylinder', radius: 0.037, half: 0.0625 } },
-  carton: { label: 'Carton', mass: DEFAULT_MASS, grip: 'flat', color: 0x80542b, shape: { type: 'box', size: [0.22, 0.14, 0.16] } },
-};
+export const DEFAULT_MASS = CATALOG_DATA.DEFAULT_MASS;
+export const CATALOG = CATALOG_DATA.CATALOG;
 export const KINDS = Object.keys(CATALOG);
 export function entry(kind) { const e = CATALOG[kind]; if (!e) throw new Error(`Unknown prop kind ${kind}`); return e; }
 

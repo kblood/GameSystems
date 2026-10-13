@@ -1,5 +1,27 @@
 # Løbende forbedringer af GameSystems
 
+## G3 propkatalog som fælles data — 2026-10-13
+
+`DEFAULT_MASS` og de fem mutable `CATALOG`-records er flyttet til
+`extensions/grasp/data/catalog.data.json`, inklusive flaskernes lathe-profiler,
+dåsecylinderen, kartonens boks og krusets flade primitive-union. Eksportnavne,
+`KINDS`-rækkefølge, alle værdier og mutationsegenskaber bevares. Flaskernes eksisterende
+MIT-proveniens fra GameSystems-glassilhuetter er fastholdt.
+
+`GSGraspCatalogData` i `gs_grasp_data` validerer propfelter, finite tal, positive mål,
+sorterede profilhøjder, RGB-tal, fill-fraktioner og unionens primitive-børn. Der er
+ingen Godot-SDF-, mesh-, masse- eller kollisionsalgoritme i dette trin. Goldenen kommer
+fra JS-eksporterne med kildehashes; closure-goldenen registrerer også det nye katalog-JSON
+som transitiv afhængighed. JS-testen fastholder en hash taget før udtrækket og 18
+oprindelige SDF-resultater på indersider, grænser, skuldre og krusets forskudte håndtag.
+
+Fokuseret kildeverifikation: Godot 4.7.2 **49/49**, lokale JS-checks **20/20**,
+golden-freshness og `git diff --check` passerer. Demoens rekursive data-sync er dækket.
+Spil-repoerne er endnu ikke synkroniseret for dette trin; Contracts-filsammenligningen
+er eksplicit udeladt fra den fokuserede kørsel og skal bestå efter integrationssync.
+G3 er fortsat åben for kvalitetsdata og Godot-kontrakter til de allerede eksisterende
+bake-/recording-/reference-hand-filer.
+
 ## G3 held-drive-konstanter som fælles data — 2026-10-13
 
 De seks offentlige skalarer fra `held_drive.js` ligger nu i

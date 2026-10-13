@@ -27,3 +27,11 @@ a port of the Godot held-drive implementation. No force or sampling algorithm is
 copied into the Godot data reader. Spring stiffness is acceleration-normalized
 (`s^-2`), damping is `s^-1`, acceleration is `m/s^2`, torque is `N m`, force is `N`,
 and the motion window is a whole-number sample count.
+
+`catalog.data.json` preserves `DEFAULT_MASS` and the mutable `CATALOG` records from
+GameSystems `extensions/grasp/catalog.js`, a web port of the Godot grasp-catalog rows.
+The bottle profiles were measured offline from GameSystems beer/wine bottle GLB
+glass silhouettes (MIT, Kasper Olesen), as documented in the original module header.
+All catalog records and this extraction remain under the repository's MIT licence.
+Geometry uses item-local metres with +Y up, masses are kilograms, and color fields
+are numeric 24-bit RGB values. The JSON contains no executable SDF or mesh algorithm.

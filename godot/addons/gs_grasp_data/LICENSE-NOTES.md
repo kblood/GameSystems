@@ -19,3 +19,9 @@
   `data/held_drive.golden.json` derives from the JS exports and hashes the data,
   module and math dependency. The reader/tests are original GameSystems MIT work;
   no drive or sampling algorithm is ported here.
+- `data/catalog.data.json` preserves the MIT GameSystems `DEFAULT_MASS` and prop
+  records. Its beer/wine profiles retain their provenance as offline measurements
+  of GameSystems bottle glass silhouettes (MIT, Kasper Olesen), documented in
+  `extensions/grasp/catalog.js`. `data/catalog.golden.json` derives from the JS
+  exports and records data/module hashes. The reader adds structural validation,
+  with no SDF or collision algorithm port.

@@ -6,7 +6,8 @@
   "sources_sha256": {
     "extensions/grasp/data/closure.data.json": "f605e05e7eafa04828541ceeb8bcf660626a22705d52acf6f21e0f18d37c7f3a",
     "extensions/grasp/closure.js": "36f7db257179e244163422eb39487060b8d1cfce776c3facad303310d4fdc2f0",
-    "extensions/grasp/catalog.js": "424e7afddf571fd818f63089458b24cacf0a6d94a42d8415ae3d515a08d42751",
+    "extensions/grasp/catalog.js": "7bf601f573289a38352360cb6939acd9bedac97c9d2c499e0f9eb09a0d6cd6df",
+    "extensions/grasp/data/catalog.data.json": "5f302e56c96883714562f34711487e2f178ad63b4ea1a2fa51f7ca3b788aee9e",
     "extensions/grasp/grasp_validator.js": "fd7ad39311e1507781ff46f765e06fb3bdae6aa89b3ec4e61c01d76243c536f7",
     "extensions/grasp/data/validator.data.json": "cb2c14b5eb7bd0a8cadeaf80c7b70f5685290f7811b83f53b31b9c3a795948b7"
   },
