@@ -1,5 +1,14 @@
 # Løbende forbedringer af GameSystems
 
+## G4 place-wrist hand-length retargeting — 2026-10-13
+
+`GSGraspClosure.place_wrist` porter `closure.js`' `placeWrist`: den justerer håndleddet
+for baked og recorded poses, så referencepalmens anker bevares for karakterens håndlængde.
+15 JS-golden cases dækker begge hænder, skalering, recorded `handLength`, ugyldig
+recorded længde og brugerdefineret referencehånd. Sammen med finger-chain-FK består
+Godot 4.7.2 **691/691** assertions. Fingerlukning mod geometri, kontaktmålinger og
+runtime-integration er fortsat åbne G4-opgaver.
+
 ## G4 finger-chain forward kinematics — 2026-10-13
 
 `GSGraspClosure.finger_chain` porter `closure.js`' publice `fingerChain`: dyaw,

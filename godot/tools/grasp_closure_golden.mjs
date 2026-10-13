@@ -1,5 +1,5 @@
 import { BAKED } from '../../extensions/grasp/baked_grasps.js';
-import { fingerChain } from '../../extensions/grasp/closure.js';
+import { fingerChain, placeWrist, REFERENCE_HAND } from '../../extensions/grasp/closure.js';
 import { referenceHand } from '../../extensions/grasp/record.js';
 
 const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
@@ -32,5 +32,32 @@ export function graspClosureCases() {
   for (const row of [[0, 0, 35, -20], [15, -10, 20, 40, 25]])
     cases.push({ name: `hinge-axis-fallback:${row.length}`, finger: fallbackFinger, row,
       expected: fingerChain(fallbackFinger, row) });
+  return cases;
+}
+
+export function graspPlaceWristCases() {
+  const cases = [];
+  for (const side of ['right', 'left']) {
+    const hand = referenceHand(side);
+    const pose = BAKED.poses.find(candidate => candidate.side === side);
+    for (const scale of [0.78, 1, 1.24]) {
+      const scaledHand = referenceHand(side, { scale });
+      const candidate = { wrist: [...pose.wrist], quat: [...pose.quat] };
+      cases.push({ name: `${side}:baked-scale-${scale}`, pose: candidate, hand: { length: scaledHand.length },
+        reference: REFERENCE_HAND, expected: placeWrist(candidate, scaledHand) });
+      const recorded = { ...candidate, handLength: 0.17 };
+      cases.push({ name: `${side}:recorded-hand-length-${scale}`, pose: recorded, hand: { length: scaledHand.length },
+        reference: REFERENCE_HAND, expected: placeWrist(recorded, scaledHand) });
+    }
+    const invalidRecorded = { wrist: [...pose.wrist], quat: [...pose.quat], handLength: 0 };
+    cases.push({ name: `${side}:invalid-recorded-length-falls-back`, pose: invalidRecorded,
+      hand: { length: hand.length * 1.15 }, reference: REFERENCE_HAND,
+      expected: placeWrist(invalidRecorded, { length: hand.length * 1.15 }) });
+  }
+  const customHand = { length: 0.19 };
+  const customPose = { wrist: [0.13, -0.27, 0.41], quat: [0, Math.sin(Math.PI / 4), 0, Math.cos(Math.PI / 4)], handLength: 0.22 };
+  const customReference = { length: 0.24, palm: [0.02, -0.04, 0.07] };
+  cases.push({ name: 'custom-reference-rotated-recorded-pose', pose: customPose, hand: customHand,
+    reference: customReference, expected: placeWrist(customPose, customHand, customReference) });
   return cases;
 }

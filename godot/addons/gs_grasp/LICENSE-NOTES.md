@@ -78,8 +78,8 @@ Kasper Olesen.
 the GDScript, probe and tests are original GameSystems MIT work, Copyright (c) 2026
 Kasper Olesen.
 
-`GSGraspClosure` ports the public `fingerChain` forward-kinematics helper from MIT
-GameSystems `extensions/grasp/closure.js`. It does not search for contact, clamp
-angles or integrate a runtime hand. The golden calls the public JS function; the
-GDScript, probe and tests are original GameSystems MIT work, Copyright (c) 2026
-Kasper Olesen.
+`GSGraspClosure` ports the public `fingerChain` forward-kinematics and `placeWrist`
+hand-length retargeting helpers from MIT GameSystems `extensions/grasp/closure.js`.
+It does not search for contact, clamp angles or integrate a runtime hand. The goldens
+call the public JS functions; the GDScript, probe and tests are original GameSystems
+MIT work, Copyright (c) 2026 Kasper Olesen.

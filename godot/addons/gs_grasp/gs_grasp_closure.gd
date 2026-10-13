@@ -3,6 +3,29 @@ extends RefCounted
 ## Forward kinematics shared by grasp closure, contact fitting and tracked-hand previews.
 
 const D2R := PI / 180.0
+const DEFAULT_REFERENCE_HAND := {
+	"length": 0.203,
+	"palm": [0.0, -0.0238, 0.0685],
+}
+
+## Retarget a baked/recorded wrist to this hand's length while keeping its palm anchor in place.
+## `hand.length` and `reference.length` use metres; `pose.wrist` and `pose.quat` are item-space.
+static func place_wrist(pose: Dictionary, hand: Dictionary, reference: Dictionary = DEFAULT_REFERENCE_HAND) -> Dictionary:
+	var wrist: Array = pose.wrist
+	var quat: Array = pose.quat
+	var offset := 0.0
+	if pose.has("handLength") and _finite_number(pose.handLength) and float(pose.handLength) > 0.0:
+		var delta := (float(pose.handLength) - float(hand.length)) / float(reference.length)
+		if not is_finite(delta) or absf(delta) < 1e-6:
+			return {"wrist": wrist.duplicate(), "quat": quat.duplicate()}
+		offset = delta
+	else:
+		var ratio := float(hand.length) / float(reference.length)
+		if not is_finite(ratio) or absf(ratio - 1.0) < 1e-4:
+			return {"wrist": wrist.duplicate(), "quat": quat.duplicate()}
+		offset = 1.0 - ratio
+	var palm_offset := _rotate_by_quaternion(_scale(reference.palm, offset), quat)
+	return {"wrist": _add(wrist, palm_offset), "quat": quat.duplicate()}
 
 ## Convert one valid [dyaw, pitch, bend1, bend2, optional thumb twist] row to
 ## [base, MCP, PIP, tip] points in the hand frame, matching closure.fingerChain.
@@ -80,3 +103,18 @@ static func _norm(vector: Array) -> Array:
 
 static func _length(vector: Array) -> float:
 	return sqrt(_dot(vector, vector))
+
+static func _finite_number(value: Variant) -> bool:
+	return (value is int or value is float) and is_finite(float(value))
+
+static func _rotate_by_quaternion(vector: Array, quaternion: Array) -> Array:
+	var x := float(quaternion[0])
+	var y := float(quaternion[1])
+	var z := float(quaternion[2])
+	var w := float(quaternion[3])
+	var tx := 2.0 * (y * float(vector[2]) - z * float(vector[1]))
+	var ty := 2.0 * (z * float(vector[0]) - x * float(vector[2]))
+	var tz := 2.0 * (x * float(vector[1]) - y * float(vector[0]))
+	return [float(vector[0]) + w * tx + y * tz - z * ty,
+		float(vector[1]) + w * ty + z * tx - x * tz,
+		float(vector[2]) + w * tz + x * ty - y * tx]

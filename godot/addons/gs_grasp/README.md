@@ -13,9 +13,14 @@ two hinge bends and the optional thumb axial twist, with the same hinge projecti
 dorsal fallback as the public JS `fingerChain`. It is a pure geometry helper; contact
 search, joint-limit clamping and runtime hand integration remain separate systems.
 
-The JS golden covers 26 baked and synthetic cases across both hands, including
-positive/negative thumb twist and a degenerate hinge-axis fallback. Godot 4.7.2 passes
-495 assertions; neither a broad closure-fit nor physical contact behavior is implied.
+`GSGraspClosure.place_wrist(pose, hand, reference)` retargets baked and recorded wrist
+placement to a character's hand length while keeping the palm anchor in item space. It
+uses recorded `handLength` when present, otherwise the shared reference-hand length.
+
+The JS goldens cover 26 baked/synthetic finger-chain cases and 15 baked/recorded wrist
+placement cases across both hands, including twist, axis fallback, custom reference
+geometry and invalid recorded-length fallback. Godot 4.7.2 passes **691 assertions**;
+neither a broad closure-fit nor physical contact behavior is implied.
 
 ```gdscript
 const Selector = preload("res://addons/gs_grasp/gs_nearest_grasp.gd")
