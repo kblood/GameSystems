@@ -10,6 +10,12 @@ boundary: browser JavaScript is reference material, not a native runtime depende
 Port behavior and data formats; do not import a sibling project's runtime implementation
 to avoid designing the native contract.
 
+Check language compatibility before planning a direct port: Godot 4.x projects written
+in C# currently cannot be exported to Web. A Web target therefore needs a GDScript/Web-
+compatible implementation or a separate browser runtime; keep shared behavior and data
+contracts independent of the scripting language. See Godot's
+[Web export limitations](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html).
+
 Godot provides a `WebXRInterface` only in Web exports. Godot 4.7 Web exports use WebGL 2
 with the Compatibility renderer; Forward+ and Mobile are not supported on Web. See
 [Godot's WebXR interface](https://docs.godotengine.org/en/4.7/classes/class_webxrinterface.html)
@@ -26,8 +32,12 @@ Godot's WebXR lifecycle is asynchronous. Connect `session_supported`, `session_s
 true return from `initialize()` only means the request could be made: wait for
 `session_started` before setting `get_viewport().use_xr = true`, show a useful fallback on
 `session_failed`, and set `use_xr = false` on `session_ended`. Test browser exit and failed
-feature negotiation as normal lifecycle paths. Godot Web exports that enable thread support
-or GDExtensions require cross-origin isolation. Godot 4.7 supports this through COOP/COEP
+feature negotiation as normal lifecycle paths. After `session_started`, record
+`enabled_features` and `reference_space_type` where available so device acceptance logs
+show what the browser actually negotiated, not only what the project requested. The
+feature list may be empty on browsers without introspection support, so pair logging with
+feature-specific behavior tests and a graceful fallback. Godot Web exports that enable
+thread support or GDExtensions require cross-origin isolation. Godot 4.7 supports this through COOP/COEP
 response headers or its documented PWA service-worker workaround; basic WebXR alone does
 not require it. See the Web export guide's [thread and extension support](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#thread-and-extension-support)
 and [serving the files](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#serving-the-files) sections.
@@ -112,10 +122,15 @@ filesystem access or background behavior. See the
 Treat browser audio and persistence as explicit port boundaries. Godot's default Web
 Audio Sample playback path does not support the full native audio feature set, including
 AudioEffects (such as reverb), Doppler tracking and procedural audio generation; verify
-the selected playback mode and target browsers before porting those features. Web
-`user://` storage is backed by browser storage and may not persist in private browsing or
-when cookies/site data are blocked. Provide a clear save failure or retry path for
-important progress, and test save/reload in the actual browser configuration. See
+the selected playback mode and target browsers before porting those features. Browsers
+may also block audio until the user performs a gesture; unlock or start audio from an
+explicit user action such as the Enter VR button, then verify playback on target browsers.
+Web `user://` storage is backed by browser storage and may not persist in private browsing
+or when cookies/site data are blocked. Embedded deployments can also face third-party
+cookie restrictions that prevent persistent storage. Check `OS.is_userfs_persistent()`
+as a diagnostic, but do not treat it as proof that a save will survive: validate save and
+reload in the actual browser and embedding configuration. Provide a clear save failure or
+retry path for important progress. See
 [Godot's Web export audio and persistence notes](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html).
 
 ## Port sequence
