@@ -15,6 +15,7 @@ import { HARD, COMFORT, GATES } from '../../extensions/grasp/grasp_validator.js'
 import { CLOSURE, PAD_RADIUS, REFERENCE_HAND, THUMB_TILT } from '../../extensions/grasp/closure.js';
 import { STIFFNESS, DAMPING, MAX_ACCELERATION, MAX_TORQUE, MAX_HOLD_FORCE, HAND_MOTION_SAMPLES } from '../../extensions/grasp/held_drive.js';
 import { DEFAULT_MASS, CATALOG } from '../../extensions/grasp/catalog.js';
+import { referenceHand } from '../../extensions/grasp/record.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const sha256 = async path => createHash('sha256').update(await readFile(path)).digest('hex');
@@ -141,9 +142,36 @@ async function graspCatalogGolden() {
   ];
 }
 
+async function graspReferenceHandGolden() {
+  const source = resolve(ROOT, 'extensions/grasp/reference_hand.json');
+  const contract = JSON.parse(await readFile(source, 'utf8'));
+  deepStrictEqual(contract.schema, 'gamesystems.reference-hand.v1');
+  const cases = ['left', 'right'].flatMap(side => [null, 1, 2].map(scale => {
+    const expected = referenceHand(side, scale === null ? {} : { scale });
+    // These raw lengths pass through the public API unchanged. The remaining
+    // output is derived geometry, captured for future algorithm conformance.
+    for (const finger of Object.keys(contract.hands[side].fingers))
+      deepStrictEqual(expected.fingers[finger].len, contract.hands[side].fingers[finger].len);
+    return { side, scale, expected };
+  }));
+  const names = ['reference_hand.json', 'record.js', 'closure.js', 'data/closure.data.json',
+    'catalog.js', 'data/catalog.data.json', 'contact.js', 'grasp_validator.js', 'data/validator.data.json', 'math.js'];
+  const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
+    const path = resolve(ROOT, 'extensions/grasp', name);
+    return [rel(path), await sha256(path)];
+  })));
+  return [
+    { path: resolve(ROOT, 'godot/addons/gs_grasp_data/data/reference_hand.data.json'), data: contract, pretty: true },
+    { path: resolve(ROOT, 'godot/addons/gs_grasp_data/data/reference_hand.golden.json'), data: {
+      schema: 'gamesystems.golden.grasp-reference-hand.v1', generator: 'godot/tools/gen_golden.mjs',
+      source: rel(source), source_sha256: await sha256(source), sources_sha256, contract, cases,
+    }, pretty: true },
+  ];
+}
+
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), ...await graspCatalogGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden()]) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)

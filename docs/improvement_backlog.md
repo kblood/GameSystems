@@ -1,5 +1,29 @@
 # Løbende forbedringer af GameSystems
 
+## G3 reference-hånd: valideret rådata uden ny kildekopi — 2026-10-13
+
+`extensions/grasp/reference_hand.json` forbliver den uændrede kanoniske kilde. En
+genereret kopi læses nu af `GSGraspReferenceHandData`, som kontrollerer præcise
+feltsæt, schema/proveniens, positiv skala/længde, begge sider, frame-ortogonalitet og
+handedness, fem fingerkæder samt punkter/segmentlængder/rest-yaw. Tolerancerne er
+`1e-4` for frame-checks og `1e-5` meter for segmentlængder, så den eksisterende
+seks-decimal-eksport accepteres.
+
+Goldenen gemmer rå kontrakt plus seks offentlige `referenceHand()`-resultater
+(venstre/højre ved default, skala 1 og skala 2) og hashes af hele den lokale importgraf.
+Godot tester rådata og direkte side-/skala-/segmentkorrespondancer; den afledte
+profil-/håndgeometri er optaget til senere algoritmetests og er ikke portet her.
+JS-regressionen fastholder historisk fixture-hash, afrundet output-hash ved `1e-12`
+samt caching, uafhængige sider og skalaadfærd. Fixturets eksisterende CharacterCreator-
+proveniens fra MIT-character-pluginet bevares; ingen CharacterCreator-runtime kopieres.
+
+Verifikation: Godot 4.7.2 **78/78**, fokuseret JS **23/23** inklusive eksisterende
+Contracts-filsammenligning, golden-freshness og `git diff --check` passerer. Ingen
+WebXR-runtimefiler er ændret, og den eksisterende top-level sync ejer fortsat fixturet.
+Den nye Godot-addon-kopi er endnu ikke synkroniseret til spillet. G3 mangler fortsat
+kvalitetsdata og kontrakter for bake-/recording-filerne; Godot-geometriens algoritme-
+paritet hører fortsat til senere porttrin.
+
 ## G3 propkatalog som fælles data — 2026-10-13
 
 `DEFAULT_MASS` og de fem mutable `CATALOG`-records er flyttet til

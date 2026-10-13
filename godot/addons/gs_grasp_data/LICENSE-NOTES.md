@@ -25,3 +25,15 @@
   `extensions/grasp/catalog.js`. `data/catalog.golden.json` derives from the JS
   exports and records data/module hashes. The reader adds structural validation,
   with no SDF or collision algorithm port.
+- `data/reference_hand.data.json` is a generated copy of the existing canonical
+  `extensions/grasp/reference_hand.json`. Its source field and
+  `extensions/grasp/tools/make_reference_hand.mjs` document the CharacterCreator male
+  rest-pose fixture from the MIT Contracts character plugin / CharacterCreatorXR
+  fork, prepared offline through `rigdata.prepareRig`. Attribution: Copyright (c)
+  2026 Kasper Olesen. This addon copies the numerical fixture, not CharacterCreator
+  runtime code. The original source metadata remains intact in the generated copy.
+- `data/reference_hand.golden.json` records the raw contract and six outputs of the
+  MIT JS `referenceHand` API, together with its local dependency hashes. Its G3
+  tests cover raw structure and direct field correspondences; derived geometry is
+  recorded for later algorithm conformance work. The reader/tests are original
+  GameSystems work under the repository's MIT licence.
