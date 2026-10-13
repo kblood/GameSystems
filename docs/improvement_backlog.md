@@ -1,5 +1,30 @@
 # Løbende forbedringer af GameSystems
 
+## Nightfall VR-våben og WebXR-dokumentation — 2026-10-13
+
+NightfallContracts har nu en kollisionsbegrænset rifle-sling for Tern/Rook.
+Den første version beholder våbnet som aktivt/equipped inventory-item, følger en
+SweptCarry-valideret kropsforankring og kræver fortsat live håndkontakt og den
+eksisterende wrist-/full-skin-kvalifikation ved genudtræk. Kildeændringen blev
+reviewet af Sol og pushed som NightfallContracts commit `9552118`. Standard- og
+fysisk sling-replay består 44/44 og 50/50; focused sling 40/40. Den efterfølgende
+sidearm-samtidig-med-sling-runde er aktiv og skal bevare separate weapon states,
+collision envelopes, slot-ejerskab og checkpoint-rollback.
+
+Locomotion- og turn-never-vetoed-fixtures venter nu på reel pistolpræsentation,
+før kollisions- og drejescenarierne. De bevarer de oprindelige assertions og
+afslutter tydeligt, hvis draw eller nødvendige shapes ikke kvalificeres. Sol har
+reviewet ændringen; NightfallContracts commit `4117476` består 72/72 og 40/40.
+
+Godot WebXR-portguiden dokumenterer nu browserens Web Audio Sample- og
+`user://`-persistensbegrænsninger. VR-performance-guiden behandler browser-WebXR
+som et særskilt måle- og device-acceptancemål. Sol har verificeret tilføjelserne;
+GameSystems commit `bd7f6e4`.
+
+Headsetkomfort og fysisk remfølelse for rifle-slingen er stadig uvalideret på
+hardware. Sidearm-runden skal udvide checkpoint-formatet uden at ændre shared
+gear-inventory schema og skal bevare læsning af ældre checkpoints.
+
 ## G4 bounded wrist placement — 2026-10-13
 
 `GSGraspClosure.close_to_contact` komponerer nu palm-anchor fit, fem-fingerlukning,
