@@ -16,8 +16,13 @@ og brugt reserveandel stiger også (ca. 2,1 / 3,1 / 80,8 %). Sikkerhedsgrænsen 
 er konstant på tværs af presets. Godot 4.7.2-testen består nu **45/45**; den dækker faktisk
 burn-rate, succes med endelig væskemængde, tid og relativ ressourcebelastning, standard-default,
 ugyldigt preset og synlig missionstatus. Sol-review af denne end-to-end accept afventer.
-Næste åbne scenariearbejde er en genstartbar missionrunde uden at ændre kernelernes faste
-værdi-/kvitteringskontrakter.
+**N** starter nu en frisk missionrunde ved at genetablere kernel- og visual-state, væskeblandinger,
+finite supplies, batteri/net/sikring og dør; den valgte sværhedsgrad bevares. Regressionen
+producerer først faktisk vand-spray med visual og kildekvittering, muterer derefter scenariet til
+dieselbrand, åbnet dør og blæst sikring, og genstarter via inputruten. Den verificerer baseline,
+rydning af rundens sprayeffekt og bevarelse af en host-ejet child-node. Samlet demo-test:
+**48/48**; `git diff --check` er ren, og Sol har godkendt implementering og test. Headset-/spilleracceptance
+er fortsat åben.
 
 ## Rumåbninger til røg og varme — 2026-10-12
 

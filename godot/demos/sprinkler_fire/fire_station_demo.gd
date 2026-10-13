@@ -70,6 +70,8 @@ var _spray_linger_by_source: Dictionary = {}
 var _spray_visual_by_source: Dictionary = {}
 var _spray_sources_this_frame: Dictionary = {}
 var _active_difficulty_profile: Dictionary = {}
+var _round_scene_nodes: Array[Node] = []
+var _round_transient_nodes: Array[Node] = []
 var _status_label: Label3D
 var _fire_visual: MeshInstance3D
 var _fire_light: OmniLight3D
@@ -83,9 +85,17 @@ var _door_visual: Node3D
 
 
 func _ready() -> void:
+	_initialize_round()
+
+
+func _initialize_round() -> void:
 	_active_difficulty_profile = _resolve_difficulty_profile(difficulty)
 	difficulty = String(_active_difficulty_profile.id)
+	var existing_children := get_children()
 	_build_scene()
+	_round_scene_nodes.clear()
+	for child: Node in get_children():
+		if not existing_children.has(child): _round_scene_nodes.append(child)
 	thermal = Thermal.new()
 	# A low bounded capacity makes automatic sensor activation visible in a short demo.
 	thermal.add_room(ROOM_ID, {"temperature_c": 20.0, "heat_capacity_kj_c": 0.1})
@@ -155,6 +165,34 @@ func _ready() -> void:
 	_update_status()
 
 
+## Rebuilds the demo-owned scene and every kernel while preserving the chosen difficulty.
+func restart_mission() -> bool:
+	if not is_inside_tree(): return false
+	for child: Node in _round_scene_nodes + _round_transient_nodes:
+		if is_instance_valid(child) and child.get_parent() == self:
+			remove_child(child)
+			child.queue_free()
+	_round_scene_nodes.clear()
+	_round_transient_nodes.clear()
+	fuel_valve_open = false
+	valve_open = true
+	compartment_door_open = false
+	main_switch_on = true
+	fault_switch_on = false
+	last_spray_ml = 0.0
+	last_puddle_result.clear()
+	sprinkler_source_receipts.clear()
+	_puddle_id_by_sprinkler_source.clear()
+	_spill_spread_registered = false
+	_spray_linger_by_source.clear()
+	_spray_visual_by_source.clear()
+	_spray_sources_this_frame.clear()
+	diesel_puddle_id = -1
+	sprinkler_water_puddle_id = -1
+	_initialize_round()
+	return thermal != null and sprinklers != null and mission_state().status == &"active"
+
+
 func _process(delta: float) -> void:
 	advance(delta)
 
@@ -175,6 +213,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_D: trigger_diesel_head()
 		KEY_G: set_fuel_valve(not fuel_valve_open)
 		KEY_H: set_compartment_door(not compartment_door_open)
+		KEY_N: restart_mission()
 
 
 ## Testable host tick; each kernel applies its own fixed-step budget.
@@ -309,6 +348,7 @@ func _show_spray_for_event(source: StringName, kind: StringName, event: Dictiona
 		var head_position: Vector3 = event.get("position", Vector3.ZERO)
 		visual = _cylinder(0.36, 2.3, head_position - Vector3(0.0, 0.58, 0.0), _liquid_color(kind))
 		add_child(visual)
+		_round_transient_nodes.append(visual)
 		_spray_visual_by_source[source] = visual
 	else:
 		var head_position: Vector3 = event.get("position", Vector3.ZERO)
@@ -635,7 +675,7 @@ func _update_status() -> void:
 	for receipt: Dictionary in sprinkler_source_receipts.values():
 		runoff_total_ml += float(receipt.get("puddle_ml", 0.0))
 	var mission := mission_state()
-	_status_label.text = "MISSION: %s [%s] — fires out %d/%d, adjacent room %s\nF water head | T floor runoff | H compartment door | V valve | D diesel head | G fuel valve | B battery | S switch | X fault | C fuse | R refill\nI ignite spill | E cool spill | Door: %s  Head: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Smoke: %.2f  Adjacent: %.1f C / %.3f smoke  Fuel puddle: %.0f mL (%s)  Tank: %.0f mL  Deposited: %.0f mL" % [
+	_status_label.text = "MISSION: %s [%s] — fires out %d/%d, adjacent room %s\nN new mission | F water head | T floor runoff | H door | V valve | D diesel head | G fuel valve | B battery | S switch | X fault | C fuse | R refill\nI ignite spill | E cool spill | Door: %s  Head: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Smoke: %.2f  Adjacent: %.1f C / %.3f smoke  Fuel puddle: %.0f mL (%s)  Tank: %.0f mL  Deposited: %.0f mL" % [
 		String(mission.status).to_upper(), difficulty.to_upper(), int(mission.fires_out), int(mission.fire_count),
 		"SAFE" if mission.adjacent_safe else "AT RISK",
 		"OPEN" if compartment_door_open else "CLOSED",

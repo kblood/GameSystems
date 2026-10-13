@@ -65,8 +65,10 @@ and newly deposited floor-head runoff. A local Godot 4.7.2 run on a Ryzen 7 5700
 6,717 ml of spray and 4,812 ml of floor runoff, with 1.73 ms average, 1.99 ms P95 and
 2.86 ms maximum per tick.
 
-Controls: **H** opens/closes the compartment door, **F** triggers the thermal-targeting
-water head, **V** opens/closes its valve,
+Controls: **N** starts a fresh mission round at the selected difficulty, rebuilding its
+fires, spill, finite supplies, battery/circuit, door and indicators while preserving
+host-added scene children; **H** opens/closes the compartment door, **F** triggers the
+thermal-targeting water head, **V** opens/closes its valve,
 **T** triggers the targetless floor-runoff water head, **D** triggers the diesel head, and
 **G** opens/closes its fuel valve. **B** enables/disables the finite pump battery, **S**
 opens/closes the circuit switch, **X** connects an overload branch, **C** replaces the fuse,

@@ -95,6 +95,53 @@ func _run_tests() -> void:
 	case_result(invalid_difficulty_demo.demo_state().difficulty == "standard",
 		"unknown scenario difficulty falls back to the verified standard profile")
 	invalid_difficulty_demo.queue_free()
+	var restart_demo: Node3D = DemoScene.instantiate()
+	restart_demo.difficulty = "high_risk"
+	root.add_child(restart_demo)
+	var authored_child_count := restart_demo.get_child_count()
+	var host_node := Node3D.new()
+	host_node.name = "HostOwnedSentinel"
+	restart_demo.add_child(host_node)
+	restart_demo.trigger_runoff_head()
+	var spray_round: Dictionary = restart_demo.advance(0.1)
+	var spray_state: Dictionary = restart_demo.demo_state()
+	case_result(spray_round.ok and spray_state.last_spray_ml > 0.0
+		and spray_state.spray_visuals.has(&"sprinkler:floor-head")
+		and spray_state.spray_visuals[&"sprinkler:floor-head"].visible
+		and spray_state.sprinkler_source_receipts.has(&"sprinkler:floor-head")
+		and restart_demo.get_child_count() > authored_child_count + 1,
+		"restart fixture creates real powered spray, visual child and source receipt")
+	restart_demo.trigger_head()
+	restart_demo.set_compartment_door(true)
+	restart_demo.set_fuel_valve(true)
+	restart_demo.ignite_diesel_spill()
+	restart_demo.set_fault_switch(true)
+	var fault_round: Dictionary = restart_demo.advance(0.1)
+	var fault_state: Dictionary = restart_demo.demo_state()
+	case_result(fault_round.ok and fault_state.fuse_blown
+		and fault_state.door.opening == 1.0 and fault_state.spill_fire.burning
+		and fault_state.puddle_ledger.consumed_ml > 0.0
+		and fault_state.spray_visible and not fault_state.sprinkler_source_receipts.is_empty(),
+		"restart fixture reaches mutated door, burning spill, actual spray receipt and blown-fuse state")
+	var restart_key := InputEventKey.new()
+	restart_key.pressed = true
+	restart_key.keycode = KEY_N
+	restart_demo._unhandled_key_input(restart_key)
+	var restarted_state: Dictionary = restart_demo.demo_state()
+	case_result(restart_demo.get_child_count() == authored_child_count + 1
+		and is_instance_valid(host_node) and host_node.get_parent() == restart_demo
+		and restarted_state.difficulty == "high_risk"
+		and restarted_state.supply.components.water == 750.0
+		and restarted_state.diesel_puddle == {"diesel": 1200.0, "water": 600.0}
+		and restarted_state.puddle_ledger.consumed_ml == 0.0
+		and restarted_state.fire.burning and not restarted_state.spill_fire.burning
+		and restarted_state.door.opening == 0.0 and not restarted_state.fuse_blown
+		and restarted_state.battery.energy_wh == 180.0
+		and restarted_state.mission.status == &"active"
+		and restarted_state.sprinkler_source_receipts.is_empty()
+		and not restarted_state.spray_visible,
+		"N rebuilds round state and effects while preserving host children and selected difficulty")
+	restart_demo.queue_free()
 	var mission_demo: Node3D = DemoScene.instantiate()
 	root.add_child(mission_demo)
 	var mission_fire: Dictionary = mission_demo.demo_state().fire
