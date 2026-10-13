@@ -3,7 +3,7 @@
 These notes are practical design and review guides for VR work across GameSystems,
 NightfallContractsGodot and the separate WebXR projects. Treat the project and platform
 contracts as the source of truth; this folder explains the choices that should be made
-explicitly and the failures to test for. Reviewed 2026-10-12.
+explicitly and the failures to test for. Reviewed 2026-10-13.
 
 | Guide | Use it for |
 |---|---|

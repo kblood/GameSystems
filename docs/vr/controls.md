@@ -10,7 +10,7 @@ button layouts are hints for suggested bindings, never gameplay rules.
 | Source | Useful signals | Design notes |
 |---|---|---|
 | Quest Touch / Touch Plus | 6-DoF pose, trigger, grip, stick, face buttons, touch/capacitive states, haptics | Keep essential actions on clear press/squeeze inputs. Capacitive state can animate fingers but may be absent or remapped. |
-| Steam Frame controllers | Valve documents 6-DoF, standard controller controls, touch states, grip, capacitive finger tracking; OpenXR profile is optional | Add its interaction profile when available and keep generic/OpenXR and Touch fallback bindings. Test actual runtime bindings. |
+| Steam Frame controllers | Valve documents 6-DoF, standard controller controls, touch states, grip, capacitive finger tracking; OpenXR profile is optional | Add its interaction profile when available. SteamVR prefers a Frame Controller binding, then OpenXR Generic, then Oculus Touch fallback with remapping to the Frame layout; test the runtime binding and fallback path. |
 | Valve Index controllers | Trigger, thumbstick, trackpad, grip/force sensing and finger sensing | Finger sensing is not identical to optical hand tracking; expose a confidence/source-aware pose and a button-based fallback. |
 | Optical hand tracking | Joints/poses, runtime gestures or hand interaction profile | Expect occlusion, confidence changes and hand loss. Use direct poke/pinch nearby and a pointer for distant targets. |
 | Controller-inferred hands | Controller pose plus inferred finger state | Use for visuals and contextual poses; do not claim measured finger positions. |
@@ -25,6 +25,15 @@ and [Index controller page](https://www.valvesoftware.com/en/index/controllers) 
 Valve-specific hardware; Meta's [controller input](https://developers.meta.com/vr/documentation/unity/unity-tutorial-basic-controller-input/)
 and [hand interaction](https://developers.meta.com/vr/documentation/unity/unity-handtracking-interactions/)
 pages are useful device references, though their Unity APIs do not define Godot bindings.
+
+Treat a controller↔optical-hand change, disconnect, or lost tracking as an input-source
+handoff. Clear trigger/grip press edges and pose-derived throw, melee, and locomotion
+velocity history when the source changes or disappears. Do not synthesize a release,
+throw, hit, or repeated press from the gap. Re-arm only after a fresh valid pose and
+neutral trigger/grip state, then require a new press for actions that can fire, throw,
+or strike. Keep held-object ownership explicit while the hand is briefly untracked;
+apply the interaction's normal lost-tracking grace/release policy rather than inferring
+one from stale pose data.
 
 In Godot's OpenXR action map, use `Float` actions for analog trigger and grip inputs
 when gameplay needs a consistent press threshold; read the value and apply explicit

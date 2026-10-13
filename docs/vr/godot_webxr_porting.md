@@ -62,6 +62,12 @@ actually emitted each signal; a manual recenter that produces no reset signal is
 separate runtime limitation to handle with pose-discontinuity detection. See the
 [avatar calibration contract](controls.md#avatar-scale-and-calibration).
 
+Also switch between controller and optical hand input, and disconnect/reconnect a source
+while trigger or grip is held. Confirm the handoff clears input edges and pose-derived
+velocity history, waits for a fresh valid pose and neutral controls, and requires a new
+press before firing, throwing, or striking. Apply the source-handoff rules in
+[VR controls](controls.md#devices-and-input-sources).
+
 Godot 4.7's XR action map is currently part of its OpenXR module, so do not assume that
 OpenXR bindings automatically cover a Godot WebXR export. Verify its input path on the
 exact Godot release and target browser.
