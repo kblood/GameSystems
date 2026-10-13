@@ -1368,8 +1368,12 @@ Dette tab er nu rettet; maxPools begrænser aktive termiske noder og kasserer ik
 - Bilens lette collision-/affjedringsintegration i WebXR-labben er nu implementeret; videre terræn-/køredynamik kræver særskilt acceptance.
 - Brand-/røgfeedback i Godot-branddemoen viser nu en afgrænset, lav-omkostnings røgvisual
   pr. rum fra thermal-kernens tæthed; lukket dør holder naborummet visuelt klart, åben dør
-  aktiverer dets feedback. `fire_station_demo_tests.gd` dækker begge tilstande. Demoens mål
-  og sværhedsgrad er fortsat en separat åben opgave.
+  aktiverer dets feedback. `fire_station_demo_tests.gd` dækker begge tilstande.
+  Demoen har nu også en afslutningsbetingelse for alle tre brande plus naborummets varme-/røgsikkerhed
+  og tre sværhedsprofiler med forskellig brændstofbelastning og vandreserve. I det faste
+  Godot 4.7.2-scenarie stiger gennemførelsestid og brugt vandandel monotont med sværhedsgraden;
+  testen passerer **48/48**. Manuel XR-/headset-afprøvning og menneskelig vurdering af
+  sværhedsbalancen er fortsat åbne.
 - Videre checkpoint-dækning af asset-lifecycle, knuste beholdere, ruder og debris i spil med dynamisk destruktion.
 - Gennemgå de øvrige systemers persistens, validering, lifecycle og budgetter, når de vigtigste brandopgaver er løst.
 
