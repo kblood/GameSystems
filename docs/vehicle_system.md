@@ -14,7 +14,7 @@ The included original Aster sedan is modeled in Blender, in meters, with a cabin
 | `export/vehicles/aster_sedan_low.glb` | Lower-triangle runtime variant with the same nodes and animations |
 | `export/vehicles/aster_sedan.vehicle.json` | Units, axes, pivot positions, angles and resource defaults |
 | `tests/out/vehicle/aster_{closed,open,rear_open}.png` | Cycles render QA, regenerated and gitignored |
-| `webxr-demo/vehicle.html` | Interactive inspection and drivetrain bench |
+| `webxr-demo/vehicle.html` | Interactive driving, inspection and fuel-spill lab |
 
 From `GameSystems` in PowerShell:
 

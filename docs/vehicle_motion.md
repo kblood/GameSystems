@@ -30,8 +30,10 @@ brændstof kan også stoppe motoren i samme update; der kræves ikke en ekstra f
 Tilbehør får fortsat sit behov efter motorstop. Frakoblede batterier lades ikke af bilens alternator.
 
 Brændstofraten bruger intervallets indledende hastighed og aktuelle throttle, som en enkel game-tuning.
-Der er ingen ny collision-, suspension- eller tire-slip-solver. Controller-input og model/adapterstater kan fortsat
-gemmes med de eksisterende checkpoint-API'er; locks og afbrudte targets bevares.
+RK4-drivetrain-kernen tilføjer ikke collision, suspension eller tire-slip. Vehicle Lab lægger en separat,
+host-drevet swept-chassis- og hjul-ray-adapter ovenpå for sikker rejse, affjedringskompression samt body-heave,
+pitch og roll; den er fortsat ikke en rigid-body- eller tire-slip-solver. Controller-input og model/adapterstater
+kan fortsat gemmes med de eksisterende checkpoint-API'er; locks og afbrudte targets bevares.
 
 ## Verifikation
 

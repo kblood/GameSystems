@@ -27,9 +27,11 @@ Forbrænding flytter remaining til burned. Opsamling tæller som removed og fyld
 
 ## Demo og checkpoint
 
-Vehicle Lab har Spill 100 ml, kontinuerlig leak-valve, Ignite spill og Collect spill.
-FuelFlap-node i den aktuelle GLB giver en visuel kildeposition, projiceret til gulvet. Labben er stadig en stationær
-drivetrain-bench. Pytter/flammer har separate instanced budgets: 16 pools og 48 cones.
+Vehicle Lab har en kørbar Aster med throttle, styring, frem/tilbage, bremse og håndbremse samt Spill 100 ml,
+kontinuerlig leak-valve, Ignite spill og Collect spill. Den host-drevne chassis-sweep og fire hjul-raycasts giver
+en letvægts kørsels-/affjedringsmodel; det er ikke en rigid-body bil- eller dækslipssolver. FuelFlap-noden i den
+aktuelle GLB giver en visuel kildeposition, projiceret til gulvet. Pytter/flammer har separate instanced budgets:
+16 pools og 48 cones. Se også [bilens bevægelse og locks](vehicle_motion.md) og [systemets fulde scope](vehicle_system.md).
 Kun gulvspildet er termisk modelleret her; karosseri-/interiørbrand, damp og eksplosionsfysik er ikke implementeret.
 
 Vehicle-scene-provider kan komponere thermal, pools og fuelFlow. En fælles thermal/pool-plan stages først;
