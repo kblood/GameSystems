@@ -9,8 +9,10 @@ wrap-score og beholder kun en alternativ placering, når den opfylder planens ma
 En eksplicit wrist/quaternion låser placeringen og slår wrist-søgning fra. Ti JS-oracle
 cases dækker mid/high/custom, hele 162-forsøgs high-planen, fast placering, no-search,
 margin accept/afvisning, nul-width fallback, null thumb-policy fallback, afvigende custom rows,
-keep-rækker og flat mode; Godot 4.7.2 closure-suiten består **13.079/13.079** assertions. Sol-review og Nightfall-
-consumer-sync mangler. Dette er stadig en bone/SDF model, ikke runtime- eller headsetparitet.
+keep-rækker og flat mode; Godot 4.7.2 closure-suiten består **13.079/13.079** assertions.
+Sol-review er gennemført, og Nightfalls `gs_grasp`-forbrugerkopi er synkroniseret; kontrollen
+for alle 17 pakker består, og Nightfalls closure-suite består **13.079/13.079**. Dette er stadig
+en bone/SDF model, ikke runtime- eller headsetparitet.
 
 ## G4 fem-finger-lukning og grebsvurdering — 2026-10-13
 
@@ -18,9 +20,9 @@ consumer-sync mangler. Dette er stadig en bone/SDF model, ikke runtime- eller he
 `close_finger`-forløb og respekterer `wrap`/`keep`. `grade_grasp` beregner separat segment-
 og hudgab, kontaktantal, modstilling, indtrængning og en samlet score. Seks JS-oracle-cases
 dækker begge hænder, flere katalogformer, skalering, fri tommel og flat/wrap-grib. Closure-
-suiten består nu **11.193/11.193** assertions. `thumbSearch` inkluderer den afgrænsede CMC-
+suiten bestod på dette trin **11.193/11.193** assertions. `thumbSearch` inkluderer den afgrænsede CMC-
 grid og lokale forfining, når en wrap-tommel mangler kontakt. Bounded wrist placement-search
-og runtime-integration mangler fortsat.
+er implementeret og forbrugerkopien synkroniseret; runtime-integration mangler fortsat.
 
 ## G4 kontaktlukning for én finger — 2026-10-13
 
