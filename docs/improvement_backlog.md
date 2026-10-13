@@ -10,9 +10,12 @@ ikke bygningssikkerhedskrav. Status fejler lukket, hvis et target eller naborum 
 Tre autorbare presets (`training`, `standard`, `high_risk`) ændrer brændstof-/burn-rate på
 fireobjekterne og vandtankens kapacitet/hovedets flow. Standard bevarer de hidtidige værdier;
 træning sænker brandbelastningen og forøger vand, mens højrisiko øger palletbelastningen og
-reducerer/langsommere vand. Sikkerhedsgrænsen for naborummet er konstant på tværs af presets.
-Godot 4.7.2-testen består nu **43/43**; den sammenligner faktiske burn-ticks samt vandmængde,
-head-flow, standard-default, ugyldigt preset og synlig missionstatus. Sol-review godkendt.
+sænker flowet til 180 ml/s med en 750 ml reserve. I en fast manuel sprinklerøvelse sikres
+alle tre profiler med vand tilbage; tiden til missionstatus stiger monotont (2,6 / 3,2 / 4,2 s),
+og brugt reserveandel stiger også (ca. 2,1 / 3,1 / 80,8 %). Sikkerhedsgrænsen for naborummet
+er konstant på tværs af presets. Godot 4.7.2-testen består nu **45/45**; den dækker faktisk
+burn-rate, succes med endelig væskemængde, tid og relativ ressourcebelastning, standard-default,
+ugyldigt preset og synlig missionstatus. Sol-review af denne end-to-end accept afventer.
 Næste åbne scenariearbejde er en genstartbar missionrunde uden at ændre kernelernes faste
 værdi-/kvitteringskontrakter.
 

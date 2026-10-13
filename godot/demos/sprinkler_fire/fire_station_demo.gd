@@ -35,7 +35,7 @@ const DIFFICULTY_PROFILES := {
 		"water_capacity_ml": 20000.0, "water_head_flow_ml_s": 240.0},
 	"high_risk": {"fire_fuel": 450.0, "fire_burn_rate": 3.0, "crate_fuel": 85.0,
 		"crate_burn_rate": 1.5, "spill_fuel": 200.0, "spill_burn_rate": 0.75,
-		"water_capacity_ml": 14000.0, "water_head_flow_ml_s": 180.0}
+		"water_capacity_ml": 750.0, "water_head_flow_ml_s": 180.0}
 }
 const MISSION_FIRE_TARGETS: Array[StringName] = [FIRE_ID, SPREAD_FIRE_ID, SPILL_FIRE_ID]
 const MISSION_MAX_ADJACENT_TEMPERATURE_C := 80.0

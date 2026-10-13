@@ -37,9 +37,11 @@ Choose `training`, `standard` or `high_risk` in the scene's **Difficulty** prope
 running it. The profiles change the pallet/crate/spill fuel and burn rates plus the finite
 water reserve and main head flow. `standard` preserves the original 20,000 ml reserve and
 240 ml/s head; `training` lowers fire workload and gives more/faster water; `high_risk`
-raises the main fire workload and reduces/slows the available water. The mission's room
-safety limits remain the same across profiles so results are comparable. These are small
-gameplay presets, not calibrated fire simulations.
+raises the main fire workload and constrains the reserve to 750 ml with 180 ml/s flow.
+In the headless fixed scenario, all three profiles secure the mission with water left;
+training uses the smallest fraction of its reserve and high-risk the largest. The mission's
+room safety limits remain the same across profiles so results are comparable. These are
+small gameplay presets, not calibrated fire simulations.
 
 Open `fire_station_demo.tscn` from the GameSystems Godot project, or run it with:
 

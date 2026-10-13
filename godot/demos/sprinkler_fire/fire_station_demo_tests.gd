@@ -40,12 +40,55 @@ func _run_tests() -> void:
 	var training_burned := training_fuel_before - float(training_demo.demo_state().fire.fuel)
 	var high_risk_burned := high_risk_fuel_before - float(high_risk_demo.demo_state().fire.fuel)
 	case_result(training_state.difficulty == "training" and high_risk_state.difficulty == "high_risk"
-		and training_state.supply.capacityMl == 30000.0 and high_risk_state.supply.capacityMl == 14000.0
+		and training_state.supply.capacityMl == 30000.0 and high_risk_state.supply.capacityMl == 750.0
 		and training_state.head.flow_ml_s == 300.0 and high_risk_state.head.flow_ml_s == 180.0
 		and high_risk_burned > training_burned,
 		"training and high-risk profiles change finite water and actual relative fire burn workload")
 	training_demo.queue_free()
 	high_risk_demo.queue_free()
+	var round_metrics: Dictionary = {}
+	for profile_name in ["training", "standard", "high_risk"]:
+		var round_demo: Node3D = DemoScene.instantiate()
+		round_demo.difficulty = profile_name
+		root.add_child(round_demo)
+		var manual_trigger_succeeded: bool = round_demo.trigger_head()
+		var manual_trigger_confirmed := manual_trigger_succeeded \
+			and bool(round_demo.demo_state().head.get("triggered", false)) \
+			and bool(round_demo.demo_state().head.get("manual", false))
+		var ticks_to_secure := -1
+		for tick in 1200:
+			if not round_demo.advance(0.1).ok: break
+			if round_demo.mission_state().status == &"secured":
+				ticks_to_secure = tick + 1
+				break
+		var round_state: Dictionary = round_demo.demo_state()
+		round_metrics[profile_name] = {"ticks_to_secure": ticks_to_secure,
+			"water_remaining_ml": round_state.supply.components.get("water", 0.0),
+			"water_capacity_ml": round_state.supply.capacityMl,
+			"battery_wh": round_state.battery.energy_wh,
+			"manual_trigger_confirmed": manual_trigger_confirmed}
+		round_demo.queue_free()
+	var training_round: Dictionary = round_metrics.training
+	var standard_round: Dictionary = round_metrics.standard
+	var high_risk_round: Dictionary = round_metrics.high_risk
+	var all_profiles_secure := int(training_round.ticks_to_secure) > 0 \
+		and int(standard_round.ticks_to_secure) > 0 and int(high_risk_round.ticks_to_secure) > 0 \
+		and bool(training_round.manual_trigger_confirmed) \
+		and bool(standard_round.manual_trigger_confirmed) \
+		and bool(high_risk_round.manual_trigger_confirmed) \
+		and float(training_round.water_remaining_ml) > 0.0 \
+		and float(standard_round.water_remaining_ml) > 0.0 \
+		and float(high_risk_round.water_remaining_ml) > 0.0
+	case_result(all_profiles_secure,
+		"training, standard and high-risk complete the same extinguish mission with finite water left")
+	var training_water_fraction := 1.0 - float(training_round.water_remaining_ml) / float(training_round.water_capacity_ml)
+	var standard_water_fraction := 1.0 - float(standard_round.water_remaining_ml) / float(standard_round.water_capacity_ml)
+	var high_risk_water_fraction := 1.0 - float(high_risk_round.water_remaining_ml) / float(high_risk_round.water_capacity_ml)
+	case_result(int(training_round.ticks_to_secure) < int(standard_round.ticks_to_secure)
+		and int(standard_round.ticks_to_secure) < int(high_risk_round.ticks_to_secure)
+		and training_water_fraction < standard_water_fraction
+		and standard_water_fraction < high_risk_water_fraction,
+		"end-to-end scenario time and fraction of water reserve used increase monotonically by profile")
 	var invalid_difficulty_demo: Node3D = DemoScene.instantiate()
 	invalid_difficulty_demo.difficulty = "unknown"
 	root.add_child(invalid_difficulty_demo)
