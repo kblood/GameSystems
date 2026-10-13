@@ -826,11 +826,20 @@ func _tier_bench(report: Dictionary) -> void:
 				await get_tree().physics_frame
 				frame_max = maxf(frame_max, (Time.get_ticks_usec() - a) / 1000.0)
 			var shards := sys.live_shards()
-			row[case] = {"impact_ms": snappedf(ms, 0.01), "shards": shards, "granules": sys.stats["granules"], "mask_mb": snappedf(sys.mask_megabytes(), 0.01),
-				"build_ms_max_per_frame": snappedf(float(sys.stats["build_ms_max"]), 0.01), "frame_ms_max_after": snappedf(frame_max, 0.1),
+			# These are specifically the last hit's annealed `_break_geometry` metrics,
+			# not an aggregate for multi-hit cases and not applicable to tempered `_dice`.
+			var has_fracture_metrics: bool = p.last_info.has("fracture_ms")
+			row[case] = {"impact_ms": snappedf(ms, 0.01),
+				"last_hit_fracture_ms": snappedf(float(p.last_info.fracture_ms), 0.01) if has_fracture_metrics else null,
+				"last_hit_cells": int(p.last_info.cells) if has_fracture_metrics else null,
+				"last_hit_dropped": int(p.last_info.dropped) if has_fracture_metrics else null,
+				"shards": shards, "granules": sys.stats["granules"], "mask_mb": snappedf(sys.mask_megabytes(), 0.01),
+				"build_ms_max_per_frame": snappedf(float(sys.stats["build_ms_max"]), 0.01), "physics_wait_ms_max_after": snappedf(frame_max, 0.1),
 				"mesh_instances": _count_meshes(window), "outcome": p.last_info.get("outcome_name", "")}
-			print("  %-8s %-15s impact %6.2f ms  shards %3d  granules %4d  mask %5.2f MB  build/frame %5.2f ms  frame max %5.1f ms  (%s)" % [
-				GlassSystem.TIER_NAMES[t], case, ms, shards, sys.stats["granules"], sys.mask_megabytes(), float(sys.stats["build_ms_max"]), frame_max,
+			var fracture_text := "last-hit fracture %5.2f ms; %3d cells, %3d drop" % [float(row[case]["last_hit_fracture_ms"]),
+				int(row[case]["last_hit_cells"]), int(row[case]["last_hit_dropped"])] if has_fracture_metrics else "last-hit fracture    n/a"
+			print("  %-8s %-15s impact %6.2f ms (%s)  shards %3d  granules %4d  mask %5.2f MB  build/frame %5.2f ms  physics-wait max %5.1f ms  (%s)" % [
+				GlassSystem.TIER_NAMES[t], case, ms, fracture_text, shards, sys.stats["granules"], sys.mask_megabytes(), float(sys.stats["build_ms_max"]), frame_max,
 				row[case]["outcome"]])
 		report["tiers"][GlassSystem.TIER_NAMES[t]] = row
 	sys.tier = GlassSystem.Tier.HIGH

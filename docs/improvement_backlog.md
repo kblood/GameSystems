@@ -1929,3 +1929,43 @@ sprinkleren og kontrollerer både thermal-kvitteringen, slukning og typed fuel-l
 Verifikation på Godot 4.7.2: brandstationsdemo **36/36**, sprinklerkerne **54/54**.
 Sol reviewede target-rækkevidde, dosisfordeling og fuel-regnskab og godkendte ændringen.
 Headsetvalidering af sprinklerens visuelle dækning er fortsat åben.
+
+## Afsluttet første glass remnant-budgetrunde — 2026-10-13
+
+Kalibreringsscriptet rapporterer sidste hits synkrone annealed-frakturarbejde,
+celletal og droppede celler separat fra samlet case-impact-tid og den allerede
+budgetterede shardbygning. Feltet er N/A for andre brudstier, og er ikke et samlet
+frakturtotal for scenarier med flere hits.
+Godot 4.7.2-baselinen målte HIGH brick-shatter **12,55 ms** impact / **7,30 ms** fraktur
+(160 celler, 122 droppede), MEDIUM **6,72 ms** / **3,41 ms** (66/50). Panelets logiske
+brudstate og signaler forbliver synkrone, mens restmesh og concave collider nu bygges
+over flere frames. Rudemeshen skjules og kollisionslaget sættes straks til 0; de intakte
+collision shapes deaktiveres deferred. Det færdige mesh og collider publiceres samlet efter
+staging. Jobgeneration afviser forældet arbejde efter
+nyt hit, repair, authored geometriændring eller vanish. Silent checkpoint-replay beholder
+den synkrone, deterministiske referenceadfærd.
+
+Mens remnanter bygges (7–9 slices i de fokuserede fixtures), er rudens visuelle mesh
+skjult og panelets physics collision utilgængelig, men den logiske hitstate er allerede
+opdateret. `0,75 ms` er et
+soft-budget for scripted per-pane arbejde; hver polygon og engine-native upload, trimesh
+creation og publish kan overskride det, og den sammensatte headset-frame-tid er ikke målt.
+
+Efter ændringen målte kalibreringen HIGH **10,47 ms** impact / **5,11 ms** synkron fraktur,
+MEDIUM **6,15 ms** / **2,70 ms**. Den fokuserede måling brugte 7 HIGH-slices (1,93 ms samlet,
+0,79 ms peak) og 9 MEDIUM-slices (4,42 ms, 0,96 ms peak). Mesh-upload, trimesh-oprettelse
+og publish forbliver separate, indivisible faser. Målingerne er desktop headless, ikke
+headset-frame-tider.
+
+Verifikation: staged remnant **46/46**, modeltests **30/30**, compile check **0 fejl**,
+kalibrering **29/29**. Golden-signaturer for mesh og collision matcher den tidligere
+implementering.
+
+## Næste glass-performanceopgave
+
+Den synkrone HIGH hit-sti er fortsat **10,47 ms** i den registrerede desktopkalibrering;
+det optager næsten hele det teoretiske **11,11 ms**-budget ved 90 Hz, før andet frame-arbejde.
+Fortsæt med at profilere og staged-bygge cellemønster,
+polygonklipning og droppede celler; bevar de målte mesh-/collision-signaturer, synkrone
+damage-signaler og deterministisk replay. Rapportér impact-tid og højeste faktiske staged
+slice separat; `physics_wait_ms_max_after` er kun ventetidsinterval, ikke CPU-framekost.

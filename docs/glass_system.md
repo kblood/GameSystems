@@ -153,7 +153,7 @@ Limits of the predictor:
 
 ## Known weaknesses
 
-- On the HIGH tier, a brick shatter still costs about 12 ms synchronously (cells, slab mesh, trimesh). It should move to a worker thread or be split over 2 frames. MEDIUM costs 7 ms.
+- A 2026-10-13 Godot 4.7.2 headless calibration first measured a HIGH-tier brick hit at 12.55 ms synchronously, including 7.30 ms in fracture/remnant generation (160 cells, 122 dropped); MEDIUM measured 6.72 ms including 3.41 ms (66 cells, 50 dropped). Remnant mesh/collision reconstruction is now staged across frames: a later comparable calibration measured HIGH at 10.47 ms impact / 5.11 ms synchronous fracture and MEDIUM at 6.15 ms / 2.70 ms. The focused test measured 7 HIGH slices (1.93 ms total, 0.79 ms peak) and 9 MEDIUM slices (4.42 ms total, 0.96 ms peak); native upload, trimesh creation and publish are separate indivisible phases. The shard queue has a nominal 1.5 ms build budget; the latest calibration reported per-physics-frame maxima of 1.66 ms HIGH and 1.88 ms MEDIUM, so this is a soft budget too. At 90 Hz, the HIGH hit's 10.47 ms occupies nearly all of the theoretical 11.11 ms frame budget before other game work. Continue profiling and stage more of the synchronous cell-generation/drop path. These desktop headless numbers are diagnostic, not headset frame-time claims.
 - The model is an engineering approximation, not FEM:
   - there is no stress-wave timing
   - span and edge factors are heuristic

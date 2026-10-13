@@ -80,6 +80,11 @@ var _replaying := false
 var _paint_queue: Array = []                                # deferred crack strokes [pts, width, v0, v1] (time-sliced)
 var _paint_head := 0
 var paint_budget_ms := 1.0                                   ## crack painting per frame after a hit
+var remnant_build_budget_ms := 0.75                         ## scripted geometry work per frame; native upload/shape are separate slices
+var remnant_build_max_cells := 32                            ## deterministic work cap even with a coarse timer
+var remnant_build_diagnostics := {}
+var _remnant_job := {}
+var _remnant_generation := 0
 var first_paint_ms := 2.5                                   ## painted synchronously in the hit itself
 
 
@@ -124,6 +129,12 @@ func _seed() -> int:
 # ------------------------------------------------------------------ build
 
 func _build() -> void:
+	# Authored geometry/profile changes create a new intact pane; old impact-local
+	# cells cannot describe the replacement dimensions or surface.
+	if _built: repair()
+	_cancel_remnant_build()
+	cell_instance = null
+	_cell_shape = null
 	_built = true
 	var p := get_profile()
 	for c in get_children():
@@ -368,6 +379,8 @@ func damage_percent() -> float:
 
 
 func repair() -> void:
+	_cancel_remnant_build()
+	collision_layer = pane_layer
 	damage = 0.0
 	broken = false
 	fractured = false
@@ -758,7 +771,7 @@ func _break_geometry(r: Dictionary, imp: GlassImpact, p2: Vector2, rng: RandomNu
 				_pending_falls.append({"i": i, "t": rng.randf_range(0.15, 2.0)})
 	for i in dropped:
 		_drop_cell(i, imp, p2, rng, t, true)
-	_rebuild_cells()
+	_rebuild_cells(shatter and not imp.silent)
 	r["fracture_ms"] = (Time.get_ticks_usec() - tm) / 1000.0
 	r["cells"] = cells.size()
 	r["dropped"] = dropped.size()
@@ -818,7 +831,12 @@ func _drop_cell(i: int, imp: GlassImpact, p2: Vector2, rng: RandomNumberGenerato
 		"velocity": vel, "angular": ang, "mass": area * p.areal_mass()})
 
 
-func _rebuild_cells() -> void:
+func _rebuild_cells(staged := false) -> void:
+	if not _replaying and (staged or remnant_build_pending()):
+		_start_remnant_build()
+		return
+	_cancel_remnant_build()
+	collision_layer = pane_layer
 	var polys: Array = []
 	var cnt := {}
 	for cc in cells:
@@ -855,6 +873,108 @@ func _rebuild_cells() -> void:
 		_cell_shape.set_deferred("disabled", true)
 
 
+## Logical cells are final at impact time. Only their presentation is queued.
+## No old collider remains active while a newer revision is being assembled.
+func remnant_build_pending() -> bool:
+	return not _remnant_job.is_empty()
+
+
+func _cancel_remnant_build() -> void:
+	_remnant_generation += 1
+	_remnant_job = {}
+
+
+func _start_remnant_build() -> void:
+	_cancel_remnant_build()
+	mesh_instance.visible = false
+	if is_instance_valid(cell_instance): cell_instance.visible = false
+	_set_intact_collider(false)
+	# The layer change is immediate even when disabled must wait for physics flush.
+	collision_layer = 0
+	if is_instance_valid(_cell_shape): _cell_shape.set_deferred("disabled",true)
+	var live: Array = []
+	for cell in cells:
+		if not cell.gone: live.append(cell.poly)
+	broken = live.is_empty()
+	_remnant_job = {"generation":_remnant_generation,"phase":"edges","polys":live,
+		"cursor":0,"counts":{},"skip":{},"keys":[],"mesh":null,"shape":null}
+	remnant_build_diagnostics = {"phase":"edges","slices":0,"peak_slice_ms":0.0,"total_ms":0.0}
+	set_process(true)
+
+
+func _step_remnant_build() -> void:
+	if _remnant_job.is_empty(): return
+	var start := Time.get_ticks_usec()
+	var job := _remnant_job
+	var phase: String = job.phase
+	var count := 0
+	var limit := maxi(1,remnant_build_max_cells) * (8 if phase=="skip" else 1)
+	# Each scripted phase yields after a bounded number of cells/edges. Native
+	# mesh upload and concave construction each have their own frame, not a loop.
+	while count < limit and (count==0 or Time.get_ticks_usec()-start < maxf(0.01,remnant_build_budget_ms)*1000.0):
+		count += 1
+		match phase:
+			"edges":
+				if job.cursor >= job.polys.size():
+					job.keys=job.counts.keys(); job.cursor=0; job.phase="skip"; break
+				var poly: PackedVector2Array = job.polys[job.cursor]
+				for e in poly.size():
+					var key := GlassFracture.edge_key(poly[e],poly[(e+1)%poly.size()])
+					job.counts[key]=int(job.counts.get(key,0))+1
+				job.cursor+=1
+			"skip":
+				if job.cursor >= job.keys.size():
+					job.builder=GlassFracture.slab_begin(get_profile().t_m(),size,curvature,Vector3.ZERO,job.skip,0.08 if curvature.length()>1e-4 else 0.0)
+					job.cursor=0; job.phase="mesh"; break
+				var key: Vector4i = job.keys[job.cursor]
+				if job.counts[key]>1: job.skip[key]=true
+				job.cursor+=1
+			"mesh":
+				if job.cursor >= job.polys.size(): job.phase="upload"; break
+				GlassFracture.slab_append(job.builder,job.polys[job.cursor])
+				job.cursor+=1
+			"upload":
+				job.mesh=GlassFracture.slab_finish(job.builder)
+				job.phase="collision"; break
+			"collision":
+				job.shape=job.mesh.create_trimesh_shape() if job.mesh else null
+				job.phase="publish"; break
+			"publish":
+				_publish_remnant_build(job); break
+	if job.generation != _remnant_generation: return
+	var elapsed := (Time.get_ticks_usec()-start)/1000.0
+	remnant_build_diagnostics.slices+=1
+	remnant_build_diagnostics.total_ms+=elapsed
+	remnant_build_diagnostics.peak_slice_ms=maxf(remnant_build_diagnostics.peak_slice_ms,elapsed)
+	remnant_build_diagnostics[phase+"_peak_ms"]=maxf(float(remnant_build_diagnostics.get(phase+"_peak_ms",0.0)),elapsed)
+	remnant_build_diagnostics.phase=job.phase
+
+
+func _publish_remnant_build(job: Dictionary) -> void:
+	if job.generation != _remnant_generation: return
+	if not is_instance_valid(cell_instance):
+		cell_instance=MeshInstance3D.new()
+		cell_instance.set_meta("_glass_gen",true)
+		cell_instance.name="Cells"
+		cell_instance.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		cell_instance.material_override=material
+		add_child(cell_instance)
+		if job.generation != _remnant_generation: return
+	if not is_instance_valid(_cell_shape):
+		_cell_shape=CollisionShape3D.new()
+		_cell_shape.set_meta("_glass_gen",true)
+		add_child(_cell_shape)
+		if job.generation != _remnant_generation: return
+	cell_instance.mesh=job.mesh
+	_cell_shape.shape=job.shape
+	_cell_shape.disabled=job.shape==null
+	cell_instance.visible=true
+	broken=job.mesh==null
+	collision_layer=pane_layer
+	job.phase="complete"
+	_remnant_job={}
+
+
 ## LOW tier shatter: one static mesh of jagged teeth left in the frame (no shards, no collider).
 func _rim_only(rng: RandomNumberGenerator) -> void:
 	var h := half()
@@ -880,6 +1000,7 @@ func _rim_only(rng: RandomNumberGenerator) -> void:
 
 
 func _vanish() -> void:
+	_cancel_remnant_build()
 	broken = true
 	mesh_instance.visible = false
 	if cell_instance:
@@ -951,6 +1072,8 @@ func _process(dt: float) -> void:
 		i -= 1
 	if dirty:
 		_rebuild_cells()
+	if remnant_build_pending():
+		_step_remnant_build()
 	if not _anim.is_empty():
 		_anim["t"] = float(_anim["t"]) + dt
 		var k := clampf(float(_anim["t"]) / float(_anim["dur"]), 0.0, 1.0)
@@ -959,7 +1082,7 @@ func _process(dt: float) -> void:
 			var cb: Callable = _anim["then"]
 			_anim = {}
 			cb.call()
-	if _pending_falls.is_empty() and _anim.is_empty() and _paint_queue.is_empty():
+	if _pending_falls.is_empty() and _anim.is_empty() and _paint_queue.is_empty() and not remnant_build_pending():
 		set_process(false)
 
 

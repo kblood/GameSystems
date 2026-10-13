@@ -203,67 +203,95 @@ static func to_2d(l: Vector3, k: Vector2) -> Vector2:
 ## skip_edges: Dictionary of edge keys not to wall (edges shared by two remaining cells). Returns ArrayMesh or null.
 static func slab_mesh(polys: Array, t: float, size: Vector2, k: Vector2, origin := Vector3.ZERO, skip_edges := {},
 		sub := 0.0) -> ArrayMesh:
-	var V := PackedVector3Array()
-	var N := PackedVector3Array()
-	var UV := PackedVector2Array()
-	var C := PackedColorArray()
-	var T := PackedFloat32Array()
-	var I := PackedInt32Array()
-	var h := t * 0.5
-	var flat := k.length_squared() < 1e-10
-	var inv := Vector2(1.0 / size.x, -1.0 / size.y)
-	for poly0 in polys:
-		var poly: PackedVector2Array = poly0
-		if sub > 0.0:
-			poly = subdivide(poly, sub)
-		var tri := Geometry2D.triangulate_polygon(poly)
-		if tri.is_empty():
-			continue
-		var ccw := area(poly) > 0.0
-		for side: float in [1.0, -1.0]:
-			var base := V.size()
-			var nf := Vector3(0, 0, side)
-			for p in poly:
-				if flat:
-					V.append(Vector3(p.x, p.y, h * side) - origin)
-					N.append(nf)
-				else:
-					V.append(surf(p, h * side, k) - origin)
-					N.append(surf_normal(p, k) * side)
-				UV.append(p * inv + Vector2(0.5, 0.5))
-				C.append(Color(1, 1, 1, 1))
-				T.append_array([1.0, 0.0, 0.0, side])
-			for ti in range(0, tri.size(), 3):
-				var a := tri[ti]
-				var b := tri[ti + 1]
-				var c := tri[ti + 2]
-				# Godot front faces are clockwise seen from the normal side
-				if (side > 0.0) == ccw:
-					I.append_array([base + a, base + c, base + b])
-				else:
-					I.append_array([base + a, base + b, base + c])
-		for i in poly.size():
-			var a2 := poly[i]
-			var b2 := poly[(i + 1) % poly.size()]
-			if not skip_edges.is_empty() and skip_edges.has(edge_key(a2, b2)):
-				continue
-			var e := (b2 - a2)
-			var out2 := Vector2(e.y, -e.x) if ccw else Vector2(-e.y, e.x)
-			var base2 := V.size()
-			var nrm := Vector3(out2.x, out2.y, 0.0).normalized()
+	var build := slab_begin(t, size, k, origin, skip_edges, sub)
+	for poly in polys:
+		slab_append(build, poly)
+	return slab_finish(build)
+
+
+## Incremental equivalent of slab_mesh. Append polygons in the original order;
+## finishing is one native upload and remains an indivisible operation.
+static func slab_begin(t: float, size: Vector2, k: Vector2, origin := Vector3.ZERO, skip_edges := {}, sub := 0.0) -> Dictionary:
+	return {"V":PackedVector3Array(), "N":PackedVector3Array(), "UV":PackedVector2Array(),
+		"C":PackedColorArray(), "T":PackedFloat32Array(), "I":PackedInt32Array(),
+		"h":t*0.5, "k":k, "origin":origin, "skip_edges":skip_edges, "sub":sub,
+		"flat":k.length_squared()<1e-10, "inv":Vector2(1.0/size.x,-1.0/size.y)}
+
+
+static func slab_append(build: Dictionary, poly: PackedVector2Array) -> void:
+	var V: PackedVector3Array = build.V
+	var N: PackedVector3Array = build.N
+	var UV: PackedVector2Array = build.UV
+	var C: PackedColorArray = build.C
+	var T: PackedFloat32Array = build.T
+	var I: PackedInt32Array = build.I
+	var sub: float = build.sub
+	var h: float = build.h
+	var flat: bool = build.flat
+	var inv: Vector2 = build.inv
+	var k: Vector2 = build.k
+	var origin: Vector3 = build.origin
+	var skip_edges: Dictionary = build.skip_edges
+	if sub > 0.0:
+		poly = subdivide(poly, sub)
+	var tri := Geometry2D.triangulate_polygon(poly)
+	if tri.is_empty():
+		return
+	var ccw := area(poly) > 0.0
+	for side: float in [1.0, -1.0]:
+		var base := V.size()
+		var nf := Vector3(0, 0, side)
+		for p in poly:
 			if flat:
-				V.append_array([Vector3(a2.x, a2.y, h) - origin, Vector3(b2.x, b2.y, h) - origin,
-					Vector3(b2.x, b2.y, -h) - origin, Vector3(a2.x, a2.y, -h) - origin])
+				V.append(Vector3(p.x, p.y, h * side) - origin)
+				N.append(nf)
 			else:
-				V.append_array([surf(a2, h, k) - origin, surf(b2, h, k) - origin, surf(b2, -h, k) - origin, surf(a2, -h, k) - origin])
-			var ua := a2 * inv + Vector2(0.5, 0.5)
-			var ub := b2 * inv + Vector2(0.5, 0.5)
-			UV.append_array([ua, ub, ub, ua])
-			N.append_array([nrm, nrm, nrm, nrm])
-			var c0 := Color(1, 1, 1, 0)
-			C.append_array([c0, c0, c0, c0])
-			T.append_array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0])
-			I.append_array([base2, base2 + 2, base2 + 1, base2, base2 + 3, base2 + 2])
+				V.append(surf(p, h * side, k) - origin)
+				N.append(surf_normal(p, k) * side)
+			UV.append(p * inv + Vector2(0.5, 0.5))
+			C.append(Color(1, 1, 1, 1))
+			T.append_array([1.0, 0.0, 0.0, side])
+		for ti in range(0, tri.size(), 3):
+			var a := tri[ti]
+			var b := tri[ti + 1]
+			var c := tri[ti + 2]
+			# Godot front faces are clockwise seen from the normal side
+			if (side > 0.0) == ccw:
+				I.append_array([base + a, base + c, base + b])
+			else:
+				I.append_array([base + a, base + b, base + c])
+	for i in poly.size():
+		var a2 := poly[i]
+		var b2 := poly[(i + 1) % poly.size()]
+		if not skip_edges.is_empty() and skip_edges.has(edge_key(a2, b2)):
+			continue
+		var e := (b2 - a2)
+		var out2 := Vector2(e.y, -e.x) if ccw else Vector2(-e.y, e.x)
+		var base2 := V.size()
+		var nrm := Vector3(out2.x, out2.y, 0.0).normalized()
+		if flat:
+			V.append_array([Vector3(a2.x, a2.y, h) - origin, Vector3(b2.x, b2.y, h) - origin,
+				Vector3(b2.x, b2.y, -h) - origin, Vector3(a2.x, a2.y, -h) - origin])
+		else:
+			V.append_array([surf(a2, h, k) - origin, surf(b2, h, k) - origin, surf(b2, -h, k) - origin, surf(a2, -h, k) - origin])
+		var ua := a2 * inv + Vector2(0.5, 0.5)
+		var ub := b2 * inv + Vector2(0.5, 0.5)
+		UV.append_array([ua, ub, ub, ua])
+		N.append_array([nrm, nrm, nrm, nrm])
+		var c0 := Color(1, 1, 1, 0)
+		C.append_array([c0, c0, c0, c0])
+		T.append_array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0])
+		I.append_array([base2, base2 + 2, base2 + 1, base2, base2 + 3, base2 + 2])
+	build.V=V; build.N=N; build.UV=UV; build.C=C; build.T=T; build.I=I
+
+
+static func slab_finish(build: Dictionary) -> ArrayMesh:
+	var V: PackedVector3Array = build.V
+	var N: PackedVector3Array = build.N
+	var UV: PackedVector2Array = build.UV
+	var C: PackedColorArray = build.C
+	var T: PackedFloat32Array = build.T
+	var I: PackedInt32Array = build.I
 	if I.is_empty():
 		return null
 	var arr := []
