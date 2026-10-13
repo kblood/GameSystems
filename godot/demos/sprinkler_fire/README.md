@@ -33,6 +33,14 @@ smoke density. It then reads **secured**. These thresholds are scenario/gameplay
 the demo, not building-safety guidance. The mission status updates from the same thermal
 state used by sprinklers, smoke visuals and the door portal.
 
+Choose `training`, `standard` or `high_risk` in the scene's **Difficulty** property before
+running it. The profiles change the pallet/crate/spill fuel and burn rates plus the finite
+water reserve and main head flow. `standard` preserves the original 20,000 ml reserve and
+240 ml/s head; `training` lowers fire workload and gives more/faster water; `high_risk`
+raises the main fire workload and reduces/slows the available water. The mission's room
+safety limits remain the same across profiles so results are comparable. These are small
+gameplay presets, not calibrated fire simulations.
+
 Open `fire_station_demo.tscn` from the GameSystems Godot project, or run it with:
 
 ```powershell

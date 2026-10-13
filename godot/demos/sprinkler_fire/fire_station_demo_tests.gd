@@ -22,6 +22,36 @@ func _run_tests() -> void:
 	case_result(initial.mission.status == &"active" and initial.mission.fires_out == 2
 		and initial.mission.fire_count == 3 and initial.mission.adjacent_safe,
 		"scenario begins active with the burning pallet and safe adjacent compartment objectives visible")
+	case_result(initial.difficulty == "standard" and initial.difficulty_profile.fire_fuel == 300.0
+		and initial.supply.capacityMl == 20000.0 and initial.status_text.contains("[STANDARD]"),
+		"default standard profile retains the established fire and water values and is visible")
+	var training_demo: Node3D = DemoScene.instantiate()
+	training_demo.difficulty = "training"
+	root.add_child(training_demo)
+	var high_risk_demo: Node3D = DemoScene.instantiate()
+	high_risk_demo.difficulty = "high_risk"
+	root.add_child(high_risk_demo)
+	var training_state: Dictionary = training_demo.demo_state()
+	var high_risk_state: Dictionary = high_risk_demo.demo_state()
+	var training_fuel_before: float = training_state.fire.fuel
+	var high_risk_fuel_before: float = high_risk_state.fire.fuel
+	training_demo.advance(0.2)
+	high_risk_demo.advance(0.2)
+	var training_burned := training_fuel_before - float(training_demo.demo_state().fire.fuel)
+	var high_risk_burned := high_risk_fuel_before - float(high_risk_demo.demo_state().fire.fuel)
+	case_result(training_state.difficulty == "training" and high_risk_state.difficulty == "high_risk"
+		and training_state.supply.capacityMl == 30000.0 and high_risk_state.supply.capacityMl == 14000.0
+		and training_state.head.flow_ml_s == 300.0 and high_risk_state.head.flow_ml_s == 180.0
+		and high_risk_burned > training_burned,
+		"training and high-risk profiles change finite water and actual relative fire burn workload")
+	training_demo.queue_free()
+	high_risk_demo.queue_free()
+	var invalid_difficulty_demo: Node3D = DemoScene.instantiate()
+	invalid_difficulty_demo.difficulty = "unknown"
+	root.add_child(invalid_difficulty_demo)
+	case_result(invalid_difficulty_demo.demo_state().difficulty == "standard",
+		"unknown scenario difficulty falls back to the verified standard profile")
+	invalid_difficulty_demo.queue_free()
 	var mission_demo: Node3D = DemoScene.instantiate()
 	root.add_child(mission_demo)
 	var mission_fire: Dictionary = mission_demo.demo_state().fire

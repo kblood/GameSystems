@@ -7,10 +7,14 @@ og dieselpyt alle er slukket, og naborummet holder sig på højst 80 °C og 0,25
 Når begge mål er opfyldt, viser skærmen **secured**. Status læses fra den samme thermal-
 kerne som sprinklerne, portaludvekslingen og røgvisualerne; grænserne er demo-/spilværdier,
 ikke bygningssikkerhedskrav. Status fejler lukket, hvis et target eller naborum mangler.
-Godot 4.7.2-testen består nu **40/40** og dækker startstatus, sikker/manglende state,
-slutbetingelse samt den synlige statuslinje. Sol-review af README og backlog er godkendt.
-Næste åbne scenariearbejde er at definere testbare sværhedsprofiler og en genstartbar
-missionrunde uden at ændre kernelernes faste værdi-/kvitteringskontrakter.
+Tre autorbare presets (`training`, `standard`, `high_risk`) ændrer brændstof-/burn-rate på
+fireobjekterne og vandtankens kapacitet/hovedets flow. Standard bevarer de hidtidige værdier;
+træning sænker brandbelastningen og forøger vand, mens højrisiko øger palletbelastningen og
+reducerer/langsommere vand. Sikkerhedsgrænsen for naborummet er konstant på tværs af presets.
+Godot 4.7.2-testen består nu **43/43**; den sammenligner faktiske burn-ticks samt vandmængde,
+head-flow, standard-default, ugyldigt preset og synlig missionstatus. Sol-review godkendt.
+Næste åbne scenariearbejde er en genstartbar missionrunde uden at ændre kernelernes faste
+værdi-/kvitteringskontrakter.
 
 ## Rumåbninger til røg og varme — 2026-10-12
 

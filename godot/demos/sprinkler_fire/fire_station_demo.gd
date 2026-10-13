@@ -26,10 +26,22 @@ const BATTERY_ID := &"pump-battery"
 const FUSE_ID := &"pump-fuse"
 const MAIN_SWITCH_ID := &"main-switch"
 const FAULT_SWITCH_ID := &"fault-switch"
-const WATER_CAPACITY_ML := 20000.0
+const DIFFICULTY_PROFILES := {
+	"training": {"fire_fuel": 220.0, "fire_burn_rate": 1.2, "crate_fuel": 50.0,
+		"crate_burn_rate": 0.5, "spill_fuel": 80.0, "spill_burn_rate": 0.25,
+		"water_capacity_ml": 30000.0, "water_head_flow_ml_s": 300.0},
+	"standard": {"fire_fuel": 300.0, "fire_burn_rate": 2.0, "crate_fuel": 80.0,
+		"crate_burn_rate": 1.0, "spill_fuel": 120.0, "spill_burn_rate": 0.4,
+		"water_capacity_ml": 20000.0, "water_head_flow_ml_s": 240.0},
+	"high_risk": {"fire_fuel": 450.0, "fire_burn_rate": 3.0, "crate_fuel": 85.0,
+		"crate_burn_rate": 1.5, "spill_fuel": 200.0, "spill_burn_rate": 0.75,
+		"water_capacity_ml": 14000.0, "water_head_flow_ml_s": 180.0}
+}
 const MISSION_FIRE_TARGETS: Array[StringName] = [FIRE_ID, SPREAD_FIRE_ID, SPILL_FIRE_ID]
 const MISSION_MAX_ADJACENT_TEMPERATURE_C := 80.0
 const MISSION_MAX_ADJACENT_SMOKE := 0.25
+
+@export_enum("training", "standard", "high_risk") var difficulty := "standard"
 
 var thermal: RefCounted
 var thermal_portals: RefCounted
@@ -57,6 +69,7 @@ var _spill_spread_registered := false
 var _spray_linger_by_source: Dictionary = {}
 var _spray_visual_by_source: Dictionary = {}
 var _spray_sources_this_frame: Dictionary = {}
+var _active_difficulty_profile: Dictionary = {}
 var _status_label: Label3D
 var _fire_visual: MeshInstance3D
 var _fire_light: OmniLight3D
@@ -70,6 +83,8 @@ var _door_visual: Node3D
 
 
 func _ready() -> void:
+	_active_difficulty_profile = _resolve_difficulty_profile(difficulty)
+	difficulty = String(_active_difficulty_profile.id)
 	_build_scene()
 	thermal = Thermal.new()
 	# A low bounded capacity makes automatic sensor activation visible in a short demo.
@@ -79,13 +94,16 @@ func _ready() -> void:
 	thermal_portals.add_portal(DOOR_ID, ROOM_ID, ADJACENT_ROOM_ID, {"opening": 0.0})
 	thermal.add_object(FIRE_ID, {"room_id": ROOM_ID, "position": Vector3.ZERO,
 		"temperature_c": 450.0, "ignition_c": 250.0, "heat_capacity_kj_c": 8.0,
-		"flammability": 0.9, "fuel": 300.0, "burn_rate": 2.0, "heat_kj_per_fuel": 18.0})
+		"flammability": 0.9, "fuel": _active_difficulty_profile.fire_fuel,
+		"burn_rate": _active_difficulty_profile.fire_burn_rate, "heat_kj_per_fuel": 18.0})
 	thermal.add_object(SPREAD_FIRE_ID, {"room_id": ROOM_ID, "position": Vector3(0.8, 0.0, 0.0),
 		"temperature_c": 20.0, "ignition_c": 240.0, "heat_capacity_kj_c": 0.001,
-		"flammability": 1.0, "fuel": 80.0, "burn_rate": 1.0, "heat_kj_per_fuel": 16.0})
+		"flammability": 1.0, "fuel": _active_difficulty_profile.crate_fuel,
+		"burn_rate": _active_difficulty_profile.crate_burn_rate, "heat_kj_per_fuel": 16.0})
 	thermal.add_object(SPILL_FIRE_ID, {"room_id": ROOM_ID, "position": Vector3(-1.35, 0.0, 0.0),
 		"temperature_c": 20.0, "ignition_c": 250.0, "heat_capacity_kj_c": 0.05,
-		"flammability": 0.9, "fuel": 120.0, "burn_rate": 0.4, "heat_kj_per_fuel": 18.0})
+		"flammability": 0.9, "fuel": _active_difficulty_profile.spill_fuel,
+		"burn_rate": _active_difficulty_profile.spill_burn_rate, "heat_kj_per_fuel": 18.0})
 	fire_spread = FireSpread.new(thermal)
 	fire_spread.register_object(FIRE_ID)
 	fire_spread.register_object(SPREAD_FIRE_ID)
@@ -99,7 +117,8 @@ func _ready() -> void:
 	_puddle_id_by_sprinkler_source[StringName("sprinkler:" + String(DIESEL_HEAD_ID))] = diesel_puddle_id
 	puddle_fire = PuddleFire.new(thermal)
 	_sync_spill_visual()
-	tank = SupplyTank.new(WATER_CAPACITY_ML, {"water": WATER_CAPACITY_ML})
+	var water_capacity_ml: float = _active_difficulty_profile.water_capacity_ml
+	tank = SupplyTank.new(water_capacity_ml, {"water": water_capacity_ml})
 	diesel_tank = SupplyTank.new(2000.0, {"diesel": 2000.0})
 	electricity = Electricity.new()
 	electricity.add(BATTERY_ID, {"kind": &"battery", "a": &"battery+", "b": &"ground",
@@ -122,7 +141,8 @@ func _ready() -> void:
 	sprinklers.register_supply(DIESEL_SUPPLY_ID, diesel_tank)
 	sprinklers.set_power_provider(pump)
 	sprinklers.add_head(HEAD_ID, {"room_id": ROOM_ID, "supply_id": SUPPLY_ID,
-		"target_ids": [FIRE_ID, SPREAD_FIRE_ID, SPILL_FIRE_ID], "position": Vector3(0.0, 3.0, 0.0), "flow_ml_s": 240.0,
+		"target_ids": [FIRE_ID, SPREAD_FIRE_ID, SPILL_FIRE_ID], "position": Vector3(0.0, 3.0, 0.0),
+		"flow_ml_s": _active_difficulty_profile.water_head_flow_ml_s,
 		"trigger_temperature_c": 70.0, "response_seconds": 1.5, "range_m": 4.0})
 	sprinklers.add_head(RUNOFF_HEAD_ID, {"room_id": ROOM_ID, "supply_id": SUPPLY_ID,
 		"target_ids": [], "position": Vector3(0.8, 3.0, 0.0), "flow_ml_s": 600.0,
@@ -342,7 +362,7 @@ func replace_fuse() -> bool:
 func refill_water() -> float:
 	if tank == null: return 0.0
 	var state: Dictionary = tank.state()
-	var added: float = tank.fill("water", WATER_CAPACITY_ML - float(state.ml))
+	var added: float = tank.fill("water", float(state.get("freeMl", 0.0)))
 	_update_status()
 	return added
 
@@ -411,6 +431,8 @@ func demo_state() -> Dictionary:
 		"sprinkler_runoff_visible": _sprinkler_runoff_visual.visible,
 		"spill_status": _spill_status(),
 		"mission": mission_state(),
+		"difficulty": difficulty, "difficulty_profile": _active_difficulty_profile.duplicate(true),
+		"status_text": _status_label.text if is_instance_valid(_status_label) else "",
 		"last_puddle_result": last_puddle_result.duplicate(true)}
 
 
@@ -441,6 +463,13 @@ func mission_state() -> Dictionary:
 		"missing_fires": missing_fires,
 		"adjacent_safe": adjacent_safe, "adjacent_temperature_c": adjacent_temperature,
 		"adjacent_smoke": adjacent_smoke}
+
+
+func _resolve_difficulty_profile(requested: String) -> Dictionary:
+	var selected_id := requested if DIFFICULTY_PROFILES.has(requested) else "standard"
+	var profile: Dictionary = DIFFICULTY_PROFILES[selected_id].duplicate(true)
+	profile.id = selected_id
+	return profile
 
 
 func _build_scene() -> void:
@@ -606,8 +635,8 @@ func _update_status() -> void:
 	for receipt: Dictionary in sprinkler_source_receipts.values():
 		runoff_total_ml += float(receipt.get("puddle_ml", 0.0))
 	var mission := mission_state()
-	_status_label.text = "MISSION: %s — fires out %d/%d, adjacent room %s\nF water head | T floor runoff | H compartment door | V valve | D diesel head | G fuel valve | B battery | S switch | X fault | C fuse | R refill\nI ignite spill | E cool spill | Door: %s  Head: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Smoke: %.2f  Adjacent: %.1f C / %.3f smoke  Fuel puddle: %.0f mL (%s)  Tank: %.0f mL  Deposited: %.0f mL" % [
-		String(mission.status).to_upper(), int(mission.fires_out), int(mission.fire_count),
+	_status_label.text = "MISSION: %s [%s] — fires out %d/%d, adjacent room %s\nF water head | T floor runoff | H compartment door | V valve | D diesel head | G fuel valve | B battery | S switch | X fault | C fuse | R refill\nI ignite spill | E cool spill | Door: %s  Head: %s  Valve: %s  Switch: %s  Fuse: %s  Water: %.0f mL\nBattery: %.1f / %.1f Wh  Smoke: %.2f  Adjacent: %.1f C / %.3f smoke  Fuel puddle: %.0f mL (%s)  Tank: %.0f mL  Deposited: %.0f mL" % [
+		String(mission.status).to_upper(), difficulty.to_upper(), int(mission.fires_out), int(mission.fire_count),
 		"SAFE" if mission.adjacent_safe else "AT RISK",
 		"OPEN" if compartment_door_open else "CLOSED",
 		"ON" if head.get("triggered", false) else "standby", "OPEN" if valve_open else "CLOSED",
