@@ -177,7 +177,12 @@ middle-fingertip bone chain, returning `null` when one of its joints is unusable
 `rows_from_joints(side, joints, hand)` extracts all five finger-angle rows, including
 thumb twist. `capture_from_joints(side, joints, item, hand)` returns the wrist pose in
 item space with those rows and the measured hand length, or `null` when required
-tracking joints are missing.
+tracking joints are missing. `recorded_pose(capture, options, catalog)` rounds and
+normalizes a capture into a library-ready pose with default-open rows and recording
+metadata; pass the prop catalog (or its `CATALOG` map) for the same default grip mode
+as the JS API. The catalog argument is a Godot adapter parameter; JavaScript reads its
+module catalog directly. A missing or null catalog grip defaults to `wrap`, matching
+JavaScript's nullish fallback.
 The Godot API accepts a Dictionary keyed by WebXR joint name; runtime adapters own
 translation from their input container.
 
@@ -185,7 +190,10 @@ The JS golden covers both hand sides, missing/non-finite/degenerate joints, extr
 finite scales, zero length, all quaternion matrix branches, 12 baked-pose row captures,
 two non-zero thumb-twist inversions, missing finger joints and six item-space capture
 cases across rotated items. Godot 4.7.2 passes **711 assertions**. Closure/contact and
-runtime integration remain separate work.
+cases across rotated items, plus six recorded-pose cases for catalog defaults,
+rounding, generated/explicit IDs, null grip fallback and optional metadata. It also
+checks the runtime UTC stamp and reads the shared prop catalog. Godot 4.7.2 passes
+**1,247 assertions**. Closure/contact and runtime integration remain separate work.
 
 ## Merging baked and recorded libraries
 

@@ -58,6 +58,26 @@ func _initialize() -> void:
 		var joints_before: Dictionary = row.joints.duplicate(true)
 		compare(row.expected_capture, Capture.capture_from_joints(row.side, row.joints, row.item, row.hand), row.name + " capture")
 		check(row.joints == joints_before, row.name + " joints unchanged")
+	for row: Dictionary in golden.recorded_pose_cases:
+		var capture_before: Dictionary = row.capture.duplicate(true)
+		compare(row.expected_pose, Capture.recorded_pose(row.capture, row.options, row.catalog), row.name + " recorded pose")
+		check(row.capture == capture_before, row.name + " capture unchanged")
+	var catalog_data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://addons/gs_grasp_data/data/catalog.data.json"))
+	var dynamic_pose: Dictionary = Capture.recorded_pose(golden.recorded_pose_cases[0].capture,
+		{"kind": "carton", "grasp": "body"}, catalog_data)
+	check(dynamic_pose.mode == "flat", "recorded pose reads the shared prop catalog")
+	var custom_catalog_pose: Dictionary = Capture.recorded_pose(golden.recorded_pose_cases[0].capture,
+		{"kind": "custom_prop", "grasp": "body", "at": "2026-10-13T12:34:56Z"},
+		{"custom_prop": {"grip": "pinch"}})
+	check(custom_catalog_pose.mode == "pinch", "recorded pose accepts an adapter-provided custom catalog")
+	var timestamp_pattern := RegEx.new()
+	timestamp_pattern.compile("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$")
+	check(timestamp_pattern.search(dynamic_pose.recorded.at) != null, "recorded pose creates an ISO UTC timestamp")
+	var generated_stamp: String = str(dynamic_pose.recorded.at).replace("-", "").replace(":", "")
+	var fractional_stamp := RegEx.new()
+	fractional_stamp.compile("\\.\\d+Z?$|Z$")
+	generated_stamp = fractional_stamp.sub(generated_stamp, "", true)
+	check(dynamic_pose.id == "carton/right/body/rec-" + generated_stamp, "generated ID uses the recorded timestamp")
 	# Godot JSON parses 1e-310 as zero, so construct this finite subnormal at runtime.
 	var parts := [1e-200, 1e-110]
 	var tiny: float = parts[0] * parts[1]
@@ -69,5 +89,5 @@ func _initialize() -> void:
 	var tiny_basis: Dictionary = Capture.hand_basis("right", tiny_joints)
 	check(absf(float(tiny_basis.F[2]) - 1.0) <= 1e-10 and absf(float(tiny_basis.R[0]) - 1.0) <= 1e-10,
 		"subnormal frame has unit forward and radial axes")
-	print("GS_GRASP_CAPTURE_TESTS passed=%d failed=%d cases=%d quat_cases=%d length_cases=%d row_cases=%d capture_cases=%d" % [passed, failed, golden.cases.size(), golden.quaternion_cases.size(), golden.length_cases.size(), golden.row_cases.size(), golden.capture_cases.size()])
+	print("GS_GRASP_CAPTURE_TESTS passed=%d failed=%d cases=%d quat_cases=%d length_cases=%d row_cases=%d capture_cases=%d recorded_pose_cases=%d" % [passed, failed, golden.cases.size(), golden.quaternion_cases.size(), golden.length_cases.size(), golden.row_cases.size(), golden.capture_cases.size(), golden.recorded_pose_cases.size()])
 	quit(1 if failed else 0)

@@ -1,4 +1,4 @@
-import { handBasis, handLengthFromJoints, quatFromBasis, poseJoints, referenceHand, rowsFromJoints, captureFromJoints } from '../../extensions/grasp/record.js';
+import { handBasis, handLengthFromJoints, quatFromBasis, poseJoints, referenceHand, rowsFromJoints, captureFromJoints, recordedPose } from '../../extensions/grasp/record.js';
 import { BAKED } from '../../extensions/grasp/baked_grasps.js';
 import { rotate } from '../../extensions/grasp/math.js';
 
@@ -76,10 +76,25 @@ export function graspCaptureCases() {
     captureCases.push({ name: `${side}:missing-middle-tip`, side, joints: invalidJoints, item: identityItem,
       hand: captureHand(hand), expected_capture: captureFromJoints(side, invalidJoints, identityItem, hand) });
   }
+  const recording = {
+    side: 'right', wrist: [-0.000005, 0.123456, -0.987654], quat: [0.25, -0.5, 0.25, Math.sqrt(0.5)],
+    angles: [[-0.125, 1.235, -2.345, 3.455, -4.565], [0.005, -0.005, 12.345, -12.345],
+      [30, 40, 50, 60], [-10, -20, -30, -40], [1.111, 2.222, 3.333, 4.444]], handLength: 0.183456789,
+  };
+  const catalog = { CATALOG: { bottle_beer: { grip: 'wrap' }, carton: { grip: 'flat' } } };
+  const recordedCases = [
+    { name: 'catalog-default-grip-and-generated-id', options: { kind: 'bottle_beer', grasp: 'body', at: '2026-10-13T12:34:56.789Z' }, catalog },
+    { name: 'flat-catalog-grip', options: { kind: 'carton', grasp: 'handle', at: '2026-10-13T12:34:56Z' }, catalog },
+    { name: 'overrides-and-metadata', options: { kind: 'can', grasp: 'body', mode: 'pinch', default: true, id: 'recording/custom', at: '2026-10-13T12:34:56.007Z', score: 0, frames: [] }, catalog },
+    { name: 'falsy-id-falls-back', options: { kind: 'can', grasp: 'rim', id: '', at: '2026-10-13T12:34:56Z' }, catalog: {} },
+    { name: 'null-catalog-grip-falls-back', options: { kind: 'unknown', grasp: 'body', at: '2026-10-13T12:34:56Z' }, catalog: { CATALOG: { unknown: { grip: null } } } },
+    { name: 'null-metadata-omitted', options: { kind: 'unknown', grasp: 'body', mode: null, default: false, at: '2026-10-13T12:34:56.1Z', score: null, frames: null }, catalog },
+  ].map(row => ({ ...row, capture: structuredClone(recording), expected_pose: recordedPose(structuredClone(recording), row.options, row.catalog) }));
   return {
     cases: cases.map(row => ({ ...row, expected_basis: handBasis(row.side, row.joints), expected_length: handLengthFromJoints(row.joints) })),
     row_cases: rowCases,
     capture_cases: captureCases,
+    recorded_pose_cases: recordedCases,
     quaternion_cases: quatCases.map(row => ({ name: row.name, X: row.X, Y: row.Y, Z: row.Z,
       expected: quatFromBasis(row.X, row.Y, row.Z) })),
     length_cases: [

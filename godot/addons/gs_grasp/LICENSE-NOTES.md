@@ -73,7 +73,7 @@ GDScript, probe and tests are original GameSystems MIT work, Copyright (c) 2026
 Kasper Olesen.
 
 `GSGraspCapture` ports `handBasis`, `handLengthFromJoints`, `quatFromBasis`,
-`rowsFromJoints` and `captureFromJoints` from MIT GameSystems `extensions/grasp/record.js`.
-Its golden calls the public JS helpers;
+`rowsFromJoints`, `captureFromJoints` and `recordedPose` from MIT GameSystems
+`extensions/grasp/record.js`. Its golden calls the public JS helpers;
 the GDScript, probe and tests are original GameSystems MIT work, Copyright (c) 2026
 Kasper Olesen.

@@ -1,7 +1,7 @@
 class_name GSGraspCapture
 extends RefCounted
 ## Geometry helpers for turning tracked XR hands into recorded grasps.
-## This port covers hand framing, finger-row extraction and measured hand length.
+## This port covers hand framing, finger-row extraction, item-space poses and recorded-pose formatting.
 
 const WRIST := "wrist"
 const INDEX_KNUCKLE := "index-finger-phalanx-proximal"
@@ -18,6 +18,7 @@ const XR_CHAINS := {
 }
 const R2D := 180.0 / PI
 const THUMB_TWIST_PLANE := [0.15, 0.4]
+const DEFAULT_OPEN := [[0.0, 10.0, 5.0, 5.0], [0.0, -5.0, 0.0, 0.0], [0.0, -5.0, 0.0, 0.0], [0.0, -5.0, 0.0, 0.0], [0.0, -5.0, 0.0, 0.0]]
 
 ## Extract [dyaw, pitch, bend1, bend2] in degrees for thumb..little from world-space WebXR joints.
 ## The thumb adds its axial twist as row[4], matching record.js. `hand` is the closure.handGeometry() reference model.
@@ -88,6 +89,62 @@ static func capture_from_joints(side: Variant, joints: Dictionary, item: Diction
 	var local_position := _rotate(inverse_item, _sub(joints[WRIST], item.pos))
 	var local_quaternion := _qmul(inverse_item, basis.quat)
 	return {"side": side, "wrist": local_position, "quat": local_quaternion, "angles": angles, "handLength": measured_length}
+
+## Format a capture as a recorded-library pose. Pass the prop catalog (or its CATALOG map)
+## to derive the same default grip mode as record.js without coupling this addon to gs_grasp_data.
+static func recorded_pose(capture: Dictionary, options: Dictionary = {}, catalog: Dictionary = {}) -> Dictionary:
+	var kind: Variant = options.get("kind", null)
+	var grasp: Variant = options.get("grasp", null)
+	var catalog_props: Dictionary = catalog.get("CATALOG", catalog)
+	var prop: Dictionary = catalog_props.get(kind, {}) if kind is String else {}
+	var catalog_mode: Variant = prop.get("grip", null)
+	if catalog_mode == null:
+		catalog_mode = "wrap"
+	var mode: Variant = options.mode if options.has("mode") else catalog_mode
+	var is_default := bool(options.get("default", false))
+	var at: String = str(options.get("at", _now_iso_utc()))
+	var stamp := at.replace("-", "").replace(":", "")
+	var stamp_regex := RegEx.new()
+	stamp_regex.compile("\\.\\d+Z?$|Z$")
+	stamp = stamp_regex.sub(stamp, "", true)
+	var generated_id := "%s/%s/%s/rec-%s" % [str(kind), str(capture.get("side", "undefined")), str(grasp), stamp]
+	var id: Variant = options.get("id", null)
+	if not id:
+		id = generated_id
+	var wrist: Array = _round_array(capture.wrist, 100000.0)
+	var quaternion: Array = _round_array(capture.quat, 100000.0)
+	var quat_length := _length4(quaternion)
+	var normalized_quat: Array = []
+	for component: float in quaternion:
+		normalized_quat.append(_round_to(component / quat_length, 100000.0))
+	var angles: Array = []
+	for row: Array in capture.angles:
+		angles.append(_round_array(row, 100.0))
+	var recorded := {"at": at, "source": "grasp-studio"}
+	if options.get("score", null) != null:
+		recorded["score"] = options.score
+	if options.get("frames", null) != null:
+		recorded["frames"] = options.frames
+	return {"id": id, "kind": kind, "grasp": grasp, "mode": mode, "side": capture.side,
+		"default": is_default, "wrist": wrist, "quat": normalized_quat, "angles": angles,
+		"open": DEFAULT_OPEN.duplicate(true), "handLength": _round_to(float(capture.handLength), 10000.0), "recorded": recorded}
+
+static func _round_array(values: Array, multiplier: float) -> Array:
+	var result: Array = []
+	for value: float in values:
+		result.append(_round_to(value, multiplier))
+	return result
+
+static func _round_to(value: float, multiplier: float) -> float:
+	return floor(value * multiplier + 0.5) / multiplier + 0.0
+
+static func _now_iso_utc() -> String:
+	var seconds := Time.get_unix_time_from_system()
+	var whole_seconds := int(floor(seconds))
+	var milliseconds := int(floor((seconds - whole_seconds) * 1000.0))
+	var fields: Dictionary = Time.get_datetime_dict_from_unix_time(whole_seconds)
+	var date := "%04d-%02d-%02dT%02d:%02d:%02d" % [fields.year, fields.month, fields.day, fields.hour, fields.minute, fields.second]
+	return "%s.%03dZ" % [date, milliseconds]
 
 static func _qconj(quaternion: Array) -> Array:
 	return [-float(quaternion[0]), -float(quaternion[1]), -float(quaternion[2]), float(quaternion[3])]
