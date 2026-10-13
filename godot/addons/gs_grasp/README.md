@@ -41,20 +41,22 @@ penetration and curling free joints until segment skin samples contact the SDF. 
 returns the row, interpolation parameters, touching segments and backoff/stuck flags.
 `close_all(hand, open_rows, closed_rows, shape, wrist, quat, options, wrap, keep)` composes
 that helper for all five fingers and returns the resulting rows, per-finger contact states
-and `grade_grasp` bone-model score. `grade_grasp` exposes the score independently. The
-helpers do not search the thumb CMC or reposition the wrist.
+and `grade_grasp` bone-model score. `grade_grasp` exposes the score independently.
+`thumbSearch` enables the bounded thumb CMC grid/refinement when a wrap thumb misses;
+it does not reposition the wrist.
 
 The JS goldens cover 26 baked/synthetic finger-chain cases, 15 baked/recorded wrist
 placement cases, 8 segment-gap cases, 6 reference-hand geometry cases, 8 explicit
-profile/raw-rest edge cases, 26 palm-placement cases, 90 finger-closure cases and 5
+profile/raw-rest edge cases, 26 palm-placement cases, 90 finger-closure cases and 7
 five-finger closure/grading cases. They
 include twist, axis fallback, custom reference geometry, invalid recorded-length
 fallback, distal-only samples, palm/thenar patches and thumb-row movement, pad
 overrides, clearance offsets, penetration backoff, segment-by-segment contact, free rows
 including proximal and middle contact, out-of-range free rows, and null/zero
-optional-field fallback, including a wrapping thumb contact with opposition. Godot 4.7.2
-passes **10,890 assertions**; this
-does not complete five-finger closure search or imply physical skin contact.
+optional-field fallback, wrapping thumb opposition, out-of-range thumb rows, and searched
+CMC poses both below and above the thumb-stretch threshold. Godot 4.7.2 passes **11,193
+assertions**; bounded wrist placement search and runtime integration
+remain separate work, and the bone model does not imply physical skin contact.
 
 ```gdscript
 const Selector = preload("res://addons/gs_grasp/gs_nearest_grasp.gd")

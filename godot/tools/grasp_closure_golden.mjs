@@ -289,20 +289,36 @@ export function graspCloseAllCases() {
     { side: 'left', kind: 'carton', mode: 'flat', keep: [] },
     { side: 'right', kind: 'bottle_beer', mode: 'wrap', keep: [], defaultScale: true,
       offset: [-0.005, -0.04, 0.005], requireThumbOpposition: true },
+    { side: 'left', kind: 'bottle_wine', mode: 'wrap', keep: [], scale: 0.7,
+      id: 'bottle_wine/left/body/o+0.0337_r225_t+1', thumbSearch: 'any', requireSearch: true,
+      outOfRangeThumbRows: true },
+    { side: 'left', kind: 'can', mode: 'wrap', keep: [], scale: 1.4,
+      id: 'can/left/body/o-0.0217_r045_t-1', thumbSearch: 'any', options: { overshoot: 2 },
+      requireSearch: true, requireThumbStretch: true },
   ];
   for (const [index, spec] of specs.entries()) {
-    const pose = BAKED.poses.find(candidate => candidate.side === spec.side
-      && candidate.kind === spec.kind && candidate.mode === spec.mode);
-    if (!pose) throw new Error(`missing closeAll fixture pose: ${JSON.stringify(spec)}`);
+    const bakedPose = BAKED.poses.find(candidate => candidate.side === spec.side
+      && candidate.kind === spec.kind && candidate.mode === spec.mode && (!spec.id || candidate.id === spec.id));
+    if (!bakedPose) throw new Error(`missing closeAll fixture pose: ${JSON.stringify(spec)}`);
+    const pose = { ...bakedPose, open: bakedPose.open.map(row => [...row]), angles: bakedPose.angles.map(row => [...row]) };
+    if (spec.outOfRangeThumbRows) {
+      pose.open[0][2] = -80;
+      pose.angles[0][2] = -80;
+      pose.angles[0][3] = -80;
+    }
     const hand = spec.defaultScale ? referenceHand(spec.side)
       : referenceHand(spec.side, { scale: spec.scale ?? (index % 2 ? 1.18 : 0.86) });
     const shape = CATALOG[pose.kind].shape;
-    const options = { ...CLOSURE, thumbSearch: false };
+    const options = { ...CLOSURE, ...spec.options, thumbSearch: spec.thumbSearch ?? false };
     const wrist = pose.wrist.map((value, axis) => value + (spec.offset?.[axis] ?? 0));
     const result = closeToContact(pose, hand, shape,
       { wrist, quat: pose.quat, options, keep: spec.keep });
     if (spec.requireThumbOpposition && (!result.grade.thumbTouching || result.grade.opposition < 125))
       throw new Error('closeAll thumb-opposition fixture must touch and oppose beyond 125 degrees');
+    if (spec.requireSearch && !result.fingers.Thumb.searched)
+      throw new Error('closeAll thumb CMC search fixture must find and apply a searched row');
+    if (spec.requireThumbStretch && Math.max(...result.fingers.Thumb.t) <= 1.4)
+      throw new Error('closeAll thumb stretch fixture must exceed t=1.4');
     cases.push({ name: `${spec.side}:${pose.id}:scale-${hand.scale}:keep-${spec.keep.join('-') || 'none'}${spec.offset ? ':thumb-opposition' : ''}`,
       hand: handForGolden(hand), open_rows: pose.open, closed_rows: pose.angles, shape,
       wrist, quat: pose.quat, options, wrap: spec.mode === 'wrap', keep: spec.keep,

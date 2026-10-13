@@ -398,11 +398,45 @@ static func close_all(hand: Dictionary, open_rows: Array, closed_rows: Array, sh
 		if kept:
 			result.kept = true
 		fingers[name] = result
+	var thumb_search: Variant = opts.get("thumbSearch", false)
+	var thumb: Dictionary = fingers.Thumb
+	var search_requested: bool = bool(thumb_search) if thumb_search is bool else (thumb_search != null and not str(thumb_search).is_empty())
+	var search_any: bool = thumb_search is String and str(thumb_search) == "any"
+	var should_search: bool = search_requested and wrap and not bool(thumb.get("kept", false))
+	if should_search:
+		var thumb_stuck := bool(thumb.get("stuck", false))
+		var thumb_missed: bool = (search_any and (thumb_stuck or (thumb.touching as Array).is_empty())) \
+			or (not search_any and not thumb_stuck and (thumb.touching as Array).is_empty())
+		should_search = thumb_missed
+		if should_search and not thumb_stuck:
+			var thumb_gaps: Array = segment_gaps(finger_chain(hand.fingers.Thumb, angles[0]), hand.fingers.Thumb,
+				shape, wrist, quat, float(hand.scale))
+			should_search = minf(float(thumb_gaps[1]), float(thumb_gaps[2])) > 0.003
+	if should_search:
+		var index_tip: Array = _to_item_space(finger_chain(hand.fingers.Index, angles[1])[3], wrist, quat, float(hand.scale))
+		var middle_tip: Array = _to_item_space(finger_chain(hand.fingers.Middle, angles[2])[3], wrist, quat, float(hand.scale))
+		var reference_angle := atan2((float(index_tip[2]) + float(middle_tip[2])) * 0.5,
+			(float(index_tip[0]) + float(middle_tip[0])) * 0.5)
+		var hard: Dictionary = _load_hard_ranges()
+		var search_open := _clamp_close_row("Thumb", open_rows[0], hard)
+		var search_closed := _clamp_close_row("Thumb", closed_rows[0], hard)
+		var searched: Variant = _search_thumb(hand.fingers.Thumb, search_open, search_closed, reference_angle,
+			shape, wrist, quat, float(hand.scale), opts)
+		if searched != null and float(searched.opposition) >= float(opts.opposition):
+			angles[0] = searched.row
+			fingers.Thumb = {"t": searched.t, "touching": searched.touching, "backedOff": false,
+				"searched": true, "opposition": roundf(float(searched.opposition) * 10.0) / 10.0}
 	var grade_options := {"reach": 0.003,
 		"palmGap": float(opts.palmGap) + float(hand.profile.get("palmOffset", 0.0)) * float(hand.scale),
 		"wrap": wrap}
-	return {"angles": angles, "fingers": fingers,
-		"grade": grade_grasp(hand, shape, wrist, quat, angles, grade_options)}
+	var grade: Dictionary = grade_grasp(hand, shape, wrist, quat, angles, grade_options)
+	if bool(fingers.Thumb.get("searched", false)):
+		grade.score -= 4.0
+	if wrap:
+		var thumb_t: Array = fingers.Thumb.t
+		var max_thumb_t := maxf(float(thumb_t[0]), maxf(float(thumb_t[1]), float(thumb_t[2])))
+		grade.score -= 8.0 * maxf(0.0, max_thumb_t - 1.4)
+	return {"angles": angles, "fingers": fingers, "grade": grade}
 
 ## Score bone-model contacts and penetration for five rows in Thumb-to-Little order.
 static func grade_grasp(hand: Dictionary, shape: Dictionary, wrist: Array, quat: Array, angles: Array,
@@ -449,6 +483,72 @@ static func grade_grasp(hand: Dictionary, shape: Dictionary, wrist: Array, quat:
 	return {"score": score, "penetration": penetration, "deepest": deepest,
 		"palmGap": palm.palm, "thenarGap": palm.thenar, "fingersTouching": fingers_touching,
 		"thumbTouching": thumb_touching, "opposition": opposition, "gaps": gaps}
+
+static func _search_thumb(thumb: Dictionary, open_row: Array, closed_row: Array, reference_angle: float,
+		shape: Dictionary, wrist: Array, quat: Array, scale: float, options: Dictionary) -> Variant:
+	var hard: Dictionary = _load_hard_ranges().Thumb
+	var tried: Dictionary = {}
+	var best: Variant = null
+	var dyaw := float(hard.dyaw[0])
+	while dyaw <= float(hard.dyaw[1]) + 1e-9:
+		var pitch := float(hard.pitch[0])
+		while pitch <= float(hard.pitch[1]) + 1e-9:
+			var result: Variant = _try_thumb_candidate(thumb, open_row, closed_row, dyaw, pitch, reference_angle,
+				shape, wrist, quat, scale, options, tried)
+			if result != null and (best == null or float(result.cost) < float(best.cost)):
+				best = result
+			pitch += 20.0
+		dyaw += 20.0
+	if best == null:
+		return null
+	var best_row: Array = best.row
+	for i: int in range(-1, 2):
+		for j: int in range(-1, 2):
+			var result: Variant = _try_thumb_candidate(thumb, open_row, closed_row,
+				float(best_row[0]) + 7.0 * i, float(best_row[1]) + 7.0 * j, reference_angle,
+				shape, wrist, quat, scale, options, tried)
+			if result != null and float(result.cost) < float(best.cost):
+				best = result
+	return best
+
+static func _try_thumb_candidate(thumb: Dictionary, open_row: Array, closed_row: Array, dyaw: float, pitch: float,
+		reference_angle: float, shape: Dictionary, wrist: Array, quat: Array, scale: float,
+		options: Dictionary, tried: Dictionary) -> Variant:
+	var hard: Dictionary = _load_hard_ranges().Thumb
+	dyaw = clampf(dyaw, float(hard.dyaw[0]), float(hard.dyaw[1]))
+	pitch = clampf(pitch, float(hard.pitch[0]), float(hard.pitch[1]))
+	var key := "%s,%s" % [str(dyaw), str(pitch)]
+	if tried.has(key):
+		return tried[key]
+	var flex_open: Array = [float(open_row[2]), float(open_row[3])]
+	var flex_closed: Array = [maxf(float(closed_row[2]), 45.0), maxf(float(closed_row[3]), 50.0)]
+	var twist: Array = [float(closed_row[4])] if closed_row.size() > 4 else []
+	var candidate_open: Array = [dyaw, pitch, flex_open[0], flex_open[1]] + twist
+	var candidate_closed: Array = [dyaw, pitch, flex_closed[0], flex_closed[1]] + twist
+	var result: Dictionary = close_finger("Thumb", thumb, candidate_open, candidate_closed, shape, wrist, quat, scale, options)
+	var found: Variant = null
+	if not bool(result.stuck) and not (result.touching as Array).is_empty():
+		var tip: Array = _to_item_space(finger_chain(thumb, result.row)[3], wrist, quat, scale)
+		var opposition := _angle_separation(atan2(float(tip[2]), float(tip[0])), reference_angle) * 180.0 / PI
+		var cost := (absf(dyaw - float(closed_row[0])) + absf(pitch - float(closed_row[1]))) / 60.0
+		cost += maxf(0.0, float(options.opposition) - opposition) / 5.0
+		result.opposition = opposition
+		result.cost = cost
+		found = result
+	tried[key] = found
+	return found
+
+static func _clamp_close_row(name: String, row: Array, hard: Dictionary) -> Array:
+	var clamped: Array = []
+	for joint: int in mini(row.size(), 4):
+		clamped.append(_limited_row_value(name, joint, float(row[joint]), hard, false))
+	if row.size() > 4:
+		clamped.append(_limited_row_value(name, 4, float(row[4]), hard, false))
+	return clamped
+
+static func _angle_separation(a: float, b: float) -> float:
+	var separation := fposmod(absf(a - b), TAU)
+	return TAU - separation if separation > PI else separation
 
 static func _palm_anchor(pose: Dictionary, side: String, reference: Dictionary) -> Array:
 	var factor := 1.0

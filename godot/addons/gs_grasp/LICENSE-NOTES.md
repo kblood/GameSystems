@@ -81,7 +81,7 @@ Kasper Olesen.
 `GSGraspClosure` ports the public `handGeometry`, `fingerChain`, `placeWrist`,
 `placePalm`, single-finger `closeFinger` and segment-gap behavior from MIT GameSystems
 `extensions/grasp/closure.js`, using the sibling `GSGraspShapeSdf` for item distances.
-It closes all five fingers independently through `close_all` and exposes the
-bone-model quality score through `grade_grasp`. It does not search the thumb CMC,
-reposition the wrist, or integrate a runtime hand. The goldens call public JS results; the GDScript, probe and tests are
+It closes all five fingers independently through `close_all`, exposes the bone-model
+quality score through `grade_grasp`, and ports the optional bounded thumb CMC search.
+It does not reposition the wrist or integrate a runtime hand. The goldens call public JS results; the GDScript, probe and tests are
 original GameSystems MIT work, Copyright (c) 2026 Kasper Olesen.

@@ -4,9 +4,10 @@
 
 `GSGraspClosure.close_all` lukker de fem fingre mod én placering med deres individuelle
 `close_finger`-forløb og respekterer `wrap`/`keep`. `grade_grasp` beregner separat segment-
-og hudgab, kontaktantal, modstilling, indtrængning og en samlet score. Fem JS-oracle-cases
+og hudgab, kontaktantal, modstilling, indtrængning og en samlet score. Seks JS-oracle-cases
 dækker begge hænder, flere katalogformer, skalering, fri tommel og flat/wrap-grib. Closure-
-suiten består nu **10.890/10.890** assertions. Thumb CMC-søgning, wrist placement-search
+suiten består nu **11.193/11.193** assertions. `thumbSearch` inkluderer den afgrænsede CMC-
+grid og lokale forfining, når en wrap-tommel mangler kontakt. Bounded wrist placement-search
 og runtime-integration mangler fortsat.
 
 ## G4 kontaktlukning for én finger — 2026-10-13
