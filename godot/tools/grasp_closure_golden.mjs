@@ -8,6 +8,9 @@ import REFERENCE from '../../extensions/grasp/reference_hand.json' with { type: 
 const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
 const modelForGolden = model => ({ base: model.base, len: model.len, axes: model.axes,
   hinge: model.hinge, restYaw: model.restYaw, twistSign: model.twistSign, radius: model.radius });
+const handForGolden = hand => ({ side: hand.side, scale: hand.scale, length: hand.length, profile: hand.profile,
+  fingers: Object.fromEntries(FINGERS.map(name => [name, modelForGolden(hand.fingers[name])])),
+  palm: hand.palm, thenar: hand.thenar });
 
 export function graspClosureCases() {
   const cases = [];
@@ -273,6 +276,37 @@ export function graspCloseFingerCases() {
       scale: contact_hand.scale, options: CLOSURE,
       expected: { row: result.angles[contact_index], t: contact.t, touching: contact.touching,
         backedOff: contact.backedOff, stuck: contact.stuck } });
+  }
+  return cases;
+}
+
+export function graspCloseAllCases() {
+  const cases = [];
+  const specs = [
+    { side: 'right', kind: 'bottle_beer', mode: 'wrap', keep: [] },
+    { side: 'left', kind: 'bottle_wine', mode: 'wrap', keep: ['Thumb'] },
+    { side: 'right', kind: 'can', mode: 'wrap', keep: [] },
+    { side: 'left', kind: 'carton', mode: 'flat', keep: [] },
+    { side: 'right', kind: 'bottle_beer', mode: 'wrap', keep: [], defaultScale: true,
+      offset: [-0.005, -0.04, 0.005], requireThumbOpposition: true },
+  ];
+  for (const [index, spec] of specs.entries()) {
+    const pose = BAKED.poses.find(candidate => candidate.side === spec.side
+      && candidate.kind === spec.kind && candidate.mode === spec.mode);
+    if (!pose) throw new Error(`missing closeAll fixture pose: ${JSON.stringify(spec)}`);
+    const hand = spec.defaultScale ? referenceHand(spec.side)
+      : referenceHand(spec.side, { scale: spec.scale ?? (index % 2 ? 1.18 : 0.86) });
+    const shape = CATALOG[pose.kind].shape;
+    const options = { ...CLOSURE, thumbSearch: false };
+    const wrist = pose.wrist.map((value, axis) => value + (spec.offset?.[axis] ?? 0));
+    const result = closeToContact(pose, hand, shape,
+      { wrist, quat: pose.quat, options, keep: spec.keep });
+    if (spec.requireThumbOpposition && (!result.grade.thumbTouching || result.grade.opposition < 125))
+      throw new Error('closeAll thumb-opposition fixture must touch and oppose beyond 125 degrees');
+    cases.push({ name: `${spec.side}:${pose.id}:scale-${hand.scale}:keep-${spec.keep.join('-') || 'none'}${spec.offset ? ':thumb-opposition' : ''}`,
+      hand: handForGolden(hand), open_rows: pose.open, closed_rows: pose.angles, shape,
+      wrist, quat: pose.quat, options, wrap: spec.mode === 'wrap', keep: spec.keep,
+      expected: { angles: result.angles, fingers: result.fingers, grade: result.grade } });
   }
   return cases;
 }

@@ -2,7 +2,7 @@
   "schema": "gamesystems.golden.grasp-finger-chain.v1",
   "generator": "godot/tools/gen_golden.mjs",
   "probe": "godot/tools/grasp_closure_golden.mjs",
-  "probe_sha256": "2a8ba05bfdee6e88af90313658f38da39338fc0d9a2bc1db35aef7e06101065f",
+  "probe_sha256": "65cb20cbb1746a81795f35841dadab214c5707b9cf27daed0ff9b3208a7e89cc",
   "sources_sha256": {
     "extensions/grasp/closure.js": "36f7db257179e244163422eb39487060b8d1cfce776c3facad303310d4fdc2f0",
     "extensions/grasp/record.js": "addf91980a7403cd4b930562614aa96e04fb9d99b8955f9d683d6da4ff8b2e84",

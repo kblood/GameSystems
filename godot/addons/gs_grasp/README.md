@@ -39,16 +39,21 @@ per-frame path.
 scale, options)` closes one finger along its baked row, backing out of excessive
 penetration and curling free joints until segment skin samples contact the SDF. It
 returns the row, interpolation parameters, touching segments and backoff/stuck flags.
-It does not run thumb CMC search or integrate all five fingers into a grasp.
+`close_all(hand, open_rows, closed_rows, shape, wrist, quat, options, wrap, keep)` composes
+that helper for all five fingers and returns the resulting rows, per-finger contact states
+and `grade_grasp` bone-model score. `grade_grasp` exposes the score independently. The
+helpers do not search the thumb CMC or reposition the wrist.
 
 The JS goldens cover 26 baked/synthetic finger-chain cases, 15 baked/recorded wrist
 placement cases, 8 segment-gap cases, 6 reference-hand geometry cases, 8 explicit
-profile/raw-rest edge cases, 26 palm-placement cases and 90 finger-closure cases. They
+profile/raw-rest edge cases, 26 palm-placement cases, 90 finger-closure cases and 5
+five-finger closure/grading cases. They
 include twist, axis fallback, custom reference geometry, invalid recorded-length
 fallback, distal-only samples, palm/thenar patches and thumb-row movement, pad
 overrides, clearance offsets, penetration backoff, segment-by-segment contact, free rows
 including proximal and middle contact, out-of-range free rows, and null/zero
-optional-field fallback. Godot 4.7.2 passes **10,149 assertions**; this
+optional-field fallback, including a wrapping thumb contact with opposition. Godot 4.7.2
+passes **10,890 assertions**; this
 does not complete five-finger closure search or imply physical skin contact.
 
 ```gdscript

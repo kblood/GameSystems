@@ -373,6 +373,83 @@ static func _load_hard_ranges() -> Dictionary:
 		_hard_ranges = ValidatorDataReader.load_data().get("HARD", {})
 	return _hard_ranges
 
+## Close all five rows against one placement and grade the resulting bone-model grasp.
+## `open_rows` and `closed_rows` are ordered Thumb, Index, Middle, Ring, Little. This does not search the thumb CMC
+## or reposition the wrist; callers can compose it with place_palm and later bounded-search helpers.
+static func close_all(hand: Dictionary, open_rows: Array, closed_rows: Array, shape: Dictionary,
+		wrist: Array, quat: Array, options: Dictionary = {}, wrap: bool = true, keep: Array = []) -> Dictionary:
+	var opts: Dictionary = _load_closure_defaults().duplicate(true)
+	opts.merge(options, true)
+	var angles: Array = []
+	var fingers: Dictionary = {}
+	for index: int in FINGERS.size():
+		var name: String = FINGERS[index]
+		var kept := keep.has(name)
+		var finger_options := opts.duplicate(true)
+		if kept:
+			finger_options.free = true
+		if not wrap:
+			finger_options.overshoot = 0.0
+		var closed: Dictionary = close_finger(name, hand.fingers[name], open_rows[index], closed_rows[index],
+			shape, wrist, quat, float(hand.scale), finger_options)
+		angles.append(closed.row)
+		var result: Dictionary = {"t": closed.t, "touching": closed.touching,
+			"backedOff": closed.backedOff, "stuck": closed.stuck}
+		if kept:
+			result.kept = true
+		fingers[name] = result
+	var grade_options := {"reach": 0.003,
+		"palmGap": float(opts.palmGap) + float(hand.profile.get("palmOffset", 0.0)) * float(hand.scale),
+		"wrap": wrap}
+	return {"angles": angles, "fingers": fingers,
+		"grade": grade_grasp(hand, shape, wrist, quat, angles, grade_options)}
+
+## Score bone-model contacts and penetration for five rows in Thumb-to-Little order.
+static func grade_grasp(hand: Dictionary, shape: Dictionary, wrist: Array, quat: Array, angles: Array,
+		options: Dictionary = {}) -> Dictionary:
+	var reach := float(options.get("reach", 0.003))
+	var palm_gap_target := float(options.get("palmGap", _load_closure_defaults().get("palmGap", 0.004)))
+	var wrap := bool(options.get("wrap", true))
+	var gaps: Dictionary = {}
+	var tips: Dictionary = {}
+	var deepest := INF
+	for index: int in FINGERS.size():
+		var name: String = FINGERS[index]
+		var finger: Dictionary = hand.fingers[name]
+		var chain: Array = finger_chain(finger, angles[index])
+		var measured: Array = segment_gaps(chain, finger, shape, wrist, quat, float(hand.scale))
+		gaps[name] = measured
+		for gap: float in measured:
+			deepest = minf(deepest, gap)
+		tips[name] = _to_item_space(chain[3], wrist, quat, float(hand.scale))
+	var palm: Dictionary = _palm_gaps(hand, wrist, quat, shape, angles[0])
+	var fingers_touching := 0
+	for name: String in ["Index", "Middle", "Ring", "Little"]:
+		if float(gaps[name][2]) <= reach:
+			fingers_touching += 1
+	var thumb_touching := minf(float(gaps.Thumb[1]), float(gaps.Thumb[2])) <= reach
+	var index_tip: Array = tips.Index
+	var middle_tip: Array = tips.Middle
+	var ref_angle := atan2((float(index_tip[2]) + float(middle_tip[2])) * 0.5,
+		(float(index_tip[0]) + float(middle_tip[0])) * 0.5)
+	var thumb_tip: Array = tips.Thumb
+	var thumb_angle := atan2(float(thumb_tip[2]), float(thumb_tip[0]))
+	var opposition_radians: float = fposmod(absf(thumb_angle - ref_angle), TAU)
+	if opposition_radians > PI:
+		opposition_radians = TAU - opposition_radians
+	var opposition: float = opposition_radians * 180.0 / PI
+	var penetration := maxf(0.0, -minf(deepest, minf(float(palm.thenar), float(palm.palm))))
+	var score := 3.0 * fingers_touching - 6.0 * maxf(0.0, penetration * 1000.0 - 1.5)
+	score -= 1.5 * maxf(0.0, float(palm.palm) * 1000.0 - maxf(5.0, palm_gap_target * 1000.0 + 1.0))
+	if wrap:
+		if thumb_touching:
+			score += 5.0 + minf(opposition, 140.0) / 35.0
+			if opposition >= 125.0:
+				score += 3.0
+	return {"score": score, "penetration": penetration, "deepest": deepest,
+		"palmGap": palm.palm, "thenarGap": palm.thenar, "fingersTouching": fingers_touching,
+		"thumbTouching": thumb_touching, "opposition": opposition, "gaps": gaps}
+
 static func _palm_anchor(pose: Dictionary, side: String, reference: Dictionary) -> Array:
 	var factor := 1.0
 	var hand_length: Variant = pose.get("handLength")
