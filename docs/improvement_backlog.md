@@ -1,5 +1,28 @@
 # Løbende forbedringer af GameSystems
 
+## G3 closure-defaults som selvstændig datakontrakt — 2026-10-13
+
+`CLOSURE`, `PAD_RADIUS`, `REFERENCE_HAND` og `THUMB_TILT` ligger nu i den versionerede
+`extensions/grasp/data/closure.data.json`. JS-eksporterne bevarer alle værdier, den
+frosne `CLOSURE` og de mutable radius-/reference-objekter. En SHA-256-regression er
+taget fra de oprindelige eksporter før udtrækket; også `Math.PI / 3` bevarer præcis
+samme floating-point-værdi. Den eksisterende tilladte `grasp/data/`-sync kopierer
+datasættet ind i demoen, og regressionen sammenligner demoens offentlige eksporter.
+
+`GSGraspClosureData` i `gs_grasp_data` indlæser et separat skema og afviser bl.a.
+forkerte typer, ikke-endelige tal, manglende fingre, negative afstande, nul march-step
+og brøkdele af iterationsantal. Godot-goldenen kommer fra JS-eksporterne og registrerer
+hashes for closure-modulet og alle dets lokale importafhængigheder. Ingen closure-,
+fingermodel- eller koordinatkonverteringsalgoritme er portet i dette trin.
+
+Fokuseret kildeverifikation: Godot 4.7.2 **38/38** for closure-data og **35/35** for
+validator-data; **16/16** lokale JS-checks for data, demo-sync, grasp, avatar-grasp og
+optagelsesflow; golden-generatorens `--check` passerer. Spil-repoerne er endnu ikke
+synkroniseret for denne slice. Contracts-sammenligningen fejlede som forventet på den
+manglende nye fil og er eksplicit udeladt fra den fokuserede lokale kørsel. Den skal
+bestå efter integrationssync. G3 mangler fortsat katalog, held-drive, kvalitetsdata
+og Godot-kontrakter for de eksisterende bake-/recording-/reference-hand-filer.
+
 ## G3 humanoid-data: første Godot-forbruger — 2026-10-13
 
 `gs_humanoid` har nu en lille Godot-læser, der afviser forkert skema, manglende eller

@@ -12,6 +12,7 @@ import { JOINT_NAMES } from '../../extensions/humanoid/canonical.js';
 import { MPFB_ROOT_BONE } from '../../extensions/humanoid/rig.js';
 import { MPFB_GAME_ENGINE, VRM_HUMANOID, VRM0_HUMANOID, mixamoBoneMap } from '../../extensions/humanoid/bone_maps.js';
 import { HARD, COMFORT, GATES } from '../../extensions/grasp/grasp_validator.js';
+import { CLOSURE, PAD_RADIUS, REFERENCE_HAND, THUMB_TILT } from '../../extensions/grasp/closure.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const sha256 = async path => createHash('sha256').update(await readFile(path)).digest('hex');
@@ -79,9 +80,29 @@ async function graspValidatorGolden() {
   ];
 }
 
+async function graspClosureGolden() {
+  const source = resolve(ROOT, 'extensions/grasp/data/closure.data.json');
+  const contract = JSON.parse(await readFile(source, 'utf8'));
+  const expected = { schema: 'gamesystems.grasp-closure-data.v1', CLOSURE, PAD_RADIUS, REFERENCE_HAND, THUMB_TILT };
+  deepStrictEqual(contract, expected, 'Grasp closure data differs from the public JS API');
+  // Include the closure module and its complete local import graph.
+  const names = ['data/closure.data.json', 'closure.js', 'catalog.js', 'grasp_validator.js', 'data/validator.data.json'];
+  const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
+    const path = resolve(ROOT, 'extensions/grasp', name);
+    return [rel(path), await sha256(path)];
+  })));
+  return [
+    { path: resolve(ROOT, 'godot/addons/gs_grasp_data/data/closure.data.json'), data: contract, pretty: true },
+    { path: resolve(ROOT, 'godot/addons/gs_grasp_data/data/closure.golden.json'), data: {
+      schema: 'gamesystems.golden.grasp-closure-data.v1', generator: 'godot/tools/gen_golden.mjs',
+      source: rel(source), source_sha256: await sha256(source), sources_sha256, contract: expected,
+    }, pretty: true },
+  ];
+}
+
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden()]) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)

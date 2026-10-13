@@ -17,13 +17,14 @@
 // +X = Y x Z (thumb side for the right hand, little-finger side for the left), metres of the character's rest rig.
 import { signedDistance } from './catalog.js';
 import { HARD, clampRows } from './grasp_validator.js';
+import CLOSURE_DATA from './data/closure.data.json' with { type: 'json' };
 
 const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
 const KEYS = ['dyaw', 'pitch', 'bend1', 'bend2', 'twist'];
 const D2R = Math.PI / 180;
 /** Thumb nail-side tilt from the back of the hand toward the thumb side (rad): the avatar's rigdata THUMB_AXIS.tilt
  * (default; a rest hand may bring its own `thumbTilt`). */
-export const THUMB_TILT = Math.PI / 3;
+export const THUMB_TILT = CLOSURE_DATA.THUMB_TILT;
 
 /**
  * Effective pad radius per segment (proximal, middle, distal) as a fraction of the hand length (wrist -> middle
@@ -33,13 +34,7 @@ export const THUMB_TILT = Math.PI / 3;
  * fingers' proximal/middle segments rarely touch in those grasps, so they are the distal value +10 % / +5 %.
  * A character can pass its own `radii`.
  */
-export const PAD_RADIUS = {
-  Thumb: [0.031, 0.037, 0.032],
-  Index: [0.055, 0.052, 0.05],
-  Middle: [0.04, 0.037, 0.034],
-  Ring: [0.05, 0.047, 0.045],
-  Little: [0.044, 0.042, 0.04],
-};
+export const PAD_RADIUS = CLOSURE_DATA.PAD_RADIUS;
 /**
  * The hand the baked grasps were fitted on (CharacterCreator male, lab scale): world hand length (m) and the palm
  * anchor (hand-local, m) the wrist offset scales about. A bigger hand moves the wrist away from the item by
@@ -48,7 +43,7 @@ export const PAD_RADIUS = {
  * palm centre (avatar handprofile.js, profile frame: +x radial; mean of both hands, lab scale 1): where placePalm puts a
  * character's own profile palm centre.
  */
-export const REFERENCE_HAND = { length: 0.203, palm: [0, -0.0238, 0.0685], palmCenter: [-0.0065, -0.0249, 0.0617] };
+export const REFERENCE_HAND = CLOSURE_DATA.REFERENCE_HAND;
 /**
  * Closure tuning (see closeFinger): each finger starts at its baked closed row (t = 1; t = 0 is the open approach).
  * A bake deeper than `squeeze` (m) inside the item opens along its shape (down to t = -backoff); one within `touch` (m)
@@ -68,7 +63,7 @@ export const REFERENCE_HAND = { length: 0.203, palm: [0, -0.0238, 0.0685], palmC
  * goes deeper still (a thumb's approach can swing through the item) is kept if within `tolerate`, else marked stuck.
  * ~40 thumb closures (~1-3 ms in node), only for such poses, once per grab. Without it a pose closes in ~0.1-0.3 ms.
  */
-export const CLOSURE = Object.freeze({ overshoot: 0.7, backoff: 0.5, squeeze: 0.001, touch: 0.002, tolerate: 0.002, step: 0.1, bisect: 6, opposition: 130, thumbSearch: false, palmGap: 0.004, palmSlide: 0.04 });
+export const CLOSURE = Object.freeze(CLOSURE_DATA.CLOSURE);
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];

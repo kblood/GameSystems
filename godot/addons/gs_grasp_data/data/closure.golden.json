@@ -1,0 +1,70 @@
+{
+  "schema": "gamesystems.golden.grasp-closure-data.v1",
+  "generator": "godot/tools/gen_golden.mjs",
+  "source": "extensions/grasp/data/closure.data.json",
+  "source_sha256": "f605e05e7eafa04828541ceeb8bcf660626a22705d52acf6f21e0f18d37c7f3a",
+  "sources_sha256": {
+    "extensions/grasp/data/closure.data.json": "f605e05e7eafa04828541ceeb8bcf660626a22705d52acf6f21e0f18d37c7f3a",
+    "extensions/grasp/closure.js": "36f7db257179e244163422eb39487060b8d1cfce776c3facad303310d4fdc2f0",
+    "extensions/grasp/catalog.js": "424e7afddf571fd818f63089458b24cacf0a6d94a42d8415ae3d515a08d42751",
+    "extensions/grasp/grasp_validator.js": "fd7ad39311e1507781ff46f765e06fb3bdae6aa89b3ec4e61c01d76243c536f7",
+    "extensions/grasp/data/validator.data.json": "cb2c14b5eb7bd0a8cadeaf80c7b70f5685290f7811b83f53b31b9c3a795948b7"
+  },
+  "contract": {
+    "schema": "gamesystems.grasp-closure-data.v1",
+    "CLOSURE": {
+      "overshoot": 0.7,
+      "backoff": 0.5,
+      "squeeze": 0.001,
+      "touch": 0.002,
+      "tolerate": 0.002,
+      "step": 0.1,
+      "bisect": 6,
+      "opposition": 130,
+      "thumbSearch": false,
+      "palmGap": 0.004,
+      "palmSlide": 0.04
+    },
+    "PAD_RADIUS": {
+      "Thumb": [
+        0.031,
+        0.037,
+        0.032
+      ],
+      "Index": [
+        0.055,
+        0.052,
+        0.05
+      ],
+      "Middle": [
+        0.04,
+        0.037,
+        0.034
+      ],
+      "Ring": [
+        0.05,
+        0.047,
+        0.045
+      ],
+      "Little": [
+        0.044,
+        0.042,
+        0.04
+      ]
+    },
+    "REFERENCE_HAND": {
+      "length": 0.203,
+      "palm": [
+        0,
+        -0.0238,
+        0.0685
+      ],
+      "palmCenter": [
+        -0.0065,
+        -0.0249,
+        0.0617
+      ]
+    },
+    "THUMB_TILT": 1.0471975511965976
+  }
+}

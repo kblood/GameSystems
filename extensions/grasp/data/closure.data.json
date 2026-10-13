@@ -1,0 +1,57 @@
+{
+  "schema": "gamesystems.grasp-closure-data.v1",
+  "CLOSURE": {
+    "overshoot": 0.7,
+    "backoff": 0.5,
+    "squeeze": 0.001,
+    "touch": 0.002,
+    "tolerate": 0.002,
+    "step": 0.1,
+    "bisect": 6,
+    "opposition": 130,
+    "thumbSearch": false,
+    "palmGap": 0.004,
+    "palmSlide": 0.04
+  },
+  "PAD_RADIUS": {
+    "Thumb": [
+      0.031,
+      0.037,
+      0.032
+    ],
+    "Index": [
+      0.055,
+      0.052,
+      0.05
+    ],
+    "Middle": [
+      0.04,
+      0.037,
+      0.034
+    ],
+    "Ring": [
+      0.05,
+      0.047,
+      0.045
+    ],
+    "Little": [
+      0.044,
+      0.042,
+      0.04
+    ]
+  },
+  "REFERENCE_HAND": {
+    "length": 0.203,
+    "palm": [
+      0,
+      -0.0238,
+      0.0685
+    ],
+    "palmCenter": [
+      -0.0065,
+      -0.0249,
+      0.0617
+    ]
+  },
+  "THUMB_TILT": 1.0471975511965976
+}
