@@ -35,10 +35,19 @@ appropriate. Treat haptics as optional feedback.
 OpenXR hand tracking is capability-dependent. Godot exposes hand joints through
 `XRHandTracker` and `XRHandModifier3D`; controller-inferred finger poses and camera-based
 optical tracking are different sources with different confidence and loss patterns.
-Keep hand presence/tracking validity separate from the last known pose. Eye gaze is an
-optional target pose, not a replacement for confirmation: pair it with a deliberate
-select action and avoid using gaze for sensitive choices. Body tracking and eye gaze
-extensions must be checked at runtime.
+Keep hand presence/tracking validity separate from the last known pose. Also watch
+`XRHandTracker.hand_tracking_source` on the reserved
+`/user/hand_tracker/left` and `/user/hand_tracker/right` trackers: the source can change
+from controller-inferred to unobstructed optical tracking while the controller profile
+and valid-pose flag remain unchanged. Treat that source change as an input/pose-history
+boundary; cancel in-progress gestures, preserve object ownership, and require neutral
+input before accepting a fresh press. If the runtime reports `UNKNOWN`, that field cannot
+identify a source-only transition; also observe tracker/profile/availability changes and
+verify the handoff behavior on the target runtime. See the
+[`XRHandTracker` API](https://docs.godotengine.org/en/4.7/classes/class_xrhandtracker.html).
+Eye gaze is an optional target pose, not a replacement for confirmation: pair it with a
+deliberate select action and avoid using gaze for sensitive choices. Body tracking and
+eye gaze extensions must be checked at runtime.
 
 Godot's hand tracking notes explain the humanoid skeleton mapping and differences among
 runtimes: [OpenXR hand tracking](https://docs.godotengine.org/en/latest/tutorials/xr/openxr_hand_tracking.html).
