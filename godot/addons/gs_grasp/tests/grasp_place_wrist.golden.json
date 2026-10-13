@@ -2,7 +2,7 @@
   "schema": "gamesystems.golden.grasp-place-wrist.v1",
   "generator": "godot/tools/gen_golden.mjs",
   "probe": "godot/tools/grasp_closure_golden.mjs",
-  "probe_sha256": "33ed5e2e5f8af293273a1d826ae9f6a461415ab57128de196868f75659019c6d",
+  "probe_sha256": "55d0ad849d59666806e8cf9e6ce0d7ebeda031adb7cacc01dce139694557a6c5",
   "sources_sha256": {
     "extensions/grasp/closure.js": "36f7db257179e244163422eb39487060b8d1cfce776c3facad303310d4fdc2f0",
     "extensions/grasp/record.js": "addf91980a7403cd4b930562614aa96e04fb9d99b8955f9d683d6da4ff8b2e84",

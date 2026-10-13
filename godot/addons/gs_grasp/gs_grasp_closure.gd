@@ -8,7 +8,11 @@ const DEFAULT_THUMB_TILT := PI / 3.0
 const DEFAULT_REFERENCE_HAND := {
 	"length": 0.203,
 	"palm": [0.0, -0.0238, 0.0685],
+	"palmCenter": [-0.0065, -0.0249, 0.0617],
 }
+const DEFAULT_PALM_GAP := 0.004
+const DEFAULT_PALM_SLIDE := 0.04
+const DEFAULT_SQUEEZE := 0.001
 const DEFAULT_PAD_RADIUS := {
 	"Thumb": [0.031, 0.037, 0.032],
 	"Index": [0.055, 0.052, 0.05],
@@ -146,6 +150,120 @@ static func place_wrist(pose: Dictionary, hand: Dictionary, reference: Dictionar
 	var palm_offset := _rotate_by_quaternion(_scale(reference.palm, offset), quat)
 	return {"wrist": _add(wrist, palm_offset), "quat": quat.duplicate()}
 
+## Place this hand's palm centre on the baked palm anchor, then slide along the palm normal to fit palm/thenar clearance.
+## `offset` is in hand space: lateral/along/normal in metres, pitch/twist in degrees. `thumb_row` moves profile thenar
+## samples with the thumb CMC. A null shape returns only the unslid wrist and orientation.
+static func place_palm(pose: Dictionary, hand: Dictionary, shape: Variant = null, options: Dictionary = {},
+		offset: Dictionary = {}, thumb_row: Variant = "__pose_approach__", reference: Dictionary = DEFAULT_REFERENCE_HAND) -> Dictionary:
+	var opts := {"palmGap": DEFAULT_PALM_GAP, "palmSlide": DEFAULT_PALM_SLIDE, "squeeze": DEFAULT_SQUEEZE}
+	opts.merge(options, true)
+	var effective_thumb_row: Variant = thumb_row
+	if effective_thumb_row is String and effective_thumb_row == "__pose_approach__":
+		var approach: Variant = pose.get("open", [])
+		if approach is Array and not approach.is_empty():
+			effective_thumb_row = approach[0]
+	var orient: Array = pose.quat.duplicate()
+	var pitch := float(offset.get("pitch", 0.0))
+	if pitch != 0.0:
+		orient = _quaternion_multiply(orient, _axis_angle_quaternion([1.0, 0.0, 0.0], pitch * D2R))
+	var twist := float(offset.get("twist", 0.0))
+	if twist != 0.0:
+		orient = _quaternion_multiply(orient, _axis_angle_quaternion(hand.palm.normal, twist * D2R))
+	var pivot := _palm_anchor(pose, str(hand.side), reference)
+	var lateral := float(offset.get("lateral", 0.0))
+	if lateral != 0.0:
+		pivot = _add(pivot, _rotate_by_quaternion([-lateral if hand.side == "left" else lateral, 0.0, 0.0], pose.quat))
+	var scale := float(hand.scale)
+	var palm_center: Array = hand.palm.center
+	var along := float(offset.get("along", 0.0))
+	var at := palm_center.duplicate()
+	if along != 0.0:
+		at[2] = float(at[2]) + along / scale
+	var wrist := _sub(pivot, _rotate_by_quaternion(_scale(at, scale), orient))
+	if shape == null:
+		return {"wrist": wrist, "quat": orient}
+	var normal := _rotate_by_quaternion(hand.palm.normal, orient)
+	var gaps := _palm_gaps(hand, wrist, orient, shape, effective_thumb_row)
+	var moved := 0.0
+	var palm_slide := float(opts.palmSlide)
+	for _iteration: int in 3:
+		if not _finite_number(gaps.palm):
+			break
+		var palm_offset: Variant = hand.profile.get("palmOffset", 0.0)
+		if not _finite_number(palm_offset):
+			palm_offset = 0.0
+		var want := float(gaps.palm) - float(opts.palmGap) - float(palm_offset) * scale
+		want = maxf(-palm_slide - moved, minf(palm_slide - moved, want))
+		if absf(want) < 1e-4:
+			break
+		wrist = _add(wrist, _scale(normal, want))
+		moved += want
+		gaps = _palm_gaps(hand, wrist, orient, shape, effective_thumb_row)
+	for _iteration: int in 3:
+		if float(gaps.thenar) >= -float(opts.squeeze):
+			break
+		wrist = _add(wrist, _scale(normal, float(gaps.thenar) + float(opts.squeeze) / 2.0))
+		gaps = _palm_gaps(hand, wrist, orient, shape, effective_thumb_row)
+	var normal_offset := float(offset.get("normal", 0.0))
+	if normal_offset != 0.0:
+		wrist = _add(wrist, _scale(normal, -normal_offset))
+		gaps = _palm_gaps(hand, wrist, orient, shape, effective_thumb_row)
+	return {"wrist": wrist, "quat": orient, "palmGap": gaps.palm, "thenarGap": gaps.thenar}
+
+static func _palm_anchor(pose: Dictionary, side: String, reference: Dictionary) -> Array:
+	var factor := 1.0
+	var hand_length: Variant = pose.get("handLength")
+	if _finite_number(hand_length) and float(hand_length) > 0.0:
+		factor = float(hand_length) / float(reference.length)
+	var center: Array = reference.palmCenter.duplicate()
+	if side == "left":
+		center[0] = -float(center[0])
+	return _add(pose.wrist, _rotate_by_quaternion(_scale(center, factor), pose.quat))
+
+static func _palm_gaps(hand: Dictionary, wrist: Array, quat: Array, shape: Dictionary, thumb_row: Variant) -> Dictionary:
+	var palm := INF
+	for sample: Array in hand.palm.samples:
+		var distance: Variant = ShapeSdf.signed_distance(shape, _to_item_space(sample, wrist, quat, float(hand.scale)))
+		if _finite_number(distance):
+			palm = minf(palm, float(distance))
+	var thenar := INF
+	var points: Array = hand.thenar.points
+	if not points.is_empty():
+		for point: Array in _thenar_points(hand, thumb_row):
+			var distance: Variant = ShapeSdf.signed_distance(shape, _to_item_space(point, wrist, quat, float(hand.scale)))
+			if _finite_number(distance):
+				thenar = minf(thenar, float(distance))
+	else:
+		var a: Array = hand.thenar.a
+		var b: Array = hand.thenar.b
+		for fraction: float in [0.0, 0.5, 1.0]:
+			var sample := _add(a, _scale(_sub(b, a), fraction))
+			var distance: Variant = ShapeSdf.signed_distance(shape, _to_item_space(sample, wrist, quat, float(hand.scale)))
+			if _finite_number(distance):
+				thenar = minf(thenar, float(distance) - float(hand.thenar.radius) * float(hand.scale))
+	return {"palm": palm, "thenar": thenar}
+
+static func _thenar_points(hand: Dictionary, thumb_row: Variant) -> Array:
+	var points: Array = hand.thenar.points
+	if thumb_row == null or not thumb_row is Array or points.is_empty():
+		return points
+	var thumb: Dictionary = hand.fingers.Thumb
+	var base: Array = thumb.base
+	var rest_joint: Array = finger_chain(thumb, [0.0, 0.0, 0.0, 0.0])[1]
+	var target_joint: Array = finger_chain(thumb, thumb_row)[1]
+	var rest_direction := _norm(_sub(rest_joint, base))
+	var target_direction := _norm(_sub(target_joint, base))
+	var axis := _cross(rest_direction, target_direction)
+	var sine := _length(axis)
+	if sine < 1e-6:
+		return points
+	var angle := atan2(sine, _dot(rest_direction, target_direction))
+	axis = _scale(axis, 1.0 / sine)
+	var moved: Array = []
+	for point: Array in points:
+		moved.append(_add(base, _turn(_sub(point, base), axis, angle)))
+	return moved
+
 ## Convert one valid [dyaw, pitch, bend1, bend2, optional thumb twist] row to
 ## [base, MCP, PIP, tip] points in the hand frame, matching closure.fingerChain.
 static func finger_chain(finger: Dictionary, row: Array) -> Array:
@@ -254,6 +372,25 @@ static func _rotate_by_quaternion(vector: Array, quaternion: Array) -> Array:
 	return [float(vector[0]) + w * tx + y * tz - z * ty,
 		float(vector[1]) + w * ty + z * tx - x * tz,
 		float(vector[2]) + w * tz + x * ty - y * tx]
+
+static func _quaternion_multiply(a: Array, b: Array) -> Array:
+	var ax := float(a[0])
+	var ay := float(a[1])
+	var az := float(a[2])
+	var aw := float(a[3])
+	var bx := float(b[0])
+	var by := float(b[1])
+	var bz := float(b[2])
+	var bw := float(b[3])
+	return [aw * bx + ax * bw + ay * bz - az * by,
+		aw * by - ax * bz + ay * bw + az * bx,
+		aw * bz + ax * by - ay * bx + az * bw,
+		aw * bw - ax * bx - ay * by - az * bz]
+
+static func _axis_angle_quaternion(axis: Array, angle: float) -> Array:
+	var half := angle / 2.0
+	var sine := sin(half)
+	return [float(axis[0]) * sine, float(axis[1]) * sine, float(axis[2]) * sine, cos(half)]
 
 static func _to_item_space(point: Array, wrist: Array, quat: Array, scale: float) -> Array:
 	return _add(wrist, _rotate_by_quaternion(_scale(point, scale), quat))

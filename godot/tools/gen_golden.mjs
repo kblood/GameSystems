@@ -15,7 +15,7 @@ import { graspVariantsCases } from './grasp_variants_golden.mjs';
 import { graspRecordedPosesCases } from './grasp_recorded_poses_golden.mjs';
 import { graspMirrorCases } from './grasp_mirror_golden.mjs';
 import { graspCaptureCases } from './grasp_capture_golden.mjs';
-import { graspClosureCases, graspPlaceWristCases, graspSegmentGapCases, graspProfileGeometryCases } from './grasp_closure_golden.mjs';
+import { graspClosureCases, graspPlaceWristCases, graspSegmentGapCases, graspProfileGeometryCases, graspPlacePalmCases } from './grasp_closure_golden.mjs';
 import { tierFor, normalizeTier } from '../../extensions/host/quality.js';
 import { JOINT_NAMES } from '../../extensions/humanoid/canonical.js';
 import { MPFB_ROOT_BONE } from '../../extensions/humanoid/rig.js';
@@ -549,9 +549,23 @@ async function graspProfileGeometryGolden() {
   } };
 }
 
+async function graspPlacePalmGolden() {
+  const names = ['closure.js', 'record.js', 'data/closure.data.json', 'reference_hand.json',
+    'baked_grasps.js', 'baked_grasps.data.json', 'catalog.js', 'data/catalog.data.json'];
+  const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
+    const path = resolve(ROOT, 'extensions/grasp', name);
+    return [rel(path), await sha256(path)];
+  })));
+  const probe = resolve(ROOT, 'godot/tools/grasp_closure_golden.mjs');
+  return { path: resolve(ROOT, 'godot/addons/gs_grasp/tests/grasp_place_palm.golden.json'), pretty: true, data: {
+    schema: 'gamesystems.golden.grasp-place-palm.v1', generator: 'godot/tools/gen_golden.mjs',
+    probe: rel(probe), probe_sha256: await sha256(probe), sources_sha256, cases: graspPlacePalmCases(),
+  } };
+}
+
 const check = process.argv.includes('--check');
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), await graspHeldDriveMathGolden(), await graspThrowReleaseGolden(), await graspValidateRowsGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden(), await graspClampGolden(), await graspSdfGolden(), await graspVariantsGolden(), await graspRecordedPosesGolden(), await graspMirrorGolden(), await graspCaptureGolden(), await graspFingerChainGolden(), await graspPlaceWristGolden(), await graspSegmentGapGolden(), await graspProfileGeometryGolden()]) {
+for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), await graspHeldDriveMathGolden(), await graspThrowReleaseGolden(), await graspValidateRowsGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden(), await graspClampGolden(), await graspSdfGolden(), await graspVariantsGolden(), await graspRecordedPosesGolden(), await graspMirrorGolden(), await graspCaptureGolden(), await graspFingerChainGolden(), await graspPlaceWristGolden(), await graspSegmentGapGolden(), await graspProfileGeometryGolden(), await graspPlacePalmGolden()]) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)

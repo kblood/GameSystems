@@ -27,12 +27,21 @@ hinges, pad radii, palm samples and the thenar capsule from a rest hand or a mea
 `gamesystems.hand-profile.v1` profile. It supports explicit scale, profile, thumb tilt
 and legacy pad-radius overrides without mutating the input.
 
+`GSGraspClosure.place_palm(pose, hand, shape, options, offset, thumb_row)` aligns the
+profile palm centre to the baked palm anchor, then slides along the palm normal to fit
+the palm patch and clear the thenar against the item's catalog SDF. Lateral, along-hand,
+pitch, twist and normal offsets support later bounded placement search. It does not
+close fingers or search closure angles. Each SDF sample currently validates the shape;
+profile that cost before running many candidate placements or moving this helper into a
+per-frame path.
+
 The JS goldens cover 26 baked/synthetic finger-chain cases, 15 baked/recorded wrist
-placement cases, 8 segment-gap cases, 6 reference-hand geometry cases and 8 explicit
-profile/raw-rest edge cases. They include twist, axis fallback, custom reference
-geometry, invalid recorded-length fallback, distal-only samples, palm/thenar patches,
-pad overrides and null/zero optional-field fallback. Godot 4.7.2 passes **7,593
-assertions**; this does not complete closure search or imply physical skin contact.
+placement cases, 8 segment-gap cases, 6 reference-hand geometry cases, 8 explicit
+profile/raw-rest edge cases and 26 palm-placement cases. They include twist, axis
+fallback, custom reference geometry, invalid recorded-length fallback, distal-only
+samples, palm/thenar patches and thumb-row movement, pad overrides, clearance offsets,
+and null/zero optional-field fallback. Godot 4.7.2 passes **8,098 assertions**; this
+does not complete finger-closure search or imply physical skin contact.
 
 ```gdscript
 const Selector = preload("res://addons/gs_grasp/gs_nearest_grasp.gd")

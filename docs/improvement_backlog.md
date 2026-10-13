@@ -1,13 +1,24 @@
 # Løbende forbedringer af GameSystems
 
+## G4 palm-anchor og thenar-clearance placement — 2026-10-13
+
+`GSGraspClosure.place_palm` porter JS' `palmAnchor`, palm-patch afstanden og thenar-fit.
+Den placerer profilen på det bagte grebs palm-anchor, håndterer registreret håndlængde,
+slide langs palm-normalen, profilens palm-offset og lateral/along/pitch/twist/normal
+offsets. Thenar-patches følger thumb CMC-rækken; ellers prøves thenar-kapslens tre
+samplepunkter med pudetykkelse. 26 JS-golden cases dækker begge hænder, baked poses,
+custom skin-patches, offsets, custom clearance og shape-less placement. Closure-suiten
+består nu **8.098/8.098** assertions. Lukning af fingre, bounded vinkel-/placement-search
+og runtime-integration mangler fortsat.
+
 ## G4 hand geometry fra rigprofil eller rest joints — 2026-10-13
 
 `GSGraspClosure.hand_geometry` porter både profile-path og `profileFromRest` fallback:
 fingerbaser, segmentlængder, spredning, fingerakser/hængsler, pad-radier, palm-samples og
 thenar-geometri. Den matcher JS referencehand for begge hænder ved standard, 1× og 2×
 skala samt custom palm-/thenar-patches, profiltilt, radiusoverride og fallback ved null/
-zero optional fields. 14 hand-geometry goldens bidrager til **7.593/7.593** closure-assertions. Søgning efter lukkevinkler,
-palm-/thenar-fit mod genstand og runtime-integration mangler fortsat.
+zero optional fields. 14 hand-geometry goldens bidrager til closure-suiten. Palm-anchor
+placering er nu porteret separat; lukkevinkelsøgning og runtime-integration mangler fortsat.
 
 ## G4 finger-segment SDF gaps — 2026-10-13
 

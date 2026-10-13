@@ -6,6 +6,7 @@ const PlaceWristGoldenPath := "res://addons/gs_grasp/tests/grasp_place_wrist.gol
 const SegmentGapGoldenPath := "res://addons/gs_grasp/tests/grasp_segment_gaps.golden.json"
 const ReferenceHandGoldenPath := "res://addons/gs_grasp_data/data/reference_hand.golden.json"
 const ProfileGeometryGoldenPath := "res://addons/gs_grasp/tests/grasp_profile_geometry.golden.json"
+const PlacePalmGoldenPath := "res://addons/gs_grasp/tests/grasp_place_palm.golden.json"
 var passed := 0
 var failed := 0
 
@@ -87,6 +88,24 @@ func _initialize() -> void:
 		check(row.rest == rest_before, row.name + " rest unchanged")
 		check(row.options == options_before, row.name + " options unchanged")
 		hand_cases += 1
-	print("GS_GRASP_CLOSURE_TESTS passed=%d failed=%d cases=%d finger_chain=%d place_wrist=%d segment_gap=%d hand_geometry=%d" % [passed, failed,
-		golden.cases.size() + wrist_golden.cases.size() + gap_cases + hand_cases, golden.cases.size(), wrist_golden.cases.size(), gap_cases, hand_cases])
+	var palm_golden: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(PlacePalmGoldenPath))
+	check(palm_golden.get("schema") == "gamesystems.golden.grasp-place-palm.v1", "place palm golden schema")
+	for row: Dictionary in palm_golden.cases:
+		var pose_before: Dictionary = row.pose.duplicate(true)
+		var hand_before: Dictionary = row.hand.duplicate(true)
+		var options_before: Dictionary = row.options.duplicate(true)
+		var offset_before: Dictionary = row.offset.duplicate(true)
+		var shape: Variant = row.shape
+		var actual: Dictionary
+		if row.get("default_thumb_row", false):
+			actual = Closure.place_palm(row.pose, row.hand, shape, row.options, row.offset)
+		else:
+			actual = Closure.place_palm(row.pose, row.hand, shape, row.options, row.offset, row.thumb_row)
+		compare(row.expected, actual, row.name)
+		check(row.pose == pose_before, row.name + " pose unchanged")
+		check(row.hand == hand_before, row.name + " hand unchanged")
+		check(row.options == options_before, row.name + " options unchanged")
+		check(row.offset == offset_before, row.name + " offset unchanged")
+	print("GS_GRASP_CLOSURE_TESTS passed=%d failed=%d cases=%d finger_chain=%d place_wrist=%d segment_gap=%d hand_geometry=%d place_palm=%d" % [passed, failed,
+		golden.cases.size() + wrist_golden.cases.size() + gap_cases + hand_cases + palm_golden.cases.size(), golden.cases.size(), wrist_golden.cases.size(), gap_cases, hand_cases, palm_golden.cases.size()])
 	quit(1 if failed else 0)

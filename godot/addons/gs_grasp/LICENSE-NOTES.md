@@ -78,9 +78,9 @@ Kasper Olesen.
 the GDScript, probe and tests are original GameSystems MIT work, Copyright (c) 2026
 Kasper Olesen.
 
-`GSGraspClosure` ports the public `handGeometry`, `fingerChain`, `placeWrist` and
-segment-gap behavior from MIT GameSystems `extensions/grasp/closure.js`, using the
-sibling `GSGraspShapeSdf` for item distances. It does not search for closure angles,
-clamp them or integrate a runtime hand. The goldens call public JS results; the
+`GSGraspClosure` ports the public `handGeometry`, `fingerChain`, `placeWrist`,
+`placePalm` and segment-gap behavior from MIT GameSystems `extensions/grasp/closure.js`,
+using the sibling `GSGraspShapeSdf` for item distances. It does not search for closure
+angles, clamp them or integrate a runtime hand. The goldens call public JS results; the
 GDScript, probe and tests are original GameSystems MIT work, Copyright (c) 2026
 Kasper Olesen.

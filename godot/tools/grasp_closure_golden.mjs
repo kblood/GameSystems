@@ -1,5 +1,5 @@
 import { BAKED } from '../../extensions/grasp/baked_grasps.js';
-import { chainGaps, fingerChain, placeWrist, REFERENCE_HAND } from '../../extensions/grasp/closure.js';
+import { chainGaps, fingerChain, placeWrist, placePalm, REFERENCE_HAND, CLOSURE } from '../../extensions/grasp/closure.js';
 import { handGeometry, PAD_RADIUS } from '../../extensions/grasp/closure.js';
 import { CATALOG } from '../../extensions/grasp/catalog.js';
 import { referenceHand } from '../../extensions/grasp/record.js';
@@ -120,6 +120,53 @@ export function graspProfileGeometryCases() {
     const nullableOptions = {};
     cases.push({ name: `${side}:null-rest-frame-and-yaw-fallbacks`, rest: nullableRest, options: nullableOptions,
       expected: handGeometry(nullableRest, nullableOptions) });
+  }
+  return cases;
+}
+
+export function graspPlacePalmCases() {
+  const cases = [];
+  const offsets = [
+    ['anchor-and-slide', {}],
+    ['lateral-along-pitch-twist', { lateral: 0.006, along: 0.008, pitch: 12, twist: -9 }],
+    ['normal-clearance', { normal: 0.004 }],
+    ['left-right-offset-sign', { lateral: -0.005, along: -0.004, pitch: -8, twist: 7, normal: -0.002 }],
+  ];
+  for (const side of ['left', 'right']) {
+    const rest = REFERENCE.hands[side];
+    const poses = BAKED.poses.filter(pose => pose.side === side);
+    for (const [poseIndex, pose] of [[0, poses[0]], [11, poses[11]]]) {
+      const hand = referenceHand(side, { scale: poseIndex === 0 ? 1 : 0.91 });
+      const shape = CATALOG[pose.kind].shape;
+      for (const [name, offset] of offsets) {
+        const placedPose = structuredClone(pose);
+        if (name === 'normal-clearance') placedPose.handLength = 0.174;
+        const options = name === 'normal-clearance'
+          ? { palmGap: 0.008, palmSlide: 0.018, squeeze: 0.002 }
+          : { ...CLOSURE };
+        cases.push({ name: `${side}:${pose.id}:${name}`, pose: placedPose, hand, shape, options, offset,
+          thumb_row: name === 'lateral-along-pitch-twist' ? pose.angles[0] : pose.open[0],
+          expected: placePalm(placedPose, hand, shape, options, offset,
+            name === 'lateral-along-pitch-twist' ? pose.angles[0] : pose.open[0]) });
+      }
+      cases.push({ name: `${side}:${pose.id}:no-shape`, pose, hand, shape: null, options: {}, offset: {}, thumb_row: null,
+        expected: placePalm(pose, hand, null, {}, {}, null) });
+    }
+    const customProfile = structuredClone(handGeometry(rest).profile);
+    customProfile.palmPatch = [[-0.018, -0.026, 0.04], [0.018, -0.026, 0.04], [0, -0.02, 0.08]];
+    customProfile.thenarPatch = [[0.028, -0.019, 0.025], [0.026, -0.022, 0.04], [0.021, -0.021, 0.055]];
+    const customHand = handGeometry(rest, { scale: 1.08, profile: customProfile });
+    const pose = poses[0];
+    const shape = CATALOG[pose.kind].shape;
+    cases.push({ name: `${side}:custom-palm-thenar-patches`, pose, hand: customHand, shape, options: CLOSURE,
+      offset: { pitch: 15, lateral: 0.003 }, thumb_row: pose.angles[0],
+      expected: placePalm(pose, customHand, shape, CLOSURE, { pitch: 15, lateral: 0.003 }, pose.angles[0]) });
+    cases.push({ name: `${side}:default-thumb-approach-row`, pose, hand: customHand, shape, options: CLOSURE,
+      offset: { pitch: -6 }, default_thumb_row: true,
+      expected: placePalm(pose, customHand, shape, CLOSURE, { pitch: -6 }) });
+    cases.push({ name: `${side}:explicit-null-thumb-row`, pose, hand: customHand, shape, options: CLOSURE,
+      offset: { pitch: 5 }, thumb_row: null,
+      expected: placePalm(pose, customHand, shape, CLOSURE, { pitch: 5 }, null) });
   }
   return cases;
 }
