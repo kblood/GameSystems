@@ -82,9 +82,27 @@ velocity history, waits for a fresh valid pose and neutral controls, and require
 press before firing, throwing, or striking. Apply the source-handoff rules in
 [VR controls](controls.md#devices-and-input-sources).
 
-Godot 4.7's XR action map is currently part of its OpenXR module, so do not assume that
-OpenXR bindings automatically cover a Godot WebXR export. Verify its input path on the
-exact Godot release and target browser.
+Godot 4.7's OpenXR action map does not automatically provide the input path for a WebXR
+export. Build a small WebXR adapter that feeds the same semantic actions as the OpenXR
+adapter:
+
+- Use `XRController3D.button_pressed` / `button_released` for controller-specific buttons
+  when the source is an advanced controller (such as Touch or Index).
+- Also connect `WebXRInterface.selectstart` / `selectend` and
+  `squeezestart` / `squeezeend`. These primary-action signals can represent advanced
+  controllers and less conventional sources, so they are useful fallbacks for gaze, screen
+  or device input. Do not assume they expose every controller button or analog value.
+- For each WebXR input source ID, query `get_input_source_tracker()` and
+  `get_input_source_target_ray_mode()` and maintain an adapter-owned mapping from the
+  currently active source to semantic actions. Rebuild it when sources appear, disappear
+  or change; do not treat the runtime's source ID as a persistent hand identity.
+- On source handoff, clear held edges and velocity history, require a neutral state, then
+  require a fresh press before firing, throwing or striking. Test controller-to-hand,
+  controller-to-gaze/screen where supported, disconnect/reconnect, and changing source IDs.
+
+Verify the exact signals, source metadata and behavior on the Godot release and target
+browser. Godot documents the distinction between controller button signals and WebXR's
+`select` / `squeeze` signals in its [WebXRInterface input documentation](https://docs.godotengine.org/en/4.7/classes/class_webxrinterface.html#description).
 
 ## What can be shared
 
