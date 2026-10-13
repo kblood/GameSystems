@@ -89,9 +89,13 @@ separately from authored character height. Choose one explicit policy per mode:
 
 1. **Player-sized world:** map the user's measured proportions to the avatar, clamping
    unusual values to a comfortable playable interval.
-2. **Character-sized world:** keep authored character proportions and adjust reach,
-   locomotion and interaction geometry so the user inhabits that body.
+2. **Fixed authored character:** keep authored rig and world geometry unchanged. Convert
+   tracked poses and displacements once into the character's authored world units, then
+   use those converted coordinates for the HMD, hands, locomotion and interaction queries.
+   Keep colliders, gravity and world-space UI in the same world units; do not scale them
+   a second time. Evaluate UI readability at the resulting perceived scale.
 
-Never silently scale the entire world to fix a hand mismatch. Scale changes alter speed,
-reach, collider size, perspective, physics and comfort. Recompute all dependent dimensions
-atomically and show a calibration cue. See [IK/avatar](ik_avatar.md).
+Never silently scale the entire world to fix a hand mismatch. Choose whether calibration
+changes avatar proportions or the tracking-to-world conversion; scaling authored geometry
+and physics changes speed, reach, collider size, perspective and comfort. Recompute the
+chosen mapping atomically and show a calibration cue. See [IK/avatar](ik_avatar.md).

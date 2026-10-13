@@ -19,10 +19,15 @@ without changing the XR camera's tracked pose. Keep a stable avatar root and mov
 the player through the origin/body layer.
 
 There are two valid scale policies. **Fit the avatar to the player** for social presence
-and body ownership. **Fit the world/interaction model to the authored character** when
-the game requires a fixed character size. Each has costs: fitting the avatar can distort
-the authored silhouette; fitting the world affects reach, locomotion, collision, object
-mass cues and comfort. Avoid per-frame scale changes and provide a clear recenter action.
+and body ownership. **Keep a fixed authored character** when the game requires a fixed
+character size: convert raw tracked poses and displacements once into the character's
+authored world units, then use those converted coordinates for the HMD, hands, locomotion
+and interaction queries. Keep authored geometry, colliders, gravity and world-space UI in
+their existing world units; do not scale them again. Evaluate UI readability at the
+resulting perceived scale. Fitting the avatar can distort the authored silhouette, while
+tracking-to-world conversion changes perceived reach and movement and may affect comfort
+or shared-distance consistency in multiplayer. Avoid per-frame scale changes and provide
+a clear recenter action.
 
 ## Solve order
 
