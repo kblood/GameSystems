@@ -24,17 +24,17 @@ clamping eller closure. G3-afslutning kræver fortsat samlet audit og consumer-v
 
 ## Aktuel G3-integrationsstatus — 2026-10-13
 
-De syv `gs_grasp_data`-datakontrakter er nu pushet i GameSystems og synkroniseret til
-Nightfall Godot, inklusive seneste bake-kontrakt (`GameSystems 9995834`, Godot
-`ed83b27`). GameSystems WebXR bestod **579/579** før denne Godot-only addon-sync;
-Nightfall WebXR bestod **375/375** efter sine runtime-datasynkroniseringer. Dens
-manifester blev derefter opdateret til `GameSystems 9995834` i `a367ecc`; extension-
-og addon-`--check` passerede i alle tre worktrees. Bake-kopien i Nightfall Godot
-består **300/300**.
+De otte `gs_grasp_data`-kontrakter er nu pushet i GameSystems `41eefb6` og integreret
+i Nightfall Godot `9f33f14`; humanoid bone-map-læseren er også synkroniseret. Nightfall
+WebXR har quality-data/runtime-integrationen i `9b579bc`. GameSystems WebXR-demo bestod
+**581/581**, Nightfall WebXR **375/375**, og de otte grasp-datareadere plus humanoid maps
+bestod **669/669** i Godot 4.7.2. Golden freshness samt GameSystems addon- og WebXR-
+extension-sync-checks passerer; Nightfall addon-sync-checken passerer også.
 
-G3 mangler stadig fælles quality-data og en afsluttende kontrol af kontraktgrænserne.
-Disse læsere validerer data; de porterer ikke Godots grebs-, kontakt-, SDF-, bake- eller
-håndgeometrialgoritmer. Headset-/asset-paritet kræver særskilt evidens.
+G3’s data- og consumer-integration er nu dækket; den afsluttende kontrol af
+kontraktgrænserne er næste trin. Disse læsere validerer data og bevarer JS-policyen;
+de implementerer ikke Godots grebs-, kontakt-, SDF-, bake- eller håndgeometrialgoritmer.
+Headset-/asset-paritet kræver særskilt evidens og er ikke påvist af disse tests.
 
 ## G3 bake-kontrakt med komplette offentlige records — 2026-10-13
 
