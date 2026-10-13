@@ -7,23 +7,15 @@
 // detectBoneMap(names) picks the map that binds the most joints of a rig.
 import { JOINT_NAMES } from './canonical.js';
 import { MPFB_GAME_ENGINE } from './rig.js';
+import BONE_MAP_DATA from './bone_maps.data.json' with { type: 'json' };
 
 export { MPFB_GAME_ENGINE };
 
-const SIDES = [['left', 'Left'], ['right', 'Right']];
-const FINGER_SEGMENTS = {
-  Thumb: ['Metacarpal', 'Proximal', 'Distal'], Index: ['Proximal', 'Intermediate', 'Distal'], Middle: ['Proximal', 'Intermediate', 'Distal'],
-  Ring: ['Proximal', 'Intermediate', 'Distal'], Little: ['Proximal', 'Intermediate', 'Distal'],
-};
-
 /** VRM 1.0: canonical names are the humanoid bone names. */
-export const VRM_HUMANOID = Object.freeze(Object.fromEntries(JOINT_NAMES.map(j => [j, j])));
+export const VRM_HUMANOID = Object.freeze(BONE_MAP_DATA.maps.vrm1);
 
 /** VRM 0.x: same names except the thumb chain (VRM 0 Proximal/Intermediate/Distal = VRM 1 Metacarpal/Proximal/Distal). */
-export const VRM0_HUMANOID = Object.freeze(Object.fromEntries(JOINT_NAMES.map(j => {
-  const m = /^(left|right)Thumb(Metacarpal|Proximal|Distal)$/.exec(j);
-  return [j, m ? `${m[1]}Thumb${{ Metacarpal: 'Proximal', Proximal: 'Intermediate', Distal: 'Distal' }[m[2]]}` : j];
-})));
+export const VRM0_HUMANOID = Object.freeze(BONE_MAP_DATA.maps.vrm0);
 
 /**
  * Canonical joint -> node name for a VRM model: `nodeOf(vrmBoneName)` returns the node (or its name) for a humanoid bone,
@@ -41,14 +33,7 @@ export function boneMapFromVRM(nodeOf, { version = 1 } = {}) {
 
 /** Mixamo rig map with the given bone-name prefix ('mixamorig:' by default; '' for unprefixed exports). */
 export function mixamoBoneMap(prefix = 'mixamorig:') {
-  const m = { hips: 'Hips', spine: 'Spine', chest: 'Spine1', upperChest: 'Spine2', neck: 'Neck', head: 'Head' };
-  const fingers = { Thumb: 'Thumb', Index: 'Index', Middle: 'Middle', Ring: 'Ring', Little: 'Pinky' };
-  for (const [s, S] of SIDES) {
-    Object.assign(m, { [`${s}Shoulder`]: `${S}Shoulder`, [`${s}UpperArm`]: `${S}Arm`, [`${s}LowerArm`]: `${S}ForeArm`, [`${s}Hand`]: `${S}Hand`,
-      [`${s}UpperLeg`]: `${S}UpLeg`, [`${s}LowerLeg`]: `${S}Leg`, [`${s}Foot`]: `${S}Foot`, [`${s}Toes`]: `${S}ToeBase` });
-    for (const [f, segs] of Object.entries(FINGER_SEGMENTS)) segs.forEach((g, i) => { m[`${s}${f}${g}`] = `${S}Hand${fingers[f]}${i + 1}`; });
-  }
-  return Object.freeze(Object.fromEntries(Object.entries(m).map(([j, b]) => [j, prefix + b])));
+  return Object.freeze(Object.fromEntries(Object.entries(BONE_MAP_DATA.maps.mixamo).map(([j, b]) => [j, prefix + b])));
 }
 export const MIXAMO = mixamoBoneMap();
 

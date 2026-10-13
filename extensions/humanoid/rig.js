@@ -8,22 +8,12 @@
 
 import { JOINT_NAMES, TIP } from './canonical.js';
 import { vSub, vLen, vNorm, vDot, vCross } from './qmath.js';
+import BONE_MAP_DATA from './bone_maps.data.json' with { type: 'json' };
 
 /** Canonical joint -> MPFB `game_engine` bone (glTF node) name. `Root` is the root-motion bone, not a joint. */
-export const MPFB_GAME_ENGINE = (() => {
-  const m = { hips: 'pelvis', spine: 'spine_01', chest: 'spine_02', upperChest: 'spine_03', neck: 'neck_01', head: 'head' };
-  const fingers = { Thumb: ['thumb', ['Metacarpal', 'Proximal', 'Distal']], Index: ['index', ['Proximal', 'Intermediate', 'Distal']],
-    Middle: ['middle', ['Proximal', 'Intermediate', 'Distal']], Ring: ['ring', ['Proximal', 'Intermediate', 'Distal']],
-    Little: ['pinky', ['Proximal', 'Intermediate', 'Distal']] };
-  for (const [s, x] of [['left', '_l'], ['right', '_r']]) {
-    Object.assign(m, { [`${s}Shoulder`]: `clavicle${x}`, [`${s}UpperArm`]: `upperarm${x}`, [`${s}LowerArm`]: `lowerarm${x}`,
-      [`${s}Hand`]: `hand${x}`, [`${s}UpperLeg`]: `thigh${x}`, [`${s}LowerLeg`]: `calf${x}`, [`${s}Foot`]: `foot${x}`, [`${s}Toes`]: `ball${x}` });
-    for (const [f, [b, segs]] of Object.entries(fingers)) segs.forEach((g, i) => { m[`${s}${f}${g}`] = `${b}_0${i + 1}${x}`; });
-  }
-  return m;
-})();
+export const MPFB_GAME_ENGINE = BONE_MAP_DATA.maps.mpfb;
 /** Bone that carries root motion / the pelvis-height offset in exported clips. */
-export const MPFB_ROOT_BONE = 'Root';
+export const MPFB_ROOT_BONE = BONE_MAP_DATA.rootMotionBone;
 
 /**
  * Rest joint heads (character frame) from the joints sidecar (output/base_body.joints.json) for given

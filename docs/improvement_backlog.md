@@ -1,5 +1,21 @@
 # Løbende forbedringer af GameSystems
 
+## Fælles humanoid-data til Godot-porten — 2026-10-13
+
+Første del af G3 flyttede humanoidens MPFB-, VRM 1.0-, VRM 0.x- og Mixamo-bone
+maps til `extensions/humanoid/bone_maps.data.json`. `rig.js` og `bone_maps.js`
+læser nu JSON-dataene, mens deres offentlige eksportnavne og map-værdier bevares.
+WebXR-demoen og Nightfall Contracts WebXR bruger genererede synkroniserede kopier;
+licensnoterne skelner mellem MPFB-data fra MIT-udgivet CharacterCreator og
+GameSystems-ejede VRM/Mixamo-maps. En sorteringsstabil SHA-256-golden fastholder
+de tidligere værdier i alle fire 52-joints maps.
+
+Verifikation: GameSystems WebXR-demo **564/564** og Nightfall Contracts WebXR
+**375/375** Node-tests passerer, og demoens Vite-produktionsbuild lykkes. Det
+verificerer JS-runtime og de synkroniserede kopier, ikke en Godot-forbruger.
+Resterende G3-arbejde er et stabilt tværgående skema og genererede golden-data,
+som Godot kan læse og sammenligne med JS; `gs_humanoid` findes endnu ikke.
+
 ## Godot OpenXR- og VR-guide-review — 2026-10-13
 
 Sol-reviewet fandt en fejl i recenter-rådet: appen må ikke kalde `center_on_hmd()` for
