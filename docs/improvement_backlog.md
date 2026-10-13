@@ -16,8 +16,8 @@ Golden-freshness og diff-check passerer. Typed arrays med string-nøgler og valg
 boolean default er parity-scope; malformed input giver null, ikke JS-coercion.
 Source-porten er Sol-reviewed og synket til Nightfall Godot `75823df`; target består
 2.392/2.392 mergechecks, nearest-regressionen 2.071/2.071, og golden-/sync-checks passerer.
-Variantvalg, native recorded-only, avatar-konvertering, kontakt, drive/kast og
-runtime-integration er fortsat åbne. Clamp- og SDF-runderne står nedenfor.
+Native recorded-only, avatar-konvertering, kontakt, drive/kast og runtime-integration
+er fortsat åbne. Clamp-, SDF- og variantvalgsrunderne står nedenfor.
 
 ## G4 hard-range finger clamping — 2026-10-13
 
@@ -55,6 +55,24 @@ Godot and registered in its regular `gs` suite; the targeted native runner passe
 with a stable source digest. Addon sync and golden freshness pass. This does not
 establish real-mesh contact, SDF accuracy against assets, or Quest/Steam Frame
 performance.
+
+## G4 stateless baked/recorded variant selection — 2026-10-13
+
+`GSGraspVariants` ports `parseGraspVariants` and the selection result of public JS
+`setGraspVariants` into a caller-owned utility. It handles baked/off and recorded/all
+aliases, comma-strings, explicit ID arrays, unknown IDs, file-order selection, forced
+recorded defaults, and feeds selected records through the existing merge policy. It
+does not install module-global state or change Nightfall's controller/grab loop. Godot
+accepts only strings and arrays of strings at the typed boundary; JavaScript coercion
+for arbitrary inputs remains outside the valid domain. A recorded-only consumer mode
+and avatar conversion remain open.
+
+Sixteen golden cases call the public JS parser/selector, covering aliases, empty and
+unknown selections, comma/list inputs, duplicate IDs and invalid typed inputs. The
+Godot port passes **9.347/9.347** assertions with source arrays unchanged; Sol approved
+without blockers. The Nightfall suite entry is added locally, and all five G4 parity
+checks pass **5/5**. Final source/consumer sync and manifests remain before commit.
+This proves policy selection, not runtime switching in a live hand controller.
 
 ## G4 beslutning: behold native controller-lookup — 2026-10-13
 

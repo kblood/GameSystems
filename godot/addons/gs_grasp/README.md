@@ -1,6 +1,6 @@
 # gs_grasp
 
-The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp` and `GSGraspShapeSdf`. The selector is a stateless port of the
+The G4 components are `GSNearestGrasp`, `GSGraspMerge`, `GSGraspClamp`, `GSGraspShapeSdf` and `GSGraspVariants`. The selector is a stateless port of the
 public JavaScript `baked_grasps.nearestPose` scoring/selection operation. The caller
 owns the candidate library and previous selection. This addon does not maintain a
 global grasp library or integrate a native game's grab loop.
@@ -114,6 +114,28 @@ is included, and no device performance budget is claimed.
 The SDF golden calls the public JS functions for deterministic points spanning every
 catalog shape, including every component of union shapes and large finite coordinates.
 Godot checks distance within `1e-10 m` and normals within `1e-7` per component.
+
+## Selecting recorded variants
+
+`GSGraspVariants.parse_selection(value)` and `select_variants(baked, recorded, value)`
+port the public JS variant policy without a process-global active library. Null,
+empty, `baked`, and `off` select the unchanged bake; `recorded` and `all` select every
+recording; a comma-separated string or `Array[String]` selects matching IDs. An
+explicit ID selection marks those recordings default before `GSGraspMerge` applies
+the established default policy. Unknown IDs are returned in request order; selected
+IDs and merged poses follow recording-file order. With no selected recordings,
+`uses_baked` is true and `poses` is the caller's baked Array.
+
+The result Dictionary contains `selection`, `poses`, `ids`, `unknown`, and
+`uses_baked`. Neither source Array nor any input Dictionary is mutated. The typed
+Godot boundary rejects non-string array members and non-string/non-array selection
+values instead of applying JavaScript's general `String()` coercion. This utility
+does not install global state in Nightfall's hand controller or implement a
+recorded-only consumer mode.
+
+The JS oracle covers 16 selections and restores the source module's previous variant
+after generating fixtures. Godot 4.7.2 passes **9,347 assertions**; this verifies the
+selection policy only, not a live runtime switch or recorded-only mode.
 
 ## Merging baked and recorded libraries
 

@@ -3,14 +3,16 @@
 ## Current verified state — 2026-10-13
 
 G4 currently has source ports for `GSGraspMerge.merge_poses`, `GSGraspClamp.clamp_rows`,
-and catalog `GSGraspShapeSdf` distance/normals. All are Sol-reviewed and synced to
-Nightfall Godot; their parity suites run through the regular `gs` suite.
+catalog `GSGraspShapeSdf` distance/normals and stateless `GSGraspVariants` selection.
+All four ports are Sol-reviewed; nearest/merge/clamp/SDF are synced to Nightfall, and
+the variant test is registered in its worktree. Their parity suites run through the
+regular `gs` suite.
 Merge preserves public JS ordering, duplicate/default policy and shallow identity,
 including existing key/marker collision semantics; Sol review and Nightfall Godot
 consumer sync are complete. Clamp applies the shared hard finger ranges and comfort
 fallbacks without mutating inputs; parity goldens cover all 255 baked poses and edge
-rows. Variant parsing, avatar conversion and native `recorded-only` selection remain
-outside these utilities. The controller-lookup experiment
+rows. Avatar conversion and native `recorded-only` consumer integration remain outside
+these utilities. The controller-lookup experiment
 recorded in the backlog rejects hot-path substitution of `GSNearestGrasp` for now:
 near-tie winners differ and the cached adapter costs about 4–5.5 times as much at the
 slide seam. `lookup_palm` uses a different residual model. Native integration remains
@@ -24,8 +26,8 @@ inputs fail closed within the typed Godot API, an explicit divergence from unche
 JS. Sol approved the source port and it is synced into Nightfall Godot. The existing
 game grab loop still uses its richer reach/contact-aware `BakedGraspLibrary` adapter;
 this selector does not replace that behavior. Runtime use needs a separate adapter
-that preserves those constraints. This does not complete G4 or demonstrate clamping,
-SDF/contact, drive/throwing, avatar fit or headset parity.
+that preserves those constraints. These utilities do not complete G4 or demonstrate
+closure/contact, drive/throwing, avatar fit, runtime switching or headset parity.
 
 This status supersedes the older worktree/branch references and historical mapping below.
 `GameSystems/main` tracks `kblood/GameSystems`; the native game remains the separate
@@ -272,7 +274,7 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 | G1 (færdig 2026-10-11) | `gs_host` + sync | `GameSystems/godot/addons/gs_host`, sync-script med `SOURCE.json` + `--check` (genbrug formatet fra `addons/game_systems`), `tier_for`-golden. Contracts-Godot får en `GSHost` i missionsscenen og sender core-events | headless-test: load/fejlisolering/tiers; `run_native_suite.py` grøn |
 | G2 (færdig 2026-10-12) | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`; sceneejet manager, asset-/quality-options, stabil API og `broken`-event i `GSHost` | Nightfall-adapter bruger den synkede addon; legacy-flaskekopi fjernet; bottle- og `--only game-systems`-suiter grønne |
 | G3 (færdig 2026-10-13) | Fælles data-kontrakt | Humanoid maps, validatorens `HARD`/`COMFORT`/`GATES`, closure-defaults, held-drive-skalarer, katalog og kvalitetspolicy er versioneret JSON med Godot-readers og JS-goldens. Reference-hand, recordings og bake har strukturelle readers. Afledt geometri, recording/bake-algoritmer, avatar-fit og headsetparitet er ikke bevist og ligger i senere trin | Source/consumer-kopier og manifests matcher; alle G3-readers og goldens passerer; WebXR-suiterne passerer; G3-afgrænsningen er dokumenteret |
-| G4 (påbegyndt) | `gs_grasp` kerne | Nearest, merge/default, `clamp_rows` og catalog SDF/normal er Sol-reviewed source-ports, synket til Nightfall Godot og registreret i `gs`-suiten. Native hot-path-substitution er afvist indtil separat scoring/performance-kontrakt. Resterer: variantvalg, validatorudfald, held-drive, kast, closure/contact og runtime-integration | Selector: 296 JS-cases, 2.071 Godot-checks; merge: 21 JS-cases, 2.392 checks; clamp: 259 cases, 7.008 checks; SDF: 70 JS-cases, 425 checks; målrettet suite 4/4, samlet Godot-grebs-/runtime-paritet endnu ikke verificeret |
+| G4 (påbegyndt) | `gs_grasp` kerne | Nearest, merge/default, `clamp_rows`, catalog SDF/normal og stateless variantvalg er source-ports og Sol-reviewed. De første fire er synket; variant-testen er registreret i Nightfalls worktree, men dens consumer-sync afventer commit. Native hot-path-substitution er afvist indtil separat scoring/performance-kontrakt. Resterer: recording validation/conversion, validatorudfald, held-drive, kast, closure/contact og runtime-integration | Selector: 296 JS-cases, 2.071 Godot-checks; merge: 21 cases, 2.392; clamp: 259 cases, 7.008; SDF: 70 cases, 425; variants: 16 JS-cases, 9.347; målrettet runner 5/5, samlet Godot-grebs-/runtime-paritet endnu ikke verificeret |
 | G5 | `gs_humanoid` + `gs_character_cc` | Canonical skelet, bone maps → `Skeleton3D`, `rest_hand()`. CC-karakter bag `GSCharacter` | karakter-kontrakt-test i Godot; `rest_hand` = JS-golden |
 | G6 | Lukning-til-kontakt + optagelser | Port af `closure.js` og `record.js` (`place_wrist`, `close_to_contact`, `mirror_pose`). Erstat `baked_grasps_*.json` pr. kropstype med én bagning + lukning | golden ≤ tolerance; et Studio-greb vises i Godot; 4 af 5 bagefiler kan slettes |
 | G7 | `gs_avatar` | VR-IK, kalibrering, fingermapping (OpenXR → rækker) bag samme API. Beslut port af `vrik.js` vs. Godots IK-modifiers | Godot-avatar-tests grønne; fingre fra hand tracking = JS-golden |

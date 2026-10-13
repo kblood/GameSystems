@@ -34,3 +34,9 @@ Copyright (c) 2026 Kasper Olesen.
 `gs_grasp_data` catalog. The implementation, golden probe and tests are original
 GameSystems MIT work, Copyright (c) 2026 Kasper Olesen; the golden invokes those
 public JS functions and stores sampled outputs rather than duplicating the catalog.
+
+`GSGraspVariants` ports selection behavior from MIT GameSystems
+`extensions/grasp/baked_grasps.js` and uses `GSGraspMerge` for the public merge policy.
+Its golden exercises the public JS `setGraspVariants` API and restores its module state;
+the Godot utility itself is stateless. Probe/tests are original GameSystems MIT work,
+Copyright (c) 2026 Kasper Olesen.
