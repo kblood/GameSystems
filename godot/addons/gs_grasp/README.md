@@ -49,7 +49,8 @@ Its `search` accepts `null`, `"mid"`, `"high"`, or an explicit bounded plan. Sup
 both `wrist` and `quat` fixes placement and disables wrist search. The result includes
 the selected placement, clamped open/closed rows, per-finger contact state, grade, and
 closure-attempt count. Plans are deterministic and cost-sorted before score evaluation;
-use them during setup or interaction transitions rather than an unbudgeted per-frame loop.
+placement search is offline/preload work only until it is optimized or made resumable and
+measured on target hardware. A synchronous call can exceed any interactive frame budget.
 
 The JS goldens cover 26 baked/synthetic finger-chain cases, 15 baked/recorded wrist
 placement cases, 8 segment-gap cases, 6 reference-hand geometry cases, 8 explicit
@@ -379,3 +380,22 @@ history trimming/caps, three pose transitions (including noncommuting rotations 
 negative-`w` sign equivalence) and invalid boundaries. Godot 4.7.2 passes **183 checks**
 at `2e-5` Vector3 tolerance. It proves math parity only, not live
 throw feel or headset performance.
+
+## Closure search profiling
+
+Run the manual benchmark with:
+
+```powershell
+godot --headless --path godot --script res://addons/gs_grasp/tests/gs_grasp_closure_benchmark.gd
+```
+
+On the GameSystems Windows development machine (Godot 4.7.2, 2026-10-13), three-sample
+runs averaged about **1.62–1.64 seconds** for the 28-attempt mid fixture and **9.62–9.78
+seconds** for the 162-attempt high fixture. The fixed-wrist axis-aligned box call retaining
+the thumb averaged about **3.3–3.6 ms** across the local runs (maxima 3.4–4.0 ms); a
+separate run measured 4.29 ms. These are synchronous CPU timings on a golden fixture, not
+headset results or a complete avatar-fit measurement. Keep the
+bounded placement search offline/preload-only until it can be optimized or resumed across
+budgeted work slices and measured on target hardware. Even fixed-wrist closure is not
+assumed safe per frame; any runtime candidate must still pass native rendered-skin and
+contact proof.
