@@ -29,7 +29,7 @@ interaction bridge, and the bounded local-space handle-pull policy. Its source c
 pass 34 handle/approach checks and 10 bridge checks; Nightfall keeps collision sweeps,
 body anchors, presentation, and XR input in its host adapter.
 
-G3 remains in progress. Its first verified slice puts humanoid canonical-to-rig maps in
+G3's data-only contract phase is complete. Humanoid canonical-to-rig maps live in
 `extensions/humanoid/bone_maps.data.json` and loads them through the standalone
 `godot/addons/gs_humanoid` reader. A generated Godot contract and golden are checked
 against the JS extension's exports; the JS test also pins all four 52-joint maps to
@@ -63,8 +63,10 @@ closure, drive, SDF, reference-hand geometry, recording or baking algorithms.
 Grasp quality policy now lives in `extensions/grasp/data/quality.data.json`, preserving
 level order, frozen public arrays, default, legacy alias and private exempt-finger list.
 `GSGraspQualityData` passes 46/46 source checks; its golden distinguishes public API
-observations from copied private configuration. G3 remains open for integration and a
-complete contract audit; constants alone do not implement native quality behavior.
+observations from copied private configuration. Final audit: source and consumer copies
+match, all data readers/goldens and both WebXR suites pass. This completes shared-data
+integration only; constants alone do not implement native quality behavior, and later
+algorithm, asset-fit and headset parity remain outside G3.
 
 Historisk status (2026-10-12): **G0 afklaret, G1 og G2 implementeret og versioneret**; G3 (fælles grebs-/skeletdata) var næste planlagte porttrin.
 Status (2026-10-10): undersøgelse, ingen kode ændret i `NightfallContractsGodot*` eller i `GameSystems/extensions`. Relateret: [extensions_plan.md](extensions_plan.md) (trin 1–9), [grab_findings.md](grab_findings.md).
@@ -244,7 +246,7 @@ Trinene starter efter extensions-trin 5 (`humanoid`/`avatar`/`character-cc` flyt
 | G0 | Afklaring | Brugerens svar på spørgsmålene nedenfor. Ret kortlægningen i denne fil (fingerkonvention, worktree-status, `-blood`/`-npcai`). Vælg hvilke `r2-*`/`pkg-*` der merges først | beslutninger skrevet her |
 | G1 (færdig 2026-10-11) | `gs_host` + sync | `GameSystems/godot/addons/gs_host`, sync-script med `SOURCE.json` + `--check` (genbrug formatet fra `addons/game_systems`), `tier_for`-golden. Contracts-Godot får en `GSHost` i missionsscenen og sender core-events | headless-test: load/fejlisolering/tiers; `run_native_suite.py` grøn |
 | G2 (færdig 2026-10-12) | `gs_bottles` | Flyt `gameplay/godot` + `shaders/godot`; sceneejet manager, asset-/quality-options, stabil API og `broken`-event i `GSHost` | Nightfall-adapter bruger den synkede addon; legacy-flaskekopi fjernet; bottle- og `--only game-systems`-suiter grønne |
-| G3 (påbegyndt) | Fælles data-kontrakt | Humanoid maps, validatorens `HARD`/`COMFORT`/`GATES`, closure-defaults, held-drive-skalarer, katalog og kvalitetspolicy er versioneret JSON med Godot-readers og JS-goldens. Reference-hand, recordings og bake har strukturelle readers; afledt geometri, recording/bake-algoritmer og avatar-fit er ikke bevist. Samlet kontrakt-/consumer-audit udestår | JS-tests uændrede; synkroniserede kopier matcher; data-readers/goldens matcher JS; de resterende grasp-data har stabile formater og Godot-kontrakter |
+| G3 (færdig 2026-10-13) | Fælles data-kontrakt | Humanoid maps, validatorens `HARD`/`COMFORT`/`GATES`, closure-defaults, held-drive-skalarer, katalog og kvalitetspolicy er versioneret JSON med Godot-readers og JS-goldens. Reference-hand, recordings og bake har strukturelle readers. Afledt geometri, recording/bake-algoritmer, avatar-fit og headsetparitet er ikke bevist og ligger i senere trin | Source/consumer-kopier og manifests matcher; alle G3-readers og goldens passerer; WebXR-suiterne passerer; G3-afgrænsningen er dokumenteret |
 | G4 | `gs_grasp` kerne | Port: katalog/SDF, validator (`clamp_rows`), `baked_grasps` (nearest + hysterese, `merge_poses`), held-drive, kast | golden-tests ≤ tolerance; Godot-greb uændrede i `test`-suiten |
 | G5 | `gs_humanoid` + `gs_character_cc` | Canonical skelet, bone maps → `Skeleton3D`, `rest_hand()`. CC-karakter bag `GSCharacter` | karakter-kontrakt-test i Godot; `rest_hand` = JS-golden |
 | G6 | Lukning-til-kontakt + optagelser | Port af `closure.js` og `record.js` (`place_wrist`, `close_to_contact`, `mirror_pose`). Erstat `baked_grasps_*.json` pr. kropstype med én bagning + lukning | golden ≤ tolerance; et Studio-greb vises i Godot; 4 af 5 bagefiler kan slettes |

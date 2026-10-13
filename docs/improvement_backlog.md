@@ -1,5 +1,19 @@
 # Løbende forbedringer af GameSystems
 
+## G3 fælles grasp-data: afsluttende kontrakt- og consumer-audit — 2026-10-13
+
+G3's data-only kontraktfase er afsluttet. GameSystems `0d8b20b`, Nightfall Godot
+`dfbeaba` og Nightfall WebXR `0d2e822` er pushed; addon-/extension-manifests og
+consumer-kopier matcher deres canonical kilder. De otte grasp-datareadere samt
+humanoid maps passerede samlet **669/669** i Godot 4.7.2. GameSystems WebXR-demo
+bestod **581/581**, Nightfall WebXR **375/375**. Golden-generatorens `--check`, addon-
+sync-check og WebXR extension-sync-check passerer.
+
+Dette beviser dataform, eksport-/policyoverensstemmelse og consumer-integration. Det
+implementerer ikke Godot-grasp-/closure-/kontakt-/SDF-/bakealgoritmer, avatar-fit,
+asset-verifikation eller fysisk headsetparitet; de hører til senere G4–G7-arbejde.
+G3-kravene og evidensen står i [`godot_port_plan.md`](godot_port_plan.md).
+
 ## G3 grasp-kvalitet som eksplicit policydata — 2026-10-13
 
 `extensions/grasp/data/quality.data.json` indeholder nu den eksisterende policy fra
@@ -24,15 +38,15 @@ clamping eller closure. G3-afslutning kræver fortsat samlet audit og consumer-v
 
 ## Aktuel G3-integrationsstatus — 2026-10-13
 
-De otte `gs_grasp_data`-kontrakter er nu pushet i GameSystems `41eefb6` og integreret
-i Nightfall Godot `9f33f14`; humanoid bone-map-læseren er også synkroniseret. Nightfall
-WebXR har quality-data/runtime-integrationen i `9b579bc`. GameSystems WebXR-demo bestod
+De otte `gs_grasp_data`-kontrakter er nu pushet i GameSystems `0d8b20b` og integreret
+i Nightfall Godot `dfbeaba`; humanoid bone-map-læseren er også synkroniseret. Nightfall
+WebXR har quality-data/runtime-integrationen i `0d2e822`. GameSystems WebXR-demo bestod
 **581/581**, Nightfall WebXR **375/375**, og de otte grasp-datareadere plus humanoid maps
 bestod **669/669** i Godot 4.7.2. Golden freshness samt GameSystems addon- og WebXR-
 extension-sync-checks passerer; Nightfall addon-sync-checken passerer også.
 
-G3’s data- og consumer-integration er nu dækket; den afsluttende kontrol af
-kontraktgrænserne er næste trin. Disse læsere validerer data og bevarer JS-policyen;
+G3’s data- og consumer-integration er dækket, og den afsluttende kontrol af
+kontraktgrænserne passerede som beskrevet øverst. Disse læsere validerer data og bevarer JS-policyen;
 de implementerer ikke Godots grebs-, kontakt-, SDF-, bake- eller håndgeometrialgoritmer.
 Headset-/asset-paritet kræver særskilt evidens og er ikke påvist af disse tests.
 
