@@ -3,6 +3,7 @@
 // (docs/extensions_plan.md "Karakter-kontrakt"; e.g. character-cc's ccCharacters()) from WebXR tracking:
 //   vrik.js + twobone/bodyvolume/locomotion/cliploco/clips   full-body VR IK from head + hands, walking legs
 //   calibrate.js            height / arm calibration          rigdata.js   IK rest data from rest joint heads
+//   body_height.js          stick crouch, seated mode + automatic seated choice (host applies originOffset to its rig)
 //   fingers.js, fingerInput.js, filters.js, finger_profiles.json   finger mapping (XR hands, controllers), One Euro
 //   tracking.js, session.js  XR tracking record, session start   npc-animation.js   procedural NPC animation
 //   handposes.js, hand_poses.json, recorded_hand.json   hand poses + hand animations (one frame format; controller
@@ -38,6 +39,7 @@ export { fingerStateFromCurls, fingerStateFromJoints, syntheticJoints, limitFing
 export { prepareRig, handFrame, chainAngles, fingerAxes, thumbTwist, twistSign, THUMB_AXIS, TWIST_PLANE, FINGERS, SEGMENTS } from './rigdata.js';
 export { createVRIK, VRIK_DEFAULTS } from './vrik.js';
 export { solveHeight, solveArmScale, createHeightEstimator } from './calibrate.js';
+export { createBodyHeight, browserStorage, SEATED_BELOW, MIN_EYE_HEIGHT, CROUCH_DEADZONE, SEATED_OFFSET_MAX } from './body_height.js';
 export { createNPCAnimator, localAimPoint } from './npc-animation.js';
 export { controllerFingerState, relaxedFingerState, RELAXED_CURLS } from './fingerInput.js';
 export {

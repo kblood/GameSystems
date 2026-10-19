@@ -9,6 +9,7 @@
 //   liquid_color.js  liquid colour as Beer-Lambert absorbance; ml-weighted (subtractive) mixing in bottles/drops/puddles
 //   damage.js        deterministic bottle/pane damage models      surfaces.js   liquid-receiving surfaces, puddle clipping
 //   audio.js         bottle sounds                                 quality.js    tiers and their effect ceilings
+//   cap_gesture.js   two-hand cap / cork removal (twist + pull, port of the Godot bottle_cap.gd mechanism)
 //   bottle_liquid.js, liquid_lut_v2.js, bottle_design.js           liquid shader + LUT, *.bottle.json designs (moved here
 //                    from shaders/three and designs/three, which now re-export them)
 // Depends on: host (public API) and the game's three.js. Source of truth: GameSystems/extensions/bottles; games get
@@ -33,6 +34,7 @@ export { REF_PATH_M, PUDDLE_DEPTH_M, absorbanceOfColor, absorbanceOfSRGB, transm
 export { BottleDamageProfile, SURFACES, GLASS_PROFILES, assessPane } from './damage.js';
 export { SurfaceWorld, puddlePolygon } from './surfaces.js';
 export { BottleAudio, BOTTLE_SOUNDS } from './audio.js';
+export { createCapGesture, nearCap, TWIST_TO_LOOSEN, LOOSENED_PULL, STRAIGHT_PULL, GRIP_REACH } from './cap_gesture.js';
 export { BOTTLE_TIERS, BOTTLE_QUALITY, bottleQuality, tierIndex } from './quality.js';
 export { setupBottle, setupBottleFromUrl, loadLiquidInfo, makeLiquidMaterial } from './bottle_liquid.js';
 export { makeLut } from './liquid_lut_v2.js';

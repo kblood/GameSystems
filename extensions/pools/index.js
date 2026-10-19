@@ -12,6 +12,8 @@ export const LIQUID_FIRE_PRESETS = Object.freeze({
   diesel: { fuelJPerMl: 400, ignition: 120, flammability: 0.75, smokeYield: 0.00009 },
   petrol: { fuelJPerMl: 450, ignition: 90, flammability: 0.9, smokeYield: 0.0001 },
   oil: { fuelJPerMl: 500, ignition: 180, flammability: 0.5, smokeYield: 0.00012 },
+  // Strong alcohol (~40 % ABV): lights easily, carries less energy than fuel and burns with almost no smoke.
+  spirits: { fuelJPerMl: 220, ignition: 60, flammability: 0.6, smokeYield: 0.00001 },
   unknown: { fuelJPerMl: 0, ignition: 1000, flammability: 0, smokeYield: 0 },
   mixed: { fuelJPerMl: 0, ignition: 1000, flammability: 0, smokeYield: 0 },
   wine: { fuelJPerMl: 0, ignition: 1000, flammability: 0, smokeYield: 0 },
@@ -118,7 +120,11 @@ export function createPoolsSystem({ thermal, emit=()=>{}, quality='high', maxPoo
       addSource(sources,sourceKey,incoming);for(const parts of Object.values(sources))for(const amount of Object.values(parts))if(!Number.isFinite(amount))throw new RangeError('Pool source volume exceeds the finite range');
       const sourceMl=p.sourceMl+ml,nextInitial=initialMl+ml,nextRemaining=remainingMl+ml;if(!Number.isFinite(sourceMl)||!Number.isFinite(nextInitial)||!Number.isFinite(nextRemaining))throw new RangeError('Pool ledger exceeds the finite range');
       const staged={...p,components:nextComponents,sources,sourceMl},nextMl=total(staged),stagedProfile=profile(staged);if(!Number.isFinite(nextMl)||Object.values(stagedProfile).some(value=>typeof value==='number'&&!Number.isFinite(value)))throw new RangeError('Pool profile exceeds the finite range');
-      const capacity=stagedProfile.heatCapacity,temperature=blendTemperature(ambient,old.temperature,old.heatCapacity/capacity);if(!Number.isFinite(temperature))throw new RangeError('Pool temperature exceeds the finite range');
+      // Fuel landing in a burning pool feeds the flame: an all-combustible pour cannot cool it below its ignition point
+      // (water or a non-fuel liquid still blends in cold and can put it out).
+      const capacity=stagedProfile.heatCapacity,blended=blendTemperature(ambient,old.temperature,old.heatCapacity/capacity);
+      const feedsFlame=old.burning&&Object.keys(incoming).every(k=>LIQUID_FIRE_PRESETS[k].fuelJPerMl>0);
+      const temperature=feedsFlame?Math.max(blended,Math.min(old.temperature,stagedProfile.ignition)):blended;if(!Number.isFinite(temperature))throw new RangeError('Pool temperature exceeds the finite range');
       const waterMl=incoming.water??0,waterDose=fuel(staged)>0?waterMl:0,cooled=waterDose?cooledState(temperature,old.wetMl,waterDose,capacity,ambient):{temperature,wetMl:old.wetMl};
       if(!p.active&&thermal.hasObject?.(p.thermalId)&&!nodeIndex.has(p.thermalId))throw new Error('Thermal pool id is already owned');
       if(p.active)thermal.configure(p.thermalId,{...stagedProfile,temperature});

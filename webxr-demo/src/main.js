@@ -7,6 +7,8 @@ import { assetUrl } from './urls.js';
 import { createHost } from './vendor/extensions/host/index.js';
 import bottlesExtension from './vendor/extensions/bottles/index.js';
 import materialsExtension from './vendor/extensions/materials/index.js';
+import { createBarFire, liquidKindOf } from './bar-fire.js';
+import { createPistol } from './pistol.js';
 
 const status = document.getElementById('status');
 const toastNode = document.getElementById('toast');
@@ -45,7 +47,7 @@ const physics = new PhysicsWorld();
 const game = {};
 const host = createHost({ THREE, scene, renderer, camera, game, physics: physics.adapter, quality: 2,
   assetURL: path => new URL(path, document.baseURI) });
-let factory, pour, breakage, interaction, materialSystem;
+let factory, pour, breakage, interaction, materialSystem, fire, pistol;
 let generation = 0;
 let paused = false;
 const quality = document.getElementById('quality');
@@ -104,7 +106,7 @@ async function populate(token) {
       const item = queue.shift();
       try {
         const b = await factory.spawn(item.id, item.design, item.fill, item.position, item.open);
-        if (item.id === 'container_jerrycan' && item.design === 'container_jerrycan_fuel') b.liquidKind = 'diesel';
+        const kind = liquidKindOf(item.id, item.design); if (kind) b.liquidKind = kind; // what burns when spilled (bar-fire.js)
         if (token !== generation) { factory.remove(b); break; }
         pour.register(b);
         loaded++;
@@ -124,6 +126,7 @@ async function reset() {
   const token = ++generation;
   interaction?.releaseAll();
   breakage.reset();
+  pistol?.reset();
   pour.clear();
   materialSystem?.reset();
   for (const b of [...factory.bottles]) factory.remove(b);
@@ -153,11 +156,27 @@ async function init() {
     if (!bottles) throw new Error('bottles extension failed to load');
     ({ factory, pour, breakage } = bottles);
     breakage.createPanes();
-    interaction = new Interaction({ renderer, scene, camera, rig, factory, physics, breakage, host,
+    // Spilled diesel and strong alcohol burn (thermal + pools, bar-fire.js); a shot into such a pool lights it.
+    fire = await createBarFire({ host, scene, bottles });
+    host.on('shot', ({ origin, direction, hit }) => {
+      if (hit) return;
+      const pool = fire.igniteAlong(origin, direction);
+      if (pool) toast(pool.components.diesel ? 'Dieselen brænder' : 'Spiritussen brænder');
+    });
+    // A pistol with a laser sight in a holster on the right hip (pistol.js); dropped, it is back in the holster after 20 s.
+    pistol = createPistol({ scene, head: camera,
+      targets: () => {
+        const meshes = [...physics.surfaces, ...breakage.panes.filter(p => !p.broken).map(p => p.sheet)];
+        for (const b of factory.bottles) b.root.traverse(o => { if (o.isMesh) meshes.push(o); });
+        return meshes;
+      },
+      surfaces: () => physics.surfaces,
+      onReturn: () => toast('Pistolen er tilbage i hylsteret') });
+    interaction = new Interaction({ renderer, scene, camera, rig, factory, physics, breakage, host, pistol,
       actions: { reset, pause: setPause, quality: setQuality }, hud: toast });
     host.on('broken', ({ bottle }) => interaction.dropBottle(bottle)); // before the avatar's listener: hands let go first
     game.interaction = interaction;
-    window.__demo = { interaction, factory, breakage, pour, bottles, physics, camera, rig, renderer, scene, host, materials: materialSystem };
+    window.__demo = { interaction, factory, breakage, pour, bottles, physics, camera, rig, renderer, scene, host, materials: materialSystem, fire, pistol };
     // Headset test panel (tools/headset-lab): frame time, grab cost, hand-profile and grasp-quality buttons; only with ?testpanel.
     if (new URLSearchParams(location.search).has('testpanel')) {
       import('./testpanel.js').then(m => { window.__testpanel = m.installTestPanel({ host, interaction, scene, hud: toast }); })
@@ -188,7 +207,7 @@ document.body.append(vrButton);
 document.getElementById('enter-xr').addEventListener('click', () => vrButton.click());
 renderer.xr.addEventListener('sessionstart', () => {
   document.getElementById('crosshair').style.display = 'none';
-  toast('Grip: grib · trigger: skyd/menuknap · venstre stick: flyt · højre: drej');
+  toast('Grip: grib (pistolen sidder i hylsteret på højre hofte; frie hånd ved proppen: drej + træk af) · trigger: skyd · venstre stick: flyt · højre: drej, op/ned: rejs dig/buk dig');
   host.emit('xrStart', {});
 });
 // Interaction's own sessionend handler (registered first) has already released holds and restored the desktop camera.
@@ -204,6 +223,7 @@ renderer.setAnimationLoop(() => {
   if (!paused && interaction) {
     interaction.step(dt);
     host.update(dt);
+    fire?.update(dt);
     physics.step(dt); // then the bottles extension (liquid, pouring, breakage) from physics.onStep
   }
   renderer.render(scene, camera);

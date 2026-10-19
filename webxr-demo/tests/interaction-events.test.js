@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Interaction, tiltAboutGrip, DESKTOP_EYE, LOST_RELEASE_SECONDS } from '../src/interaction.js';
 import { createHost } from '../src/vendor/extensions/host/index.js';
+import { createBodyHeight } from '../src/vendor/extensions/avatar/body_height.js';
 
 function rig({ avatar = null } = {}) {
   const host = createHost({ onError: e => { throw e; } }), events = [];
@@ -13,7 +14,7 @@ function rig({ avatar = null } = {}) {
   const it = Object.create(Interaction.prototype);
   const controller = () => ({ pointer: new THREE.Object3D(), model: new THREE.Object3D(), handedness: 'right', isHand: false, lostFor: 0 });
   Object.assign(it, {
-    host, held: new Map(), tilt: 0, yaw: 0, pitch: 0, avatarModels: false,
+    host, held: new Map(), caps: new Map(), body: createBodyHeight({ posture: 'standing' }), bodyOffset: 0, tilt: 0, yaw: 0, pitch: 0, avatarModels: false,
     camera: new THREE.PerspectiveCamera(), rig: new THREE.Group(),
     renderer: { xr: { isPresenting: true, getSession: () => null } },
     physics: { release: (entry, velocity) => released.push({ entry, velocity: velocity.clone() }), hold() {} },

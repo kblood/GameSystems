@@ -10,7 +10,7 @@
 // rendering preset is chosen when it loads (low unless loaded at high).
 import * as THREE from 'three';
 import { ccCharacters } from './character-select.js'; // ./contracts.js (CharacterCreator) or ?character=vrm (character-vrm)
-import { createCharacterPlugin, handFromGrip, grabFingerState, pourFingerState, setHandPoseQuality, handPoseQuality, HAND_POSE_QUALITY, setHandVariants } from './vendor/extensions/avatar/index.js';
+import { createCharacterPlugin, handFromGrip, grabFingerState, pourFingerState, poseState, setHandPoseQuality, handPoseQuality, HAND_POSE_QUALITY, setHandVariants } from './vendor/extensions/avatar/index.js';
 import { defaultPose, graspPose, handGeometry, runtimeRows, CATALOG, setGraspVariants } from './vendor/extensions/grasp/index.js';
 import { DEMO_AVATAR } from './avatar-config.js';
 
@@ -129,6 +129,12 @@ async function createAvatar({ scene, renderer, camera, game, quality, assetURL }
   } catch (error) { characters.dispose?.(); throw error; }
   player.setFirstPerson(true);
   if (!player.root.parent) scene.add(player.root);
+  // XR body height (interaction.body): once the first calibration has chosen standing or seated, the avatar is fitted to
+  // the standing reference eye. A seated player's rig is lifted by the same amount, so the avatar stands with arms long
+  // enough to reach the controllers (an avatar fitted to the seated eye height is too small for its hands to hold).
+  const offBody = interaction?.body?.onChange(({ reason, referenceEye }) => {
+    if (reason === 'calibrated' && interaction.renderer.xr.isPresenting) player.calibrate(referenceEye);
+  });
   const holds = new Map(); // owner -> { bottle, side, grasp, k, close }
   let t = 0;
   // The avatar's own hand for close-to-contact grasps (the avatar's public rest hand, player.restHand(side): this
@@ -176,6 +182,7 @@ async function createAvatar({ scene, renderer, camera, game, quality, assetURL }
   }
 
   let tracked = null;
+  const gunPoses = new Map(), gunPose = id => gunPoses.get(id) ?? gunPoses.set(id, poseState(id, { src: 'virtual' })).get(id);
   return {
     characters, player, holds, handOf,
     /**
@@ -222,8 +229,15 @@ async function createAvatar({ scene, renderer, camera, game, quality, assetURL }
           fingers[h.side] = pourFingerState(rows, pourProgress(Math.acos(Math.max(-1, Math.min(1, up.y)))));
         }
       }
+      // The pistol hand (pistol.js): the named Godot poses, 'pistol' (index along the guard) and 'trigger' just after a
+      // shot. On desktop the hand goes to the pistol's grip (it converges on the crosshair, so it is not the fixed offset).
+      const gun = interaction.pistol, gunSide = gun?.owner == null ? null : gun.owner === 'desktop' ? 'right' : interaction.xrControllers[gun.owner]?.handedness;
+      if (gunSide && !fingers[gunSide]) {
+        fingers[gunSide] = gunPose(gun.firing ? 'trigger' : 'pistol');
+        if (gun.owner === 'desktop') { const g = gun.gripPose(); hands.right = { ...handFromGrip('right', g.pos, g.quat), valid: true, kind: 'desktop' }; }
+      }
       player.updateTracking({ t, head, hands, snaps, eyes: null, fingers }, dt);
     },
-    dispose() { player.dispose(); characters.dispose?.(); },
+    dispose() { offBody?.(); player.dispose(); characters.dispose?.(); },
   };
 }

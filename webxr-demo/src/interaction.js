@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
+import { createBodyHeight, browserStorage } from './vendor/extensions/avatar/body_height.js';
+import { createCapGesture, nearCap } from './vendor/extensions/bottles/cap_gesture.js';
+import { HOLSTER_REACH } from './pistol.js';
 
 const Y = new THREE.Vector3(0, 1, 0);
 /** Desktop eye height (m). The avatar auto-calibrates its size from it, so it should be a plausible standing eye. */
@@ -19,8 +22,8 @@ export function tiltAboutGrip(base0, q0, wrist, axis, angle) {
 }
 
 export class Interaction {
-  constructor({ renderer, scene, camera, rig, factory, physics, breakage, actions, hud, host = null }) {
-    Object.assign(this, { renderer, scene, camera, rig, factory, physics, breakage, actions, hud, host });
+  constructor({ renderer, scene, camera, rig, factory, physics, breakage, actions, hud, host = null, pistol = null }) {
+    Object.assign(this, { renderer, scene, camera, rig, factory, physics, breakage, actions, hud, host, pistol });
     this.keys = new Set();
     this.raycaster = new THREE.Raycaster();
     this.held = new Map();
@@ -32,6 +35,17 @@ export class Interaction {
     this.xrControllers = [];
     this.snapReady = true;
     this.avatarModels = false; // whether the generic controller models are hidden for the avatar's hands
+    this.caps = new Map(); // owner -> { bottle, gesture, meshes } while that hand grips a cap (bottles cap_gesture.js)
+    // XR body height (avatar body_height.js): right stick Y crouches (Boneworks hold-height), a seated first calibration
+    // lifts the rig to the standing reference so a seated player's avatar keeps its full reach. ?posture=standing|seated
+    // skips the automatic choice.
+    const posture = typeof location === 'object' ? new URLSearchParams(location.search).get('posture') : null;
+    this.body = createBodyHeight({ storage: browserStorage(), posture: ['standing', 'seated'].includes(posture) ? posture : null });
+    this.bodyOffset = 0; // the part of rig.position.y that is body height (removed again when the session ends)
+    this.body.onChange(({ reason, posture }) => {
+      if (reason === 'calibrated' && posture === 'seated') this.hud?.('Siddende: kroppen vises stående');
+      else if (reason === 'stood-up') this.hud?.('Stående: måler højden igen');
+    });
     this._makeXRUI();
     this._bindDesktop();
     this._bindXR();
@@ -57,6 +71,7 @@ export class Interaction {
       this.keys.add(e.code);
       if (e.code === 'KeyG') this.toggleGrab('desktop');
       if (e.code === 'KeyU') this.toggleCap('desktop');
+      if (e.code === 'KeyQ') this.togglePistol('desktop');
       if (e.code === 'KeyE') this.throw('desktop');
       if (e.code === 'KeyR') this.actions.reset();
       if (e.code === 'KeyP') this.actions.pause();
@@ -94,7 +109,24 @@ export class Interaction {
         else this.shoot(i);
       });
     }
-    this.renderer.xr.addEventListener('sessionend', () => { this.releaseAll(); this.restoreDesktop(); });
+    this.renderer.xr.addEventListener('sessionstart', () => { this.body.reset(); this._applyBodyOffset(0); });
+    this.renderer.xr.addEventListener('sessionend', () => { this.releaseAll(); this._applyBodyOffset(0); this.restoreDesktop(); });
+  }
+
+  /** Moves the rig so its height above the walked-on floor carries the body-height offset (seated lift, stick crouch). */
+  _applyBodyOffset(offset) {
+    this.rig.position.y += offset - this.bodyOffset;
+    this.bodyOffset = offset;
+  }
+
+  /** Feeds the tracked head (rig-local eye height and gaze) to the body height, then applies its offset. */
+  _updateBody(dt) {
+    const head = this.camera;
+    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(head.quaternion);
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(head.quaternion);
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(head.quaternion);
+    this.body.observe(head.position.y, dt, { pitch: Math.asin(THREE.MathUtils.clamp(forward.y, -1, 1)), roll: Math.atan2(right.y, up.y) });
+    this._applyBodyOffset(this.body.originOffset());
   }
 
   _emit(event, data) { this.host?.emit(event, data); }
@@ -108,7 +140,7 @@ export class Interaction {
   /** source: the XRInputSource. Extensions hear when an input switches between controller and tracked hand. */
   _onConnected(i, source) {
     const entry = this.xrControllers[i];
-    entry.handedness = source?.handedness || null; entry.lostFor = 0;
+    entry.handedness = source?.handedness || null; entry.lostFor = 0; entry.source = source || null;
     const isHand = !!source?.hand;
     if (isHand !== entry.isHand) { entry.isHand = isHand; this._emit('handTrackingChanged', { owner: i, handedness: entry.handedness, hand: isHand }); }
   }
@@ -126,7 +158,7 @@ export class Interaction {
 
   /** XR holds whose controller/hand has had no pose for LOST_RELEASE_SECONDS are dropped in place. */
   _checkTracking(dt) {
-    for (const owner of [...this.held.keys()]) {
+    for (const owner of new Set([...this.held.keys(), ...this.caps.keys(), ...(this.pistol?.owner != null ? [this.pistol.owner] : [])])) {
       if (owner === 'desktop') continue;
       const c = this.xrControllers[owner]; if (!c) continue;
       c.lostFor = c.pointer.visible ? 0 : c.lostFor + dt;
@@ -178,13 +210,18 @@ export class Interaction {
     this.raycaster.set(ray.origin, ray.direction); this.raycaster.far = maxDistance;
     const objects = [...this.uiTargets];
     for (const b of this.factory.bottles) b.root.traverse(o => { if (o.isMesh && !o.name.startsWith('Liquid')) objects.push(o); });
+    if (this.pistol && this.pistol.owner == null) this.pistol.root.traverse(o => { if (o.userData.pistol) objects.push(o); });
     return this.raycaster.intersectObjects(objects, false)[0] || null;
   }
 
   toggleGrab(owner) {
     if (this.held.has(owner)) { this.release(owner); return; }
+    if (this.pistol?.owner === owner) { this._letGoPistol(owner); return; } // desktop G toggles
+    if (owner !== 'desktop' && this._gripCap(owner)) return;
+    if (owner !== 'desktop' && this._pistolInReach(owner)) { this._takePistol(owner); return; }
     const hit = this.pick(owner);
     if (hit?.object.userData.action) { hit.object.userData.action(); return; }
+    if (hit?.object.userData.pistol) { this._takePistol(owner); return; }
     const b = hit?.object.userData.bottle;
     if (!b || b.broken || [...this.held.values()].some(x => x.bottle === b)) return;
     const hold = { bottle: b, last: b.root.position.clone(), velocity: new THREE.Vector3() };
@@ -204,6 +241,8 @@ export class Interaction {
 
   /** still: drop in place with zero velocity (disconnect, lost tracking) instead of the hand's motion. */
   release(owner, throwSpeed = 0, still = false) {
+    this._endCap(owner);
+    if (this.pistol?.owner === owner) this._letGoPistol(owner, still);
     const h = this._dropHold(owner); if (!h) return;
     const ray = this._ray(owner);
     const velocity = still ? new THREE.Vector3() : h.velocity.clone().clampLength(0, 4);
@@ -214,9 +253,141 @@ export class Interaction {
   /** A bottle broke or was removed: whoever held it lets go (no physics, the body is gone). grab_findings 1.1. */
   dropBottle(bottle) {
     for (const [owner, h] of [...this.held]) if (h.bottle === bottle) this._dropHold(owner);
+    for (const [owner, c] of [...this.caps]) if (c.bottle === bottle) this._endCap(owner);
   }
 
-  releaseAll() { for (const owner of [...this.held.keys()]) this.release(owner); }
+  // Caps in XR (Godot bottle_cap.gd): one hand holds the bottle, the free hand squeezes at the cap and twists + pulls it
+  // off (a cork: pulls straight). Squeezing at the mouth of an open bottle puts the cap back.
+  /** The bottle's unscaled frame (base origin, +Y up the neck) as a matrix. */
+  _bottleFrame(b, out = new THREE.Matrix4()) {
+    b.root.updateWorldMatrix(true, false);
+    const p = new THREE.Vector3(), q = new THREE.Quaternion();
+    b.root.matrixWorld.decompose(p, q, new THREE.Vector3());
+    return out.compose(p, q, new THREE.Vector3(1, 1, 1));
+  }
+
+  /** Cap meshes and the cap centre in the bottle frame, or null for a bottle without a removable cap. */
+  _capOf(b) {
+    if (b.capInfo !== undefined) return b.capInfo;
+    const meshes = [];
+    b.root.traverse(o => { if (o.isMesh && o.name.startsWith('Cap')) meshes.push(o); });
+    if (!meshes.length || b.setOpen === undefined) return (b.capInfo = null);
+    const box = new THREE.Box3();
+    for (const m of meshes) box.expandByObject(m);
+    const center = box.getCenter(new THREE.Vector3()).applyMatrix4(this._bottleFrame(b).invert());
+    return (b.capInfo = { meshes, center: center.toArray() });
+  }
+
+  /** The XR owner's grip pose in the bottle's frame. */
+  _handInBottle(owner, b) {
+    const grip = this.xrControllers[owner]?.grip; if (!grip) return null;
+    grip.updateWorldMatrix(true, false);
+    const m = this._bottleFrame(b).invert().multiply(grip.matrixWorld);
+    const p = new THREE.Vector3(), q = new THREE.Quaternion();
+    m.decompose(p, q, new THREE.Vector3());
+    return { pos: p.toArray(), quat: q.toArray() };
+  }
+
+  _gripCap(owner) {
+    for (const [other, h] of this.held) {
+      const b = h.bottle, cap = other !== owner && !b.broken ? this._capOf(b) : null;
+      const hand = cap && this._handInBottle(owner, b);
+      if (!hand || !nearCap(hand.pos, cap.center)) continue;
+      if (b.open) { b.setOpen(false); this.hud(b.open ? 'Kan ikke lukkes' : 'Lukket'); this._pulse(owner, 0.4, 40); return true; }
+      const gesture = createCapGesture({ cap: cap.center });
+      if (gesture.begin(hand).status !== 'active') return false;
+      const meshes = cap.meshes.map(o => ({ o, position: o.position.clone(), quaternion: o.quaternion.clone() }));
+      this.caps.set(owner, { bottle: b, gesture, meshes, support: other });
+      this.hud('Drej og træk proppen af');
+      this._pulse(owner, 0.25, 30);
+      return true;
+    }
+    return false;
+  }
+
+  _endCap(owner) {
+    const c = this.caps.get(owner); if (!c) return;
+    this.caps.delete(owner);
+    for (const { o, position, quaternion } of c.meshes) { o.position.copy(position); o.quaternion.copy(quaternion); }
+  }
+
+  _updateCaps(dt) {
+    for (const [owner, c] of [...this.caps]) {
+      const b = c.bottle;
+      if (b.broken || this.held.get(c.support)?.bottle !== b) { this._endCap(owner); continue; } // support hand let go
+      const state = c.gesture.update(this._handInBottle(owner, b), dt);
+      if (state.status === 'opened') {
+        this._endCap(owner); b.setOpen(true); this.hud('Åben'); this._pulse(owner, 0.8, 60); continue;
+      }
+      if (state.status === 'cancelled') { this._endCap(owner); if (state.reason === 'misaligned_or_withdrawn') this.hud('Proppen slap'); continue; }
+      // Small visual twist/lift about the neck axis while gripped.
+      const { twist, lift } = c.gesture.preview(), center = new THREE.Vector3(...this._capOf(b).center);
+      const motion = new THREE.Matrix4().makeTranslation(center.x, center.y + lift, center.z)
+        .multiply(new THREE.Matrix4().makeRotationY(twist)).multiply(new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z));
+      const frame = this._bottleFrame(b), toWorld = frame.clone().multiply(motion).multiply(frame.clone().invert());
+      for (const { o, position, quaternion } of c.meshes) {
+        o.position.copy(position); o.quaternion.copy(quaternion); o.updateWorldMatrix(true, false);
+        const world = toWorld.clone().multiply(o.matrixWorld), local = o.parent.matrixWorld.clone().invert().multiply(world);
+        local.decompose(o.position, o.quaternion, new THREE.Vector3());
+      }
+    }
+  }
+
+  _pulse(owner, strength, ms) {
+    try { this.xrControllers[owner]?.source?.gamepad?.hapticActuators?.[0]?.pulse?.(strength, ms)?.catch?.(() => {}); } catch { /* optional */ }
+  }
+
+  // The pistol (pistol.js) rides in a holster on the right hip. A squeeze at the holster (or at a dropped pistol, or
+  // pointing at it) takes it; letting go at the hip holsters it, anywhere else drops it and it comes back by itself.
+  _pistolInReach(owner) {
+    const grip = this.xrControllers[owner]?.grip; if (!this.pistol || this.pistol.owner != null || !grip) return false;
+    return grip.getWorldPosition(new THREE.Vector3()).distanceTo(this.pistol.gripPoint()) <= this.pistol.reach;
+  }
+
+  _takePistol(owner) {
+    if (!this.pistol || this.pistol.owner != null) return;
+    this.pistol.take(owner, owner === 'desktop' ? this.camera : this.xrControllers[owner].grip);
+    this.pistolTrack = null;
+    this._emit('pistol', { owner, held: true, side: owner === 'desktop' ? 'right' : this.xrControllers[owner]?.handedness || null });
+    this.hud('Pistol: aftrækker skyder');
+    this._pulse(owner, 0.3, 30);
+  }
+
+  /** Into the holster (desktop, reset, pause, session end) or, for an XR hand away from the hip, a drop. */
+  _letGoPistol(owner, still = false) {
+    if (owner == null || this.pistol?.owner !== owner) return;
+    const grip = owner === 'desktop' ? null : this.xrControllers[owner]?.grip;
+    const atHip = !grip || grip.getWorldPosition(new THREE.Vector3()).distanceTo(this.pistol.holsterPoint()) <= HOLSTER_REACH;
+    if (atHip) { this.pistol.holster(); this._emit('pistol', { owner, held: false, state: 'holstered' }); return; }
+    this.pistol.drop(still || !this.pistolTrack ? new THREE.Vector3() : this.pistolTrack.velocity.clone());
+    this.pistolTrack = null;
+    this._emit('pistol', { owner, held: false, state: 'dropped' });
+    this.hud('Pistolen er tabt: tilbage i hylsteret om 20 s');
+  }
+
+  _holsterPistol() {
+    const owner = this.pistol?.owner; if (owner == null) return;
+    this.pistol.holster();
+    this._emit('pistol', { owner, held: false, state: 'holstered' });
+  }
+
+  /** Desktop Q: draw from the holster (or pick a dropped one up), or holster it. */
+  togglePistol(owner) {
+    if (!this.pistol) return;
+    if (this.pistol.owner === owner) this._holsterPistol();
+    else if (this.pistol.owner == null && !this.held.has(owner)) this._takePistol(owner);
+  }
+
+  /** XR hand velocity while the pistol is held, for a throw when it is dropped. */
+  _trackPistolHand(dt) {
+    const owner = this.pistol?.owner, grip = owner == null || owner === 'desktop' ? null : this.xrControllers[owner]?.grip;
+    if (!grip || !(dt > 0)) return;
+    const p = grip.getWorldPosition(new THREE.Vector3());
+    if (!this.pistolTrack) this.pistolTrack = { last: p, velocity: new THREE.Vector3() };
+    else { this.pistolTrack.velocity.copy(p).sub(this.pistolTrack.last).divideScalar(Math.max(dt, 1 / 120)); this.pistolTrack.last.copy(p); }
+  }
+
+  releaseAll() { this._holsterPistol(); for (const owner of [...this.caps.keys()]) this._endCap(owner); for (const owner of [...this.held.keys()]) this.release(owner); }
 
   throw(owner) {
     if (this.held.has(owner)) this.release(owner, 10);
@@ -229,11 +400,23 @@ export class Interaction {
   }
 
   shoot(owner) {
+    if (this.pistol?.owner === owner) { this._shootPistol(owner); return; }
     const hit = this.pick(owner, 3);
     if (hit?.object.userData.action) { hit.object.userData.action(); return; }
     const ray = this._ray(owner); if (!ray) return;
     const impact = this.breakage.shoot(ray.origin, ray.direction);
     if (impact) this.hud(impact.object.userData.pane ? 'Rude knust' : 'Træffer');
+    this._emit('shot', { owner, origin: ray.origin.clone(), direction: ray.direction.clone(), hit: !!impact });
+  }
+
+  /** XR: along the barrel. Desktop: along the view (the pistol converges on the crosshair). */
+  _shootPistol(owner) {
+    const ray = owner === 'desktop' ? this._ray(owner) : this.pistol.ray();
+    const impact = this.breakage.shoot(ray.origin, ray.direction);
+    this.pistol.fire(ray.origin, ray.direction, !!impact);
+    if (impact) this.hud(impact.object.userData.pane ? 'Rude knust' : 'Træffer');
+    this._pulse(owner, 0.9, 45);
+    this._emit('shot', { owner, origin: ray.origin.clone(), direction: ray.direction.clone(), hit: !!impact, pistol: true });
   }
 
   step(dt) {
@@ -242,8 +425,19 @@ export class Interaction {
       this.avatarModels = !!avatar;
       for (const c of this.xrControllers) c.model.visible = !avatar; // tracked hands keep their own mesh
     }
+    if (this.pistol) {
+      // The pistol hand: no pointer ray and no controller model (the pistol is in the hand); desktop aims at the crosshair.
+      for (const c of this.xrControllers) { const gun = this.pistol.owner === c.index; c.ray.visible = !gun; c.model.visible = !avatar && !gun; }
+      let aim = null;
+      if (this.pistol.owner === 'desktop') {
+        const ray = this._ray('desktop'), hit = this.pistol.cast(ray.origin, ray.direction);
+        aim = hit ? hit.point : ray.origin.clone().addScaledVector(ray.direction, 20);
+      }
+      this._trackPistolHand(dt);
+      this.pistol.update(dt, { aim });
+    }
     if (!this.renderer.xr.isPresenting) this._desktopMove(dt);
-    else { this._xrMove(dt); this._checkTracking(dt); }
+    else { this._xrMove(dt); this._updateBody(dt); this._checkTracking(dt); this._updateCaps(dt); }
     for (const [owner, h] of [...this.held]) {
       if (!this.factory.bottles.has(h.bottle)) { this._dropHold(owner); continue; }
       const ray = this._ray(owner); if (!ray) continue;
@@ -303,8 +497,10 @@ export class Interaction {
         if (Math.abs(x) > 0.2) this.rig.position.addScaledVector(right, x * dt * 1.5);
         if (Math.abs(y) > 0.2) this.rig.position.addScaledVector(fwd, -y * dt * 1.5);
       } else if (source.handedness === 'right') {
+        // Stick Y is the crouch; a turn needs X to dominate, so a diagonal crouch never snaps.
+        if (this.body.update({ x, y }, dt)) continue;
         if (Math.abs(x) < 0.3) this.snapReady = true;
-        if (this.snapReady && Math.abs(x) > 0.75) {
+        if (this.snapReady && Math.abs(x) > 0.75 && Math.abs(x) > Math.abs(y)) {
           this.rig.rotation.y -= Math.sign(x) * Math.PI / 6;
           this.snapReady = false;
         }
