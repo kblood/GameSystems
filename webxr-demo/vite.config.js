@@ -41,7 +41,7 @@ export default defineConfig({
   publicDir: 'public',
   server: { fs: { allow: [sourceRoot] } },
   build: { target: 'es2022', rollupOptions: { input: {
-    bottles: resolve(projectRoot, 'index.html'), systems: resolve(projectRoot, 'systems.html'), fire: resolve(projectRoot, 'fire.html'), vehicle: resolve(projectRoot, 'vehicle.html'), security: resolve(projectRoot, 'security.html'),
+    bottles: resolve(projectRoot, 'index.html'), systems: resolve(projectRoot, 'systems.html'), fire: resolve(projectRoot, 'fire.html'), vehicle: resolve(projectRoot, 'vehicle.html'), security: resolve(projectRoot, 'security.html'), zombie: resolve(projectRoot, 'zombie.html'),
   } } },
   worker: { format: 'es' },
 });

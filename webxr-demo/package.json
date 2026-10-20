@@ -14,6 +14,7 @@
     "test:cap:browser": "node scripts/cap-smoke.mjs",
     "test:bar-fire:browser": "node scripts/bar-fire-smoke.mjs",
     "test:pistol:browser": "node scripts/pistol-smoke.mjs",
+    "test:gore:browser": "node scripts/gore-smoke.mjs",
     "test:missions:browser": "node scripts/mission-smoke.mjs",
     "test:fire:browser": "node scripts/fire-smoke.mjs",
     "test:flow:browser": "node scripts/flow-smoke.mjs",
