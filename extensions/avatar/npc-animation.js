@@ -1,12 +1,15 @@
 // GameSystems avatar extension; from the Contracts character plugin (src/npc-animation.js; MIT, Copyright (c) 2026 Kasper
 // Olesen), imports flattened. Source of truth: GameSystems/extensions/avatar.
 // Procedural humanoid animation. Host placement is authoritative; no motion/physics integration.
+// input.gait: 'walk' (default) | 'limp' (input.limpSide 'left'|'right': the hurt leg) | 'crawl' (prone, crawl.js;
+// input.limbs { leftArm, rightArm, leftLeg, rightLeg } says which limbs still work). Switching to 'crawl' falls over first.
 import { worldToPose, fkPositions } from '../humanoid/index.js';
 import { solveTwoBone } from './twobone.js';
 import { fingerStateFromCurls, fingerWorldDeltas, blendFingerStates } from './fingers.js';
 import { clamp, lp, ry, rx, rz, qMul, qConj, qRotate, qFromTo, qFrameZY, qAlignFrames, qSlerp, vAdd, vSub, vNorm, vScale, vLerp, wrapAngle } from './qx.js';
 import { frameDelta } from './lifecycle.js';
 import { buildTorso, torsoAt } from './bodyvolume.js';
+import { createCrawlGait } from './crawl.js';
 
 const ID = [0, 0, 0, 1], TAU = Math.PI * 2, SIDES = ['left', 'right'];
 const finite3 = value => value?.length >= 3 && value.slice(0, 3).every(Number.isFinite);
@@ -36,19 +39,28 @@ export function createNPCAnimator(initialRig, options = {}) {
   let rig = initialRig, clock = seed, phase = seed / TAU, move = 0, recoil = 0, hurt = 0, death = 0;
   let state = 'idle', aimYaw = 0, aimPitch = 0, combatWeight = 0, reloadWeight = 0, previous = null, settled = null;
   let feet = {}, wrists = {}, torso = buildTorso(rig, options.body);
+  let gait = 'walk', limp = 0, lastStanding = null;
+  const crawl = createCrawlGait(rig, { crawl: options.crawl });
   const gripFingers = fingerStateFromCurls({ thumb: .72, index: .16, middle: .9, ring: .92, little: .92 });
   const firingFingers = fingerStateFromCurls({ thumb: .72, index: .7, middle: .9, ring: .92, little: .92 });
   const supportFingers = fingerStateFromCurls({ thumb: .8, index: .85, middle: .9, ring: .92, little: .92 });
   const clearContacts = () => { feet = {}; previous = null; };
   return {
-    setRig(next) { if (next !== rig) { rig = next; torso = buildTorso(rig, options.body); clearContacts(); wrists = {}; settled = null; } },
-    reset() { clock = seed; phase = seed / TAU; move = recoil = hurt = death = aimYaw = aimPitch = combatWeight = reloadWeight = 0; state = 'idle'; clearContacts(); wrists = {}; settled = null; },
+    setRig(next) { if (next !== rig) { rig = next; torso = buildTorso(rig, options.body); crawl.setRig(next); clearContacts(); wrists = {}; settled = null; lastStanding = null; } },
+    reset() { clock = seed; phase = seed / TAU; move = recoil = hurt = death = aimYaw = aimPitch = combatWeight = reloadWeight = limp = 0; state = 'idle'; gait = 'walk'; crawl.reset(); clearContacts(); wrists = {}; settled = null; lastStanding = null; },
     update(input = {}, dt) {
       dt = frameDelta(dt);
       const next = STATES.has(input.state) ? input.state : 'idle';
       if (next === 'dead' && state === 'dead' && settled) return { ...settled, events: [] };
       clock += dt;
       if (next !== state) { if (next === 'hurt') hurt = 1; if (state === 'dead') { death = 0; settled = null; clearContacts(); } state = next; }
+      const nextGait = input.gait === 'crawl' || input.gait === 'limp' ? input.gait : 'walk';
+      if (nextGait !== gait) {
+        if (nextGait === 'crawl') crawl.begin(state === 'dead' ? null : lastStanding);
+        else { clearContacts(); wrists = {}; }
+        gait = nextGait; settled = null;
+      }
+      if (gait === 'crawl') return crawlFrame(input, dt);
       const position = finite3(input.position) ? [...input.position] : [0, 0, 0];
       const yawWorld = num(input.yaw), scale = num(input.scale, 1) > 0 ? num(input.scale, 1) : 1;
       const H = rig.H, k = rig.eyeHeight / 1.553;
@@ -64,9 +76,14 @@ export function createNPCAnimator(initialRig, options = {}) {
       previous = { position, yaw: yawWorld, scale };
       move += ((moving ? Math.min(1, speed / 0.25) : 0) - move) * lp(dt, 0.12);
       const stride = Math.min(rig.legLength * 0.23, Math.max(0.04 * k, speed * 0.15));
-      const cadence = moving ? speed * 0.6 / (2 * stride) : 0;
+      // limp: hurry off the hurt leg (short stance on it, long on the good one), hip drop and lean onto it
+      limp += ((gait === 'limp' ? 1 : 0) - limp) * lp(dt, 0.3);
+      const bad = input.limpSide === 'right' ? 1 : 0, badSign = bad ? -1 : 1;
+      const badU = ((phase + bad * 0.5) % 1 + 1) % 1, badLoad = badU >= 0.4 ? Math.sin((badU - 0.4) / 0.6 * Math.PI) : 0;
+      const cadence = moving ? speed * 0.6 / (2 * stride) * (1 + limp * (badU >= 0.4 ? 0.55 : -0.25)) : 0;
       const oldPhase = phase;
       phase += cadence * dt;
+      const limpLoad = limp * move * badLoad;
       recoil = Math.max(clamp(num(input.recoil), 0, 1), recoil * Math.exp(-dt * 18));
       hurt *= Math.exp(-dt * 5);
       if (state === 'dead') death = Math.min(1, death + dt / 0.85);
@@ -82,13 +99,13 @@ export function createNPCAnimator(initialRig, options = {}) {
       const aimQ = qMul(ry(aimYaw), rx(-aimPitch - recoil * 0.12));
       const breath = Math.sin(clock * 1.7) * 0.004 * (1 - death);
       const W = {
-        hips: qMul(rx(move * 0.035 - hurt * 0.14), rz(hurt * 0.14 + breath * 0.35)),
-        spine: qMul(ry(aimYaw * 0.1), rx(-aimPitch * 0.08 - recoil * 0.035)),
+        hips: qMul(rx(move * 0.035 - hurt * 0.14 + limp * move * 0.05), rz(hurt * 0.14 + breath * 0.35 + badSign * 0.1 * limpLoad)),
+        spine: qMul(rz(-badSign * 0.16 * limpLoad), qMul(ry(aimYaw * 0.1), rx(-aimPitch * 0.08 - recoil * 0.035))),
         chest: qMul(ry(aimYaw * 0.2), rx(-aimPitch * 0.16 - recoil * 0.06 + breath)),
         upperChest: qMul(ry(aimYaw * 0.35), rx(-aimPitch * 0.25 - recoil * 0.08 + breath)),
         neck: qMul(ry(aimYaw * 0.75), rx(-aimPitch * 0.75)), head: aimQ,
       };
-      const root = [Math.sin(clock * 0.63) * 0.002 * k * (1 - death), -0.035 * k, 0];
+      const root = [Math.sin(clock * 0.63) * 0.002 * k * (1 - death) + badSign * 0.03 * k * limpLoad, -0.035 * k - 0.045 * k * limpLoad, 0];
       const targets = {}, events = [], contacts = {};
       for (const [i, side] of SIDES.entries()) {
         const foot = side + 'Foot', rest = [H[foot][0] * 0.85, rig.ankleHeight, H[foot][2]];
@@ -102,7 +119,7 @@ export function createNPCAnimator(initialRig, options = {}) {
           const ahead = vScale(velocity, (0.4 - u) / cadence + stride / Math.max(speed, 0.01));
           f.to = vAdd(world(rest), ahead);
           const t = u / 0.4, smooth = t * t * (3 - 2 * t);
-          f.pos = vLerp(f.from, f.to, smooth); f.pos[1] = position[1] + rig.ankleHeight * scale + Math.sin(Math.PI * t) * 0.12 * k * scale;
+          f.pos = vLerp(f.from, f.to, smooth); f.pos[1] = position[1] + rig.ankleHeight * scale + Math.sin(Math.PI * t) * 0.12 * k * scale * (i === bad ? 1 - 0.55 * limp : 1);
           f.yaw = yawWorld;
         } else if (f.swing && dt > 0) {
           const floor = position[1] + rig.ankleHeight * scale;
@@ -192,7 +209,35 @@ export function createNPCAnimator(initialRig, options = {}) {
         grip: { position: actual.rightHand, quaternion: qMul(W.rightHand, rig.hands.right.frame.q) },
       };
       if (death === 1) settled = output;
+      if (death === 0) lastStanding = { W: { ...W }, root: [...root] };
       return output;
     },
   };
+
+  function crawlFrame(input, dt) {
+    const position = finite3(input.position) ? [...input.position] : [0, 0, 0];
+    const yawWorld = num(input.yaw), scale = num(input.scale, 1) > 0 ? num(input.scale, 1) : 1, k = rig.eyeHeight / 1.553;
+    clock += dt;
+    // the head of a prone body is low and ahead of the host position
+    const aim = finite3(input.aimPoint) ? input.aimPoint : [0, 0.4 * k, 10];
+    const direction = vSub(aim, [0, 0.38 * k, 0.32 * k]);
+    const yaw = clamp(Math.atan2(direction[0], direction[2]), -0.9, 0.9);
+    const pitch = clamp(Math.atan2(direction[1], Math.hypot(direction[0], direction[2])), -0.6, 0.6);
+    aimYaw += (yaw - aimYaw) * lp(dt, 0.12); aimPitch += (pitch - aimPitch) * lp(dt, 0.12);
+    const frame = crawl.update({
+      position, yaw: yawWorld, scale, speed: num(input.speed), moving: !!input.moving && state !== 'dead',
+      limbs: input.limbs, aimYaw, aimPitch, dead: state === 'dead',
+    }, dt);
+    const pose = { joints: worldToPose(frame.W), root: frame.root };
+    const actual = fkPositions(rig.H, pose);
+    death = frame.dead;
+    const output = {
+      pose, tilt: [0, 0, 0], offset: [0, 0, 0], gait: 'crawl', down: frame.down,
+      state, phase: frame.phase, moving: frame.moving, death: frame.dead, recoil: 0, combatWeight: 0,
+      contacts: frame.contacts, events: frame.events,
+      grip: { position: actual.rightHand, quaternion: qMul(frame.W.rightHand, rig.hands.right.frame.q) },
+    };
+    if (state === 'dead' && frame.dead === 1) settled = output;
+    return output;
+  }
 }

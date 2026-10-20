@@ -92,7 +92,7 @@ export function createGoreWorld({ THREE, scene, physics = null, gibs = null, con
     const bodyUnit = units.find(u => u.bm.caps.length) ?? null;
     const attachMs = performance.now() - t0;
     // the damage model reads the live config (setConfig changes health, thresholds and the gore level in place)
-    const model = createDamageModel({ get regions() { return cfg.regions; }, get sever() { return cfg.sever; }, get totalHealth() { return cfg.totalHealth; } });
+    const model = createDamageModel({ get regions() { return cfg.regions; }, get sever() { return cfg.sever; }, get totalHealth() { return cfg.totalHealth; }, get mobility() { return cfg.mobility; } });
     const zombieGibs = [];
     let disposed = false;
 
@@ -508,6 +508,10 @@ export function createGoreWorld({ THREE, scene, physics = null, gibs = null, con
       lostRegions: () => [...lost],
       mobility: () => model.mobility(),
       speedFactor: () => model.speedFactor(),
+      /** { leftArm, rightArm, leftLeg, rightLeg }: which limbs still work (for a crawl gait). */
+      limbs: () => model.limbs(),
+      /** The hurt leg while limping ('left' | 'right'), else null. */
+      limpSide: () => model.limpSide(),
       raycast,
       /** World centre of a region's proxy (current pose), or null: an aim point for scripts and tests. */
       regionCenter(id) {

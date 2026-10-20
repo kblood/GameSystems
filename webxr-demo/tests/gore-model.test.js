@@ -133,6 +133,38 @@ test('missing legs and feet slow the zombie down; it crawls without a leg', () =
   m.reset(); assert.equal(m.mobility(), 'walk'); assert.deepEqual(m.lostRegions(), []);
 });
 
+test('a hurt (not severed) leg limps on that side; limbs() and the crawl speeds follow the arms left', () => {
+  let m = model();
+  m.hit('rightLowerLeg', 15); assert.equal(m.mobility(), 'walk', 'a scratch does not limp');
+  m.hit('rightLowerLeg', 10); assert.equal(m.mobility(), 'limp'); assert.equal(m.limpSide(), 'right');
+  assert.deepEqual(m.limbs(), { leftArm: true, rightArm: true, leftLeg: true, rightLeg: true });
+  m.sever('leftUpperLeg');
+  assert.equal(m.mobility(), 'crawl'); assert.equal(m.limpSide(), 'right', 'the remaining hurt leg');
+  assert.equal(m.limbs().leftLeg, false); assert.equal(m.speedFactor(), MOBILITY.crawl);
+  m.sever('leftLowerArm'); assert.equal(m.limbs().leftArm, false); assert.equal(m.speedFactor(), MOBILITY.oneArmCrawl);
+  m.sever('rightUpperArm'); assert.equal(m.speedFactor(), MOBILITY.legsOnlyCrawl);
+  m.sever('rightUpperLeg'); assert.equal(m.mobility(), 'crawl'); assert.equal(m.speedFactor(), 0, 'helpless');
+  m.sever('leftHand'); assert.equal(m.limbs().leftArm, false);
+  // a lost hand alone still pulls with the forearm stump
+  m = model(); m.sever('rightHand'); m.sever('leftLowerLeg');
+  assert.equal(m.limbs().rightArm, true); assert.equal(m.speedFactor(), MOBILITY.crawl);
+});
+
+test('mobility speeds and the limp threshold come from the config and are validated', () => {
+  const m = model({ mobility: { limpSpeed: 0.8, crawlSpeed: 0.5, oneArmCrawlSpeed: 0.25, limpBelow: 0.9 } });
+  m.hit('leftUpperLeg', 4); assert.equal(m.mobility(), 'walk'); m.hit('leftUpperLeg', 4); assert.equal(m.mobility(), 'limp'); assert.equal(m.speedFactor(), 0.8);
+  m.sever('leftLowerLeg'); assert.equal(m.speedFactor(), 0.5);
+  m.sever('rightUpperArm'); assert.equal(m.speedFactor(), 0.25);
+  assert.equal(validateGoreConfig(resolveGoreConfig()).ok, true);
+  assert.deepEqual(DEFAULT_GORE_CONFIG.mobility, { limpBelow: 0.5, limpSpeed: MOBILITY.limp, crawlSpeed: MOBILITY.crawl, oneArmCrawlSpeed: MOBILITY.oneArmCrawl, legsOnlyCrawlSpeed: MOBILITY.legsOnlyCrawl });
+  const { ok, errors } = validateGoreConfig({ ...resolveGoreConfig(), mobility: { ...DEFAULT_GORE_CONFIG.mobility, crawlSpeed: -1, limpBelow: 2 } });
+  assert.equal(ok, false);
+  assert.ok(errors.includes('mobility.crawlSpeed must be in 0..2') && errors.includes('mobility.limpBelow must be in 0..1'), errors.join('; '));
+  // effectiveConfig keeps the section at every gore level
+  assert.throws(() => resolveGoreConfig({ mobility: { limpSpeed: 'fast' } }), /mobility.limpSpeed/);
+  assert.equal(effectiveConfig(resolveGoreConfig({ goreLevel: 'off', mobility: { limpSpeed: 0.7 } })).mobility.limpSpeed, 0.7);
+});
+
 test('severAt, damageScale and severable steer when a region comes off; gore off severs nothing', () => {
   let m = model({ regions: { leftUpperLeg: { severAt: 0.5 } } });
   assert.equal(m.hit('leftUpperLeg', 29).length, 1); assert.equal(m.hit('leftUpperLeg', 1)[1].type, 'sever');

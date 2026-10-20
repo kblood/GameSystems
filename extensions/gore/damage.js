@@ -7,10 +7,15 @@
 // A region comes off when its health falls to severAt × health and it is severable (chained: the whole subtree goes with
 // it, e.g. an upper arm takes the forearm and the hand). Losing a vital region (chest, neck, head, cranium) or using up the
 // head's health kills, and so does total damage >= totalHealth. A dead zombie can still be shot apart (no second death).
-// Hits on a lost region are ignored. mobility() says how a zombie with missing parts moves on.
+// Hits on a lost region are ignored. mobility() says how a zombie with missing parts moves on, limbs() which limbs
+// still work and speedFactor() how fast (cfg.mobility; defaults below). The host maps these onto its animation, e.g. the
+// avatar NPC animator's gait input ('walk' | 'limp' | 'crawl', limpSide, limbs); gore itself never animates.
 import { REGIONS, REGION, REGION_IDS, subtree } from './regions.js';
 
-export const MOBILITY = Object.freeze({ walk: 1, limp: 0.6, crawl: 0.32, none: 0 });
+/** Default speed factors (cfg.mobility overrides): crawl = both arms pulling. */
+export const MOBILITY = Object.freeze({ walk: 1, limp: 0.6, crawl: 0.32, oneArmCrawl: 0.2, legsOnlyCrawl: 0.12, none: 0 });
+const MOBILITY_DEFAULTS = { limpBelow: 0.5, limpSpeed: MOBILITY.limp, crawlSpeed: MOBILITY.crawl, oneArmCrawlSpeed: MOBILITY.oneArmCrawl, legsOnlyCrawlSpeed: MOBILITY.legsOnlyCrawl };
+const LEG = ['UpperLeg', 'LowerLeg', 'Foot'];
 
 export function createDamageModel(cfg) {
   const state = {};
@@ -20,6 +25,22 @@ export function createDamageModel(cfg) {
     taken = 0; dead = false; cause = null;
   }
   reset();
+
+  function limbs() {
+    const ok = (...ids) => ids.every(id => !state[id].lost);
+    return { leftArm: ok('leftUpperArm', 'leftLowerArm'), rightArm: ok('rightUpperArm', 'rightLowerArm'),
+      leftLeg: ok('leftUpperLeg', 'leftLowerLeg'), rightLeg: ok('rightUpperLeg', 'rightLowerLeg') };
+  }
+  function limpSide() {
+    const below = cfg.mobility?.limpBelow ?? MOBILITY_DEFAULTS.limpBelow;
+    let side = null, worst = Infinity;
+    for (const s of ['left', 'right']) {
+      if (state[`${s}UpperLeg`].lost || state[`${s}LowerLeg`].lost) continue;
+      const share = state[`${s}Foot`].lost ? -1 : Math.min(...LEG.map(p => state[s + p].health / state[s + p].max));
+      if (share < below && share < worst) { worst = share; side = s; }
+    }
+    return side;
+  }
 
   function die(why, region, events) {
     if (dead) return;
@@ -66,15 +87,28 @@ export function createDamageModel(cfg) {
     sever(id, { force = false } = {}) { const events = []; sever(id, events, { force }); return events; },
     /** Kills without taking anything off. */
     kill(why = 'script') { const events = []; die(why, null, events); return events; },
-    /** 'walk' | 'limp' (a foot gone) | 'crawl' (a leg gone at the knee or above) | 'none' (dead). */
+    /**
+     * 'walk' | 'limp' (a foot gone, or a leg region below mobility.limpBelow of its health) | 'crawl' (a leg gone at the
+     * knee or above) | 'none' (dead).
+     */
     mobility() {
       if (dead) return 'none';
-      const legGone = ['left', 'right'].some(s => state[`${s}UpperLeg`].lost || state[`${s}LowerLeg`].lost);
-      if (legGone) return 'crawl';
-      return ['left', 'right'].some(s => state[`${s}Foot`].lost) ? 'limp' : 'walk';
+      if (!limbs().leftLeg || !limbs().rightLeg) return 'crawl';
+      return limpSide() ? 'limp' : 'walk';
     },
-    /** Speed factor for the current mobility (MOBILITY). */
-    speedFactor() { return MOBILITY[this.mobility()]; },
+    /** Which limbs still work: an arm needs its upper and lower arm, a leg its upper and lower leg. */
+    limbs,
+    /** The hurt leg ('left' | 'right') when limping (a lost foot first, then the lower health share), else null. */
+    limpSide,
+    /** Speed factor for the current mobility (cfg.mobility): crawling depends on the arms left; helpless = 0. */
+    speedFactor() {
+      const m = { ...MOBILITY_DEFAULTS, ...(cfg.mobility ?? {}) }, mode = this.mobility();
+      if (mode === 'walk') return 1;
+      if (mode === 'limp') return m.limpSpeed;
+      if (mode === 'none') return 0;
+      const l = limbs(), arms = +l.leftArm + +l.rightArm, legs = +l.leftLeg + +l.rightLeg;
+      return arms === 2 ? m.crawlSpeed : arms === 1 ? m.oneArmCrawlSpeed : legs ? m.legsOnlyCrawlSpeed : 0;
+    },
     /** At least one hand left to grab with. */
     canAttack: () => !dead && ['left', 'right'].some(s => !state[`${s}Hand`].lost),
     reset,

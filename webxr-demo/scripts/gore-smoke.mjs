@@ -114,6 +114,48 @@ try {
   assert.ok(walked.z1 > z1Before + 0.02 && Math.abs(walked.z0 + 3.2) < 1e-6, `walk ${JSON.stringify(walked)}`); checks.push('a living zombie keeps walking with an arm missing; the dead one stays down');
   await shot('09-overview.png');
 
+  // Crawl: a leg off makes a zombie fall and crawl on its arms (avatar NPC crawl gait, driven by gore's mobility).
+  // Zombie 2 keeps both arms; zombie 1 (left arm gone) crawls on one arm.
+  await page.evaluate(() => { window.__lab.walking = false; const [, z1, z2] = window.__lab.zombies; z1.position.set(-0.9, 0, -3.4); z2.position.set(0.5, 0, -2.6); z1.yaw = z2.yaw = 0; });
+  await frames(3);
+  await look([0.4, 1.25, 0.4], [0.3, 0.5, -2.6]);
+  const leg = await page.evaluate(() => window.__lab.shootRegion(2, 'leftUpperLeg', 65));
+  measured.crawlLeg = leg;
+  assert.ok(leg && leg.events.includes('sever:leftUpperLeg') && !leg.events.some(e => e.startsWith('death')), `leg ${JSON.stringify(leg)}`);
+  await frames(4); await shot('10-crawl-1-falling.png');
+  const leg1 = await page.evaluate(() => window.__lab.shootRegion(1, 'rightLowerLeg', 45));
+  measured.crawlLeg1 = leg1;
+  assert.ok(leg1 && leg1.events.some(e => e.startsWith('sever:rightLowerLeg')) && !leg1.events.some(e => e.startsWith('death')), `leg1 ${JSON.stringify(leg1)}`);
+  await page.waitForFunction(() => { const s = window.__lab.stats().zombies; return s[1].contacts?.rightHand?.planted && s[2].contacts?.leftHand?.planted; }, { timeout: 120000, polling: 'raf' });
+  await frames(4);
+  const prone = await page.evaluate(() => window.__lab.zombies.map(z => ({ gait: z.anim?.gait, mobility: z.gore.mobility(), pelvis: z.gore.regionCenter('pelvis')?.y, head: z.gore.regionCenter('head')?.y })));
+  measured.prone = prone;
+  for (const i of [1, 2]) {
+    assert.ok(prone[i].gait === 'crawl' && prone[i].mobility === 'crawl', `crawl gait ${JSON.stringify(prone[i])}`);
+    assert.ok(prone[i].pelvis < 0.3 && prone[i].head > prone[i].pelvis + 0.15, `prone ${JSON.stringify(prone[i])}`);
+  }
+  checks.push('a severed leg drops the zombie: it falls and lies prone, head up (two-arm and one-arm)');
+  await shot('10-crawl-2-prone.png');
+  // crawl toward the player: planted hands stay put while the body drags past them
+  await page.evaluate(() => { window.__lab.walking = true; });
+  const before = await page.evaluate(() => window.__lab.zombies.map(z => z.position.z));
+  const plantedHand = await page.evaluate(() => { const c = window.__lab.stats().zombies[2].contacts; const side = c.leftHand.planted ? 'leftHand' : 'rightHand'; return { side, position: c[side].position }; });
+  await frames(6);
+  const still = await page.evaluate(side => window.__lab.stats().zombies[2].contacts[side], plantedHand.side);
+  if (still.planted) assert.ok(Math.hypot(...still.position.map((v, n) => v - plantedHand.position[n])) < 1e-6, 'planted hand does not slide');
+  await look([2.2, 0.9, -1.6], [0.0, 0.25, -3.0]); await frames(30); await shot('10-crawl-3-toward.png');
+  await frames(25); await shot('10-crawl-4-pull.png');
+  await look([0.2, 0.75, -1.2], [-0.2, 0.25, -3.0]); await frames(3); await shot('10-crawl-5-one-arm.png');
+  const after = await page.evaluate(() => window.__lab.zombies.map(z => z.position.z));
+  measured.crawled = { z1: +(after[1] - before[1]).toFixed(3), z2: +(after[2] - before[2]).toFixed(3) };
+  assert.ok(after[2] > before[2] + 0.02 && after[1] > before[1] + 0.01, `crawled ${JSON.stringify(measured.crawled)}`);
+  assert.ok(after[2] - before[2] > after[1] - before[1], 'two arms crawl faster than one');
+  checks.push(`legless zombies crawl toward the player (two arms ${measured.crawled.z2} m, one arm ${measured.crawled.z1} m)`);
+  await page.evaluate(() => { window.__lab.walking = false; });
+  // side view of the prone body (stopped: they hold their heading)
+  const side = await page.evaluate(() => window.__lab.zombies[2].position.toArray());
+  await look([side[0] + 1.5, 0.55, side[2] + 0.2], [side[0], 0.25, side[2] + 0.1]); await frames(3); await shot('10-crawl-6-side.png');
+
   // Gore level off: nothing comes off any more.
   await page.evaluate(() => window.__lab.setConfig({ ...window.__lab.settings(), goreLevel: 'off' }));
   const off = await page.evaluate(() => window.__lab.shootRegion(1, 'rightUpperArm', 200));

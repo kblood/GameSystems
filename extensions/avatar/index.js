@@ -41,6 +41,7 @@ export { createVRIK, VRIK_DEFAULTS } from './vrik.js';
 export { solveHeight, solveArmScale, createHeightEstimator } from './calibrate.js';
 export { createBodyHeight, browserStorage, SEATED_BELOW, MIN_EYE_HEIGHT, CROUCH_DEADZONE, SEATED_OFFSET_MAX } from './body_height.js';
 export { createNPCAnimator, localAimPoint } from './npc-animation.js';
+export { createCrawlGait, CRAWL_DEFAULTS } from './crawl.js';
 export { controllerFingerState, relaxedFingerState, RELAXED_CURLS } from './fingerInput.js';
 export {
   HAND_FORMAT, HAND_POSE_QUALITY, setHandPoseQuality, handPoseQuality, LIMITS_DEG, IDENTITY_WRIST, toRows, rowsToArray, limitRows,

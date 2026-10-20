@@ -16,6 +16,12 @@
 //   gibs             { lifetime (s), max (alive at once, oldest go first), physics (false: gibs fall with simple gravity) }
 //   decals           { max (floor/wall splats alive at once), wounds (bullet wounds per zombie), floor, walls }
 //   particles        { max } blood spray particles alive at once (all zombies share one pool)
+//   mobility         how a damaged zombie moves (damage.js mobility(); the host maps it to a gait and a speed):
+//                      limpBelow     a leg region (upper leg, lower leg, foot) under this share of its health limps
+//                      limpSpeed     speed factor when limping (a foot gone or a hurt leg)
+//                      crawlSpeed    speed factor when crawling on both arms (a leg gone at the knee or above)
+//                      oneArmCrawlSpeed   ... crawling on one arm
+//                      legsOnlyCrawlSpeed ... no usable arm: shoving with the remaining leg(s); no arms and no legs: 0
 //   performance      { freezeMorphs (bake the slider morphs into the vertices at spawn: much cheaper on Quest, sliders can
 //                    no longer change afterwards), meshHitTest (hits tested against the skinned triangles; false: the
 //                    physics proxies only) }
@@ -47,6 +53,7 @@ export const DEFAULT_GORE_CONFIG = Object.freeze({
   gibs: { lifetime: 14, max: 24, physics: true },
   decals: { max: 64, wounds: 10, floor: true, walls: true },
   particles: { max: 600 },
+  mobility: { limpBelow: 0.5, limpSpeed: 0.6, crawlSpeed: 0.32, oneArmCrawlSpeed: 0.2, legsOnlyCrawlSpeed: 0.12 },
   performance: { freezeMorphs: true, meshHitTest: true },
 });
 
@@ -125,6 +132,9 @@ export function validateGoreConfig(cfg) {
   section('decals', [['max', v => Number.isInteger(v) && v >= 0 && v <= 1024, 'must be an integer in 0..1024'],
     ['wounds', v => Number.isInteger(v) && v >= 0 && v <= 64, 'must be an integer in 0..64'], ['floor', bool, 'must be a boolean'], ['walls', bool, 'must be a boolean']]);
   section('particles', [['max', v => Number.isInteger(v) && v >= 0 && v <= 8192, 'must be an integer in 0..8192']]);
+  section('mobility', [['limpBelow', v => num(v, 0, 1), 'must be in 0..1'], ['limpSpeed', v => num(v, 0, 2), 'must be in 0..2'],
+    ['crawlSpeed', v => num(v, 0, 2), 'must be in 0..2'], ['oneArmCrawlSpeed', v => num(v, 0, 2), 'must be in 0..2'],
+    ['legsOnlyCrawlSpeed', v => num(v, 0, 2), 'must be in 0..2']]);
   section('performance', [['freezeMorphs', bool, 'must be a boolean'], ['meshHitTest', bool, 'must be a boolean']]);
   return { ok: errors.length === 0, errors };
 }

@@ -76,20 +76,21 @@ async function spawn(count) {
   }
 }
 
-// Zombie posture on top of the NPC walk: arms up front, shoulders hunched, head lolling; a lurch when limping and a
-// crawl (the body pitched to the floor) when a leg is gone.
+// Zombie posture on top of the NPC walk: arms up front, shoulders hunched, head lolling. The gait itself comes from the
+// avatar NPC animation: gore's mobility() / limbs() / limpSide() map onto its gait input (walk, limp, crawl). A crawling
+// zombie gets no overlay: its arms are planted on the floor by the crawl IK.
 const X = [1, 0, 0], Z = [0, 0, 1];
 function zombiePose(pose, z, t) {
   const j = { ...pose.joints }, mul = (name, q) => { j[name] = qMul(q, j[name] ?? [0, 0, 0, 1]); };
-  const sway = Math.sin(t * 2.1 + z.phase), crawl = z.gore.mobility() === 'crawl';
+  if (z.gore.mobility() === 'crawl') return pose;
+  const sway = Math.sin(t * 2.1 + z.phase);
   for (const [s, k] of [['left', 1], ['right', -1]]) {
     if (z.gore.lost(`${s}UpperArm`)) continue;
-    const lift = crawl ? -1.1 : -1.25 + 0.12 * Math.sin(t * 3 + z.phase + k);
+    const lift = -1.25 + 0.12 * Math.sin(t * 3 + z.phase + k);
     mul(`${s}UpperArm`, qAxisAngle(X, lift)); mul(`${s}UpperArm`, qAxisAngle(Z, k * -0.12));
     mul(`${s}LowerArm`, qAxisAngle(X, -0.25 - 0.1 * sway * k));
   }
   mul('spine', qAxisAngle(X, 0.18)); mul('neck', qAxisAngle(Z, 0.25 * sway)); mul('head', qAxisAngle(X, 0.2));
-  if (z.gore.mobility() === 'limp') mul('hips', qAxisAngle(Z, 0.12 * sway));
   return { ...pose, joints: j };
 }
 
@@ -105,14 +106,12 @@ function updateZombies(dt, t) {
     if (walking) z.yaw = Math.atan2(to.x, to.z); // stopped: they hold still (also for close-up screenshots)
     const speed = walking && dist > 0.75 ? 0.42 * g.speedFactor() : 0;
     if (speed > 0) z.position.addScaledVector(to.normalize(), speed * dt);
-    const anim = z.entity.updateNPC({ position: z.position.toArray(), yaw: z.yaw, moving: speed > 0, speed, state: 'idle', aimPoint: player.toArray() }, dt);
+    // gore -> avatar gait (gore never imports avatar; the lab wires the two)
+    const mobility = g.mobility(), gait = mobility === 'crawl' ? 'crawl' : mobility === 'limp' ? 'limp' : 'walk';
+    const anim = z.entity.updateNPC({ position: z.position.toArray(), yaw: z.yaw, moving: speed > 0, speed, state: 'idle', aimPoint: player.toArray(),
+      gait, limbs: g.limbs(), limpSide: g.limpSide() }, dt);
+    z.anim = anim;
     if (anim?.pose) z.character.applyPose(zombiePose(anim.pose, z, t));
-    if (g.mobility() === 'crawl') {
-      // stretch goal: crawling on the arms. The whole body pitched forward, lying on the floor.
-      z.entity.root.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), 1.35));
-      z.entity.root.position.y = 0.16;
-      z.entity.root.updateMatrixWorld(true);
-    }
   }
 }
 
@@ -163,7 +162,7 @@ const vrButton = VRButton.createButton(renderer, { optionalFeatures: ['local-flo
 function reattach() {
   for (const z of zombies) {
     z.gore.dispose(); z.gore = world.attach(z.character, { uncover: true }); z.deadFor = 0;
-    z.position.z = -4.5 - rnd() * 2.5; z.entity.updateNPC({ state: 'idle' }, 0);
+    z.position.z = -4.5 - rnd() * 2.5; z.entity.updateNPC({ state: 'idle', gait: 'walk' }, 0);
   }
   world.effects.clear();
 }
@@ -210,7 +209,7 @@ window.__lab = {
     const hit = shoot(origin, dir);
     return hit ? { zombie: zombies.findIndex(x => x.gore === hit.zombie), region: hit.region, events: lastShot.events } : null;
   },
-  stats: () => ({ ...world.stats(), drawCallsFrame: drawCalls, fps, shots, hits, zombies: zombies.map(z => ({ lost: z.gore.lostRegions(), dead: z.gore.dead, mobility: z.gore.mobility(), drawCalls: z.gore.drawCalls(), attachMs: z.gore.attachMs, baked: z.gore.baked })) }),
+  stats: () => ({ ...world.stats(), drawCallsFrame: drawCalls, fps, shots, hits, zombies: zombies.map(z => ({ lost: z.gore.lostRegions(), dead: z.gore.dead, mobility: z.gore.mobility(), gait: z.anim?.gait ?? 'walk', contacts: z.anim?.contacts ?? null, drawCalls: z.gore.drawCalls(), attachMs: z.gore.attachMs, baked: z.gore.baked })) }),
   setConfig: c => world.setConfig(c), settings, reattach,
 };
 window.__pageLifecycle = bindPageLifecycle({ suspend: () => renderer.setAnimationLoop(null), resume: () => renderer.setAnimationLoop(animate), resetClock: () => timer.getDelta(),

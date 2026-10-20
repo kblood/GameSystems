@@ -48,7 +48,7 @@ const hit = world.shoot(origin, direction, { damage: 30 });
 
 **Zombie API**
 
-- Queries: `lost(id)`, `lostRegions()`, `mobility()` ('walk' | 'limp' | 'crawl' | 'none'), `speedFactor()`, `dead`, `regionCenter(id)`
+- Queries: `lost(id)`, `lostRegions()`, `mobility()` ('walk' | 'limp' | 'crawl' | 'none'), `speedFactor()`, `limbs()`, `limpSide()`, `dead`, `regionCenter(id)`
 - Actions: `hit({ region, damage, point, normal, direction })`, `sever(id, { force, direction })`, `kill()`, `reset()`
 - `setConfig(layer)`, `drawCalls()`, `stats()`, `attachMs`, `baked`
 - `dispose()`: gives the character back with its original geometry and materials
@@ -89,9 +89,60 @@ which the procedural insides show. The gib has a closed back.
 
 A dead zombie can still be shot apart.
 
-**Mobility** is a pure query; the demo uses it to slow zombies down and to make them crawl:
-- a foot gone: limp
+**Mobility** is a pure query. Gore never animates; the host maps it onto its own animation (see "Mobility and the crawl"):
+- a leg region (upper leg, lower leg, foot) below `mobility.limpBelow` of its health, or a foot gone: limp
 - a leg gone at the knee or above: crawl
+- dead: none
+
+## Mobility and the crawl
+
+The damage model answers three questions:
+
+- `mobility()`: `'walk' | 'limp' | 'crawl' | 'none'`
+- `limbs()`: `{ leftArm, rightArm, leftLeg, rightLeg }`, which limbs still work. An arm needs its upper and lower arm (a lost hand still pulls with the forearm stump); a leg needs its upper and lower leg.
+- `limpSide()`: the hurt leg (`'left'` or `'right'`) while limping, else `null`.
+
+`speedFactor()` turns that into a speed from `mobility.*`:
+
+| State | Factor |
+|---|---|
+| walk | 1 |
+| limp | `limpSpeed` |
+| crawl on two arms | `crawlSpeed` |
+| crawl on one arm | `oneArmCrawlSpeed` |
+| crawl with no usable arm (shoving with a leg) | `legsOnlyCrawlSpeed` |
+| no arms and no legs (helpless) | 0 |
+| dead | 0 |
+
+**The animation** lives in the avatar extension, so any game can reuse it: `extensions/avatar/crawl.js` (`createCrawlGait`, `CRAWL_DEFAULTS`), driven by the NPC animator. `createNPCAnimator(...).update()` and `entity.updateNPC()` take:
+- `gait`: `'walk' | 'limp' | 'crawl'`
+- `limpSide`: `'left' | 'right'`
+- `limbs`: as above
+
+The output carries `gait` and `down` (0..1 while falling). Gore does not import avatar. The zombie lab (`src/zombie-lab.js`) wires the two:
+
+```js
+const m = zombie.mobility();
+entity.updateNPC({ position, yaw, speed: 0.42 * zombie.speedFactor(), moving, aimPoint,
+  gait: m === 'crawl' ? 'crawl' : m === 'limp' ? 'limp' : 'walk', limbs: zombie.limbs(), limpSide: zombie.limpSide() }, dt);
+```
+
+How it moves:
+- **Fall:** switching to `crawl` blends from the last standing pose to prone over `fallSeconds` (0.9 s). The pelvis drops while the body pitches forward and the hands reach for the floor.
+- **Prone:** the pelvis is about 0.12 m off the floor and the chest is arched up. The head is pitched back up and turned toward the aim point.
+- **Arm pull:**
+  - A hand swings ahead of its shoulder and plants on the floor.
+  - While planted it is fixed in the world (like the walk's feet), and the body drags past it through two-bone arm IK.
+  - Two arms alternate. One arm pulls alone and the body rolls into it; the speed factor makes it slower.
+  - A `handplant` event fires on each landing, and `contacts.leftHand` / `rightHand` report planted hands.
+- **Legs:** the remaining legs drag behind. A leg draws its knee out and shoves weakly against the opposite arm's pull. Without usable arms the legs do all the shoving, slowly.
+- **Helpless:** with no arms and no legs the body writhes in place and nothing plants.
+- **Death while crawling:** the head drops and the hands slide out, then the pose settles.
+- **Limp:** a short stance on the hurt leg (the good leg hurries through its swing), a low swing of the hurt foot, a hip drop and a lean onto it.
+
+`CRAWL_DEFAULTS` (pitch, arch, head lift, fall time, swing share, reach, stride, hip height) can be overridden with `createNPCAnimator(rig, { crawl: {...} })`.
+
+Node tests: `webxr-demo/tests/npc-crawl.test.js` (pose and gait) and `gore-model.test.js` (mobility rules and config). The smoke `npm run test:gore:browser` severs legs and saves `10-crawl-*.png`.
 
 ## Config reference
 
@@ -119,6 +170,11 @@ Invalid values throw a `TypeError` that lists every problem.
 | `decals.wounds` | 10 | Bullet wounds per zombie, following the bone. |
 | `decals.floor` / `walls` | true | Where splats land. |
 | `particles.max` | 600 | Blood spray pool, shared by all zombies. |
+| `mobility.limpBelow` | 0.5 | A leg region under this share of its health limps (a lost foot always limps). |
+| `mobility.limpSpeed` | 0.6 | Speed factor when limping. |
+| `mobility.crawlSpeed` | 0.32 | Speed factor crawling on two arms. |
+| `mobility.oneArmCrawlSpeed` | 0.2 | Speed factor crawling on one arm. |
+| `mobility.legsOnlyCrawlSpeed` | 0.12 | Speed factor crawling with no usable arm. No arms and no legs: 0. |
 | `performance.freezeMorphs` | true | Bakes the slider morphs into the vertices at attach. This drops roughly 43 MB of morph texture per zombie, so it is cheap on Quest, but sliders cannot change afterwards. |
 | `performance.meshHitTest` | true | Hits are tested against the skinned triangles. false: proxies only. |
 
@@ -204,5 +260,5 @@ These numbers come from the node fixture and the headless smoke on the 3-zombie 
 - **Jaw:** the jaw cut runs through the open mouth, so its gib keeps a few small open loop fragments. They are not visible in play and are documented in the bake output.
 - **Clothing conflicts:** the shirt and jeans each have 2 triangles where the belly patch and the left upper-leg seam overlap (the first seam wins).
 - **Insides:** the insides are stylised, fitted primitives (ellipsoids, tubes) rather than anatomical meshes. Third-party CC0 meshes could replace them per part; record any you add in `LICENSE-NOTES.md`.
-- **Crawling:** the crawl is a stretch goal. The demo pitches the whole body to the floor; there is no arm-pull animation.
+- **Crawling:** the crawl is procedural, with no clips. Hands plant on a flat floor at the host's height (no terrain probe), and the prone body does not collide with props. Turning on the spot re-plants out-of-reach hands without an event.
 - **Other topologies:** a VRM or other non-MakeHuman character needs its own bake. Write a seam table if its regions differ. Unbaked characters still work with bone-collapse severing.
