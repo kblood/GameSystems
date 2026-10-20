@@ -8,6 +8,7 @@
 //   skeleton_check.js  checkSkeleton(): missing fingers -> mitten hands + warning, knuckles far from expected -> warning;
 //                      completeHands(): synthetic finger heads for mitten hands
 //   layers.js          render layers (first person hides HEAD meshes from MAIN)
+//   contract.js        the character contract: validateCharacter() / assertCharacter() for providers and the avatar
 // Poses are parent-relative deltas in the character frame (+X left, +Y up, +Z forward, metres).
 // Source of truth: GameSystems/extensions/humanoid (canonical/qmath/rig/humanoid from CharacterCreator at dc664c07, MIT;
 // see LICENSE-NOTES.md). Games get synced copies of the top-level files; never edit a synced copy.
@@ -18,3 +19,4 @@ export { createHumanoid, applyPose, resetPose, restHeads, measure, sanitizeNodeN
 export { MPFB_GAME_ENGINE, VRM_HUMANOID, VRM0_HUMANOID, MIXAMO, mixamoBoneMap, boneMapFromVRM, mapCoverage, detectBoneMap } from './bone_maps.js';
 export { REQUIRED, HAND_EXPECT, checkSkeleton, completeHands } from './skeleton_check.js';
 export { LAYERS } from './layers.js';
+export { CHARACTER_REQUIRED, CHARACTER_OPTIONAL_METHODS, CAPABILITIES, validateCharacter, assertCharacter } from './contract.js';

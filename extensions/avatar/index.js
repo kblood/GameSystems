@@ -1,6 +1,6 @@
 // GameSystems avatar extension: public API; fork of the CharacterCreatorXR character plugin (MIT, Copyright (c) 2026
 // Kasper Olesen) via the Contracts character plugin. Poses ANY character that implements the character contract
-// (docs/extensions_plan.md "Karakter-kontrakt"; e.g. character-cc's ccCharacters()) from WebXR tracking:
+// (humanoid contract.js, checked with assertCharacter; e.g. character-cc's ccCharacters()) from WebXR tracking:
 //   vrik.js + twobone/bodyvolume/locomotion/cliploco/clips   full-body VR IK from head + hands, walking legs
 //   calibrate.js            height / arm calibration          rigdata.js   IK rest data from rest joint heads
 //   body_height.js          stick crouch, seated mode + automatic seated choice (host applies originOffset to its rig)
@@ -20,7 +20,7 @@
 // clips), 'high' (+ touch-sensor gestures, cubic clip interpolation; default). Global setHandPoseQuality(tier) or per
 // player entity.setHandPoseQuality(tier).
 import * as THREE from 'three';
-import { checkSkeleton, completeHands, poseToWorld, fkPositions, LAYERS } from '../humanoid/index.js';
+import { checkSkeleton, completeHands, poseToWorld, fkPositions, LAYERS, assertCharacter } from '../humanoid/index.js';
 import { createVRIK } from './vrik.js';
 import { createHeightEstimator, solveHeight } from './calibrate.js';
 import { createFingerInput } from './fingerInput.js';
@@ -185,7 +185,7 @@ export function createCharacterPlugin({ scene, renderer, character: provider, qu
     const removeParentCleanup = lifetime.onDispose(() => child.dispose());
     let avatar = null, rig = null, unsubscribe = () => {}, offRest = () => {};
     const rigListeners = new Set();
-    child.onDispose(() => { unsubscribe(); offRest(); rigListeners.clear(); avatar?.dispose(); root.removeFromParent(); entities.delete(entity); removeParentCleanup(); });
+    child.onDispose(() => { unsubscribe(); offRest(); rigListeners.clear(); avatar?.dispose?.(); root.removeFromParent(); entities.delete(entity); removeParentCleanup(); });
     let scale = Number.isFinite(options.scale) && options.scale > 0 ? options.scale : 1;
     // Hand profile overrides: provider/plugin option, player option, then the runtime setter (setHandProfile).
     const profileOverrides = [handProfile, options.handProfile].filter(Boolean);
@@ -235,6 +235,7 @@ export function createCharacterPlugin({ scene, renderer, character: provider, qu
     };
     try {
       avatar = await provider.create({ kind, options, signal: child.signal, physicsScene: scene });
+      assertCharacter(avatar, { label: `character provider ${provider.id ?? '(no id)'}` });
       child.assertAlive(); lifetime.assertAlive();   // disposed meanwhile: the catch below disposes the character once
       rig = measure(); reprofile();
       for (const warning of rig.skeleton.warnings) console.warn(`[avatar] ${warning}`);

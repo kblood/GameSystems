@@ -66,15 +66,26 @@ Kerne-spillet sender events; extensions reagerer. Det løser i sig selv grab_fin
 
 ### Karakter-kontrakt
 
+Kontrakten er kode: `extensions/humanoid/contract.js` (`validateCharacter`, `assertCharacter`). Den ligger i humanoid, fordi
+både avatar og alle providers allerede afhænger af den: en provider kan teste sig selv uden at importere avatar, og
+avatar tjekker hver karakter, den får (`createCharacterPlugin` kaster en `TypeError`, der nævner alle mangler).
+
 ```js
 character = {
-  root, meshes,                         // Object3D + skinned meshes (førsteperson skjuler hoved)
-  humanoid,                             // createHumanoid(mesh, { map })
-  restHeads(), applyPose(pose), resetPose(),
-  headBone, capabilities: { fingers, eyes, cloth, morphs },
-  quality: ['low', 'high'], dispose(),
+  // påkrævet
+  root,                                 // Object3D, karakterens ramme (+X venstre, +Y op, +Z frem)
+  humanoid,                             // { bones } fra createHumanoid(mesh, { map })
+  restHeads(), applyPose(pose), dispose(),
+  // valgfrit (typetjekkes kun hvis de findes)
+  meshes, headBone, capabilities: { fingers, eyes, cloth, morphs }, quality, bodyShape: { male, bust },
+  handProfile, eyeOffset(), resetPose(), onRestChange(cb), setFirstPerson(on), tick(dt, physics, { gaze, frozen }),
+  resetSecondary(), setQuality(tier),
 }
 ```
+
+Providers i dag: `character-cc` og `character-vrm`. Tests: `webxr-demo/tests/character-contract.test.js` (kontrakten, VRM,
+afvisning i avatar; CC dækkes af browser-smokes) og `webxr-demo/tests/extension-boundaries.test.js` (hver extensions
+runtime-importer holder sig til sine erklærede afhængigheder; avatar/grasp importerer aldrig et karaktersystem).
 
 Skelet-tjek ved indlæsning: mangler fingerled → avataren kører med stive "vante"-hænder og advarer; knoer langt fra
 forventet håndgeometri (typisk ved auto-rigs) → advarsel. Kvalitet: fuld krop / kun hænder og arme / slået fra.
