@@ -134,6 +134,42 @@ export function createCannonPhysics(world = new CANNON.World({ gravity: new CANN
       handle.body.wakeUp();
     },
 
+    // ---- optional ragdoll capability (extensions/hitreact ragdoll-driver.js; not part of the host interface)
+    //   addJoint(a, b, { pivotA, pivotB, axisA, axisB, angle, twistAngle, maxForce?, collideConnected? }) -> joint
+    //       a cone/twist joint; pivots and axes in each body's local frame, angle = cone half-angle, twistAngle (rad)
+    //   removeJoint(joint); applyImpulse(handle, impulse, point?) world N·s at a world point (default: the centre)
+    //   applyTorque(handle, torque) world N·m for the next internal step (call it from onPreStep)
+    //   setDamping(handle, linear, angular); onPreStep(cb) -> unsubscribe, cb(fixedStep) before every internal step
+    addJoint(a, b, { pivotA, pivotB, axisA, axisB, angle = 0, twistAngle = 0, maxForce = 1e6, collideConnected = false } = {}) {
+      if (!alive(a) || !alive(b)) return null;
+      const v = x => new CANNON.Vec3(...vec(x));
+      const constraint = new CANNON.ConeTwistConstraint(a.body, b.body, { pivotA: v(pivotA), pivotB: v(pivotB), axisA: v(axisA ?? [0, 1, 0]),
+        axisB: v(axisB ?? [0, 1, 0]), angle, twistAngle, maxForce, collideConnected });
+      world.addConstraint(constraint);
+      return { constraint };
+    },
+    removeJoint(joint) { if (joint?.constraint) { world.removeConstraint(joint.constraint); joint.constraint = null; } },
+    applyImpulse(handle, impulse, point = null) {
+      if (!alive(handle)) return;
+      const b = handle.body, [x, y, z] = vec(impulse), rel = point ? vec(point) : [b.position.x, b.position.y, b.position.z];
+      b.applyImpulse(new CANNON.Vec3(x, y, z), new CANNON.Vec3(rel[0] - b.position.x, rel[1] - b.position.y, rel[2] - b.position.z));
+    },
+    applyTorque(handle, torque) {
+      if (!alive(handle)) return;
+      const [x, y, z] = vec(torque);
+      handle.body.torque.x += x; handle.body.torque.y += y; handle.body.torque.z += z;
+    },
+    setDamping(handle, linear, angular) {
+      if (!alive(handle)) return;
+      if (Number.isFinite(linear)) handle.body.linearDamping = linear;
+      if (Number.isFinite(angular)) handle.body.angularDamping = angular;
+    },
+    onPreStep(cb) {
+      const listener = () => { try { cb(cfg.fixedStep); } catch (error) { console.error('Physics preStep listener failed', error); } };
+      world.addEventListener('preStep', listener);
+      return () => world.removeEventListener('preStep', listener);
+    },
+
     onContact(cb) { contactListeners.add(cb); return () => contactListeners.delete(cb); },
     onStep(cb) { stepListeners.add(cb); return () => stepListeners.delete(cb); },
 

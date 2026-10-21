@@ -1,7 +1,7 @@
 // Copies shared code into the demo. Files are written only when their content changed, so a sync during a dev
 // server or a test run does not trigger reloads or expose half-written files (helpers: ../../scripts/sync_lib.mjs,
 // shared with apps/grasp-studio).
-//   - GameSystems extensions (host, adapters, bottles, grasp, humanoid, avatar, character-cc) -> src/vendor/extensions
+//   - GameSystems extensions (host, adapters, bottles, grasp, humanoid, avatar, character-cc, ... gore, ai, hitreact) -> src/vendor/extensions
 //     (top-level modules plus grasp/data; grasp's tools/ folder is offline tooling). The three.js liquid/design helpers that used to be
 //     copied from shaders/three and designs/three live in the bottles extension since extensions plan step 8.
 //   - optional: the character-cc extension's generated CharacterCreator files from the Contracts game (an MIT snapshot it
@@ -25,7 +25,7 @@ for (const old of ['bottle_liquid.js', 'liquid_lut_v2.js', 'bottle_design.js']) 
 // Extensions: source of truth is GameSystems/extensions. Generated copies, do not edit them in src/vendor/extensions.
 // mirror() owns each target folder, so every extension gets its own.
 const EXTENSIONS = ['host', 'adapters', 'bottles', 'grasp', 'humanoid', 'avatar', 'character-cc', 'character-vrm',
-  'mechanics', 'electricity', 'materials', 'thermal', 'tools', 'acoustics', 'workshop', 'pools', 'smoke', 'checkpoint', 'supply', 'sprinklers', 'vehicle', 'cameras', 'pool-interest', 'flow', 'coatings', 'alarms', 'missions', 'gore'];
+  'mechanics', 'electricity', 'materials', 'thermal', 'tools', 'acoustics', 'workshop', 'pools', 'smoke', 'checkpoint', 'supply', 'sprinklers', 'vehicle', 'cameras', 'pool-interest', 'flow', 'coatings', 'alarms', 'missions', 'gore', 'ai', 'hitreact'];
 const ext = await syncExtensions(src, vendor, EXTENSIONS);
 console.log(`Synced GameSystems extensions (${EXTENSIONS.join(', ')})${ext ? `: ${ext} file(s) changed` : ''}`);
 

@@ -5,6 +5,9 @@ their physical reach or appear to invade personal space even when its world coor
 are valid. AI needs spatial, timing and presentation rules in addition to navigation and
 combat behavior.
 
+The shared implementation (perception, intent, navmesh movement, squad and horde coordination, the zombie and guard
+brains, the hit hook and the physical-state input) is documented in [../ai_system.md](../ai_system.md).
+
 ## Behavior architecture
 
 Separate perception, intent, movement, interaction and animation/physics:
