@@ -93,9 +93,9 @@ The guard matches `guard.gd`: a reload is interrupted by a non-standing state, a
 brain resumes from where it was after `standing` (zombies walk back to their slot at 0.7x chase speed). Every change
 emits a `physical` event (`{ agent, from, to }`) so the physical layer can respond.
 
-The zombie lab uses a placeholder: a leg severing sets `downed` for the fall (1.0 s), then `recovering` (0.35 s), then
-`standing`, so a crawler crawls once its legs are gone. A hit sets `destabilized` for 0.3 s (0.45 s for legs). A dead
-zombie is `inert`. Replace the placeholder timers with the real ragdoll or IK state when it exists.
+The zombie lab drives these states from `extensions/hitreact`: an IK hit reaction (hit chain spring-damper, planted
+feet, balance step, knockdown after repeated hits) and, opt-in with `?ragdoll=1`, an active ragdoll that takes over in
+`downed` and `inert`. `?hitreact=0` falls back to the old timer placeholder (a 1.0 s fall, then 0.35 s recovering).
 
 ## Perception
 
@@ -254,7 +254,7 @@ Screenshots from the smoke test are in `webxr-demo/test-results/ai/`.
 
 ## Known gaps
 
-- Physical states are an input only. The lab's placeholder timers stand in for a ragdoll or IK layer.
+- Physical states are an input only. Nightfall does not feed physical states yet; only the GameSystems lab does (hitreact).
 - The grid is 2D (floor plan). Multi-level floors need a navmesh with the same interface.
 - Quest performance is not measured. The code avoids per-frame allocation in hot loops and slices its rays, but the
   budget is a later task.
