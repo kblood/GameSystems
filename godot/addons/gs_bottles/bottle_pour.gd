@@ -63,6 +63,15 @@ var _interrupted_during_step := false
 var _overflow_ml := 0.0
 var _overflow_kind: StringName = &"unknown"
 var _plugged := false
+## Colour mixing of a non-empty receiver (same rule as extensions/bottles/liquid_color.js receiveLiquidColour):
+## _logical is the exact ml-weighted colour (what pours out next); the shader shows it at MEDIUM/HIGH, and at
+## MINIMAL/LOW only once half of the content is foreign (no fade here: set_liquid_color is instant).
+var _logical := Color(0, 0, 0, 0)               ## alpha 0 = none (the shown colour is the truth)
+var _logical_shown := Color(0, 0, 0, 0)         ## the shown colour when _logical was set; if it changed, someone else recoloured
+var _foreign_ml := 0.0
+var _foreign_shown := false
+const EMPTY_ML := 0.5
+const SAME_COLOR := 0.03                        ## absorbance distance under which two colours count as the same liquid
 var _q_vis := 0.0                               ## smoothed flow for the tube radius (m3/s)
 var _t_land := 0.4
 var _stop_t := -1.0                             ## time since the stream stopped (tail falls off the lip)
@@ -303,7 +312,7 @@ func _drain(dt: float) -> float:
 	stream_p0 = p0 + aw * 0.002
 	stream_v0 = aw * sp + vb
 	_q_vis = lerpf(_q_vis, dv * 1.0e-6 / dt, 0.25)
-	_add_parcel(stream_p0, stream_v0, dv, _ctl.liquid_color())
+	_add_parcel(stream_p0, stream_v0, dv, liquid_color_now())
 	return dv
 
 
@@ -501,9 +510,14 @@ func receive(ml: float, col: Color, _from: GSBottlePour = null, kind: StringName
 		return 0.0
 	var cap := _ctl.capacity_ml()
 	var have: float = body.fill * cap
-	if have < 0.5:
-		_ctl.set_liquid_color(col)
 	var acc := clampf(cap - have, 0.0, ml)
+	if have < EMPTY_ML:
+		_ctl.set_liquid_color(col)
+		_logical = Color(0, 0, 0, 0)
+		_foreign_ml = 0.0
+		_foreign_shown = false
+	elif acc > 0.0:
+		_mix_colour(have, col, acc)
 	var incoming_kind := _normalized_kind(kind)
 	if acc > 0.0:
 		liquid_kind = _mixed_kind(liquid_kind, have, incoming_kind)
@@ -517,6 +531,57 @@ func receive(ml: float, col: Color, _from: GSBottlePour = null, kind: StringName
 		body.sleeping = false
 	activate()
 	return acc
+
+
+## What this container pours out next: the exact mixed colour (the shown colour unless a low tier is still holding it back).
+func liquid_color_now() -> Color:
+	var shown := _ctl.liquid_color()
+	if _logical.a > 0.0 and shown.is_equal_approx(_logical_shown):
+		return _logical
+	return shown
+
+
+## ml-weighted mix in absorbance space (a = -ln(linear colour); subtractive: red + blue = dark purple). Colours are
+## sRGB Colors as the sidecar/shader take them; returns sRGB. Same model as liquid_color.js mixAbsorbance.
+static func mix_colors(a: Color, ml_a: float, b: Color, ml_b: float) -> Color:
+	var wa := maxf(0.0, ml_a)
+	var wb := maxf(0.0, ml_b)
+	var total := wa + wb
+	if total <= 0.0:
+		return a
+	var la := a.srgb_to_linear()
+	var lb := b.srgb_to_linear()
+	var out := Color(0, 0, 0, 1)
+	for i in 3:
+		var abs_a := -log(maxf(la[i], 1e-4))
+		var abs_b := -log(maxf(lb[i], 1e-4))
+		out[i] = exp(-(abs_a * wa + abs_b * wb) / total)
+	return out.linear_to_srgb()
+
+
+static func color_distance(a: Color, b: Color) -> float:
+	var la := a.srgb_to_linear()
+	var lb := b.srgb_to_linear()
+	var d := 0.0
+	for i in 3:
+		d = maxf(d, absf(-log(maxf(la[i], 1e-4)) + log(maxf(lb[i], 1e-4))))
+	return d
+
+
+func _mix_colour(have: float, col: Color, acc: float) -> void:
+	var base := liquid_color_now()
+	if color_distance(base, col) <= SAME_COLOR:
+		return
+	var mixed := mix_colors(base, have, col, acc)
+	_logical = mixed
+	if _stream_mode() >= MEDIUM:
+		_ctl.set_liquid_color(mixed)
+	else:
+		_foreign_ml += acc
+		if not _foreign_shown and _foreign_ml >= 0.5 * (have + acc):
+			_foreign_shown = true
+			_ctl.set_liquid_color(mixed)
+	_logical_shown = _ctl.liquid_color()
 
 
 static func _normalized_kind(kind: StringName) -> StringName:
@@ -546,7 +611,7 @@ func _emit_overflow() -> void:
 	var r := _ctl.mouth_radius * 1.05
 	var p := lxf * (_ctl.mouth_centre + e * r)
 	var ew := (bas * e).normalized()
-	_add_parcel(p, ew * 0.25 + body.linear_velocity, _overflow_ml, _ctl.liquid_color(), _overflow_kind)
+	_add_parcel(p, ew * 0.25 + body.linear_velocity, _overflow_ml, liquid_color_now(), _overflow_kind)
 	poured_ml += _overflow_ml
 	_overflow_ml = 0.0
 
@@ -612,7 +677,7 @@ func _update_stream(flowed: float, dt: float) -> void:
 	_pulse = pulse
 	_smat.set_shader_parameter("pulse", pulse)
 	_smat.set_shader_parameter("r_max", _stream_r_max())
-	_smat.set_shader_parameter("color", _ctl.liquid_color())
+	_smat.set_shader_parameter("color", liquid_color_now())
 
 
 func _make_stream(mode: int) -> void:

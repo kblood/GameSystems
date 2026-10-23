@@ -212,6 +212,40 @@ func run() -> void:
 		and is_equal_approx(removed_overflow.spilled_ml, 9.0) and is_equal_approx(Pour.world_lost_ml - removal_lost_before, 9.0),
 		"removal settles never-emitted overflow into matching outgoing/lost ledgers")
 	removed_overflow.body.free()
+	# Colour mixing of a non-empty receiver (same rule as liquid_color.js; see docs/pour_system.md)
+	var red := Color(0.9, 0.08, 0.08)
+	var blue := Color(0.08, 0.1, 0.9)
+	var purple := Pour.mix_colors(red, 100.0, blue, 100.0)
+	var avg := red.srgb_to_linear().lerp(blue.srgb_to_linear(), 0.5)
+	check(purple.srgb_to_linear().g < avg.g and purple.srgb_to_linear().r < avg.r and purple.r > purple.g and purple.b > purple.g,
+		"red + blue 50/50 mixes subtractively to a dark purple, darker than the linear average")
+	check(Pour.mix_colors(red, 190.0, blue, 10.0).r > Pour.mix_colors(red, 190.0, blue, 10.0).b * 3.0
+		and Pour.mix_colors(red, 10.0, blue, 190.0).b > Pour.mix_colors(red, 10.0, blue, 190.0).r * 3.0,
+		"a skewed ml distribution stays near the majority colour")
+	check(Pour.mix_colors(red, 0.0, blue, 50.0).is_equal_approx(blue) and Pour.mix_colors(red, 50.0, blue, 0.0).is_equal_approx(red),
+		"zero ml on one side leaves the other colour unchanged")
+	var mixer_ctl := GSBottleLiquid.new()
+	mixer_ctl.set_liquid_color(red)
+	for tier in [Pour.HIGH, Pour.LOW]:
+		var mixer := SilentPour.new()
+		mixer._ctl = mixer_ctl
+		mixer.quality = tier
+		mixer_ctl.set_liquid_color(red)
+		mixer._logical = Color(0, 0, 0, 0)
+		mixer._foreign_ml = 0.0
+		mixer._foreign_shown = false
+		mixer._mix_colour(100.0, blue, 40.0)
+		var exact_40 := Pour.mix_colors(red, 100.0, blue, 40.0)
+		check(mixer.liquid_color_now().is_equal_approx(exact_40), "tier %d: the poured-out colour is the exact ml-weighted mix" % tier)
+		if tier == Pour.HIGH:
+			check(mixer_ctl.liquid_color().is_equal_approx(exact_40), "high: the shader shows the mix at once")
+		else:
+			check(mixer_ctl.liquid_color().is_equal_approx(red), "low: the shader keeps the colour until half of it is foreign")
+			mixer._mix_colour(140.0, blue, 60.0)
+			check(mixer_ctl.liquid_color().is_equal_approx(Pour.mix_colors(red, 100.0, blue, 100.0)) or mixer_ctl.liquid_color().is_equal_approx(Pour.mix_colors(Pour.mix_colors(red, 100.0, blue, 40.0), 140.0, blue, 60.0)),
+				"low: one switch to the mix at the half-foreign mark")
+		mixer.free()
+	mixer_ctl.free()
 	scene.queue_free()
 	await process_frame
 	print("GS_POUR_RECEIVER: %d checks, %d failures" % [checks, failures])

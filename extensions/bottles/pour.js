@@ -6,7 +6,8 @@ import { SurfaceWorld, puddlePolygon } from './surfaces.js';
 import { dropComponents, mixComponents, receiveComponents } from './liquid_components.js';
 import { bottleQuality } from './quality.js';
 import { DEFAULT_LIQUID_SRGB, DROP_PATH_M, absorbanceOfSRGB, liquidAbsorbance, mixAbsorbance, mixIntoBottle, transmission,
-  layerOpacity } from './liquid_color.js';
+  layerOpacity, receiveLiquidColour, fadeBottleColours, showBottleColour } from './liquid_color.js';
+import { bottleDischargeScale } from './liquid_props.js';
 
 const UP = new THREE.Vector3(0, 1, 0), GRAVITY = new THREE.Vector3(0, -9.81, 0);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -20,7 +21,9 @@ const dropKey = a => quantise(a[0]) * 65536 + quantise(a[1]) * 256 + quantise(a[
 const _T = new THREE.Color(), _centre = new THREE.Vector3();
 
 // LUT coordinates belong to the Liquid mesh; holes persist in bottle-local space.
-export function holeHydraulics(b, hole) {
+// viscosity (default false, opt-in: PourSystem liquidViscosity / ?viscosity=on): the discharge coefficient falls with the liquid's
+// viscosity (liquid_props.js); off, cd is the plain 0.62 as before the viscosity table existed (bit-identical outflow).
+export function holeHydraulics(b, hole, { viscosity = false } = {}) {
   const liquidMesh = b.liquid.liquid;
   b.root.updateWorldMatrix(true, true);
   const worldPoint = b.root.localToWorld(hole.point.clone());
@@ -32,7 +35,7 @@ export function holeHydraulics(b, hole) {
   const head = (plane - liquidPoint.dot(localUp)) * scale;
   const normal = hole.normal.clone().applyQuaternion(b.root.getWorldQuaternion(new THREE.Quaternion())).normalize();
   if (head <= 0.002 || b.fillMl <= 1e-7) return { head, rateMl: 0, worldPoint, normal, availableMl: 0, exitSpeed: 0 };
-  const exitSpeed = 0.62 * Math.sqrt(2 * 9.81 * head);
+  const exitSpeed = (viscosity ? 0.62 * bottleDischargeScale(b) : 0.62) * Math.sqrt(2 * 9.81 * head); // cd 0.62 (lower for viscous liquids when viscosity is on)
   const rateMl = Math.PI * hole.radius ** 2 * exitSpeed * 1e6;
   const stopFill = b.liquid.lut.fillAt(localUp, liquidPoint.dot(localUp) + 0.002 / scale);
   return { head, rateMl, worldPoint, normal, exitSpeed, availableMl: Math.max(0, b.fillMl - stopFill * b.capacity) };
@@ -47,9 +50,14 @@ export class PourSystem {
     this.onDeposit = onDeposit;
     this.initialMl = 0; this.puddleMl = 0; this.lostMl = 0; this.burnedMl = 0; this.removedMl = 0;
     this.puddles = []; this.flights = []; this.streams = new Map();
+    this.fading = new Set(); // bottles whose shader colour is still moving towards their mixed colour (tier liquidMix 'full')
     this.material = new THREE.MeshStandardMaterial({ color: 0xb57835, transparent: true, opacity: 0.78, roughness: 0.16, depthWrite: false });
+    this.viscosity = null; // explicit liquidViscosity option (setLiquidViscosity); null = follow the tier's settings.liquidViscosity (false)
     this.dropMaterials = new Map(); // dropKey(absorbance) -> material shared by every drop/stream of that liquid
   }
+  /** Viscosity-dependent hole outflow (liquid_props.js): true | false, or null to follow the tier flag (default off everywhere). */
+  setLiquidViscosity(on) { this.viscosity = on == null ? null : !!on; }
+  get liquidViscosity() { return this.viscosity ?? !!this.settings.liquidViscosity; }
   register(b) { this.initialMl += b.fillMl; liquidAbsorbance(b); }
   /** Add ml to a bottle (counted in the ledger); absorbance: the added liquid's colour (default: more of the same). */
   refill(b, ml, absorbance = null) {
@@ -80,7 +88,7 @@ export class PourSystem {
     for (const p of this.puddles) { this.scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); }
     for (const f of this.flights) this.scene.remove(f.mesh);
     for (const s of this.streams.values()) { this.scene.remove(s.mesh); s.mesh.geometry.dispose(); }
-    this.puddles = []; this.flights = []; this.streams.clear();
+    this.puddles = []; this.flights = []; this.streams.clear(); this.fading.clear();
     this.initialMl = this.puddleMl = this.lostMl = this.burnedMl = this.removedMl = 0;
   }
   // Restore physical flights without merging them or emitting new liquid. Saved high-quality flights remain logical state.
@@ -177,6 +185,7 @@ export class PourSystem {
   setQuality(settings) {
     const reshade = !!this.settings.puddleGradient !== !!settings.puddleGradient;
     this.settings = settings; this._trimPuddles();
+    if (!(settings.mixFade > 0)) { for (const b of this.fading) showBottleColour(b); this.fading.clear(); } // no fade on this tier: finish at once
     this.flights.forEach((f,i)=>{f.mesh.visible=i<settings.maxFlights&&(settings.dropStride<=1||i%settings.dropStride===0);});
     for(const s of this.streams.values())s.mesh.visible=settings.streams;
     if (reshade) for (const p of this.puddles) this._puddleGeometry(p);
@@ -258,7 +267,9 @@ export class PourSystem {
         const b = receiver.bottle, accepted = Math.min(f.ml, b.capacity - b.fillMl);
         if (accepted > 0) {
           receiveComponents(b,f.components,accepted,f.ml);
-          mixIntoBottle(b, f.absorbance, accepted); // before fillMl grows: the weights are the ml already there
+          // Before fillMl grows: the weights are the ml already there. Exact logical mix on every tier; the tier only decides
+          // how the shader colour follows (liquid_color.js receiveLiquidColour).
+          receiveLiquidColour(b, f.absorbance, accepted, this.settings.liquidMix ?? 'full', this.settings.mixFade > 0 ? this.fading : null);
         }
         const fraction = f.ml > 0 ? Math.max(0,1-accepted/f.ml) : 0;
         for (const kind of Object.keys(f.components)) f.components[kind] *= fraction;
@@ -295,7 +306,7 @@ export class PourSystem {
   _drain(b, dt) {
     const requests = []; let maxDrain = 0;
     for (const hole of b.holes ?? []) {
-      const h = holeHydraulics(b, hole); if (h.rateMl <= 0) continue;
+      const h = holeHydraulics(b, hole, { viscosity: this.liquidViscosity }); if (h.rateMl <= 0) continue;
       maxDrain = Math.max(maxDrain, h.availableMl);
       const point = h.worldPoint.clone().addScaledVector(h.normal, 0.001);
       const velocity = this.inheritedVelocity(b, point).addScaledVector(h.normal, h.exitSpeed);
@@ -336,6 +347,7 @@ export class PourSystem {
       this._flights(subdt);
     }
     for (const [key, s] of this.streams) if (!s.active) { this.scene.remove(s.mesh); s.mesh.geometry.dispose(); this.streams.delete(key); }
+    if (this.fading.size) fadeBottleColours(this.fading, dt, this.settings.mixFade);
     for (const p of this.puddles) {
       p.age += dt; const next = THREE.MathUtils.lerp(p.radius, p.targetRadius, Math.min(1, dt * 3));
       if (Math.abs(next - p.radius) > 0.0003) { p.radius = next; this._puddleGeometry(p); }

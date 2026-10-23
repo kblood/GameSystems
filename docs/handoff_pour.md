@@ -14,7 +14,7 @@ Verified (headless numbers, `pour_test.gd -- --numeric`, 0 fails):
 Screenshots viewed: tests/out/pour/01-07 (bottle into tumbler rising 7%->64%->100%, tumbler tipping/puddle, mug pour, stream close-up).
 
 Not done / for others:
-- Colour mixing of non-empty receivers (keeps its own colour). Liquid type/viscosity per liquid (cd, glug_k are per node exports).
+- Colour mixing of non-empty receivers: DONE 2026-10-23 (see docs/pour_system.md, "Farveblanding"). Viscosity per liquid: JS only (liquid_props.js); Godot cd, glug_k are still per node exports.
 - Flow rate is glug-limited at every tilt for narrow necks (no tilt dependence once the neck is submerged).
 - Mug/tumbler stream at high flow can exceed `r_max` (14 mm) visually.
 - demo/ sync: add `gameplay/godot/bottle_pour.gd` to demo/sync.ps1 (owner of demo). Puddle evaporation/merge not touched.

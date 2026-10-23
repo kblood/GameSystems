@@ -6,6 +6,7 @@
 //   factory.js       catalog bottles and designs (GLB + liquid), adopt() for game-built models, mass from fill
 //   breakage.js      damage marks, leak holes, shatter + debris, shots, panes
 //   pour.js          rim overflow, hole leaks, drops, streams, puddles, volume ledger
+//   liquid_props.js  viscosity per liquid kind -> discharge coefficient scale for holes
 //   liquid_color.js  liquid colour as Beer-Lambert absorbance; ml-weighted (subtractive) mixing in bottles/drops/puddles
 //   damage.js        deterministic bottle/pane damage models      surfaces.js   liquid-receiving surfaces, puddle clipping
 //   audio.js         bottle sounds                                 quality.js    tiers and their effect ceilings
@@ -30,7 +31,8 @@ export { BottleFactory } from './factory.js';
 export { BreakageSystem, MAX_HOLES } from './breakage.js';
 export { PourSystem, holeHydraulics } from './pour.js';
 export { REF_PATH_M, PUDDLE_DEPTH_M, absorbanceOfColor, absorbanceOfSRGB, transmission, mixAbsorbance, liquidAbsorbance,
-  setBottleAbsorbance, setBottleLiquidColor, mixIntoBottle } from './liquid_color.js';
+  setBottleAbsorbance, setBottleLiquidColor, mixIntoBottle, receiveLiquidColour, showBottleColour, fadeBottleColours, EMPTY_ML } from './liquid_color.js';
+export { LIQUID_VISCOSITY, dischargeScale, bottleViscosity, bottleDischargeScale } from './liquid_props.js';
 export { BottleDamageProfile, SURFACES, GLASS_PROFILES, assessPane } from './damage.js';
 export { SurfaceWorld, puddlePolygon } from './surfaces.js';
 export { BottleAudio, BOTTLE_SOUNDS } from './audio.js';
@@ -42,7 +44,7 @@ export { loadDesign, liquidMassKg, resolveMassFill, tierPath, TIERS as DESIGN_TI
 
 /**
  * Extension factory. options: { catalog, assetURL(path) -> url (default: ctx.assetURL), surfaces: meshes receiving
- * liquid, audio: { play(key, minGapMs) } }. Needs ctx.physics.
+ * liquid, audio: { play(key, minGapMs) }, liquidViscosity: viscosity-dependent hole outflow (default false) }. Needs ctx.physics.
  */
 export default function bottlesExtension(options = {}) {
   let system = null;
@@ -53,7 +55,7 @@ export default function bottlesExtension(options = {}) {
       if (!ctx.physics) throw new Error('The bottles extension needs ctx.physics (a host physics adapter)');
       system = createBottleSystem({ scene: ctx.scene, physics: ctx.physics, catalog: options.catalog,
         assetURL: options.assetURL ?? (path => String(ctx.assetURL(path))), surfaces: options.surfaces, audio: options.audio,
-        tier: ctx.quality, emit: ctx.emit, sourceKey: options.sourceKey ?? 'bottles' });
+        tier: ctx.quality, emit: ctx.emit, sourceKey: options.sourceKey ?? 'bottles', liquidViscosity: !!options.liquidViscosity });
       return system;
     },
     // No update(): the system steps from ctx.physics.onStep, right after the physics it depends on.

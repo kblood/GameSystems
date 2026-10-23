@@ -19,13 +19,14 @@ import { createBottleStateOwner } from './state.js';
  * tier: one of BOTTLE_TIERS; emit(event, data): the host bus.
  */
 export function createBottleSystem({ scene, physics, catalog = { assets: [] }, assetURL = path => path, surfaces = [], audio = null,
-  tier = 'high', emit = () => {}, sourceKey = 'bottles' } = {}) {
+  tier = 'high', emit = () => {}, sourceKey = 'bottles', liquidViscosity = false } = {}) {
   if(typeof sourceKey!=='string'||!sourceKey)throw new TypeError('Invalid bottle source key');
   assertPhysicsAdapter(physics);
   audio ??= new BottleAudio(assetURL);
   const bodies = new BottleBodies(physics);
   const factory = new BottleFactory(scene, bodies, audio, catalog, { assetURL, tier: BOTTLE_TIERS.includes(tier) ? tier : 'high' });
   const pour = new PourSystem(scene, factory, audio, surfaces, bodies, data => emit('liquid:deposit', {...data, sourceKey}));
+  pour.setLiquidViscosity(liquidViscosity ? true : null); // opt-in; off keeps the plain discharge coefficient
   const breakage = new BreakageSystem(scene, bodies, factory, pour, audio);
   const stateOwner=createBottleStateOwner({factory,pour,bodies,physics,scene,breakage,sourceKey});
   breakage.onBroken = bottle => emit('broken', { bottle });
@@ -80,6 +81,8 @@ export function createBottleSystem({ scene, physics, catalog = { assets: [] }, a
     get tier() { return factory.tier; },
     get settings() { return factory.settings; },
     spawn, adopt, reset, setQuality, dispose,
+    /** Viscosity-dependent hole outflow: true | false (default off). */
+    setLiquidViscosity: on => pour.setLiquidViscosity(!!on), get liquidViscosity() { return pour.liquidViscosity; },
     consumePuddleVolume: (ml, options) => pour.consumePuddleVolume(ml, options),
     removePuddleVolume: (ml, options) => pour.consumePuddleVolume(ml, {...options, reason:'remove'}),
     restorePuddleLedger: state => pour.restorePuddleLedger(state),

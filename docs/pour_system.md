@@ -72,7 +72,7 @@ their source's `World3D`. Partial/rejected receipts leave remaining volume flyin
 until it lands or reaches the lost-volume ledger. Broken sources still advance
 previously emitted parcels; removal settles remaining volume exactly once,
 including removal from a receiver callback. Virtual openings create no airborne
-puddle. Source physics contract (22 checks):
+puddle. Source physics contract (30 checks):
 
 `godot --headless --path GameSystems/godot --script res://addons/gs_bottles/tests/gs_pour_receiver_tests.gd`.
 
@@ -103,3 +103,54 @@ mouth (now capped to 0.6 x tube radius, none for parcel age < 0.08 s, rest of th
 exceed the mouth radius (r_max was a fixed 14 mm, now the mouth radius, final clamp after pulse/waves). Wide mouths (tumbler, mug)
 dump 0.8 fill in ~0.1 s (2000 ml/s) at 130 deg: physically plausible, stream checks then run on few ticks.
 Note: the "row of beads" report could not be reproduced as a tube defect (tube is one continuous mesh); the beads were landing splash droplets.
+
+## Farveblanding i ikke-tomme beholdere (2026-10-23, dansk)
+
+**Regel (samme model som pytterne, ingen ny):** flaske A hældes i beholder B, der allerede har væske. B's farve bliver ml-vægtet i
+absorbans (`a = -ln(lineær farve)`, `a_mix = Σ ml·a / Σ ml`, subtraktiv: rød + blå = mørk lilla). Vægtene er B's `fillMl` før
+tilløb og de ml der faktisk blev **accepteret** (ved overløb blandes kun det der er plads til; resten flyver videre med sin egen
+farve). En tom beholder (< 0,5 ml, `EMPTY_ML`) tager farven direkte uden fade. Volumen og ledger er uberørt (fejl 0,000 ml i testene).
+
+**JS (`extensions/bottles`)**
+- `liquid_color.js`: `receiveLiquidColour(b, a, ml, mode, fading)` blander den *logiske* farve (`b.absorbance`, det der hældes ud
+  næste gang og gemmes i checkpoint) præcist på alle tiers. Det shaderen tegner er `b.shownAbsorbance`; kun `uLiquidColor`
+  skrives, så LUT'en genbygges aldrig. `fadeBottleColours` flytter den vist farve eksponentielt (tidskonstant `mixFade/3`) og
+  fjerner flasken fra `pour.fading` når den er fremme (< 0,002 i absorbans). Ingen allokering pr. frame: `Set` og to 3-arrays pr.
+  flaske genbruges; intet arbejde når sættet er tomt.
+- `quality.js`: nye flag `liquidMix` + `mixFade`. `minimal`/`low`: `'discrete'`, 0 s. `mid`: `'full'`, 0,3 s. `high`: `'full'`, 0,45 s.
+  `discrete` = flasken beholder sin farve indtil halvdelen af indholdet er fremmed (`b.foreignMl`), og skifter så én gang til
+  blandingen (snapshot ved skiftet). `setQuality` til en tier uden fade afslutter kørende fades med det samme.
+- Væsketype: `liquid_components.js` gav allerede `liquidKind = 'mixed'` og `liquidComposition` (brøker, sum 1) når to typer mødes;
+  nedstrøms kode er tjekket: `bar-fire`/pools bruger komponenterne (`fire-v2`-testen dækker `mixed`), `state.js` gemmer/gendanner
+  `kind` + `composition`, `land()` giver `stain 0,1` for ukendte typer. Tom modtager får kun den indkomne type (ingen forældet
+  etiket fra en tidligere væske). Intet antager at den oprindelige type stadig gælder.
+- `liquid_props.js` (valgfrit, lavet): `LIQUID_VISCOSITY` (mPa·s) -> `dischargeScale = 1/(1+0,18·log10 v)`; ganges på `cd` (0,62) i
+  `holeHydraulics`, dvs. huller i tyktflydende væske løber langsommere (honning ~0,58, olie ~0,76, vand/ukendt 1,0). Blandinger:
+  geometrisk gennemsnit over `liquidComposition`. Ingen allokering (`for..in`). Skaleringen bruges kun når viskositet er slået til (næste punkt).
+- **Viskositet er VALGFRI (standard FRA).** Uden valget er udstrømningen bit-identisk med før viskositetstabellen (`cd` = 0,62; øl ville
+  ellers løbe ca. 3,7 % og spiritus ca. 6 % langsommere). Til: `host.load(bottlesExtension, { liquidViscosity: true })` /
+  `createBottleSystem({ liquidViscosity: true })` / `bottles.setLiquidViscosity(true)` (api), `PourSystem.setLiquidViscosity(true | false | null)`
+  (null = følg tierens flag `liquidViscosity`, som er `false` på alle fire tiers) eller `holeHydraulics(b, hole, { viscosity: true })`.
+  URL: `?viscosity=on|off` i demoen og `?viscosity=on` i Contracts; demoen har den slået til med `?testpanel` (`?viscosity=off` slår den
+  fra igen). Test: `webxr-demo/tests/effects.test.js` sammenligner standard mod de gamle formler (`0,62·sqrt(2 g h)`, strengt lig) og viser
+  at `viscosity: true` giver `0,62·dischargeScale·sqrt(2 g h)`.
+- **Farveblanding** påvirkes ikke af viskositetsvalget: `liquidMix` (tier-flag, se ovenfor) er uafhængig af det og gælder altid.
+- Demo: `?testpanel` -> knappen **Blanding** (desktop-HUD, `testPanel.mixRecipe()`): to åbne flasker bliver rød/blå, 60 ml blå
+  falder i den røde. Skift kvalitet (tier-knap i demoens HUD) og kør igen for at se fade (mid/high) mod ét skift (minimal/low).
+
+**Tests:** `webxr-demo/tests/liquid-mix.test.js` (9): rød+blå 50/50, 190/10 og 10/190, overløb (450 + 100 ml -> kun 50 blandet,
+ledger-fejl 0), tom -> fuld, `mixed`-type + sum af brøker, monoton fade uden pop, tier low/minimal (ét skift ved halvt fremmed),
+`setQuality` midt i fade, viskositetstabel. Eksisterende `liquid-color.test.js` (5) uændret og grøn.
+
+**Godot (`godot/addons/gs_bottles/bottle_pour.gd`)** — portet: `receive()` blander nu ikke-tomme beholdere med samme absorbansmodel
+(`GSBottlePour.mix_colors`, statisk), `liquid_color_now()` er det der hældes ud (eksakt blanding), og `_stream_mode()` < MEDIUM
+giver ét skift ved halvt fremmed indhold i stedet for blanding med det samme. Test i `gs_pour_receiver_tests.gd` (30 checks, 0 fejl).
+`liquid_kind` er uændret (`unknown` ved blanding, som de eksisterende tests kræver; JS bruger `mixed`).
+Mangler i Godot: glat fade (`set_liquid_color` er øjeblikkeligt), viskositetstabel (`cd`/`glug_k` er stadig node-exports),
+blandingsfarve for ikke-tomme modtagere uden `bottle_pour`-node (kun `GSPourReceiver`-endpoints), og kopien i
+`NightfallContractsGodot/addons/gs_bottles` er ikke synket (den adskiller sig allerede fra kilden).
+
+**Ikke verificeret:** headset/XR (kun node-tests og headless Godot). Ikke set i browser: demoknappen (kun syntakstjekket).
+Åbne mangler: Contracts-kopien af `bottles` er ikke synket (`npm run sync:extensions` i Contracts; ny fil `liquid_props.js`
+gør `contracts-sync`-testen rød indtil da); drop-for-drop-fade pr. dråbe kan gøre at mange små dråber holder fade i gang (sættet
+er bundet af antal flasker, ikke dråber).

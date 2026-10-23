@@ -68,6 +68,7 @@ export function liquidAbsorbance(b) {
 export function setBottleAbsorbance(b, a) {
   const own = liquidAbsorbance(b);
   if (own !== a) { own[0] = a[0]; own[1] = a[1]; own[2] = a[2]; }
+  if (b.shownAbsorbance) { b.shownAbsorbance[0] = own[0]; b.shownAbsorbance[1] = own[1]; b.shownAbsorbance[2] = own[2]; }
   const uniform = b.liquid?.uniforms?.uLiquidColor?.value;
   if (uniform) transmission(own, REF_PATH_M, uniform);
   return own;
@@ -83,4 +84,51 @@ export function mixIntoBottle(b, a, ml) {
   const own = liquidAbsorbance(b);
   mixAbsorbance(own, b.fillMl, a, ml);
   return setBottleAbsorbance(b, own);
+}
+
+// ---- Mixing a pour into a non-empty bottle -------------------------------------------------------------------------
+// b.absorbance is the logical colour (what pours out next, what is saved); b.shownAbsorbance is what the liquid shader
+// currently draws. They differ only while a mix fades in (tier 'full') or is held back (tier 'discrete').
+export const EMPTY_ML = 0.5;           // below this a receiver is "empty": it simply takes the incoming colour
+const SAME_LIQUID = 0.05;              // absorbance distance under which the incoming liquid counts as the same colour
+const distance = (a, b) => Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]), Math.abs(a[2] - b[2]));
+
+/** Draw the bottle's logical colour in its liquid shader at once. */
+export function showBottleColour(b) {
+  const own = liquidAbsorbance(b), shown = (b.shownAbsorbance ??= [own[0], own[1], own[2]]);
+  shown[0] = own[0]; shown[1] = own[1]; shown[2] = own[2];
+  const uniform = b.liquid?.uniforms?.uLiquidColor?.value;
+  if (uniform) transmission(shown, REF_PATH_M, uniform);
+}
+
+/**
+ * Mix ml of absorbance a into bottle b (call before fillMl grows). Updates the logical colour exactly; what the shader
+ * draws follows the tier: 'full' hands the bottle to `fading` (a Set the caller ticks with fadeBottleColours), 'discrete'
+ * keeps the old colour until half the content is foreign. Returns true if the shader colour changed at once.
+ */
+export function receiveLiquidColour(b, a, ml, mode, fading) {
+  const own = liquidAbsorbance(b);
+  if (!b.shownAbsorbance) b.shownAbsorbance = [own[0], own[1], own[2]];
+  const empty = b.fillMl <= EMPTY_ML, foreign = !empty && distance(own, a) > SAME_LIQUID;
+  mixAbsorbance(own, b.fillMl, a, ml);
+  if (empty) { b.foreignMl = 0; b.foreignShown = false; fading?.delete(b); showBottleColour(b); return true; }
+  if (!foreign) return false;
+  if (mode === 'full') { if (fading) fading.add(b); else showBottleColour(b); return !fading; }
+  b.foreignMl = (b.foreignMl ?? 0) + ml;
+  if (!b.foreignShown && b.foreignMl >= 0.5 * (b.fillMl + ml)) { b.foreignShown = true; showBottleColour(b); return true; }
+  return false;
+}
+
+/** Move the shader colour of every bottle in `fading` towards its logical colour (exponential, time constant fade/3). */
+export function fadeBottleColours(fading, dt, fade) {
+  const k = fade > 0 ? 1 - Math.exp(-3 * dt / fade) : 1;
+  for (const b of fading) {
+    const own = b.absorbance, shown = b.shownAbsorbance;
+    if (!own || !shown || b.broken) { fading.delete(b); continue; }
+    shown[0] += (own[0] - shown[0]) * k; shown[1] += (own[1] - shown[1]) * k; shown[2] += (own[2] - shown[2]) * k;
+    const done = distance(own, shown) < 0.002;
+    if (done) { shown[0] = own[0]; shown[1] = own[1]; shown[2] = own[2]; fading.delete(b); }
+    const uniform = b.liquid?.uniforms?.uLiquidColor?.value;
+    if (uniform) transmission(shown, REF_PATH_M, uniform);
+  }
 }
