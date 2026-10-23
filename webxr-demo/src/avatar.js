@@ -11,7 +11,7 @@
 import * as THREE from 'three';
 import { ccCharacters } from './character-select.js'; // ./contracts.js (CharacterCreator) or ?character=vrm (character-vrm)
 import { createCharacterPlugin, handFromGrip, grabFingerState, pourFingerState, poseState, setHandPoseQuality, handPoseQuality, HAND_POSE_QUALITY, setHandVariants } from './vendor/extensions/avatar/index.js';
-import { defaultPose, graspPose, handGeometry, runtimeRows, CATALOG, setGraspVariants } from './vendor/extensions/grasp/index.js';
+import { defaultPose, graspPose, handGeometry, runtimeRows, CATALOG, setGraspVariants, setProceduralGrasps, createWeightLag, parseWeightLag } from './vendor/extensions/grasp/index.js';
 import { DEMO_AVATAR } from './avatar-config.js';
 
 /** Demo tier -> avatar extension tier (AVATAR_QUALITY). */
@@ -89,6 +89,12 @@ export default function avatarExtension() {
         trackedWrist: owner => avatar.trackedWrist(owner),
         /** The baked grasp an owner's hand uses on its bottle, or null. */
         graspOf: owner => avatar.holds.get(owner)?.grasp ?? null,
+        /** Visual weight (grasp/weight_lag.js): the shown hand sinks/lags a little with a heavy bottle. ?weightlag=on|off; default off, on with ?testpanel. */
+        get weightLag() { return avatar.weightLag; },
+        setWeightLag: on => avatar.setWeightLag(on),
+        /** Show the raw (unlagged) hand while the weight lag is on: the studio-style 'raw joints' view of the weight lag. */
+        get showRawHand() { return avatar.showRawHand; },
+        setShowRawHand: on => avatar.setShowRawHand(on),
         /** Hand-pose tier ('low' = the old curves and linear grab, 'mid', 'high'); also ?handposes=low|mid|high. */
         get handPoseQuality() { return handPoseQuality(); },
         setHandPoseQuality,
@@ -115,6 +121,8 @@ async function createAvatar({ scene, renderer, camera, game, quality, assetURL }
   // Grasp Studio recordings are variants (the bake / hand library stays unless picked): ?graspvariant=recorded|<id>[,<id>],
   // ?handvariant=recorded|<name>@rec-<stamp>[,...] (grasp setGraspVariants, avatar setHandVariants).
   const search = typeof location === 'object' ? new URLSearchParams(location.search) : null;
+  // Procedural grasps (mug handle and top, carton sides, pole, barrel) are opt-in: ?proceduralgrasps=on (default off = the bake as it was).
+  if (search?.has('proceduralgrasps')) setProceduralGrasps(search.get('proceduralgrasps'));
   if (search?.has('graspvariant')) setGraspVariants(search.get('graspvariant'));
   if (search?.has('handvariant')) setHandVariants(search.get('handvariant'));
   const playerQuality = quality === 'high' ? { skinUpgrade: true, shadows: false } // the plugin's 'low' preset, for the player only:
@@ -135,8 +143,13 @@ async function createAvatar({ scene, renderer, camera, game, quality, assetURL }
   const offBody = interaction?.body?.onChange(({ reason, referenceEye }) => {
     if (reason === 'calibrated' && interaction.renderer.xr.isPresenting) player.calibrate(referenceEye);
   });
-  const holds = new Map(); // owner -> { bottle, side, grasp, k, close }
+  const holds = new Map(); // owner -> { bottle, side, grasp, k, close, lag }
   let t = 0;
+  // Visual weight: off by default, on with ?testpanel, ?weightlag=on|off decides. The demo's bottle follows the controller
+  // kinematically, so the lag runs a virtual body through the real held-drive law (simulate) and only the SHOWN hand moves.
+  let lagOn = parseWeightLag(search?.get('weightlag')) ?? !!search?.has('testpanel'), showRaw = false;
+  const lagTier = quality === 'high' ? 'high' : 'low';
+  const massOf = bottle => (CATALOG[graspKind(bottle)]?.mass ?? 0.5) + (Number.isFinite(bottle.fillMl) ? bottle.fillMl * 0.001 : 0);
   // The avatar's own hand for close-to-contact grasps (the avatar's public rest hand, player.restHand(side): this
   // character's finger geometry, calibrated scale and thumb tilt), rebuilt when the rig, the scale or the hand profile (player.setHandProfile) changes.
   let handCache = null;
@@ -185,6 +198,8 @@ async function createAvatar({ scene, renderer, camera, game, quality, assetURL }
   const gunPoses = new Map(), gunPose = id => gunPoses.get(id) ?? gunPoses.set(id, poseState(id, { src: 'virtual' })).get(id);
   return {
     characters, player, holds, handOf,
+    get weightLag() { return lagOn; }, setWeightLag(on) { lagOn = !!on; if (!lagOn) for (const h of holds.values()) { h.lag?.reset(); h.shown = null; } },
+    get showRawHand() { return showRaw; }, setShowRawHand(on) { showRaw = !!on; },
     /**
      * Bottle pose for this frame: eases from the pose the demo computed (controller ray) onto the baked grasp relation
      * (wrist-in-hand), so the bottle ends up sitting in the visible hand instead of floating at the controller.
@@ -220,6 +235,12 @@ async function createAvatar({ scene, renderer, camera, game, quality, assetURL }
         const target = { pos: arr(new THREE.Vector3(...h.grasp.wrist).applyQuaternion(item.quat).add(item.pos)), quat: arr(item.quat.clone().multiply(new THREE.Quaternion(...h.grasp.quat))) };
         const e = h.k * h.k * (3 - 2 * h.k);
         hands[h.side] = { ...hand, pos: lerpArr(hand.pos, target.pos, e), quat: arr(new THREE.Quaternion(...hand.quat).slerp(new THREE.Quaternion(...target.quat), e)) };
+        h.lag ??= createWeightLag({ enabled: true, tier: lagTier });
+        if (lagOn && !showRaw) {
+          const r = h.lag.update({ dt, mass: massOf(h.bottle), target: arr(item.pos), simulate: true });
+          if (r.active) hands[h.side] = { ...hands[h.side], pos: hands[h.side].pos.map((x, i) => x + r.offset[i]) };
+          h.shown = r;
+        } else { h.lag.reset(); h.shown = null; }
         // Open approach -> grip closed to contact on this hand (or the clamped bake at grasp quality 'low'), memoised;
         // the hand-pose grab clip shapes the closing (linear at hand-pose tier 'low'), the pour clip the tilted grip.
         const rows = runtimeRows(h.grasp.pose);

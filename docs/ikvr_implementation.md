@@ -222,3 +222,64 @@ Standard er stadig tvillingen ved spøgelsesflasken. Visningen skiftes med panel
 4. Hub-testen `studio-avatar`: spejl, 1. person, CC/VRM, rå led og tommelskift.
 5. Hub-testen `studio-varianter`: `/demo/` skal se ud som før, og `/demo/?graspvariant=recorded&handvariant=recorded`
    skal bruge dine optagelser.
+
+## Vægt og to-hånds greb (2026-10-23)
+
+Kun GameSystems er kilden; Contracts og demoen får filerne med `npm run sync:extensions` (Contracts, kun grasp) og `npm run sync` (demo/studio). Ikke porteret til Godot (se nederst).
+
+### A. Visuel vægt (`extensions/grasp/weight_lag.js`, `data/weight_lag.data.json`)
+
+- Når en tung ting holdes, synker og halter den VISTE hånd 5-30 mm efter massen. Den rigtige håndsporing, selve gribet og fysikken røres ikke; det er kun visning.
+- Formlen bruger held-drive-loven (`held_drive.js`): fejlen mellem objektets position og målet (hånden) giver offsettet. Vægten er log-masse, begrænset blødt med tanh, udjævnet uafhængigt af dt (tau 0.09 s, indsvingning 0.3 s). Derfor ingen jitter og ingen NaN. Konstanterne ligger i den eksporterede tabel `WEIGHT_LAG` (data-filen), ikke spredt.
+- Hvor genstanden er kinematisk (demoen, studioet) kører `simulate:true` en virtuel krop gennem den rigtige `driveAcceleration`; i Contracts bruges den virkelige krops fejl.
+- Tiers: minimal = fra, lav = hånd-offset, mellem/høj = + albue-hint. VRIK har intet albue-hint-API; hånd-offsettet flytter IK-målet, så albuen følger med via to-knogle-løsningen. `elbow`-vektoren returneres, men er IKKE koblet til VRIK.
+- Kontakt: `?weightlag=off|on`. Standard FRA i Contracts. TIL i demoens testpanel (`?testpanel`) og i grasp-studio. Testpanelet i demoen har knapperne «Vægt» og «Rå led».
+- Den rå hånd kan altid ses: studioets «Rå led»/«Rå»-knap viser den uforsinkede spøgelseshånd (hvid) og skjuler vægt-laget på den gule; demoen har `setShowRawHand`.
+
+### B. To-hånds greb
+
+- Datamodel: `data/two_hand.data.json` (`TWO_HAND`, `ITEMS`: carton, pole, barrel, mug) giver pr. genstand en primær- og en sekundær-gruppe, mindste afstand mellem grebene og reference-hånd. En optaget pose kan have `role: 'secondary'` (validatoren `isPose` tillader `primary`/`secondary`/ingen); `mirrorPose` bevarer rollen. Validator/closure: `handsClearance` (kapsler på hænderne) afviser to hænder der går i hinanden, og `pickSecondary` vælger kun et sekundært greb med ren afstand og ≥ `minSeparation`.
+- Kørsel (Contracts `grab.js`, `?twohand=on`): holder den ene hånd genstanden, og den anden griber det sekundære greb, skiftes til to-hånds-modus. Orienteringen er en afgrænset look-at fra primær til sekundær hånd (max 55 grader, primærens roll som reference, samme mønster som `pistol.js`), blendet over 0,25 s, med højst 4 cm balanceforskydning. Holdekraften er summen af hænderne, begrænset (120 N for én, 200 N for to). En 16 kg tønde kræver 157 N: én hånd kan ikke, to kan.
+- Slip: slipper den sekundære hånd, fortsætter den primære uden hop; slipper den primære, bliver den sekundære primær (offset genberegnet, 0 mm hop). Kast fra to hænder kun hvis begge slippes inden for 0,2 s (middel af historikken); ellers falder det rent tilbage til den hånd der slap sidst. Afvisningsgrund `grip_taken`, hvis det sekundære greb er for tæt på det primære. Brydes afstanden over 0,3 m, slippes det sekundære greb.
+- Krus og karton, hvorfor closure fejlede: de bagte mug-håndtagsgreb havde tommel-pitch uden for ledgrænsen (100), og karton-gribene krævede håndledsbøjninger længere end rækkevidden. RETTET: proceduralt genererede greb (`tools/make_procedural_grasps.mjs`, `data/procedural_grasps.data.json`, 214 poser, 0 droppet): mug-håndtag (hook, 4) og -top (8), karton-side (16), stang (90), tønde (96). De er VALGFRIE (standard FRA): standardbiblioteket `BASE_POSES` er bagningen uændret (de bagte mug-håndtagsgreb urørte, ingen procedurale poser, pole/barrel har intet greb). `setProceduralGrasps(true)` (`?proceduralgrasps=on` i demoen og Contracts; Grasp Studio har dem slået TIL som standard, `?proceduralgrasps=off` slår dem fra) flette dem ind (`PROCEDURAL_POSES`, `buildLibrary(valgte, { procedural: true })`), og først da afløser `replaces: ["mug/*/handle"]` de bagte håndtag. `BAKED` er uændret i begge tilstande. HIT-RATE: 100 % (12/12 mug, 16/16 karton, 90/90 stang, 96/96 tønde) på hænder af skala 0,9/1,0/1,1.
+- STADIG FEJLER: krus-KROPPEN (tommel-pitch 100, uden for grænsen). Stigen er ikke lavet (opposition-grænsen og closure antager en +Y-akse gennem origo; en stang er brugt i stedet). Karton: håndled-bøjningen i labbet er et rækkeviddeproblem, ikke et grebsproblem.
+- Nye genstande (kun data-rækker): `pole` og `barrel` i `data/catalog.data.json` (mug og carton fandtes); i Contracts lægger `?twohand=on` eller `?proceduralgrasps=on` en stang og en tønde i prop-tabellen (ellers ikke). To-hånds greb på dem kræver de procedurale greb, så brug `?twohand=on&proceduralgrasps=on`.
+
+### C. Grasp Studio
+
+- «Genstand» (bottle_beer, mug, carton, pole, barrel), «Primær/Sekundær» (kun to-hånds genstande) og «Vægt» står i panelets nye række 5, sammen med «Rå». Den anden hånd vises på genstanden og på spøgelset (grå/gul). Reviewet viser «hænder N mm fra hinanden».
+- Et sekundært greb gemmes som variant `…/rec-<stempel>` med `role: 'secondary'` gennem den eksisterende kø og validering (`rejected/`-filen ved afvisning); intet overskrives. Al eksisterende gem-sikkerhed (kø, «Fortryd gem», atomisk skrivning) er uændret. Flaske-flowet er uændret.
+
+### D. Tal (node, intet headset)
+
+- Vægt-lag: 5-30 mm, monoton i massen, dt-uafhængig ved 36/72/144 Hz, ingen frame-hop over 1,5 mm.
+- To-hånds: en hånd 92 cm fejl mod 3,8 cm med to; drive-mål-skridt 1,3 mm ved 1 -> 2 -> 1; hop ved skift af primær 0 mm.
+- Tests: GameSystems webxr-demo 797 (796 grønne; 1 fejl er den anden agents `bottles`-synk), grasp-studio 25 node-tests + 27 browser-checks, Contracts 398 (397 grønne; samme `bottles`-fejl), hub-labtest 7.
+
+### Valgmuligheder (tilføjelser, standard uændret)
+
+- `?proceduralgrasps=on`: procedurale greb (krus, karton, stang, tønde). Standard FRA i demoen og Contracts; TIL i Grasp Studio. Uden flaget er biblioteket bagningen som før.
+- `?viscosity=on`: væskers viskositet bremser udstrømning fra huller (`holeHydraulics`); standard FRA (bit-identisk med før), TIL i demoens `?testpanel`.
+- Vægt-lag-tabellen kender nu tier-navnet `mid` (= `elbow`, som `medium`), så Contracts' tier `mid` får albue-hintet.
+
+### Tjek på Quest
+
+1. Studio (`/studio/` i labbet): Gå i VR, tryk «Genstand» til barrel, grib med en hånd. Panelet skal vise «Vægt: hånden synker N mm» (5-30). Hånden skal falde til ro uden rystelser. «Vægt: fra» skal vise præcis din hånd. «Rå: til» viser den uforsinkede hvide hånd.
+2. Studio: mug/carton/pole/barrel viser en ekstra hånd uden at hænderne går igennem hinanden. Tryk «Sekundær», hold stille, «Gem»: grøn «Gemt ✓», ny variant med rolle secondary; «Fortryd gem» fjerner den igen.
+3. Demo `/demo/?testpanel`: løft en fyldt flaske; tryk «Vægt» og «Rå led» på VR-panelet og sammenlign.
+4. Contracts `?twohand=on&proceduralgrasps=on&weightlag=on` (alle tre er FRA som standard; to-hånds greb kræver `proceduralgrasps=on`): tag tønden med én hånd (hænger tungt), derefter med to (lettere, stangen retter sig). Slip en hånd (ingen hop), slip begge samtidigt (kast), slip med mere end 0,2 s imellem (intet to-hånds kast).
+5. Fortæl: føles forsinkelsen rigtig, er den for stor, giver den kvalme? Ligger fingrene rigtigt på hanken og toppen af kruset?
+
+Hub-testene `studio-vaegt` og `studio-tohaand` (tools/headset-lab/hub/tests.js) følger de samme trin.
+
+### Hvis det skal til Godot
+
+Port `weight_lag.js` (en ren funktion af dt, masse, mål og held-drive-fejl; tabellen er JSON), `two_hand.js` (solveTwoHand, stepBlend, secondaryHeld, releasedTogether, handsClearance) og `held_drive.js`-kraftlofterne (`holdForce`/`holdTorque`). Kræver i Godot: en holdt-krop-model med hånds-roller (primær/sekundær) og `hands` 1|2, et IK-mål der kan få offsettet (og et rigtigt albue-hint, som VRIK ikke har), de proceduralt genererede grebsdata (JSON uændret), og at validatoren accepterer `role`.
+
+### Nye og ændrede filer
+
+- GameSystems `extensions/grasp`: `weight_lag.js`, `two_hand.js`, `held_drive.js`, `record.js`, `baked_grasps.js`, `index.js`, `data/{weight_lag,two_hand,procedural_grasps,catalog}.data.json`, `tools/make_procedural_grasps.mjs`.
+- GameSystems `webxr-demo`: `src/avatar.js`, `src/testpanel.js`, tests `weight-lag`, `two-hand`, `procedural-grasps` (+ to ændrede data-tests).
+- `apps/grasp-studio`: `src/studio.js`, `src/views.js`, `src/main.js`, `tests/two-hand.test.js`, `tests/smoke.mjs`.
+- `tools/headset-lab/hub/tests.js` (to nye tests).
+- Contracts: `src/interaction/{grab,physics,props}.js`, `src/main.js`, `src/extensions/grasp/*` (synket), `tests/interaction-two-hand.test.mjs`, `tests/interaction-baked-grasps.test.mjs`.

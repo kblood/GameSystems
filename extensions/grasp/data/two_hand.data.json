@@ -1,0 +1,41 @@
+{
+  "schema": "gamesystems.grasp-two-hand-data.v1",
+  "note": "Two-hand grip (grasp/two_hand.js): hold force of two hands, the orientation solve and the per-item secondary-grip specs. ITEMS is keyed by catalogue kind; a spec names the grasp group of the primary and of the secondary hand (they may be the same group), the least distance between the two grips (item space, m), and which hand is the orientation reference.",
+  "TWO_HAND": {
+    "forceCap": 200,
+    "torqueCap": 2.4,
+    "maxCorrectionDeg": 55,
+    "blendSeconds": 0.25,
+    "balance": 0.5,
+    "maxShift": 0.04,
+    "breakDistance": 0.3,
+    "releaseTogether": 0.2,
+    "minAxis": 0.08
+  },
+  "ITEMS": {
+    "carton": {
+      "primary": "side",
+      "secondary": "side",
+      "minSeparation": 0.16,
+      "reference": "first"
+    },
+    "pole": {
+      "primary": "grip",
+      "secondary": "grip",
+      "minSeparation": 0.3,
+      "reference": "first"
+    },
+    "barrel": {
+      "primary": "side",
+      "secondary": "side",
+      "minSeparation": 0.25,
+      "reference": "first"
+    },
+    "mug": {
+      "primary": "handle",
+      "secondary": "top",
+      "minSeparation": 0.05,
+      "reference": "first"
+    }
+  }
+}

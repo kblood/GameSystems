@@ -47,8 +47,20 @@ export class HandView {
   }
 }
 
-/** The item: a lathe of the catalogue silhouette (item origin = base centre, +Y up). */
+/** The item: the catalogue silhouette: a lathe (item origin = base centre, +Y up), or a cylinder / box / parts (origin = centre). */
 export function itemMesh(shape, { color = 0x5b3a12, opacity = 0.55, wireframe = false } = {}) {
+  if (shape.type !== 'lathe') {
+    const material = new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0, transparent: true, opacity, wireframe, depthWrite: !wireframe && opacity > 0.9 });
+    const group = new THREE.Group();
+    for (const p of shape.type === 'parts' ? shape.parts : [shape]) {
+      const geometry = p.type === 'cylinder' ? new THREE.CylinderGeometry(p.radius, p.radius, p.half * 2, 32)
+        : p.type === 'lathe' ? new THREE.LatheGeometry([new THREE.Vector2(0, p.profile[0][0]), ...p.profile.map(([y, r]) => new THREE.Vector2(r, y)), new THREE.Vector2(0, p.profile.at(-1)[0])], 32)
+        : new THREE.BoxGeometry(...p.size);
+      const mesh = new THREE.Mesh(geometry, material); mesh.position.set(...(p.at || [0, 0, 0]));
+      group.add(mesh);
+    }
+    return group;
+  }
   const points = shape.profile.map(([y, r]) => new THREE.Vector2(r, y));
   points.unshift(new THREE.Vector2(0, shape.profile[0][0]));
   points.push(new THREE.Vector2(0, shape.profile.at(-1)[0]));

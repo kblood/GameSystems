@@ -222,6 +222,7 @@ export function isPose(p) {
   return !!p && typeof p.id === 'string' && typeof p.kind === 'string' && typeof p.grasp === 'string' && (p.side === 'left' || p.side === 'right')
     && finite(p.wrist, 3) && finite(p.quat, 4) && Math.abs(Math.hypot(...p.quat) - 1) < 1e-3
     && [p.angles, p.open].every(rows => Array.isArray(rows) && rows.length === 5 && rows.every((r, i) => finite(r, 4) || (i === 0 && finite(r, 5))))
+    && (p.role === undefined || p.role === 'primary' || p.role === 'secondary')
     && (p.handLength === undefined || (Number.isFinite(p.handLength) && p.handLength > 0.08 && p.handLength < 0.35));
 }
 
@@ -229,13 +230,13 @@ export function isPose(p) {
  * A recorded pose in the library format. capture: { side, wrist, quat, angles, handLength } (see captureFromJoints);
  * meta: { kind, grasp, mode?, default?, id?, at? (ISO time), score?, frames? }. Rounds to 0.01 mm / 1e-5 / 0.01 deg.
  */
-export function recordedPose(capture, { kind, grasp, mode = CATALOG[kind]?.grip ?? 'wrap', default: isDefault = false, id = null, at = new Date().toISOString(), score = null, frames = null } = {}) {
+export function recordedPose(capture, { kind, grasp, mode = CATALOG[kind]?.grip ?? 'wrap', default: isDefault = false, id = null, at = new Date().toISOString(), score = null, frames = null, role = null } = {}) {
   const r = (v, k) => Math.round(v * k) / k + 0; // + 0: no -0 (JSON writes it as 0)
   const stamp = at.replace(/[-:]/g, '').replace(/\.\d+Z?$|Z$/, '');
   const pose = { id: id || `${kind}/${capture.side}/${grasp}/rec-${stamp}`, kind, grasp, mode, side: capture.side, default: !!isDefault,
     wrist: capture.wrist.map(v => r(v, 1e5)), quat: capture.quat.map(v => r(v, 1e5)),
     angles: capture.angles.map(row => row.map(v => r(v, 100))), open: DEFAULT_OPEN.map(row => [...row]),
-    handLength: r(capture.handLength, 1e4), recorded: { at, source: 'grasp-studio', ...(score != null && { score }), ...(frames != null && { frames }) } };
+    ...(role && { role }), handLength: r(capture.handLength, 1e4), recorded: { at, source: 'grasp-studio', ...(score != null && { score }), ...(frames != null && { frames }) } };
   const l = Math.hypot(...pose.quat); pose.quat = pose.quat.map(v => r(v / l, 1e5));
   return pose;
 }

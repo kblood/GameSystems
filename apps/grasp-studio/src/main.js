@@ -22,7 +22,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createHost } from './vendor/extensions/host/index.js';
 import { XR_JOINTS, XR_CHAINS, RECORDED_SCHEMA, CATALOG, poseJoints, referenceHand, graspVariants, isPose, THUMB_TWIST } from './vendor/extensions/grasp/index.js';
-import { createStudio, syntheticHands, KIND, MODES, GESTURE_NAMES } from './studio.js';
+import { createStudio, applyProceduralGrasps, syntheticHands, KIND, KINDS, GRASPS, ROLES, MODES, GESTURE_NAMES } from './studio.js';
 import { HAND_RECORDINGS_SCHEMA, handClip, sampleClip, clipDuration, rowsToArray, toRows } from './vendor/extensions/avatar/handposes.js';
 import { THUMB_AXIS, handFrame } from './vendor/extensions/avatar/rigdata.js';
 import { snapshotSource } from './vendor/extensions/avatar/fingerInput.js';
@@ -55,17 +55,33 @@ scene.add(new THREE.HemisphereLight(0xdfeaf5, 0x40362e, 2.2));
 const sun = new THREE.DirectionalLight(0xffefd8, 1.4); sun.position.set(1, 3, 2); scene.add(sun);
 const floor = new THREE.GridHelper(6, 24, 0x52666b, 0x2f3c40); scene.add(floor);
 
+applyProceduralGrasps(params); // procedural grasps on by default in the studio (?proceduralgrasps=off: the bake alone)
 const studio = createStudio({ kind: KIND, side: params.get('side') === 'left' ? 'left' : 'right', tier: level >= 2 ? 'high' : 'low' });
-const shape = CATALOG[KIND].shape;
-const bottle = itemMesh(shape, { color: CATALOG[KIND].glass, opacity: 0.6 });
-const ghost = itemMesh(shape, { color: 0x86a7ad, opacity: 0.22 });
-scene.add(bottle, ghost);
+// The item meshes are rebuilt when the kind changes (panel "Genstand"): lathe for bottles, cylinder / box / parts for the rest.
+let bottle = null, ghost = null;
+const itemColor = kind => CATALOG[kind].glass ?? CATALOG[kind].color ?? 0x8a6a3a;
+function buildItems() {
+  for (const m of [bottle, ghost]) if (m) { scene.remove(m); m.traverse(o => { o.geometry?.dispose(); }); }
+  const shape = studio.shape, kind = studio.settings.kind;
+  bottle = itemMesh(shape, { color: itemColor(kind), opacity: 0.6 });
+  ghost = itemMesh(shape, { color: 0x86a7ad, opacity: 0.22 });
+  scene.add(bottle, ghost);
+}
+/** Height above the item origin for the badge. */
+function itemTop(shape) {
+  if (shape.type === 'lathe' || shape.type === 'parts') return shape.type === 'lathe' ? 0.34 : 0.25;
+  return (shape.type === 'cylinder' ? shape.half : shape.size[1] / 2) + 0.1;
+}
 const userHands = { left: new HandView(scene), right: new HandView(scene) };
 const avatarHand = new HandView(scene, { color: 0xf7c880, radius: 0.005 });
+// Two-hand kinds: the other hand on the real item and on the ghost; the unlagged ghost hand (weight lag) in 'Rå led'.
+const partnerReal = new HandView(scene, { color: 0xc9d6dd, radius: 0.005 });
+const partnerGhost = new HandView(scene, { color: 0xf7c880, radius: 0.005 });
+const rawGhostHand = new HandView(scene, { color: 0xffffff, radius: 0.004 });
 const variantHand = new HandView(scene, { color: 0xb48cff, radius: 0.005 });
 const mirrorHands = { left: new HandView(scene, { color: 0x7fe0ff, radius: 0.005 }), right: new HandView(scene, { color: 0x7fe0ff, radius: 0.005 }) };
 const badge = new Badge(scene);
-const panel = new Panel(scene);
+const panel = new Panel(scene, { height: 0.38, maxLines: 6 });
 const avatarPanel = new Panel(scene, { width: 0.36, height: 0.2, textRow: 0, maxLines: 4, font: 28 });
 const toast = new Toast(scene);
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -86,6 +102,7 @@ function placeItem(head) {
   const yaw = Math.atan2(-fwd.x, -fwd.z);
   studio.setItem([head.pos[0] + fwd.x * 0.38, Math.max(0.5, head.pos[1] - 0.5), head.pos[2] + fwd.z * 0.38], [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)]);
 }
+buildItems();
 studio.setItem([0, 1.0, -0.35]);
 controls.target.set(0, 1.12, -0.35); controls.update();
 
@@ -97,8 +114,10 @@ const host = createHost({ THREE, scene, renderer, camera, game, quality: level, 
 let twin = null, head = { pos: [0, 1.6, 0], quat: [0, 0, 0, 1] }, time = 0;
 game.twin = () => {
   const c = studio.live?.closed, g = ghostItem(), sign = studio.settings.side === 'right' ? -1 : 1;
-  return { t: time, kind: KIND, side: studio.settings.side, head: { pos: add(head.pos, v3(studio.item.quat, [sign * GHOST_OFFSET, 0, 0])), quat: head.quat },
-    hand: c ? { pos: add(g.pos, v3(g.quat, c.wrist)), quat: qmul(g.quat, c.quat) } : null, angles: c?.angles ?? null };
+  const lag = showRaw ? null : studio.live?.weightLag?.offset; // weight lag: the twin's hand sinks too (the raw view shows it unlagged)
+  const wrist = c ? add(g.pos, v3(g.quat, c.wrist)) : null;
+  return { t: time, kind: studio.settings.kind, side: studio.settings.side, head: { pos: add(head.pos, v3(studio.item.quat, [sign * GHOST_OFFSET, 0, 0])), quat: head.quat },
+    hand: c ? { pos: lag ? add(wrist, v3(g.quat, lag)) : wrist, quat: qmul(g.quat, c.quat) } : null, angles: c?.angles ?? null };
 };
 
 // ---- avatar view (optional): the VRIK avatar driven live by the user -------------------------------------------------
@@ -165,7 +184,7 @@ function variantList() {
   const s = studio.settings;
   if (s.mode === 'grasp') {
     const recorded = (graspLib?.poses || []).filter(isPose);
-    return graspVariants(KIND, s.side, s.grasp, recorded).map((pose, i) => ({ kind: 'pose', pose, label: i === 0 && !pose.recorded ? 'original' : shortStamp(pose.recorded?.at, pose.id) }));
+    return graspVariants(s.kind, s.side, s.grasp, recorded).map((pose, i) => ({ kind: 'pose', pose, label: i === 0 && !pose.recorded ? 'original' : shortStamp(pose.recorded?.at, pose.id) }));
   }
   const base = handClip(s.clipName);
   const recorded = (handLib?.clips || []).filter(c => (c.variantOf || c.id.split('@')[0]) === s.clipName && (!c.side || c.side === s.side));
@@ -266,8 +285,19 @@ async function retryQueue() {
 const actions = {
   'side-right': () => { studio.setSide('right'); variantAt = -1; say('Optager højre hånd.'); },
   'side-left': () => { studio.setSide('left'); variantAt = -1; say('Optager venstre hånd.'); },
-  'grasp-body': () => { studio.setGrasp('body'); variantAt = -1; say('Greb: krop.'); },
-  'grasp-neck': () => { studio.setGrasp('neck'); variantAt = -1; say('Greb: hals.'); },
+  'grasp-body': () => { studio.setGrasp(GRASPS[studio.settings.kind][0]); variantAt = -1; say(`Greb: ${studio.settings.grasp}.`); },
+  'grasp-neck': () => { const g = GRASPS[studio.settings.kind][1]; if (!g) return; studio.setGrasp(g); variantAt = -1; say(`Greb: ${g}.`); },
+  kind: () => {
+    const next = KINDS[(KINDS.indexOf(studio.settings.kind) + 1) % KINDS.length];
+    studio.setKind(next); buildItems(); variantAt = -1;
+    say(`Genstand: ${next} (${CATALOG[next].mass} kg). Greb: ${studio.settings.grasp}.`);
+  },
+  role: () => {
+    const next = studio.settings.role === 'primary' ? 'secondary' : 'primary';
+    try { studio.setRole(next); variantAt = -1; say(next === 'secondary' ? 'Optager det SEKUNDÆRE greb (den anden hånd); den primære hånd vises på genstanden.' : 'Optager det primære greb.'); }
+    catch { say('Denne genstand har ingen to-hånds greb.'); }
+  },
+  weightlag: () => { studio.setWeightLag(!studio.settings.weightLag); say(`Vægt-lag på spøgelseshånden: ${studio.settings.weightLag ? 'til' : 'fra'} (kun visning; det gemte greb er altid den rå hånd).`); },
   save: () => saveReview(false),
   'save-default': () => saveReview(true),
   discard: () => { studio.discard(); say('Kasseret. Flyt hånden væk og grib igen.'); },
@@ -276,7 +306,7 @@ const actions = {
   recenter: () => {
     if (renderer.xr.isPresenting) placeItem(head); else studio.setItem([0, 1.0, -0.35]);
     if (avatarView === 'mirror') placeMirror();
-    say('Flasken er flyttet foran dig.');
+    say('Genstanden er flyttet foran dig.');
   },
   mode: () => {
     const next = MODES[(MODES.indexOf(studio.settings.mode) + 1) % MODES.length];
@@ -318,7 +348,8 @@ const actions = {
     const got = await twin.setCharacter(next);
     say(got === next ? `Figur: ${next.toUpperCase()}.` : `Kunne ikke skifte figur: ${twin.loadError}`);
   },
-  'avatar-raw': () => { showRaw = !showRaw; say(`Rå XRHand-led: ${showRaw ? 'vises' : 'skjult'}.`); },
+  'avatar-raw': () => { showRaw = !showRaw; say(`Rå led: ${showRaw ? 'vises (også spøgelseshånden uden vægt-lag)' : 'skjult (spøgelseshånden viser vægt-lag)'}.`); },
+  'ghost-raw': () => actions['avatar-raw'](),
   'avatar-thumb': () => { cycleThumb(); say(`Avatarens tommelfinger: ${thumbLabel()}.`); },
 };
 let synthetic = params.has('synthetic') ? 0 : null;
@@ -328,8 +359,8 @@ function panelButtons() {
   return [
     { id: 'side-right', label: 'Højre hånd', row: 0, col: 0, active: s.side === 'right' },
     { id: 'side-left', label: 'Venstre hånd', row: 0, col: 1, active: s.side === 'left' },
-    { id: 'grasp-body', label: 'Krop', row: 0, col: 2, active: s.grasp === 'body' },
-    { id: 'grasp-neck', label: 'Hals', row: 0, col: 3, active: s.grasp === 'neck' },
+    { id: 'grasp-body', label: GRASPS[s.kind][0], row: 0, col: 2, active: s.grasp === GRASPS[s.kind][0] },
+    { id: 'grasp-neck', label: GRASPS[s.kind][1] ?? '-', row: 0, col: 3, active: s.grasp === GRASPS[s.kind][1], disabled: !GRASPS[s.kind][1] },
     { id: 'save', label: 'Gem', row: 1, col: 0, disabled: !review },
     { id: 'save-default', label: 'Gem som foretrukken', row: 1, col: 1, cols: 2, disabled: !review || handMode },
     { id: 'discard', label: 'Kassér', row: 1, col: 3, disabled: !review },
@@ -342,8 +373,13 @@ function panelButtons() {
     { id: 'avatar-view', label: `Avatar: ${VIEW_LABEL[avatarView]}`, row: 4, col: 0, cols: 2, active: avatarView !== 'twin', disabled: !twin },
     { id: 'variant', label: v ? `Variant ${v.index + 1}/${v.count}` : 'Variant: vis', row: 4, col: 2, active: !!v },
     { id: 'retry-queue', label: `Gem kø (${queued})`, row: 4, col: 3, disabled: !queued, active: queued > 0 },
+    { id: 'kind', label: s.kind, row: 5, col: 0, disabled: handMode },
+    { id: 'role', label: s.role === 'secondary' ? 'Sekundær' : 'Primær', row: 5, col: 1, active: s.role === 'secondary', disabled: handMode || !twoHandKind() },
+    { id: 'weightlag', label: `Vægt: ${s.weightLag ? 'til' : 'fra'}`, row: 5, col: 2, active: s.weightLag, disabled: handMode },
+    { id: 'ghost-raw', label: 'Rå: ' + (showRaw ? 'til' : 'fra'), row: 5, col: 3, active: showRaw, disabled: handMode },
   ];
 }
+const twoHandKind = () => !!studio.live?.partner || ['mug', 'carton', 'pole', 'barrel'].includes(studio.settings.kind);
 function avatarButtons() {
   if (avatarView === 'twin' || !twin) return [];
   return [
@@ -385,12 +421,13 @@ function statusLines() {
       : st === 'stopping' ? `Stopper… ${live.auto.remaining.toFixed(1)} s` : st === 'rearm' ? 'Bevæg hånden for næste optagelse.'
       : anim ? 'Hold stille for at starte optagelsen.' : 'Hold håndstillingen stille for at optage.');
   } else if (r) {
-    lines.push(`Score ${r.score.score}${r.mirror ? ` · spejlet ${r.mirrorScore.score}` : ''} · ${r.score.ok ? 'godkendt' : 'afvist'} · ${r.frames} frames`);
+    lines.push(`${r.role === 'secondary' ? 'SEKUNDÆRT ' : ''}Score ${r.score.score}${r.mirror ? ` · spejlet ${r.mirrorScore.score}` : ''} · ${r.score.ok ? 'godkendt' : 'afvist'} · ${r.frames} frames${r.clearanceMm != null ? ` · hænder ${r.clearanceMm} mm fra hinanden` : ''}`);
     lines.push(r.score.failures.length ? r.score.failures.slice(0, 2).join('; ') : `indtr. ${r.score.metrics.penetrationMm} mm · håndflade ${r.score.metrics.palmGapMm} mm · tommel ${r.score.metrics.thumbOppositionDeg}°`);
   } else {
     const st = live?.auto?.state;
-    lines.push(!live?.valid ? 'Ingen hånd: hold hånden foran headsettet.' : !live.onItem ? 'Grib flasken.'
+    lines.push(!live?.valid ? 'Ingen hånd: hold hånden foran headsettet.' : !live.onItem ? 'Grib genstanden.'
       : st === 'holding' ? `Hold stille… ${live.auto.remaining.toFixed(1)} s` : st === 'rearm' ? 'Flyt hånden væk for næste optagelse.' : 'Hold stille for at optage.');
+    if (live?.weightLag) lines.push(`Vægt: hånden synker ${Math.round(Math.hypot(...live.weightLag.offset) * 1000)} mm (visning, ${Math.round(live.weightLag.effort * 100)} % anstrengelse)`);
     if (live?.tips) lines.push(`Kontakt: ${FINGERS.map(f => `${f[0]}${live.tips[f] === 'touch' ? '✓' : live.tips[f] === 'inside' ? '✗' : '·'}`).join(' ')}`);
   }
   lines.push(message);
@@ -521,21 +558,27 @@ renderer.setAnimationLoop((_, frame) => {
     const J = live3 && avatarView === 'mirror' && showRaw && mirror ? viewRecord?.snaps?.find(x => x.handedness === s)?.joints : null;
     mirrorHands[s].show(J ?? null);
   }
-  const c = live.closed;
-  avatarHand.show(c ? poseJoints({ wrist: c.wrist, quat: c.quat }, c.hand, g, c.angles) : null,
+  const c = live.closed, wl = live.weightLag;
+  const lagged = c && wl && !showRaw ? { wrist: add(c.wrist, wl.offset), quat: c.quat } : null; // display only; the saved grip is c
+  rawGhostHand.show(c && wl && showRaw ? poseJoints({ wrist: c.wrist, quat: c.quat }, c.hand, g, c.angles) : null);
+  avatarHand.show(c ? poseJoints({ wrist: (c && wl && !showRaw ? lagged : c).wrist, quat: c.quat }, c.hand, g, c.angles) : null,
     c ? Object.fromEntries(FINGERS.map(f => [f, c.fingers[f].stuck ? 'inside' : c.fingers[f].touching.length ? 'touch' : 'free'])) : null);
   variantHand.show(variantAt >= 0 ? variantJoints() : null);
-  const top = add(it.pos, v3(it.quat, [0, 0.34, 0]));
+  // The other hand on the item (two-hand kinds): on the real item and on the ghost.
+  const pr = live.partner;
+  partnerReal.show(pr ? poseJoints({ wrist: pr.closed.wrist, quat: pr.closed.quat }, pr.closed.hand, it, pr.closed.angles) : null);
+  partnerGhost.show(pr ? poseJoints({ wrist: pr.closed.wrist, quat: pr.closed.quat }, pr.closed.hand, g, pr.closed.angles) : null);
+  const top = add(it.pos, v3(it.quat, [0, itemTop(studio.shape), 0]));
   const r = studio.review, st = live.auto;
   badge.update(top, r?.clip ? { mode: 'result', score: r.report.keyframes, ok: !r.report.hard } : r ? { mode: 'result', score: r.score.score, ok: r.score.ok }
     : ['holding', 'arming', 'stopping'].includes(st.state) ? { mode: 'countdown', progress: st.progress, remaining: st.remaining } : { mode: 'hidden' });
   const sign = side === 'right' ? -1 : 1, tilt = qmul(it.quat, [Math.sin(-0.13), 0, 0, Math.cos(-0.13)]);
-  panel.mesh.position.set(...add(it.pos, v3(it.quat, [sign * 0.32, 0.5, 0.04])));
+  panel.mesh.position.set(...add(it.pos, v3(it.quat, [sign * 0.32, 0.54, 0.04])));
   panel.mesh.quaternion.set(...tilt);
   const vrUi = renderer.xr.isPresenting || params.has('panel');
   panel.mesh.visible = vrUi;
   panel.render(panelButtons(), statusLines());
-  toast.update(dt, _tp.set(...add(it.pos, v3(it.quat, [sign * 0.32, 0.69, 0.045]))), _tq.set(...tilt), vrUi);
+  toast.update(dt, _tp.set(...add(it.pos, v3(it.quat, [sign * 0.32, 0.78, 0.045]))), _tq.set(...tilt), vrUi);
   const aButtons = avatarButtons();
   avatarPanel.mesh.visible = vrUi && aButtons.length > 0;
   if (avatarPanel.mesh.visible) {
@@ -572,6 +615,6 @@ Promise.all([api.library(), api.handLibrary()]).then(async ([g, h]) => {
 });
 renderDom();
 // Test hook (tests/smoke.mjs): state and actions, no emulation code in the app.
-window.__studio = { studio, actions, host, get twin() { return twin; }, get message() { return message; }, scene, renderer, panel, avatarPanel, toast, toggleXR,
+window.__studio = { studio, actions, KINDS, ROLES, host, get twin() { return twin; }, get message() { return message; }, scene, renderer, panel, avatarPanel, toast, toggleXR,
   api, get avatarView() { return avatarView; }, get viewRecord() { return viewRecord; }, get liveRecord() { return liveRecord; }, get lastSaved() { return lastSaved; }, currentVariant, THUMB_AXIS };
 window.__ready = true;

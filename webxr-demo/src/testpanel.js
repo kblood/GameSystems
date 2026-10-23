@@ -5,10 +5,13 @@
 //     memoised), so this is the closure-search cost on the device;
 //   - "Hånd": cycles runtime hand-profile overrides on the avatar's player (entity.setHandProfile; null = none). The next
 //     grab closes on the new profile (the avatar rebuilds its grasp hand when handProfileVersion changes);
+//   - "Vægt": the visual weight lag of the shown hand (grasp/weight_lag.js; ON here, ?weightlag=off starts it off) and "Rå hånd":
+//     show the unlagged hand while it is on (the raw hand can always be seen);
 //   - "Greb": cycles the grasp quality (grasp extension setGraspQuality: low | mid | high); ?grasp=<tier> sets the start.
 // Debug only: it wraps host.emit to time 'grab' and chains scene.onBeforeRender; nothing else depends on it.
 import * as THREE from 'three';
 import { setGraspQuality, graspQuality, GRASP_QUALITY } from './vendor/extensions/grasp/index.js';
+import { setBottleLiquidColor } from './vendor/extensions/bottles/index.js';
 
 export const HAND_PROFILES = Object.freeze([
   { label: 'normal', override: null },
@@ -72,6 +75,15 @@ export function installTestPanel({ host, interaction, scene, hud = () => {}, sea
     hud(`Hånd: ${HAND_PROFILES[profile].label} (gælder fra næste greb)`);
     refresh();
   }
+  const avatarApi = () => host.get('avatar') ?? null;
+  function toggleWeight() {
+    const a = avatarApi(); if (!a?.setWeightLag) { hud('Ingen avatar: vægtlag kan ikke skiftes'); return; }
+    a.setWeightLag(!a.weightLag); hud(`Vægtlag: ${a.weightLag ? 'til' : 'fra'}`); refresh();
+  }
+  function toggleRaw() {
+    const a = avatarApi(); if (!a?.setShowRawHand) { hud('Ingen avatar: rå hånd kan ikke skiftes'); return; }
+    a.setShowRawHand(!a.showRawHand); hud(`Rå hånd: ${a.showRawHand ? 'vist (uden vægtlag)' : 'fra'}`); refresh();
+  }
   function cycleTier() {
     const next = TIERS[(TIERS.indexOf(graspQuality()) + 1) % TIERS.length];
     setGraspQuality(next);
@@ -79,15 +91,33 @@ export function installTestPanel({ host, interaction, scene, hud = () => {}, sea
     refresh();
   }
 
+  // Colour mixing recipe (desktop button): the first two open bottles with liquid become red and blue, then 60 ml of the
+  // blue one drops into the red one. mid/high fade the glass to purple, minimal/low switch once half is foreign.
+  function mixRecipe() {
+    const d = window.__demo, open = d ? [...d.factory.bottles].filter(b => b.open && !b.broken && b.fillMl > 100) : [];
+    if (open.length < 2) { hud('Blanding: kræver to åbne flasker med væske'); return; }
+    const [target, donor] = open.filter(b => b.capacity - b.fillMl > 80).slice(0, 1).concat(open.filter(b => b.fillMl > 100).slice(-1));
+    if (!target || target === donor) { hud('Blanding: ingen modtager med plads'); return; }
+    setBottleLiquidColor(target, [0.9, 0.08, 0.08]); setBottleLiquidColor(donor, [0.08, 0.1, 0.9]);
+    target.liquidKind = 'wine'; donor.liquidKind = 'water';
+    const ml = Math.min(60, donor.fillMl - 1); donor.fillMl -= ml; donor.liquid.fill = donor.fillMl / donor.capacity;
+    const mouth = target.root.localToWorld(new THREE.Vector3(0, target.height, 0)).add(new THREE.Vector3(0, 0.25, 0));
+    d.pour.emit(ml, mouth, new THREE.Vector3(), donor);
+    hud(`Blanding: ${ml.toFixed(0)} ml blå væske i rød (${d.pour.settings.liquidMix})`);
+  }
+
   // VR: info line + two buttons above the demo's panel (Interaction picks uiTargets with the controller ray).
   const panel = new THREE.Group(); panel.position.set(0, 2.2, 0.95);
   const info = canvasPlane(1.13, 0.12), handButton = canvasPlane(0.55, 0.12, 512, true), tierButton = canvasPlane(0.55, 0.12, 512, true);
+  const weightButton = canvasPlane(0.55, 0.12, 512, true), rawButton = canvasPlane(0.55, 0.12, 512, true);
+  weightButton.mesh.position.set(-0.29, -0.21, 0); rawButton.mesh.position.set(0.29, -0.21, 0);
+  weightButton.mesh.userData.action = toggleWeight; rawButton.mesh.userData.action = toggleRaw;
   info.mesh.position.set(0, 0.07, 0);
   handButton.mesh.position.set(-0.29, -0.07, 0); tierButton.mesh.position.set(0.29, -0.07, 0);
   handButton.mesh.userData.action = cycleProfile; tierButton.mesh.userData.action = cycleTier;
-  panel.add(info.mesh, handButton.mesh, tierButton.mesh);
+  panel.add(info.mesh, handButton.mesh, tierButton.mesh, weightButton.mesh, rawButton.mesh);
   scene.add(panel);
-  interaction.uiTargets.push(handButton.mesh, tierButton.mesh);
+  interaction.uiTargets.push(handButton.mesh, tierButton.mesh, weightButton.mesh, rawButton.mesh);
 
   // Desktop: the same controls in the HUD.
   const dom = document.createElement('div');
@@ -95,7 +125,10 @@ export function installTestPanel({ host, interaction, scene, hud = () => {}, sea
   const domInfo = document.createElement('span');
   const domHand = Object.assign(document.createElement('button'), { onclick: cycleProfile });
   const domTier = Object.assign(document.createElement('button'), { onclick: cycleTier });
-  dom.append(domHand, domTier, domInfo);
+  const domMix = Object.assign(document.createElement('button'), { onclick: mixRecipe, textContent: 'Blanding' });
+  const domWeight = Object.assign(document.createElement('button'), { onclick: toggleWeight });
+  const domRaw = Object.assign(document.createElement('button'), { onclick: toggleRaw });
+  dom.append(domHand, domTier, domWeight, domRaw, domMix, domInfo);
   (document.getElementById('top') || document.body).append(dom);
 
   function refresh() {
@@ -103,6 +136,9 @@ export function installTestPanel({ host, interaction, scene, hud = () => {}, sea
     info.draw([`${frame} · ${grab}`]);
     handButton.draw([`Hånd: ${HAND_PROFILES[profile].label}`]);
     tierButton.draw([`Greb: ${graspQuality()}`]);
+    const a = avatarApi(), lag = a?.weightLag ? 'til' : 'fra', raw = a?.showRawHand ? 'vist' : 'fra';
+    weightButton.draw([`Vægt: ${lag}`]); rawButton.draw([`Rå hånd: ${raw}`]);
+    domWeight.textContent = `Vægt: ${lag}`; domRaw.textContent = `Rå hånd: ${raw}`;
     domInfo.textContent = `${frame} · ${grab}`;
     domHand.textContent = `Hånd: ${HAND_PROFILES[profile].label}`;
     domTier.textContent = `Greb: ${graspQuality()}`;
@@ -110,6 +146,6 @@ export function installTestPanel({ host, interaction, scene, hud = () => {}, sea
   refresh();
   return {
     get lastGrabMs() { return lastGrab; }, get grabCount() { return grabCount; }, get frame() { return { mean, max }; },
-    get profile() { return HAND_PROFILES[profile]; }, cycleProfile, cycleTier,
+    get profile() { return HAND_PROFILES[profile]; }, cycleProfile, cycleTier, mixRecipe, toggleWeight, toggleRaw,
   };
 }

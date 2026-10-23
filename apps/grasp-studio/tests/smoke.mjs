@@ -105,6 +105,20 @@ try {
   check('undo removes the saved poses again', JSON.parse(await readFile(out, 'utf8')).poses.length === 0);
   await page.evaluate(() => window.__studio.actions.quality());
   check('quality switch cycles the tiers', await page.evaluate(() => document.getElementById('quality').value === '2'));
+  // Two-hand kinds (step B): cycling the item rebuilds the meshes, the secondary role shows the partner hand; back to the bottle.
+  const kinds = await page.evaluate(() => {
+    const S = window.__studio, a = S.actions, seen = [];
+    for (let i = 0; i < S.KINDS.length; i++) { a.kind(); seen.push(S.studio.settings.kind); }
+    a.kind(); a.kind(); a.kind(); // pole -> barrel -> bottle_beer wraps; land on a known kind below
+    while (S.studio.settings.kind !== 'pole') a.kind();
+    a.role();
+    const out = { seen, role: S.studio.settings.role, grasp: S.studio.settings.grasp, partner: !!S.studio.partner, children: S.scene.children.length };
+    a.role(); a.weightlag(); out.lag = S.studio.settings.weightLag; a.weightlag();
+    while (S.studio.settings.kind !== 'bottle_beer') a.kind();
+    out.back = S.studio.settings.kind;
+    return out;
+  });
+  check('item kinds cycle, the secondary role shows the partner hand, the weight lag switches', kinds.seen.length === 5 && kinds.role === 'secondary' && kinds.partner && kinds.lag === false && kinds.back === 'bottle_beer', kinds);
   // Gesture mode (step 7): the synthetic hand's still grip is captured as a hand pose and saved through /api/hand.
   await page.evaluate(() => { const a = window.__studio.actions; a.mode(); a.mode(); a['clip-name'](); a.synthetic(); a.synthetic(); });
   await page.waitForFunction('!!window.__studio.studio.review?.clip', { timeout: 60000, polling: 100 });

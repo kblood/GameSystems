@@ -23,11 +23,12 @@
 import DATA from './baked_grasps.data.json' with { type: 'json' };
 import RECORDED_DATA from './recorded_grasps.json' with { type: 'json' };
 import QUALITY_DATA from './data/quality.data.json' with { type: 'json' };
+import PROCEDURAL_DATA from './data/procedural_grasps.data.json' with { type: 'json' };
 import { qmul, qconj, rotate, add, sub, length } from './math.js';
 import { clampRows } from './grasp_validator.js';
 import { CATALOG } from './catalog.js';
 import { closeToContact } from './closure.js';
-import { mergePoses, recordedPoses } from './record.js';
+import { mergePoses, recordedPoses, isPose } from './record.js';
 
 export const ANGLE_WEIGHT = 0.05; // metres of cost per radian of wrist rotation
 export const HYSTERESIS = 0.01; // the current pose keeps winning until another is 1 cm "closer"
@@ -37,9 +38,24 @@ export const FINGERS = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
 export const BAKED = DATA;
 /** The recorded poses in the library (valid entries of recorded_grasps.json). */
 export const RECORDED = Object.freeze(recordedPoses(RECORDED_DATA));
-/** The poses of the active library: the bake, plus the recordings the variant selection lets in (setGraspVariants). */
-export let POSES = DATA.poses;
-let byKindSide = new Map(), variantSelection = 'baked';
+// Procedural grasps (data/procedural_grasps.data.json, made by tools/make_procedural_grasps.mjs from baked rows): the props
+// that have no working baked grasp (mug handle and top, carton sides, pole, barrel). They are an OPTION: by default
+// (setProceduralGrasps(false)) the library is the bake exactly as before them (BASE_POSES, the baked mug handle rows
+// untouched, no procedural pose). setProceduralGrasps(true) (games: ?proceduralgrasps=on; the Grasp Studio turns it on) adds
+// them: `replaces` ('kind/side/grasp', side * = any) then lists the baked groups they supersede (PROCEDURAL_POSES). BAKED
+// itself stays the unchanged bake in both states.
+export const PROCEDURAL = Object.freeze(PROCEDURAL_DATA.poses.filter(isPose));
+const replaced = pose => (PROCEDURAL_DATA.replaces || []).some(r => { const [k, sd, gr] = r.split('/'); return pose.kind === k && (sd === '*' || pose.side === sd) && pose.grasp === gr; });
+/** The default base library: the bake alone (no procedural pose, nothing replaced). */
+export const BASE_POSES = Object.freeze([...DATA.poses]);
+/** The base library with the procedural grasps on: the bake (minus the groups they replace) plus the procedural grasps. */
+export const PROCEDURAL_POSES = Object.freeze([...DATA.poses.filter(p => !replaced(p)), ...PROCEDURAL]);
+/** The base library of the current procedural setting (BASE_POSES | PROCEDURAL_POSES). */
+let proceduralOn = false;
+const baseLibrary = () => (proceduralOn ? PROCEDURAL_POSES : BASE_POSES);
+/** The poses of the active library: the base library, plus the recordings the variant selection lets in (setGraspVariants). */
+export let POSES = BASE_POSES;
+let byKindSide = new Map(), variantSelection = 'baked', variantChosen = [];
 function index() {
   byKindSide = new Map();
   for (const pose of POSES) {
@@ -68,15 +84,41 @@ export function setGraspVariants(selection = 'baked', recorded = RECORDED) {
     unknown = sel.filter(id => !recorded.some(p => p.id === id));
     chosen = recorded.filter(p => sel.includes(p.id)).map(p => ({ ...p, default: true }));
   }
-  POSES = chosen.length ? mergePoses(DATA.poses, chosen) : DATA.poses;
-  variantSelection = sel;
-  index();
+  variantSelection = sel; variantChosen = chosen;
+  rebuild();
   return { selection: sel, ids: chosen.map(p => p.id), unknown };
 }
 export const graspVariantSelection = () => variantSelection;
+function rebuild() {
+  POSES = variantChosen.length ? mergePoses(baseLibrary(), variantChosen) : baseLibrary();
+  index();
+}
+/** true | false | 'on' | 'off' | '1' | '0' | 'true' | 'false' (else null): the ?proceduralgrasps= value. */
+export function parseProceduralGrasps(value) {
+  if (value === true || value === 'on' || value === '1' || value === 'true') return true;
+  if (value === false || value === 'off' || value === '0' || value === 'false') return false;
+  return null;
+}
+/**
+ * Switch the procedural grasps (mug handle and top, carton sides, pole, barrel) on or off; off is the default and the library is
+ * then the bake alone. Unparsable values leave the setting unchanged. Keeps the chosen recorded variants. Returns the setting.
+ */
+export function setProceduralGrasps(on = false) {
+  const v = parseProceduralGrasps(on);
+  if (v == null) return proceduralOn;
+  proceduralOn = v;
+  rebuild();
+  return proceduralOn;
+}
+export const proceduralGrasps = () => proceduralOn;
+/** The library for an explicit choice, without touching the active one: buildLibrary({ procedural }), plus recorded variants. */
+export function buildLibrary(chosen = [], { procedural = false } = {}) {
+  const base = procedural ? PROCEDURAL_POSES : BASE_POSES;
+  return chosen.length ? mergePoses(base, chosen) : base;
+}
 /** The choices for one kind/side/grasp: the bake's default first, then every recording (newest last). */
 export function graspVariants(kind, side, grasp, recorded = RECORDED) {
-  const baked = DATA.poses.filter(p => p.kind === kind && p.side === side && (!grasp || p.grasp === grasp));
+  const baked = baseLibrary().filter(p => p.kind === kind && p.side === side && (!grasp || p.grasp === grasp));
   const base = baked.find(p => p.default) || baked[0];
   return [...(base ? [base] : []), ...recorded.filter(p => p.kind === kind && p.side === side && (!grasp || p.grasp === grasp))];
 }
@@ -138,6 +180,8 @@ export const graspQuality = () => quality;
 // close-to-contact replaced the old per-kind SKIN_MARGIN but not this exemption (grab_findings 1.4, 3.1). The margin's mug
 // thumb part (+10 deg bend1) was folded into the mug poses of baked_grasps.data.json, as a refit would.
 export const CLAMP_EXEMPT = Object.freeze(QUALITY_DATA.CLAMP_EXEMPT);
+/** A pose that keeps its raw rows: its kind is exempt and it is part of the bake (procedural poses are inside the joint ranges). */
+const exempt = pose => CLAMP_EXEMPT.includes(pose.kind) && pose.source !== 'procedural';
 const EXEMPT_KEEP = QUALITY_DATA.exemptKeep;
 
 // Clamped open/closed rows per pose object (the joint ranges are a box, so a lerp between two clamped ends stays inside).
@@ -145,7 +189,7 @@ const clampedRows = new WeakMap();
 const clampList = list => { const r = clampRows(Object.fromEntries(FINGERS.map((f, i) => [f, list[i]]))); return FINGERS.map(f => r[f]); };
 /** The rows fingerState() uses for a pose: { open, angles } (5 x [dyaw, pitch, bend1, bend2] deg) at the active quality. */
 export function runtimeRows(pose) {
-  if (quality === 'raw' || CLAMP_EXEMPT.includes(pose.kind)) return pose;
+  if (quality === 'raw' || exempt(pose)) return pose;
   let rows = clampedRows.get(pose);
   if (!rows) clampedRows.set(pose, rows = { open: clampList(pose.open), angles: clampList(pose.angles) });
   return rows;
@@ -188,13 +232,13 @@ export function graspPose(pose, hand, { shape = null, local = null } = {}) {
   if (!byShape) byPose.set(pose, byShape = new Map());
   let out = byShape.get(s);
   if (!out) {
-    const r = closeToContact(pose, hand, s, { rows: runtimeRows(pose), keep: CLAMP_EXEMPT.includes(pose.kind) ? EXEMPT_KEEP : [], search: quality });
+    const r = closeToContact(pose, hand, s, { rows: runtimeRows(pose), keep: exempt(pose) ? EXEMPT_KEEP : [], search: quality });
     byShape.set(s, out = { ...pose, wrist: r.wrist, quat: r.quat, open: r.open, angles: r.angles, contact: r.fingers, source: pose });
   }
   if (quality !== 'high' || !local) return out;
   const last = tracked.get(hand);
   if (last && last.pose === pose && last.shape === s && near(last.local, local)) return last.out;
-  const r = closeToContact(pose, hand, s, { rows: runtimeRows(pose), wrist: local.pos, quat: local.quat, keep: CLAMP_EXEMPT.includes(pose.kind) ? EXEMPT_KEEP : [] });
+  const r = closeToContact(pose, hand, s, { rows: runtimeRows(pose), wrist: local.pos, quat: local.quat, keep: exempt(pose) ? EXEMPT_KEEP : [] });
   const next = { ...out, open: r.open, angles: r.angles, contact: r.fingers };
   tracked.set(hand, { pose, shape: s, local: { pos: [...local.pos], quat: [...local.quat] }, out: next });
   return next;

@@ -210,6 +210,28 @@
           0.16
         ]
       }
+    },
+    "pole": {
+      "label": "Pole",
+      "mass": 2.2,
+      "grip": "wrap",
+      "color": 9143381,
+      "shape": {
+        "type": "cylinder",
+        "radius": 0.022,
+        "half": 0.7
+      }
+    },
+    "barrel": {
+      "label": "Barrel",
+      "mass": 16,
+      "grip": "flat",
+      "color": 5268550,
+      "shape": {
+        "type": "cylinder",
+        "radius": 0.2,
+        "half": 0.28
+      }
     }
   }
 }

@@ -6,6 +6,8 @@
 //   catalog.js        prop shapes, signed distance, hull points, mass properties
 //   contact.js        skin-vs-item contact metrics (lab, smoke tests)
 //   held_drive.js     mass-scaled hold drive + the hand motion it follows
+//   weight_lag.js     visual weight: the avatar hand lags/sinks with the held-drive error (display only)
+//   two_hand.js       two-hand grip: secondary grip pick, hand clearance, look-at orientation solve, force sharing
 //   throw_release.js  throw release velocity and glass-break tuning
 // Data: baked_grasps.data.json (bake), recorded_grasps.json (Grasp Studio), reference_hand.json (reference rest hand).
 // Source of truth: GameSystems/extensions/grasp. Games get copies through their sync scripts (only the top-level
@@ -13,7 +15,8 @@
 export {
   BAKED, RECORDED, POSES, FINGERS, ANGLE_WEIGHT, HYSTERESIS, GRASP_QUALITY, setGraspQuality, graspQuality, runtimeRows, graspPose,
   CLAMP_EXEMPT, posesFor, hasPoses, defaultPose, poseById, quatAngle, nearestPose, toItemLocal, toWorld, fingerState, openFingerState,
-  setGraspVariants, parseGraspVariants, graspVariantSelection, graspVariants,
+  setGraspVariants, parseGraspVariants, graspVariantSelection, graspVariants, PROCEDURAL, BASE_POSES, PROCEDURAL_POSES,
+  setProceduralGrasps, parseProceduralGrasps, proceduralGrasps, buildLibrary,
 } from './baked_grasps.js';
 export {
   THUMB_TILT, PAD_RADIUS, REFERENCE_HAND, CLOSURE, handGeometry, handFromRig, fingerChain, placeWrist, closeToContact, chainGaps,
@@ -30,8 +33,14 @@ export { CATALOG, KINDS, DEFAULT_MASS, entry, signedDistance, surfaceNormal, hul
 export { contactMetrics, kindGeometry, MAX_PENETRATION_MM, MAX_PALM_GAP_MM, MIN_OPPOSITION_DEG, TOUCH_MM } from './contact.js';
 export {
   STIFFNESS, DAMPING, MAX_ACCELERATION, MAX_TORQUE, MAX_HOLD_FORCE, HAND_MOTION_SAMPLES,
-  accelerationLimit, driveAcceleration, driveAngular, createHandMotion, pushHandMotion, carriedVelocity,
+  accelerationLimit, forceLimit, holdForce, holdTorque, driveAcceleration, driveAngular, createHandMotion, pushHandMotion, carriedVelocity,
 } from './held_drive.js';
 export {
   GLASS_BREAK_CONTACT_SPEED, RELEASE_SPEED_CAP, RELEASE_SPIN_CAP, createThrowHistory, pushSample, releaseVelocity, sampleFromPoses,
 } from './throw_release.js';
+export * as weightLag from './weight_lag.js';
+export { WEIGHT_LAG, parseWeightLag, weightLagMode, massWeight, maxOffset, sagOf, softLimit, lagTarget, createWeightLag } from './weight_lag.js';
+export {
+  TWO_HAND, ITEMS as TWO_HAND_ITEMS, twoHandSpec, isTwoHanded, gripPoint, gripSeparation, pickSecondary, secondaryPoses, handCapsules, segmentDistance,
+  handsClearance, handsClear, arcQuat, quatAngleOf, limitedSwing, offsetOf, controllerPointOf, solveTwoHand, stepBlend, secondaryHeld, releasedTogether,
+} from './two_hand.js';

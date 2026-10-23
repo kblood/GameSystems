@@ -1,0 +1,23 @@
+{
+  "schema": "gamesystems.grasp-weight-lag-data.v1",
+  "note": "Visual weight (grasp/weight_lag.js). Display only: the tracked hand, the grasp and the physics are never changed. Every constant of the weight lag lives here.",
+  "WEIGHT_LAG": {
+    "massRange": [0.3, 12],
+    "offsetMm": [5, 30],
+    "sagMm": [0, 10],
+    "errorGain": 1,
+    "errorCapMm": 120,
+    "tau": 0.09,
+    "rampIn": 0.3,
+    "elbow": { "follow": 0.45, "drop": 0.35 },
+    "handsShare": 0.5,
+    "tiers": {
+      "minimal": "off",
+      "low": "hand",
+      "mid": "elbow",
+      "medium": "elbow",
+      "high": "elbow"
+    },
+    "simulation": { "maxStep": 0.008 }
+  }
+}

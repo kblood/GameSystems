@@ -77,6 +77,32 @@ export const GROUPS = [
         ],
       },
       {
+        id: 'studio-vaegt', title: 'Visuel vægt: tung ting får hånden til at synke og hænge lidt',
+        links: [['Grasp Studio', '/studio/'], ['Demo med testpanel (vægt-lag til)', '/demo/?testpanel'], ['Demo uden vægt-lag', '/demo/?testpanel&weightlag=off']],
+        check: [
+          'Studio: tryk «Genstand» til barrel (tønde, 16 kg) og grib den. Panelet viser «Vægt: hånden synker N mm»: ligger N mellem 5 og 30?',
+          'Den gule spøgelseshånd synker og hænger lidt efter din rigtige hånd og falder til ro uden at ryste. «Vægt: fra» skal give nøjagtig din hånd.',
+          '«Rå: til» viser den hvide uforsinkede hånd ved siden af: kan du altid se den rå hånd? Det gemte greb er altid den rå hånd.',
+          'Skift til bottle_beer (let): hånden skal næsten ikke bevæge sig. Er forskel på let og tungt tydelig men ikke overdrevet?',
+          'Demoen med ?testpanel: tag en fyldt flaske og løft den. Synker avatarens hånd lidt med vægten? Og med ?weightlag=off: ingen forskel fra før?',
+          'Contracts (?weightlag=on): standard er FRA. Giv besked hvis hånden føles forsinket eller giver kvalme.',
+        ],
+      },
+      {
+        id: 'studio-tohaand', title: 'To-hånds greb: krus, karton, stang og tønde',
+        links: [['Grasp Studio', '/studio/'], ['Contracts med to-hånds genstande', '/contracts/?twohand=on&proceduralgrasps=on&weightlag=on'], ['Contracts uden to-hånds greb', '/contracts/?twohand=off']],
+        check: [
+          'Procedurale greb er VALGFRIE: Grasp Studio har dem slået til som standard (?proceduralgrasps=off viser kun bagningen, så pole og barrel mangler greb). Contracts og demoen har dem FRA, medmindre adressen har ?proceduralgrasps=on (to-hånds greb i Contracts kræver det).',
+          'Studio: vælg «Genstand» mug, carton, pole og barrel. Hver viser en ekstra hånd (grå) på genstanden. Ligger de to hænder ved siden af hinanden uden at gå igennem hinanden?',
+          'Tryk «Primær/Sekundær» (kun to-hånds genstande): sekundær optager den anden hånds greb. Hold stille, tjek score og «hænder N mm fra hinanden», og tryk «Gem».',
+          'Den gemte optagelse er en ny variant (rec-tidspunkt, rolle secondary); intet overskrives. Står der rejected/ hvis den afvises?',
+          'Contracts: tag stangen (ved -0.62, 7.18) eller tønden med én hånd. Tønden (16 kg) hænger tungt. Tag den med den anden hånd: den løftes nemmere og stangen retter sig mellem hænderne.',
+          'Slip den ene hånd: genstanden skal fortsætte i den anden hånd uden et hop (højst få mm). Slip begge på samme tid under en bevægelse: genstanden kastes.',
+          'Slip først den ene og så den anden over 0,2 s: genstanden må ikke kastes som to-hånds kast.',
+          'Krus: grib i hanken (hånd 1) og i toppen (hånd 2). Hvordan ser grebet ud? (Krus-kroppen kan stadig fejle.)',
+        ],
+      },
+      {
         id: 'studio-kvalitet', title: 'Billedhastighed pr. kvalitetsniveau',
         links: [['Minimal', '/studio/?quality=0'], ['Lav', '/studio/?quality=1'], ['Mellem (standard)', '/studio/?quality=2'], ['Høj', '/studio/?quality=3']],
         check: [
@@ -128,12 +154,13 @@ export const GROUPS = [
     tests: [
       {
         id: 'contracts-flasker', title: 'Hældning, væskefarve, pytter og blanding',
-        links: [['Contracts', '/contracts/'], ['bottles=mid', '/contracts/?bottles=mid']],
+        links: [['Contracts', '/contracts/'], ['bottles=mid', '/contracts/?bottles=mid'], ['Med viskositet', '/contracts/?viscosity=on']],
         check: [
           'Væske-shaderen og det gennemsigtige glas ser rigtige ud i headsettet.',
           'Grib en åben flaske og hæld: strålen og dråberne har flaskens farve (øl gylden, vin mørkerød).',
           'Hæld på bordet og gulvet: der dannes pytter. Hæld vin i en ølpyt: blandes farven?',
           'Hover-omridset følger glasset.',
+          'Valgfrit ?viscosity=on: skyd et hul i en flaske og sammenlign udstrømningen. Øl løber ca. 4 % og spiritus ca. 6 % langsommere end uden flaget (kun en lille forskel; uden flaget er den som før).',
         ],
       },
       {
@@ -162,12 +189,13 @@ export const GROUPS = [
     tests: [
       {
         id: 'demo-flasker', title: 'Flasker, hældning, pytter og brud',
-        links: [['Demo', '/demo/'], ['Uden avatar', '/demo/?avatar=off']],
+        links: [['Demo', '/demo/'], ['Uden avatar', '/demo/?avatar=off'], ['Uden viskositet (testpanel)', '/demo/?testpanel&viscosity=off']],
         check: [
           'Grib (grip), hæld og stil flasker. Væske, glas og pytter ser rigtige ud.',
           'Kast mod gulv og ruder: brud, skår og lyd.',
           'Panelet i VR: «Nulstil» og «Kvalitet» virker. Hvilket niveau er flydende?',
           'Jerrycan med diesel og de andre beholdere opfører sig fornuftigt.',
+          'Viskositet er valgfri: /demo/ uden flag er som før, ?viscosity=on eller ?testpanel gør huller i tykke væsker lidt langsommere (?testpanel&viscosity=off slår den fra).',
         ],
       },
     ],
@@ -188,10 +216,11 @@ export const GROUPS = [
       },
       {
         id: 'contracts-greb', title: 'Dåse, krus og karton i Contracts (CC-hånd)',
-        links: [['Contracts', '/contracts/']],
+        links: [['Contracts (bagte greb, standard)', '/contracts/'], ['Contracts med procedurale greb', '/contracts/?proceduralgrasps=on']],
         check: [
           'Grib dåsen: forventes at virke.',
           'Grib kruset og kartonen: kendte fejl (krus: tommelen rører ikke; karton: håndleddet bøjet ca. 95°). Se om det er så slemt som forventet.',
+          'Med ?proceduralgrasps=on (valgfrit): grib kruset i hanken og kartonen i siderne, og tag den ekstra stang og tønde på bordet. Er det bedre end standarden? Uden flaget skal alt være som før (ingen stang eller tønde på bordet).',
         ],
       },
       {

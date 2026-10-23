@@ -661,6 +661,13 @@ karakterens hvile-rig, verdensstørrelse = × `restHand().scale`):
   undervurderer tommelens side), Jimmys venstre/højre-asymmetri (separat override pr. side), auto-profil alene er ikke nok
   på lav-poly VRM. Headset: VRM-greb i demoen (`?character=vrm`), runtime `setHandProfile` under spil, Quest-pris for mid.
 
+### Lydsystem (`audio`) — kode færdig, afventer headset-test (2026-10-23)
+
+- Ny extension `extensions/audio` (Web Audio voice-pool 16/32/48 pr. tier, HRTF på high, kontaktlyd efter materialepar og slagstyrke,
+  loops, akustik-dæmpning via `acoustics.path`) + 160 nye lyde i `audio/` (contact-lyde for 7 materialer, hånd, fodtrin, slide, knirk).
+  Opt-in: demoen `?audio`; bottles' `audio`-option kan bruge `createBottleAudioAdapter`. Se [audio_system.md](audio_system.md).
+- Åbent: Quest (HRTF, AudioContext-unlock, pris), Contracts-kobling (`interaction/grab.js`) ikke lavet.
+
 ## Afklaringer og risici
 
 - **Contracts `AGENTS.md`** siger "standalone game" og "character logic stays in packages/character-plugin". Brugeren har

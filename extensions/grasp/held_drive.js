@@ -5,6 +5,7 @@
 // prop's centre of mass) moves with v + w x r (carriedVelocity), so the damping no longer fights a wrist turn.
 import { add, sub, cross } from './math.js';
 import DRIVE_DATA from './data/held_drive.data.json' with { type: 'json' };
+import TWO_HAND_DATA from './data/two_hand.data.json' with { type: 'json' };
 
 export const STIFFNESS = DRIVE_DATA.STIFFNESS;
 export const DAMPING = DRIVE_DATA.DAMPING;
@@ -12,18 +13,24 @@ export const MAX_ACCELERATION = DRIVE_DATA.MAX_ACCELERATION; // m/s^2
 export const MAX_TORQUE = DRIVE_DATA.MAX_TORQUE; // N m
 export const MAX_HOLD_FORCE = DRIVE_DATA.MAX_HOLD_FORCE; // N
 
-export function accelerationLimit(mass) { return Math.min(MAX_ACCELERATION, MAX_HOLD_FORCE / Math.max(mass, 0.001)); }
+/** Hold force (N) of 1 or 2 hands: one hand MAX_HOLD_FORCE, two hands the sum, capped (two_hand.data.json TWO_HAND.forceCap). */
+export function holdForce(hands = 1) { return hands >= 2 ? Math.min(2 * MAX_HOLD_FORCE, TWO_HAND_DATA.TWO_HAND.forceCap) : MAX_HOLD_FORCE; }
+/** Torque limit (N m) of 1 or 2 hands (two hands: the sum, capped by TWO_HAND.torqueCap). */
+export function holdTorque(hands = 1) { return hands >= 2 ? Math.min(2 * MAX_TORQUE, TWO_HAND_DATA.TWO_HAND.torqueCap) : MAX_TORQUE; }
+export function accelerationLimit(mass) { return forceLimit(mass, MAX_HOLD_FORCE); }
+/** Acceleration cap of a hold force (N): holdForce(hands). accelerationLimit(mass) is the one-hand case. */
+export function forceLimit(mass, force = MAX_HOLD_FORCE) { return Math.min(MAX_ACCELERATION, force / Math.max(mass, 0.001)); }
 
 /**
  * Linear drive acceleration (m/s^2, gravity already compensated) toward target position/velocity.
  * Implicit critically-damped spring (solved for the end of the step: x' = x + (v + a dt) dt against the target moved
- * on by targetVelocity dt), then clamped to the mass-scaled force cap. The body's own v dt is part of the error;
+ * on by targetVelocity dt), then clamped to the mass-scaled force cap (`force`: holdForce(hands), one hand by default). The body's own v dt is part of the error;
  * without it a prop moving with the hand settled one frame AHEAD of it and overshot when the hand stopped.
  */
-export function driveAcceleration({ position, velocity, targetPosition, targetVelocity = [0, 0, 0], mass, dt, gravity = [0, -9.81, 0] }) {
+export function driveAcceleration({ position, velocity, targetPosition, targetVelocity = [0, 0, 0], mass, dt, gravity = [0, -9.81, 0], force = MAX_HOLD_FORCE }) {
   const denominator = 1 + DAMPING * dt + STIFFNESS * dt * dt;
   const a = [0, 1, 2].map(k => ((targetPosition[k] + (targetVelocity[k] - velocity[k]) * dt - position[k]) * STIFFNESS + (targetVelocity[k] - velocity[k]) * DAMPING) / denominator - gravity[k]);
-  const cap = accelerationLimit(mass), l = Math.hypot(...a);
+  const cap = forceLimit(mass, force), l = Math.hypot(...a);
   return l > cap ? a.map(n => n * cap / l) : a;
 }
 

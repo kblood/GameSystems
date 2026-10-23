@@ -18,9 +18,13 @@ test('complete public bake preserves historical metadata, all pose records/order
     const selection = api.graspVariantSelection();
     try {
       api.setGraspVariants('baked');
-      assert.equal(api.POSES, api.BAKED.poses);
+      assert.equal(api.POSES, api.BASE_POSES);
+      // procedural grasps are opt-in: the default library is the bake exactly (every baked pose, nothing added or replaced)
+      assert.equal(api.proceduralGrasps(), false);
+      assert.equal(api.BASE_POSES.length, api.BAKED.poses.length);
+      assert.ok(api.PROCEDURAL.length > 0 && api.PROCEDURAL.every(p => !api.BASE_POSES.includes(p) && api.PROCEDURAL_POSES.includes(p)));
       for (const pose of api.BAKED.poses) {
-        assert.equal(api.poseById(pose.id), pose);
+        assert.equal(api.poseById(pose.id), pose, pose.id);
         assert.equal(Object.isFrozen(pose), false);
       }
     } finally { api.setGraspVariants(selection); }

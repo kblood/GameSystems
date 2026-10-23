@@ -20,14 +20,25 @@
 import {
   CATALOG, XR_CHAINS, captureFromJoints, restFromJoints, rowsFromJoints, handGeometry, chainGaps, closeToContact,
   referenceHand, recordedPose, mirrorPose, scoreGrasp, poseJoints, poseById, defaultPose, DEFAULT_OPEN,
+  twoHandSpec, secondaryPoses, handsClearance, createWeightLag, setProceduralGrasps, parseProceduralGrasps,
 } from './vendor/extensions/grasp/index.js';
 import { validateRows, clampRows } from './vendor/extensions/grasp/index.js';
 import { processRecording, mirrorClip, toRows, HAND_FORMAT } from './vendor/extensions/avatar/handposes.js';
 import { createAutoCapture, createAnimationCapture, trackingConfidence, STILL, ANIM } from './capture.js';
 
 export const KIND = 'bottle_beer';
-/** Grasps the studio offers per kind (v1: one item). */
-export const GRASPS = Object.freeze({ bottle_beer: ['body', 'neck'] });
+/**
+ * The studio shows the procedural grasps (mug handle and top, carton sides, pole, barrel) by default so they can be tested and
+ * recorded on; in games they are opt-in (?proceduralgrasps=on). ?proceduralgrasps=off in the studio shows the bake alone (then pole
+ * and barrel have no grasp). `search`: a URLSearchParams (or anything with get). Returns whether they are on.
+ */
+export const applyProceduralGrasps = search => setProceduralGrasps(parseProceduralGrasps(search?.get?.('proceduralgrasps')) ?? true);
+/** Grasps the studio offers per kind. The two-hand kinds (grasp two_hand.data.json) can also record a SECONDARY grip (setRole). */
+export const GRASPS = Object.freeze({ bottle_beer: ['body', 'neck'], mug: ['handle', 'top'], carton: ['side', 'face'], pole: ['grip'], barrel: ['side'] });
+/** Kinds the panel cycles through. */
+export const KINDS = Object.freeze(Object.keys(GRASPS));
+/** 'primary' | 'secondary': which hand's grip a recording is (secondary: a pose saved with role 'secondary', still a rec-<stamp> variant). */
+export const ROLES = Object.freeze(['primary', 'secondary']);
 /** Fingertip feedback (mm): touching within touchMm of the surface, penetrating deeper than penetrationMm, "on the item" within onItemMm. */
 export const FEEDBACK = Object.freeze({ touchMm: 4, penetrationMm: 3, onItemMm: 25 });
 /** Frames between re-closing the avatar hand per tier ('low' saves ~2/3 of the closure cost on the Quest CPU). */
@@ -59,8 +70,12 @@ export function tipState(gap, feedback = FEEDBACK) {
 
 export function createStudio({ kind = KIND, side = 'right', grasp = GRASPS[kind][0], autoMirror = true, tier = 'high', still = STILL, avatarHand = null,
   mode = 'grasp', clipName = null, anim = ANIM } = {}) {
-  const shape = CATALOG[kind].shape;
-  const settings = { kind, side, grasp, autoMirror, tier, mode: MODES.includes(mode) ? mode : 'grasp', clipName: clipName || (mode === 'animation' ? 'wave' : 'point') };
+  let shape = CATALOG[kind].shape;
+  const settings = { kind, side, grasp, role: 'primary', weightLag: true, autoMirror, tier, mode: MODES.includes(mode) ? mode : 'grasp', clipName: clipName || (mode === 'animation' ? 'wave' : 'point') };
+  // Visual weight of the item in the recording hand (grasp/weight_lag.js): a virtual body follows the hand through the held-drive
+  // law; the shown avatar hand sinks/lags a little. Display only; the saved grip is always the raw hand.
+  const lag = createWeightLag({ enabled: true, tier: tier === 'high' ? 'high' : 'low' });
+  let lastT = null, partnerCache = null;
   const auto = createAutoCapture(still), animCap = createAnimationCapture({ ...anim, ...still }), poseCap = createAutoCapture(still);
   const history = { left: [], right: [] };
   let item = { pos: [0, 1, -0.4], quat: [0, 0, 0, 1] }, frame = 0, live = null, review = null, closed = null, lastSaved = [];
@@ -70,7 +85,29 @@ export function createStudio({ kind = KIND, side = 'right', grasp = GRASPS[kind]
   const toItem = p => rotate(conj(item.quat), sub(p, item.pos));
   const tipsOf = joints => FINGERS.map(f => joints[XR_CHAINS[f][3]]);
 
-  function reset() { auto.reset(); animCap.reset(); poseCap.reset(); review = null; closed = null; live = null; }
+  function reset() { auto.reset(); animCap.reset(); poseCap.reset(); review = null; closed = null; live = null; lag.reset(); lastT = null; }
+
+  // The OTHER hand on the item (two-hand kinds, grasp mode): the opposite side's default pose of the other group, closed to
+  // contact on its hand, so both hands are seen on the item. Recording the primary grip: the other hand shows a secondary grip
+  // far enough from it; recording the secondary grip: the other hand shows the primary grip.
+  function partnerClosed() {
+    const spec = twoHandSpec(kind);
+    if (!spec || settings.mode !== 'grasp') return null;
+    const s = settings.side, o = other(s), key = `${kind}/${s}/${settings.role}`, hand = displayHand(o);
+    if (partnerCache?.key === key && partnerCache.hand === hand) return partnerCache.value;
+    const primary = defaultPose(kind, settings.role === 'primary' ? s : o, spec.primary);
+    const pose = settings.role === 'primary' ? (secondaryPoses(kind, o, primary, spec)[0] ?? defaultPose(kind, o, spec.secondary)) : primary;
+    const value = pose ? { pose, closed: { ...closeToContact(pose, hand, shape), hand, side: o } } : null;
+    partnerCache = { key, hand, value };
+    return value;
+  }
+  /** Skin gap (mm, negative = the hands overlap) between the recording and the partner hand on the item, or null. */
+  function clearanceMm(pose) {
+    const partner = partnerClosed();
+    if (!partner) return null;
+    const hand = displayHand(pose.side);
+    return Math.round(handsClearance(partner.closed.hand, partner.closed, hand, closeToContact(pose, hand, shape)) * 10000) / 10;
+  }
 
   // hand modes: frames { t, wrist: { pos, quat } (item space), rows (reference hand), onItem } -> a reviewed clip
   function makeClipReview(frames, { kind: k, onItemStart = false }) {
@@ -93,7 +130,7 @@ export function createStudio({ kind = KIND, side = 'right', grasp = GRASPS[kind]
   }
 
   function makeReview(avg) {
-    const pose = recordedPose(avg, { kind, grasp: settings.grasp, frames: avg.frames });
+    const pose = recordedPose(avg, { kind, grasp: settings.grasp, frames: avg.frames, ...(settings.role === 'secondary' && { role: 'secondary' }) });
     const score = scoreGrasp(pose);
     pose.recorded.score = score.score;
     let mirror = null, mirrorScore = null;
@@ -102,7 +139,7 @@ export function createStudio({ kind = KIND, side = 'right', grasp = GRASPS[kind]
       mirrorScore = scoreGrasp(mirror);
       mirror.recorded = { ...pose.recorded, score: mirrorScore.score, mirrored: true };
     }
-    return { pose, score, mirror, mirrorScore, spread: avg.spread, frames: avg.frames };
+    return { pose, score, mirror, mirrorScore, spread: avg.spread, frames: avg.frames, role: settings.role, clearanceMm: clearanceMm(pose) };
   }
 
   return {
@@ -111,13 +148,29 @@ export function createStudio({ kind = KIND, side = 'right', grasp = GRASPS[kind]
     get live() { return live; },
     get review() { return review; },
     get lastSaved() { return lastSaved; },
+    /** The other hand on the item (two-hand kinds): { pose, closed } or null. */
+    get partner() { return partnerClosed(); },
+    get shape() { return shape; },
     get status() { return live?.auto ?? { state: (settings.mode === 'animation' ? animCap : settings.mode === 'gesture' ? poseCap : auto).state, progress: 0, remaining: still.hold }; },
-    setAvatarHand(fn) { handOf = fn; closed = null; },
+    setAvatarHand(fn) { handOf = fn; closed = null; partnerCache = null; },
     setItem(pos, quat = [0, 0, 0, 1]) { item = { pos: [...pos], quat: [...quat] }; reset(); },
     setSide(s) { if (s !== 'left' && s !== 'right') throw new RangeError(`side ${s}?`); settings.side = s; reset(); },
     setGrasp(g) { if (!GRASPS[kind].includes(g)) throw new RangeError(`grasp ${g}?`); settings.grasp = g; reset(); },
+    /** Another item kind (GRASPS): the first grasp group, the primary role. */
+    setKind(k) {
+      if (!GRASPS[k]) throw new RangeError(`kind ${k}?`);
+      kind = k; settings.kind = k; shape = CATALOG[k].shape; settings.grasp = GRASPS[k][0]; settings.role = 'primary'; partnerCache = null; reset();
+    },
+    /** 'primary' | 'secondary' (two-hand kinds only): a secondary recording is saved with role 'secondary' in the group of the secondary hand. */
+    setRole(r) {
+      if (!ROLES.includes(r)) throw new RangeError(`role ${r}?`);
+      const spec = twoHandSpec(kind);
+      if (r === 'secondary' && !spec) throw new RangeError(`${kind} has no secondary grip`);
+      settings.role = r; if (spec) settings.grasp = spec[r]; partnerCache = null; reset();
+    },
+    setWeightLag(on) { settings.weightLag = !!on; if (!on) lag.reset(); },
     setAutoMirror(on) { settings.autoMirror = !!on; },
-    setTier(t) { settings.tier = t in CLOSURE_EVERY ? t : 'high'; },
+    setTier(t) { settings.tier = t in CLOSURE_EVERY ? t : 'high'; lag.setTier(settings.tier); },
     /** 'grasp' | 'animation' | 'gesture' (see the header); resets the capture. */
     setMode(m) {
       if (!MODES.includes(m)) throw new RangeError(`mode ${m}?`);
@@ -179,7 +232,16 @@ export function createStudio({ kind = KIND, side = 'right', grasp = GRASPS[kind]
         const hand = displayHand(s);
         closed = { ...closeToContact(review.pose, hand, shape), hand, side: s, frozen: true };
       }
-      live = { side: s, confidence, valid: !!capture, capture, gaps, tips, onItem, closed, auto: status };
+      // Visual weight: the recording hand's item-space wrist drives a virtual body of the item's mass (two hands share it
+      // while a partner hand is shown); the offset is for DISPLAY (the avatar ghost hand), the capture stays raw.
+      let weight = null;
+      const dtw = lastT == null ? 0 : Math.max(0, Math.min(0.1, t - lastT));
+      lastT = t;
+      if (settings.weightLag && capture && onItem && !review) {
+        const r = lag.update({ dt: dtw, mass: CATALOG[kind].mass ?? 0.5, hands: settings.role === 'secondary' ? 2 : 1, target: capture.wrist, simulate: true });
+        if (r.active) weight = { offset: r.offset, elbow: r.elbow, effort: r.effort };
+      } else lag.reset();
+      live = { side: s, confidence, valid: !!capture, capture, gaps, tips, onItem, closed, auto: status, weightLag: weight, partner: partnerClosed() };
       return live;
     },
 

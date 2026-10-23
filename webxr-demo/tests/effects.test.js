@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
 // Bottle effects (damage, pouring, breakage) from the bottles extension as synced into the demo.
-import { BottleDamageProfile, assessPane, puddlePolygon, holeHydraulics, PourSystem, BreakageSystem, makeLut, BottleBodies }
+import { BottleDamageProfile, assessPane, puddlePolygon, holeHydraulics, PourSystem, BreakageSystem, makeLut, BottleBodies, bottleDischargeScale, BOTTLE_QUALITY }
   from '../src/vendor/extensions/bottles/index.js';
 import { createCannonPhysics } from '../src/vendor/extensions/adapters/physics-cannon.js';
 
@@ -48,6 +48,30 @@ test('hole flow follows the liquid level and shuts off above it', () => {
   const dry = holeHydraulics(bottle, { point: new THREE.Vector3(0, 0.31, 0), normal: new THREE.Vector3(1, 0, 0), radius: 0.0025 });
   assert.ok(wet.rateMl > 0);
   assert.equal(dry.rateMl, 0);
+});
+
+test('viscosity is opt-in: the default outflow is bit-identical to the plain cd 0.62 formula, viscosity on adds the discharge scale', () => {
+  const hole = { point: new THREE.Vector3(0, 0.05, 0), normal: new THREE.Vector3(1, 0, 0), radius: 0.0025 };
+  for (const kind of ['water', 'beer', 'spirits', 'honey']) {
+    const root = new THREE.Group(), liquid = liquidFor(root);
+    const bottle = { root, liquid, fillMl: 350, capacity: 500, liquidKind: kind };
+    const plain = holeHydraulics(bottle, hole), explicit = holeHydraulics(bottle, hole, { viscosity: false }), viscous = holeHydraulics(bottle, hole, { viscosity: true });
+    // the formulas before the viscosity table: v = 0.62 * sqrt(2 g h), rate = pi r^2 v
+    const oldSpeed = 0.62 * Math.sqrt(2 * 9.81 * plain.head), oldRate = Math.PI * hole.radius ** 2 * oldSpeed * 1e6;
+    assert.equal(plain.exitSpeed, oldSpeed, kind); assert.equal(plain.rateMl, oldRate, kind);
+    assert.equal(explicit.exitSpeed, oldSpeed, kind); assert.equal(explicit.rateMl, oldRate, kind);
+    const scale = bottleDischargeScale(bottle);
+    assert.equal(viscous.exitSpeed, 0.62 * scale * Math.sqrt(2 * 9.81 * plain.head), kind);
+    if (kind === 'water') assert.equal(viscous.rateMl, plain.rateMl); else assert.ok(viscous.rateMl < plain.rateMl, `${kind} drains slower with viscosity on`);
+  }
+});
+
+test('PourSystem: liquidViscosity follows the tier flag (false everywhere), setLiquidViscosity overrides, null follows the tier again', () => {
+  for (const tier of Object.values(BOTTLE_QUALITY)) assert.equal(tier.liquidViscosity, false);
+  const pour = new PourSystem(new THREE.Scene(), { quality: 3 }, { play() {} });
+  assert.equal(pour.liquidViscosity, false);
+  pour.setLiquidViscosity(true); assert.equal(pour.liquidViscosity, true);
+  pour.setLiquidViscosity(null); assert.equal(pour.liquidViscosity, false);
 });
 
 test('real PET liquid LUT gives head pressure only to submerged holes', () => {
