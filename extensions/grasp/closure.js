@@ -310,9 +310,20 @@ function closeFinger(name, finger, open, closed, place, distance, s, opts) {
 }
 
 const around = p => Math.atan2(p[2], p[0]);
+/**
+ * The angle-around-the-item-axis function of a pose (thumb opposition gate, thumb search). Without `axis` it is the
+ * item's +Y axis through the origin (bit-identical to before: atan2(z, x)); a pose may carry its own grip axis
+ * `{ origin, dir }` (item space, like contact.js kindGeometry): a ladder rung runs along X at a height, so the thumb opposes
+ * around THAT line. The basis perpendicular to the axis is fixed (differences are all that matter).
+ */
+export function aroundOf(axis) {
+  if (!axis) return around;
+  const d = norm(axis.dir), ref = Math.abs(d[0]) < 0.9 ? [1, 0, 0] : [0, 0, 1], e1 = norm(cross(d, ref)), e2 = cross(d, e1), o = axis.origin;
+  return p => { const r = sub(p, o); return Math.atan2(dot(r, e2), dot(r, e1)); };
+}
 const separation = (a, b) => { const x = Math.abs(a - b) % (2 * Math.PI); return x > Math.PI ? 2 * Math.PI - x : x; };
 /** Thumb (dyaw, pitch) search for a wrap whose thumb missed along its shape; returns closeFinger's result + opposition or null. */
-function searchThumb(thumb, open, closed, refAngle, place, distance, s, opts) {
+function searchThumb(thumb, open, closed, refAngle, place, distance, s, opts, ar = around) {
   const H = HARD.Thumb, flexOpen = [open[2], open[3]], flexClosed = [Math.max(closed[2], 45), Math.max(closed[3], 50)];
   const tried = new Map();
   const tryAt = (dyaw, pitch) => {
@@ -323,7 +334,7 @@ function searchThumb(thumb, open, closed, refAngle, place, distance, s, opts) {
     const r = closeFinger('Thumb', thumb, [dyaw, pitch, ...flexOpen, ...tw], [dyaw, pitch, ...flexClosed, ...tw], place, distance, s, opts);
     let out = null;
     if (!r.stuck && r.touching.length) {
-      const opp = separation(around(place(fingerChain(thumb, r.row)[3])), refAngle) * 180 / Math.PI;
+      const opp = separation(ar(place(fingerChain(thumb, r.row)[3])), refAngle) * 180 / Math.PI;
       out = { ...r, opposition: opp, cost: (Math.abs(dyaw - closed[0]) + Math.abs(pitch - closed[1])) / 60 + Math.max(0, opts.opposition - opp) / 5 };
     }
     tried.set(key, out);
@@ -413,7 +424,7 @@ export function placePalm(pose, hand, shape, options = CLOSURE, offset = null, t
 }
 
 /** Close the five fingers on one placement (see closeToContact); returns { angles (unclamped), fingers }. */
-function closeAll(hand, rows, placed, distance, keep, opts, wrap) {
+function closeAll(hand, rows, placed, distance, keep, opts, wrap, ar = around) {
   const s = hand.scale, place = placer(placed.wrist, placed.quat, s), angles = {}, fingers = {};
   FINGERS.forEach((f, i) => {
     const kept = keep.includes(f), r = closeFinger(f, hand.fingers[f], rows.open[i], rows.angles[i], place, distance, s, { ...opts, ...(kept && { free: true }), ...(!wrap && { overshoot: 0 }) });
@@ -425,9 +436,9 @@ function closeAll(hand, rows, placed, distance, keep, opts, wrap) {
   const near = () => { const g = segmentGaps(fingerChain(hand.fingers.Thumb, angles.Thumb), hand.fingers.Thumb, place, distance, s, 0, [0, 0, 0]); return Math.min(g[1], g[2]) <= 0.003; };
   if (opts.thumbSearch && wrap && !thumb.kept && (opts.thumbSearch === 'any' ? thumb.stuck || !thumb.touching.length : !thumb.stuck && !thumb.touching.length) && (thumb.stuck || !near())) {
     const tips = ['Index', 'Middle'].map(f => place(fingerChain(hand.fingers[f], angles[f])[3]));
-    const ref = around([(tips[0][0] + tips[1][0]) / 2, 0, (tips[0][2] + tips[1][2]) / 2]);
+    const ref = ar([(tips[0][0] + tips[1][0]) / 2, (tips[0][1] + tips[1][1]) / 2, (tips[0][2] + tips[1][2]) / 2]);
     const clampedOpen = clampRows({ Thumb: rows.open[0] }).Thumb, clampedClosed = clampRows({ Thumb: rows.angles[0] }).Thumb;
-    const r = searchThumb(hand.fingers.Thumb, clampedOpen, clampedClosed, ref, place, distance, s, opts);
+    const r = searchThumb(hand.fingers.Thumb, clampedOpen, clampedClosed, ref, place, distance, s, opts, ar);
     if (r && r.opposition >= opts.opposition) {
       angles.Thumb = r.row;
       fingers.Thumb = { t: r.t, touching: r.touching, backedOff: false, searched: true, opposition: Math.round(r.opposition * 10) / 10 };
@@ -441,8 +452,8 @@ function closeAll(hand, rows, placed, distance, keep, opts, wrap) {
  * distal segment within `reach`), thumb touching (distal or middle segment), thumb opposition around the item's +Y axis,
  * and `score` (higher is better): contacts and opposition up, penetration and a palm far from the item down.
  */
-export function gradeGrasp(hand, shape, placed, angles, { reach = 0.003, palmGap = CLOSURE.palmGap, wrap = true } = {}) {
-  const s = hand.scale, place = placer(placed.wrist, placed.quat, s), distance = p => signedDistance(shape, p);
+export function gradeGrasp(hand, shape, placed, angles, { reach = 0.003, palmGap = CLOSURE.palmGap, wrap = true, axis = null } = {}) {
+  const ar = aroundOf(axis), s = hand.scale, place = placer(placed.wrist, placed.quat, s), distance = p => signedDistance(shape, p);
   const list = Array.isArray(angles) ? angles : FINGERS.map(f => angles[f]);
   let deepest = Infinity;
   const tips = {}, gaps = {};
@@ -453,8 +464,8 @@ export function gradeGrasp(hand, shape, placed, angles, { reach = 0.003, palmGap
   const pg = palmGaps(hand, place, distance, list[0]);
   const fingersTouching = FINGERS.slice(1).filter(f => gaps[f][2] <= reach).length;
   const thumbTouching = Math.min(gaps.Thumb[1], gaps.Thumb[2]) <= reach;
-  const ref = [(tips.Index[0] + tips.Middle[0]) / 2, 0, (tips.Index[2] + tips.Middle[2]) / 2];
-  const opposition = separation(around(tips.Thumb), around(ref)) * 180 / Math.PI;
+  const ref = [(tips.Index[0] + tips.Middle[0]) / 2, (tips.Index[1] + tips.Middle[1]) / 2, (tips.Index[2] + tips.Middle[2]) / 2];
+  const opposition = separation(ar(tips.Thumb), ar(ref)) * 180 / Math.PI;
   const pen = Math.max(0, -Math.min(deepest, pg.thenar, pg.palm)) * 1000;
   let score = 3 * fingersTouching - 6 * Math.max(0, pen - 1.5) - 1.5 * Math.max(0, pg.palm * 1000 - Math.max(5, palmGap * 1000 + 1));
   if (wrap) score += (thumbTouching ? 5 : 0) + (thumbTouching ? Math.min(opposition, 140) / 35 : 0) + (thumbTouching && opposition >= 125 ? 3 : 0);
@@ -496,13 +507,13 @@ const THUMB_STRETCH = Object.freeze({ from: 1.4, per: 8 });
  * grade, tried (closures run) }.
  */
 export function closeToContact(pose, hand, shape, { rows = pose, wrist = null, quat = null, keep = [], options = CLOSURE, search = null } = {}) {
-  const opts = { ...CLOSURE, ...options }, wrap = (pose.mode ?? 'wrap') === 'wrap', distance = p => signedDistance(shape, p);
+  const opts = { ...CLOSURE, ...options }, wrap = (pose.mode ?? 'wrap') === 'wrap', distance = p => signedDistance(shape, p), ar = aroundOf(pose.axis);
   const given = !!(wrist && quat), base = given ? { wrist, quat } : placePalm(pose, hand, shape, opts, null, rows.open[0]);
   const plan = !given && wrap && search ? (typeof search === 'string' ? SEARCH[search] : search) : null;
   // A searched thumb (CMC off its baked shape) scores SEARCHED_THUMB less: the capsule thumb drifts from the skin away from
   // the bake (grasp lab: up to 9 mm skin inside on the CC hand), so a bake-shaped thumb that touches is preferred.
   const run = (placed, o) => {
-    const r = closeAll(hand, rows, placed, distance, keep, o, wrap), grade = gradeGrasp(hand, shape, placed, r.angles, { palmGap: opts.palmGap + (hand.profile.palmOffset || 0) * hand.scale, wrap });
+    const r = closeAll(hand, rows, placed, distance, keep, o, wrap, ar), grade = gradeGrasp(hand, shape, placed, r.angles, { palmGap: opts.palmGap + (hand.profile.palmOffset || 0) * hand.scale, wrap, axis: pose.axis });
     if (r.fingers.Thumb.searched) grade.score -= SEARCHED_THUMB;
     if (wrap) grade.score -= THUMB_STRETCH.per * Math.max(0, Math.max(...r.fingers.Thumb.t) - THUMB_STRETCH.from);
     return { placed, ...r, grade };

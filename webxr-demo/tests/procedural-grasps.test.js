@@ -50,14 +50,14 @@ test('default: the library is the bake alone (BASE_POSES), no procedural pose, t
   assert.equal(g.POSES, g.BASE_POSES);
 });
 
-test('opt-in: setProceduralGrasps(true) adds the groups and replaces mug/*/handle only then; unparsable values change nothing; off restores the default', () => {
+test('opt-in: setProceduralGrasps(true) adds the groups and replaces mug/*/handle and mug/*/body only then; unparsable values change nothing; off restores the default', () => {
   assert.equal(g.setProceduralGrasps(true), true);
   assert.equal(g.setProceduralGrasps('banana'), true, 'an unparsable value leaves the setting');
   assert.equal(g.setProceduralGrasps('off'), false);
   assert.equal(g.POSES, g.BASE_POSES);
   assert.equal(g.setProceduralGrasps('on'), true);
   assert.equal(g.POSES, g.PROCEDURAL_POSES);
-  assert.equal(g.PROCEDURAL_POSES.length, g.BAKED.poses.length - g.BAKED.poses.filter(p => p.kind === 'mug' && p.grasp === 'handle').length + g.PROCEDURAL.length);
+  assert.equal(g.PROCEDURAL_POSES.length, g.BAKED.poses.length - g.BAKED.poses.filter(p => p.kind === 'mug' && (p.grasp === 'handle' || p.grasp === 'body')).length + g.PROCEDURAL.length);
   // it keeps a recorded-variant selection and survives setGraspVariants
   const before = g.graspVariantSelection();
   g.setGraspVariants('recorded');
@@ -66,13 +66,14 @@ test('opt-in: setProceduralGrasps(true) adds the groups and replaces mug/*/handl
   assert.equal(g.POSES, g.BASE_POSES);
 });
 
-test('every group has a default per side; with procedural on the library keeps the mug body but replaces its handle group', () => {
+test('every group has a default per side; with procedural on the library replaces the mug handle and body groups (BAKED keeps them)', () => {
   for (const [kind, groups] of Object.entries({ mug: ['handle', 'top'], carton: ['side', 'face'], pole: ['grip'], barrel: ['side'] })) for (const side of ['left', 'right']) for (const grasp of groups) {
     const rows = g.posesFor(kind, side).filter(p => p.grasp === grasp);
     assert.ok(rows.length > 0, `${kind}/${side}/${grasp}`);
     assert.equal(rows.filter(p => p.default).length, 1, `${kind}/${side}/${grasp} default count`);
   }
-  assert.ok(g.PROCEDURAL_POSES.some(p => p.kind === 'mug' && p.grasp === 'body'), 'the mug body rows stay');
+  assert.ok(g.PROCEDURAL_POSES.some(p => p.kind === 'mug' && p.grasp === 'body' && p.source === 'procedural'), 'the procedural mug body rows are there');
+  assert.ok(!g.PROCEDURAL_POSES.some(p => p.kind === 'mug' && p.grasp === 'body' && p.source !== 'procedural'), 'baked body rows replaced (thumb pitch 100 outside the joint range)');
   assert.ok(!g.PROCEDURAL_POSES.some(p => p.kind === 'mug' && p.grasp === 'handle' && p.source !== 'procedural'), 'baked handle rows replaced');
   assert.ok(g.BAKED.poses.some(p => p.kind === 'mug' && p.grasp === 'handle'), 'BAKED itself is unchanged');
 });

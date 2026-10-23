@@ -10,7 +10,7 @@
 // reference hand when recorded), pitch/bend absolute in the hand frame (the plugin's chainAngles / closure fingerChain).
 // A recorded thumb row has a 5th value, its axial twist (deg; THUMB_TWIST below): baked rows have none.
 import REFERENCE from './reference_hand.json' with { type: 'json' };
-import { handGeometry, fingerChain, closeToContact, chainGaps, REFERENCE_HAND } from './closure.js';
+import { handGeometry, fingerChain, closeToContact, chainGaps, REFERENCE_HAND, aroundOf } from './closure.js';
 import { CATALOG, signedDistance } from './catalog.js';
 import { TOUCH_MM } from './contact.js';
 import { verdict, clampRows } from './grasp_validator.js';
@@ -213,6 +213,7 @@ export function mirrorPose(pose) {
   const out = { ...pose, side: other(pose.side), wrist: [pose.wrist[0], pose.wrist[1], 0 - pose.wrist[2]], quat: qmul([-x, -y, z, w], [0, 1, 0, 0]).map(v => v + 0),
     angles: pose.angles.map(r => [...r]), open: (pose.open || DEFAULT_OPEN).map(r => [...r]), mirroredFrom: pose.id };
   if (pose.palm) out.palm = [pose.palm[0], pose.palm[1], -pose.palm[2]];
+  if (pose.axis) out.axis = { origin: [pose.axis.origin[0], pose.axis.origin[1], 0 - pose.axis.origin[2]], dir: [pose.axis.dir[0], pose.axis.dir[1], 0 - pose.axis.dir[2]] };
   if (typeof pose.id === 'string') out.id = pose.id.replace(`/${pose.side}/`, `/${out.side}/`) + '-m';
   return out;
 }
@@ -222,6 +223,7 @@ export function isPose(p) {
   return !!p && typeof p.id === 'string' && typeof p.kind === 'string' && typeof p.grasp === 'string' && (p.side === 'left' || p.side === 'right')
     && finite(p.wrist, 3) && finite(p.quat, 4) && Math.abs(Math.hypot(...p.quat) - 1) < 1e-3
     && [p.angles, p.open].every(rows => Array.isArray(rows) && rows.length === 5 && rows.every((r, i) => finite(r, 4) || (i === 0 && finite(r, 5))))
+    && (p.axis === undefined || (finite(p.axis.origin, 3) && finite(p.axis.dir, 3) && Math.hypot(...p.axis.dir) > 1e-6))
     && (p.role === undefined || p.role === 'primary' || p.role === 'secondary')
     && (p.handLength === undefined || (Number.isFinite(p.handLength) && p.handLength > 0.08 && p.handLength < 0.35));
 }
@@ -247,7 +249,6 @@ export function recordedPose(capture, { kind, grasp, mode = CATALOG[kind]?.grip 
  * and can bakes (scoreGrasp vs baked_grasps.data.json metrics). Subtracted so the palm gate means the same thing.
  */
 export const PALM_SKIN_MM = 3.0;
-const around = p => Math.atan2(p[2], p[0]);
 const separation = (a, b) => { const x = Math.abs(a - b) % (2 * Math.PI); return x > Math.PI ? 2 * Math.PI - x : x; };
 /**
  * Validator verdict + score (0..100) of a grasp on a hand (default: the reference hand of its side), the way the game
@@ -266,7 +267,7 @@ export function scoreGrasp(pose, hand = referenceHand(pose.side), shape = CATALO
   const tips = Object.fromEntries(FINGERS.map((f, i) => [f, place(fingerChain(hand.fingers[f], closed.angles[i])[3])]));
   const touch = TOUCH_MM / 1000, deepest = Math.min(...FINGERS.map(f => gaps[f].min));
   const k = hand.length / REFERENCE_HAND.length, palm = add(closed.wrist, rotate(closed.quat, scale(REFERENCE_HAND.palm, k)));
-  const ref = [(tips.Index[0] + tips.Middle[0]) / 2, 0, (tips.Index[2] + tips.Middle[2]) / 2];
+  const ref = [(tips.Index[0] + tips.Middle[0]) / 2, (tips.Index[1] + tips.Middle[1]) / 2, (tips.Index[2] + tips.Middle[2]) / 2], ar = aroundOf(pose.axis);
   const mm = v => Math.round(v * 1e5) / 100;
   const metrics = {
     penetrationMm: mm(Math.max(0, -deepest)), worstGroup: FINGERS.find(f => gaps[f].min === deepest),
@@ -274,7 +275,7 @@ export function scoreGrasp(pose, hand = referenceHand(pose.side), shape = CATALO
     tipGapMm: Object.fromEntries(FINGERS.map(f => [f, mm(gaps[f].segments[2])])),
     fingersTouching: FINGERS.slice(1).filter(f => gaps[f].segments[2] <= touch).length,
     thumbTouching: Math.min(gaps.Thumb.segments[1], gaps.Thumb.segments[2]) <= touch,
-    thumbOppositionDeg: Math.round(separation(around(tips.Thumb), around(ref)) * 1800 / Math.PI) / 10,
+    thumbOppositionDeg: Math.round(separation(ar(tips.Thumb), ar(ref)) * 1800 / Math.PI) / 10,
   };
   const v = verdict(metrics, Object.fromEntries(FINGERS.map((f, i) => [f, pose.angles[i]])), { wrap: (pose.mode ?? 'wrap') === 'wrap' });
   const score = Math.max(0, Math.round(100 - 20 * v.failures.length - 4 * v.warnings.length - Math.min(25, 2 * v.rows.cost)));

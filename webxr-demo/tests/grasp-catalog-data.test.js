@@ -8,7 +8,7 @@ import * as vendored from '../src/vendor/extensions/grasp/catalog.js';
 test('catalog data preserves historical records, kinds order and mutable export boundaries', () => {
   const values = { DEFAULT_MASS: source.DEFAULT_MASS, CATALOG: source.CATALOG };
   assert.deepEqual(DATA, { schema: 'gamesystems.grasp-catalog-data.v1', ...values });
-  // pole and barrel were appended after the extraction (two-hand items); the original five kinds are unchanged
+  // pole, barrel and ladder were appended after the extraction (two-hand items); the original five kinds are unchanged
   const original = { DEFAULT_MASS: values.DEFAULT_MASS, CATALOG: Object.fromEntries(['bottle_beer', 'bottle_wine', 'mug', 'can', 'carton'].map(k => [k, values.CATALOG[k]])) };
   // Captured before extracting the JS literals, including every profile/color/prop field.
   assert.equal(createHash('sha256').update(JSON.stringify(original)).digest('hex'),
@@ -16,7 +16,7 @@ test('catalog data preserves historical records, kinds order and mutable export 
   assert.deepEqual(vendored.CATALOG, source.CATALOG);
   assert.equal(vendored.DEFAULT_MASS, source.DEFAULT_MASS);
   for (const api of [source, vendored]) {
-    assert.deepEqual(api.KINDS, ['bottle_beer', 'bottle_wine', 'mug', 'can', 'carton', 'pole', 'barrel']);
+    assert.deepEqual(api.KINDS, ['bottle_beer', 'bottle_wine', 'mug', 'can', 'carton', 'pole', 'barrel', 'ladder']);
     assert.equal(api.entry('mug'), api.CATALOG.mug);
     assert.throws(() => api.entry('missing-prop'), /Unknown prop kind/);
     for (const object of [api.CATALOG, api.CATALOG.mug, api.CATALOG.mug.shape.parts,

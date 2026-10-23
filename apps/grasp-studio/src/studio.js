@@ -34,7 +34,8 @@ export const KIND = 'bottle_beer';
  */
 export const applyProceduralGrasps = search => setProceduralGrasps(parseProceduralGrasps(search?.get?.('proceduralgrasps')) ?? true);
 /** Grasps the studio offers per kind. The two-hand kinds (grasp two_hand.data.json) can also record a SECONDARY grip (setRole). */
-export const GRASPS = Object.freeze({ bottle_beer: ['body', 'neck'], mug: ['handle', 'top'], carton: ['side', 'face'], pole: ['grip'], barrel: ['side'] });
+// mug 'body': the embracing grip round the cup (procedural, thumb inside the joint range); ladder 'rung': one rung, two hands on different rungs.
+export const GRASPS = Object.freeze({ bottle_beer: ['body', 'neck'], mug: ['handle', 'top', 'body'], carton: ['side', 'face'], pole: ['grip'], barrel: ['side'], ladder: ['rung'] });
 /** Kinds the panel cycles through. */
 export const KINDS = Object.freeze(Object.keys(GRASPS));
 /** 'primary' | 'secondary': which hand's grip a recording is (secondary: a pose saved with role 'secondary', still a rec-<stamp> variant). */

@@ -232,6 +232,98 @@
         "radius": 0.2,
         "half": 0.28
       }
+    },
+    "ladder": {
+      "label": "Ladder",
+      "mass": 6,
+      "grip": "wrap",
+      "color": 11897903,
+      "shape": {
+        "type": "parts",
+        "parts": [
+          {
+            "type": "box",
+            "size": [
+              0.04,
+              1.5,
+              0.03
+            ],
+            "at": [
+              -0.22,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "box",
+            "size": [
+              0.04,
+              1.5,
+              0.03
+            ],
+            "at": [
+              0.22,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "radius": 0.016,
+            "half": 0.2,
+            "axis": "x",
+            "at": [
+              0,
+              -0.6,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "radius": 0.016,
+            "half": 0.2,
+            "axis": "x",
+            "at": [
+              0,
+              -0.3,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "radius": 0.016,
+            "half": 0.2,
+            "axis": "x",
+            "at": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "radius": 0.016,
+            "half": 0.2,
+            "axis": "x",
+            "at": [
+              0,
+              0.3,
+              0
+            ]
+          },
+          {
+            "type": "cylinder",
+            "radius": 0.016,
+            "half": 0.2,
+            "axis": "x",
+            "at": [
+              0,
+              0.6,
+              0
+            ]
+          }
+        ]
+      }
     }
   }
 }

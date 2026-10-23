@@ -118,7 +118,7 @@ try {
     out.back = S.studio.settings.kind;
     return out;
   });
-  check('item kinds cycle, the secondary role shows the partner hand, the weight lag switches', kinds.seen.length === 5 && kinds.role === 'secondary' && kinds.partner && kinds.lag === false && kinds.back === 'bottle_beer', kinds);
+  check('item kinds cycle, the secondary role shows the partner hand, the weight lag switches', kinds.seen.length === 6 && kinds.seen.includes('ladder') && kinds.role === 'secondary' && kinds.partner && kinds.lag === false && kinds.back === 'bottle_beer', kinds);
   // Gesture mode (step 7): the synthetic hand's still grip is captured as a hand pose and saved through /api/hand.
   await page.evaluate(() => { const a = window.__studio.actions; a.mode(); a.mode(); a['clip-name'](); a.synthetic(); a.synthetic(); });
   await page.waitForFunction('!!window.__studio.studio.review?.clip', { timeout: 60000, polling: 100 });

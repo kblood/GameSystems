@@ -258,6 +258,7 @@ export function createCharacterPlugin({ scene, renderer, character: provider, qu
         const handFx = { left: createHandFx(), right: createHandFx() };
         let auto = options.autoCalibrate !== false && options.scale == null, autoDone = false;
         let trackingPosition = null;
+        const elbowFed = { left: false, right: false };
         const floorY = Number.isFinite(options.floorY) ? options.floorY : 0;
         unsubscribe = entity.onRig(next => { solver.setRig(next); solver.reset(); });
         function calibrate(eyeHeight, explicit = true) {
@@ -318,6 +319,15 @@ export function createCharacterPlugin({ scene, renderer, character: provider, qu
             // Solver floor is zero. A known elevated floor is removed from ALL targets.
             const shift = pose => pose?.pos ? { ...pose, pos: [pose.pos[0], pose.pos[1] - floorY, pose.pos[2]] } : pose;
             const hands = { left: shift(record.hands?.left), right: shift(record.hands?.right) };
+            // Optional elbow hints (record.elbowHints[side] = { vector, weight }, e.g. grasp weight_lag's elbow): without them (and
+            // after the last one ended) this does nothing, the solve is exactly as before.
+            if (record.elbowHints || elbowFed.left || elbowFed.right) {
+              for (const sd of ['left', 'right']) {
+                const h = record.elbowHints?.[sd];
+                if (h && isVec3(h.vector)) { solver.setElbowHint(sd, h.vector, h.weight ?? 1); elbowFed[sd] = true; }
+                else if (elbowFed[sd]) { solver.setElbowHint(sd, null, 0); elbowFed[sd] = false; }
+              }
+            }
             const result = solver.solve({ head: shift(record.head), hands, fingers: fingerStates, scale }, dt);
             if (!result) return null;
             avatar.applyPose(result.pose);

@@ -47,13 +47,20 @@ export class HandView {
   }
 }
 
+/** A catalogue cylinder (axis +Y; `axis: 'x' | 'z'` lays it along that axis: a ladder rung). */
+function cylinderGeometry(p) {
+  const g = new THREE.CylinderGeometry(p.radius, p.radius, p.half * 2, 32);
+  if (p.axis === 'x') g.rotateZ(Math.PI / 2); else if (p.axis === 'z') g.rotateX(Math.PI / 2);
+  return g;
+}
+
 /** The item: the catalogue silhouette: a lathe (item origin = base centre, +Y up), or a cylinder / box / parts (origin = centre). */
 export function itemMesh(shape, { color = 0x5b3a12, opacity = 0.55, wireframe = false } = {}) {
   if (shape.type !== 'lathe') {
     const material = new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0, transparent: true, opacity, wireframe, depthWrite: !wireframe && opacity > 0.9 });
     const group = new THREE.Group();
     for (const p of shape.type === 'parts' ? shape.parts : [shape]) {
-      const geometry = p.type === 'cylinder' ? new THREE.CylinderGeometry(p.radius, p.radius, p.half * 2, 32)
+      const geometry = p.type === 'cylinder' ? cylinderGeometry(p)
         : p.type === 'lathe' ? new THREE.LatheGeometry([new THREE.Vector2(0, p.profile[0][0]), ...p.profile.map(([y, r]) => new THREE.Vector2(r, y)), new THREE.Vector2(0, p.profile.at(-1)[0])], 32)
         : new THREE.BoxGeometry(...p.size);
       const mesh = new THREE.Mesh(geometry, material); mesh.position.set(...(p.at || [0, 0, 0]));

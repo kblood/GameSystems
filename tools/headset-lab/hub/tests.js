@@ -174,6 +174,21 @@ export const GROUPS = [
         ],
       },
       {
+        id: 'contracts-lyd', title: 'Lyd i Contracts (?audio): retning, fodtrin, hænder og flasker',
+        links: [['Med lyd', '/contracts/?audio'], ['Med lyd og forsinkelse', '/contracts/?audio=delay'], ['Uden lyd (som før)', '/contracts/']],
+        check: [
+          'Tryk på Enter VR (eller klik i vinduet) først: browseren starter lyden ved første brugerhandling. Uden ?audio skal alt lyde som før.',
+          'Hører du retning: stil dig ved bordet, grib flasken med venstre hånd og slå den mod bordet. Peger lyden mod flasken, og skifter den side, når du drejer hovedet?',
+          'Hører du fodtrin på beton: gå 5-6 meter hen ad gulvet. Kommer der ét trin for hver ca. 0,7 m, ikke for højt og ikke i takt med at du står stille eller drejer på stedet?',
+          'Hører du fodtrin, når du kun bevæger hovedet fysisk (rumskala)? Stopper trinene med det samme, når du står stille?',
+          'Hænder: lyder det som hud mod glas, når du griber og slipper flasken, kruset og kartonen? Giver kartonen en pap-lyd (fold) ved grebet?',
+          'Flaske: hæld, sæt flasken hårdt ned og kast den mod gulvet. Kommer hæld-lyden fra flasken i din hånd og knusningen fra stedet, hvor den slog?',
+          'Med ?audio=delay: kast en flaske langt væk (8-10 m). Kommer lyden et øjeblik efter slaget (højst 0,25 s), og virker det naturligt, ikke forvirrende?',
+          'Pistol og vagternes lyd er uændret og stadig højest. Mærk forskel på Quest-ydelsen med og uden ?audio, og skriv billedtiden i noten.',
+          'Døre og skuffer: findes ikke i Contracts (derfor ingen knirk her).',
+        ],
+      },
+      {
         id: 'contracts-kvalitet', title: 'Ydelse pr. kvalitet',
         links: [['quality=3 (høj)', '/contracts/?quality=3'], ['quality=2', '/contracts/?quality=2'], ['quality=1', '/contracts/?quality=1'], ['quality=0', '/contracts/?quality=0'], ['høj + bottles=mid', '/contracts/?quality=3&bottles=mid']],
         check: [
@@ -196,6 +211,21 @@ export const GROUPS = [
           'Panelet i VR: «Nulstil» og «Kvalitet» virker. Hvilket niveau er flydende?',
           'Jerrycan med diesel og de andre beholdere opfører sig fornuftigt.',
           'Viskositet er valgfri: /demo/ uden flag er som før, ?viscosity=on eller ?testpanel gør huller i tykke væsker lidt langsommere (?testpanel&viscosity=off slår den fra).',
+        ],
+      },
+      {
+        id: 'demo-lyd', title: 'Lyd i demoen (?audio): retning, fodtrin, knirk og forsinkelse',
+        links: [['Med lyd', '/demo/?audio'], ['Med lyd og testpanel', '/demo/?audio&testpanel'], ['Uden lyd (som før)', '/demo/']],
+        check: [
+          'Tryk på Enter VR først (lyden starter ved første brugerhandling). Uden ?audio er alt som før.',
+          'Hører du retning: tag en flaske og slå den mod baren, gulvet og hylden. Kommer lyden fra flasken, og kan du pege på den med lukkede øjne?',
+          'Hører du retning ved brud: kast en flaske ned på gulvet 3-4 m væk og drej hovedet. Kommer knusningen fra gulvet, ikke fra dit hoved?',
+          'Hører du fodtrin på beton: gå med venstre stick eller fysisk 5-6 m over gulvet. Ét trin pr. ca. 0,7 m, lavt i lydstyrke, og ingen trin, når du står stille?',
+          'Hører du fodtrin på træ: gå hen over baren eller hylderne, hvis du kan (ellers noter, at trægulv ikke findes i demoen).',
+          'Hæld fra en holdt flaske: kommer glugge-lyden fra flasken i hånden, og følger den med, når du bevæger hånden?',
+          'Grib og slip: hud-mod-glas-lyd ved flasken (ikke i hovedet). Tabt pistol: metalklang ved gulvet.',
+          'Knirk (dør/skuffe): demoen har ingen dør med hængsel på hovedsiden (kun brand-laboratoriet); noter om du savner det.',
+          'Med ?audio og testpanelet: aflæs frame-tiden med og uden lyd og skriv den i noten.',
         ],
       },
     ],
@@ -221,6 +251,17 @@ export const GROUPS = [
           'Grib dåsen: forventes at virke.',
           'Grib kruset og kartonen: kendte fejl (krus: tommelen rører ikke; karton: håndleddet bøjet ca. 95°). Se om det er så slemt som forventet.',
           'Med ?proceduralgrasps=on (valgfrit): grib kruset i hanken og kartonen i siderne, og tag den ekstra stang og tønde på bordet. Er det bedre end standarden? Uden flaget skal alt være som før (ingen stang eller tønde på bordet).',
+        ],
+      },
+      {
+        id: 'studio-stige', title: 'Stige, krus-krop, albue-hint og ?twohand-advarsel',
+        links: [['Grasp Studio', '/studio/'], ['Contracts: stige + to-hånds + vægt', '/contracts/?twohand=on&proceduralgrasps=on&weightlag=on'], ['Contracts: ?twohand alene (advarsel)', '/contracts/?twohand=on']],
+        check: [
+          'Contracts ?twohand=on ALENE: en toast/statuslinje siger at stang og tønde mangler greb (kræver &proceduralgrasps=on). Med begge flag er beskeden væk.',
+          'Med begge flag: grib stigen (ved -0.62, 6.55, på gulvet) med højre hånd på ét trin og venstre på et ANDET trin. Ligger fingrene rundt om trinnet, og retter stigen sig mellem hænderne?',
+          'Grib kruset i KROPPEN: tommelen skal opponere uden at knække. Uden ?proceduralgrasps=on skal kruset være som før.',
+          'Med ?weightlag=on (kvalitet høj/mellem): løft tønden. Albuen bøjer en anelse (højst få cm); intet ryk, ingen kvalme. Kvalitet lav: kun håndens synk, ingen albue.',
+          'Studio: «Genstand» til ladder og mug (gruppe body via «Hals»); optag og gem som før.',
         ],
       },
       {

@@ -36,6 +36,12 @@
       "secondary": "top",
       "minSeparation": 0.05,
       "reference": "first"
+    },
+    "ladder": {
+      "primary": "rung",
+      "secondary": "rung",
+      "minSeparation": 0.25,
+      "reference": "first"
     }
   }
 }

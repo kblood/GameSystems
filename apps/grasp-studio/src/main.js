@@ -69,7 +69,8 @@ function buildItems() {
 }
 /** Height above the item origin for the badge. */
 function itemTop(shape) {
-  if (shape.type === 'lathe' || shape.type === 'parts') return shape.type === 'lathe' ? 0.34 : 0.25;
+  if (shape.type === 'lathe') return 0.34;
+  if (shape.type === 'parts') return Math.max(0.25, ...shape.parts.map(p => (p.at?.[1] ?? 0) + (p.type === 'box' ? p.size[1] / 2 : p.axis ? p.radius : p.half) + 0.1));   // mug 0.25; a ladder reaches higher
   return (shape.type === 'cylinder' ? shape.half : shape.size[1] / 2) + 0.1;
 }
 const userHands = { left: new HandView(scene), right: new HandView(scene) };
@@ -286,7 +287,8 @@ const actions = {
   'side-right': () => { studio.setSide('right'); variantAt = -1; say('Optager højre hånd.'); },
   'side-left': () => { studio.setSide('left'); variantAt = -1; say('Optager venstre hånd.'); },
   'grasp-body': () => { studio.setGrasp(GRASPS[studio.settings.kind][0]); variantAt = -1; say(`Greb: ${studio.settings.grasp}.`); },
-  'grasp-neck': () => { const g = GRASPS[studio.settings.kind][1]; if (!g) return; studio.setGrasp(g); variantAt = -1; say(`Greb: ${g}.`); },
+  // second grasp button: groups 1.. of the kind (a kind with three groups, the mug: top, then body, then top again)
+  'grasp-neck': () => { const list = GRASPS[studio.settings.kind], i = list.indexOf(studio.settings.grasp), g = list[1] && (i >= 1 ? list[1 + (i % (list.length - 1))] : list[1]); if (!g) return; studio.setGrasp(g); variantAt = -1; say(`Greb: ${g}.`); },
   kind: () => {
     const next = KINDS[(KINDS.indexOf(studio.settings.kind) + 1) % KINDS.length];
     studio.setKind(next); buildItems(); variantAt = -1;
@@ -360,7 +362,7 @@ function panelButtons() {
     { id: 'side-right', label: 'Højre hånd', row: 0, col: 0, active: s.side === 'right' },
     { id: 'side-left', label: 'Venstre hånd', row: 0, col: 1, active: s.side === 'left' },
     { id: 'grasp-body', label: GRASPS[s.kind][0], row: 0, col: 2, active: s.grasp === GRASPS[s.kind][0] },
-    { id: 'grasp-neck', label: GRASPS[s.kind][1] ?? '-', row: 0, col: 3, active: s.grasp === GRASPS[s.kind][1], disabled: !GRASPS[s.kind][1] },
+    { id: 'grasp-neck', label: GRASPS[s.kind].indexOf(s.grasp) >= 1 ? s.grasp : GRASPS[s.kind][1] ?? '-', row: 0, col: 3, active: GRASPS[s.kind].indexOf(s.grasp) >= 1, disabled: !GRASPS[s.kind][1] },
     { id: 'save', label: 'Gem', row: 1, col: 0, disabled: !review },
     { id: 'save-default', label: 'Gem som foretrukken', row: 1, col: 1, cols: 2, disabled: !review || handMode },
     { id: 'discard', label: 'Kassér', row: 1, col: 3, disabled: !review },
@@ -379,7 +381,7 @@ function panelButtons() {
     { id: 'ghost-raw', label: 'Rå: ' + (showRaw ? 'til' : 'fra'), row: 5, col: 3, active: showRaw, disabled: handMode },
   ];
 }
-const twoHandKind = () => !!studio.live?.partner || ['mug', 'carton', 'pole', 'barrel'].includes(studio.settings.kind);
+const twoHandKind = () => !!studio.live?.partner || ['mug', 'carton', 'pole', 'barrel', 'ladder'].includes(studio.settings.kind);
 function avatarButtons() {
   if (avatarView === 'twin' || !twin) return [];
   return [

@@ -20,7 +20,7 @@ export {
 } from './baked_grasps.js';
 export {
   THUMB_TILT, PAD_RADIUS, REFERENCE_HAND, CLOSURE, handGeometry, handFromRig, fingerChain, placeWrist, closeToContact, chainGaps,
-  HAND_PROFILE_FORMAT, isHandProfile, profileFromRest, palmAnchor, placePalm, gradeGrasp, SEARCH,
+  HAND_PROFILE_FORMAT, isHandProfile, profileFromRest, palmAnchor, placePalm, gradeGrasp, SEARCH, aroundOf,
 } from './closure.js';
 export {
   RECORDED_SCHEMA, DEFAULT_OPEN, XR_CHAINS, XR_JOINTS, quatFromBasis, handBasis, handLengthFromJoints, restFromJoints, rowsFromJoints,
@@ -39,7 +39,7 @@ export {
   GLASS_BREAK_CONTACT_SPEED, RELEASE_SPEED_CAP, RELEASE_SPIN_CAP, createThrowHistory, pushSample, releaseVelocity, sampleFromPoses,
 } from './throw_release.js';
 export * as weightLag from './weight_lag.js';
-export { WEIGHT_LAG, parseWeightLag, weightLagMode, massWeight, maxOffset, sagOf, softLimit, lagTarget, createWeightLag } from './weight_lag.js';
+export { WEIGHT_LAG, parseWeightLag, weightLagMode, massWeight, maxOffset, sagOf, softLimit, lagTarget, createWeightLag, elbowHintOf } from './weight_lag.js';
 export {
   TWO_HAND, ITEMS as TWO_HAND_ITEMS, twoHandSpec, isTwoHanded, gripPoint, gripSeparation, pickSecondary, secondaryPoses, handCapsules, segmentDistance,
   handsClearance, handsClear, arcQuat, quatAngleOf, limitedSwing, offsetOf, controllerPointOf, solveTwoHand, stepBlend, secondaryHeld, releasedTogether,

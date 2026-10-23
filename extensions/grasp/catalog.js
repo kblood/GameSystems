@@ -3,7 +3,7 @@
 //
 // Shapes:
 //   lathe    profile [[y, radius], ...] around +Y (bottles, can)
-//   cylinder {radius, half} centred at the origin
+//   cylinder {radius, half} centred at the origin (optional axis: 'x' | 'z', the cylinder then runs along that axis instead of +Y: a ladder rung)
 //   box      {size:[x,y,z]} centred at the origin
 //   parts    union of the above with an `at` offset (mug: body + handle)
 // Bottle profiles are the GameSystems bottle_beer/bottle_wine glass silhouettes (MIT, Kasper Olesen),
@@ -35,7 +35,9 @@ function primitiveDistance(s, p) {
     return outside + Math.min(Math.max(q[0], q[1], q[2]), 0);
   }
   if (s.type === 'cylinder') {
-    const d = [Math.hypot(x, z) - s.radius, Math.abs(y) - s.half];
+    // axis 'x' / 'z': swap that axis into the +Y slot (a rigid permutation, distances are unchanged); no axis: as before
+    const [u, v, w] = s.axis === 'x' ? [y, x, z] : s.axis === 'z' ? [x, z, y] : [x, y, z];
+    const d = [Math.hypot(u, w) - s.radius, Math.abs(v) - s.half];
     return Math.min(Math.max(d[0], d[1]), 0) + Math.hypot(Math.max(d[0], 0), Math.max(d[1], 0));
   }
   if (s.type === 'lathe') {
@@ -74,7 +76,13 @@ function boxCorners(size, at = [0, 0, 0]) {
 export function hullPoints(shape, segments = 16) {
   if (shape.type === 'parts') return shape.parts.flatMap(s => hullPoints({ ...s, at: s.at }, segments));
   if (shape.type === 'box') return boxCorners(shape.size, shape.at);
-  if (shape.type === 'cylinder') return [...ring(-shape.half, shape.radius, segments, shape.at), ...ring(shape.half, shape.radius, segments, shape.at)];
+  if (shape.type === 'cylinder') {
+    if (shape.axis === 'x' || shape.axis === 'z') {
+      const at = shape.at || [0, 0, 0], pts = [...ring(-shape.half, shape.radius, segments), ...ring(shape.half, shape.radius, segments)];
+      return pts.map(([a, b, c]) => (shape.axis === 'x' ? [b + at[0], a + at[1], c + at[2]] : [a + at[0], c + at[1], b + at[2]]));
+    }
+    return [...ring(-shape.half, shape.radius, segments, shape.at), ...ring(shape.half, shape.radius, segments, shape.at)];
+  }
   if (shape.type === 'lathe') {
     // Keep the outermost silhouette: base, widest body ends, shoulder and top.
     const pr = shape.profile, rows = [pr[0], ...pr.filter((row, i) => i > 0 && i < pr.length - 1 && (row[1] >= pr[i - 1][1] || row[1] >= pr[i + 1][1])), pr.at(-1)];
@@ -91,7 +99,8 @@ export function massProperties(shape, mass) {
     if (s.type === 'box') {
       const [a, b, c] = s.size; pieces.push({ v: a * b * c, c: at, i: [(b * b + c * c) / 12, (a * a + c * c) / 12, (a * a + b * b) / 12] });
     } else if (s.type === 'cylinder') {
-      const r = s.radius, h = 2 * s.half; pieces.push({ v: Math.PI * r * r * h, c: at, i: [(3 * r * r + h * h) / 12, r * r / 2, (3 * r * r + h * h) / 12] });
+      const r = s.radius, h = 2 * s.half; const t = (3 * r * r + h * h) / 12;
+      pieces.push({ v: Math.PI * r * r * h, c: at, i: s.axis === 'x' ? [r * r / 2, t, t] : s.axis === 'z' ? [t, t, r * r / 2] : [t, r * r / 2, t] });
     } else if (s.type === 'lathe') {
       const pr = s.profile, n = 64, y0 = pr[0][0], y1 = pr.at(-1)[0], dy = (y1 - y0) / n;
       for (let k = 0; k < n; k++) {

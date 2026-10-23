@@ -73,6 +73,18 @@ export function lagTarget({ error = [0, 0, 0], mass, hands = 1, up = [0, 1, 0] }
 }
 
 /**
+ * The elbow part of an update() result as an elbow hint for the avatar (avatar/vrik.js setElbowHint; the avatar plugin reads
+ * `record.elbowHints[side] = { vector, weight }`): null unless the lag is active at tier mid / medium / high (mode 'elbow') and
+ * the elbow moved at all. The vector is world metres; VRIK clamps it to its own limit (elbowHintMax, 3 cm) and eases it, so
+ * this adds no jitter and no NaN (a non-finite result gives null).
+ */
+export function elbowHintOf(result) {
+  const e = result?.elbow;
+  if (!result?.active || !finite3(e) || len(e) < 1e-6) return null;
+  return { vector: [e[0], e[1], e[2]], weight: 1 };
+}
+
+/**
  * A weight-lag follower for one hand. update() returns { offset, elbow, effort, active }:
  *   offset  metres to add to the SHOWN wrist (world), smoothed and soft-limited (|offset| < maxOffset(mass));
  *   elbow   metres to add to an elbow hint (tier medium / high only, else zero): follows the offset and sinks;

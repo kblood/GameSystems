@@ -49,6 +49,9 @@ export const VRIK_DEFAULTS = {
   headBack: 0.0,             // extra metres the head joint sits behind the eyes (tuning)
   elbowMinInterior: 28 * D, kneeMinInterior: 30 * D,
   poleTau: 0.07,
+  elbowHintMax: 0.03,        // m (world): the largest elbow bias setElbowHint can ask for (|hint| is clamped to this)
+  elbowHintTau: 0.12,        // s, the applied hint eases in/out with this time constant (dt independent)
+  elbowHintLever: 0.2,       // arm lengths: lever arm that turns a wanted elbow shift into a pole-vector bias
   forearmTwist: 0.6,         // share of the hand's twist (relative to the forearm) taken by the forearm
   twistMax: 160 * D,         // unwrapped hand twist is clamped to +-this (no 360 deg wrap flips)
   armScale: 1,               // proportional arm mode: hand targets scaled about the shoulder (1 = hand-match)
@@ -78,6 +81,8 @@ export const VRIK_DEFAULTS = {
 };
 
 const newVec = () => [0, 0, 0];
+/** Optional elbow bias of one arm (setElbowHint): target world delta + weight, and the eased delta in the yaw frame. `on` false = never touched (bit-identical solve). */
+function newHint() { return { on: false, w: 0, v: newVec(), cur: newVec(), out: newVec() }; }
 function newArmInfo() { return { reach: 0, clamped: false, target: newVec(), tracked: false, weight: 0, push: 0, drift: 0, held: false }; }
 
 /**
@@ -107,6 +112,7 @@ export function createVRIK(rig, opts = {}) {
     prevHt: newVec(), hasPrev: false, vel: [0, 0], vy: 0,
     loco: createLocomotion(rig, o.locomotion),
     pole: { left: newVec(), right: newVec() }, hasPole: { left: false, right: false },
+    hint: { left: newHint(), right: newHint() }, hintMid: newVec(),
     handW: { left: 0, right: 0 }, lostT: { left: 0, right: 0 },
     lastHand: { left: { pos: newVec(), quat: [0, 0, 0, 1], ok: false }, right: { pos: newVec(), quat: [0, 0, 0, 1], ok: false } },
     tw: { left: 0, right: 0 }, twU: { left: 0, right: 0 }, twFresh: { left: true, right: true }, prevSh: { left: newVec(), right: newVec() }, hasSh: false,
@@ -125,13 +131,24 @@ export function createVRIK(rig, opts = {}) {
     /** Forget everything that depends on the previous frames (new session, recalibration, teleport). */
     reset: () => {
       st.psi = null; st.hasPrev = false; st.vel[0] = st.vel[1] = 0; st.vy = 0; st.loco.initialised = false;
-      st.hasPole.left = st.hasPole.right = false; st.air = 'ground'; st.airT = 0; st.aw = 0; st.mw = 0; st.moving = false;
+      st.hasPole.left = st.hasPole.right = false; resetHints(st); st.air = 'ground'; st.airT = 0; st.aw = 0; st.mw = 0; st.moving = false;
       st.hasSh = false; st.hasStandRef = false; st.sitT = 0; st.sitW = 0; st.tw.left = st.tw.right = 0; st.twU.left = st.twU.right = 0; st.twFresh.left = st.twFresh.right = true; st.drop = 0;
       for (const sd of SIDES) { st.lastHand[sd].ok = false; st.lostT[sd] = 0; }
       for (const l of st.lock) { l.on = false; l.w = 0; }
       st.frames = 0;
     },
     setRig: r => { setupRig(st, r); st.psi = null; },
+    /**
+     * Soft elbow bias (opt-in; nothing changes until it is called): ask the elbow of `side` ('left' | 'right') to sit
+     * `vector` metres (world delta, e.g. weight_lag's `elbow`) off where the solve puts it, scaled by `weight` (0..1).
+     * It biases the elbow's POLE vector (the hand target and the arm lengths are untouched), clamped to
+     * options.elbowHintMax (3 cm), eased with options.elbowHintTau (dt independent), only the part perpendicular to the
+     * shoulder -> wrist axis counts. null / a non-finite vector / weight 0 fades it out; once faded the solve is bit-identical
+     * to one that never saw a hint. Returns true when accepted.
+     */
+    setElbowHint: (side, vector, weight = 1) => setElbowHint(st, side, vector, weight),
+    /** The elbow hint currently applied to `side` (world metres; zero when none). */
+    elbowHint: side => (st.hint[side]?.on ? [...st.hint[side].out] : [0, 0, 0]),
     /** Torso profile for the hand collision: { male: 0..1, bust: m }. */
     setBody: b => { Object.assign(o.body, b); st.torso = buildTorso(st.rig, o.body); },
     /** (Re)build the clip tables now (otherwise built lazily while standing, ~0.5 s after a body change). */
@@ -163,6 +180,17 @@ function buildClips(st) {
 }
 
 // ---- pooled frame helpers ----
+function resetHints(st) { for (const sd of SIDES) { const h = st.hint[sd]; h.on = false; h.w = 0; M.set3(h.v, X0); M.set3(h.cur, X0); M.set3(h.out, X0); } }
+function setElbowHint(st, side, vector, weight) {
+  const h = st.hint[side];
+  if (!h) return false;
+  const ok = Array.isArray(vector) && vector.length >= 3 && Number.isFinite(vector[0]) && Number.isFinite(vector[1]) && Number.isFinite(vector[2]);
+  const w = Number.isFinite(weight) ? M.clamp(weight, 0, 1) : 0;
+  if (!ok || w <= 0) { h.w = 0; return ok || vector == null; }       // fade out (h.on stays until the eased value is gone)
+  const l = Math.hypot(vector[0], vector[1], vector[2]), cap = st.o.elbowHintMax, k = l > cap ? cap / l : 1;
+  M.set3(h.v, [vector[0] * k, vector[1] * k, vector[2] * k]); h.w = w; h.on = true;
+  return true;
+}
 const toY = (psi, s, p) => M.qRotate(M.ry(-psi), M.v3(p[0] / s, p[1] / s, p[2] / s));
 const qToY = (psi, q) => M.qMul(M.ry(-psi), q);
 
@@ -632,10 +660,40 @@ function solve(st, input, dt) {
     let pole = M.qRotate(Duc, M.vNorm(pc));
     if (st.hasPole[sd] && dt > 0) pole = M.vNorm(M.vLerp(st.pole[sd], pole, M.lp(dt, o.poleTau)));
     M.set3(st.pole[sd], pole); st.hasPole[sd] = true;
+    // optional elbow hint (setElbowHint): bias the pole used for THIS solve, the stored (low-passed) pole stays the plain one
+    const hint = st.hint[sd], pole0 = pole;
+    let hinted = false;
+    if (hint.on) {
+      const tv = hint.w > 0 ? toY(psi, s, hint.v) : X0, k = M.lp(dt, o.elbowHintTau), cap = o.elbowHintMax / s;
+      for (let c = 0; c < 3; c++) hint.cur[c] += (tv[c] * hint.w - hint.cur[c]) * k;
+      const hl = M.vLen(hint.cur);
+      if (hl > cap) { const kc = cap / hl; hint.cur[0] *= kc; hint.cur[1] *= kc; hint.cur[2] *= kc; }
+      M.set3(hint.out, M.vScale(M.qRotate(M.ry(psi), hint.cur), s));
+      if (hint.w <= 0 && hl < 1e-7) { hint.on = false; M.set3(hint.cur, X0); M.set3(hint.out, X0); }
+      else if (hl > 1e-9 && Number.isFinite(hl)) {
+        const u = M.vNorm(M.vSub(tPos, A)), along = M.vDot(hint.cur, u);
+        const perp = M.v3(hint.cur[0] - u[0] * along, hint.cur[1] - u[1] * along, hint.cur[2] - u[2] * along), lever = o.elbowHintLever * rig.armLength;
+        const biased = M.vNorm(M.vAdd(pole, M.vScale(perp, 1 / lever)));
+        if (M.vLen(biased) > 0.5) { pole = biased; hinted = true; }
+      }
+    }
 
     const a1 = rig.len[ua], b1 = rig.len[la];
     const minD = Math.sqrt(a1 * a1 + b1 * b1 - 2 * a1 * b1 * Math.cos(o.elbowMinInterior));
-    let r = solveTwoBoneInto(st.tb, A, tPos, a1, b1, pole, M.qRotate(Duc, M.v3(sgn, -1, 0)), minD);
+    const bendHint = M.qRotate(Duc, M.v3(sgn, -1, 0));
+    let r = solveTwoBoneInto(st.tb, A, tPos, a1, b1, pole, bendHint, minD);
+    if (hinted) {
+      // the elbow may move at most elbowHintMax (world) from where the plain pole puts it: measure and scale the bias down if needed
+      const r0 = solveTwoBoneInto(st.tb2, A, tPos, a1, b1, pole0, bendHint, minD), cap = o.elbowHintMax / s;
+      M.set3(st.hintMid, r0.mid);
+      for (let it = 0; it < 3; it++) {
+        const dist = M.vDist(r.mid, st.hintMid);
+        if (!(dist > cap)) break;
+        const kk = 0.98 * cap / dist;
+        pole = M.vNorm(M.vAdd(pole0, M.vScale(M.vSub(pole, pole0), kk)));
+        r = solveTwoBoneInto(st.tb, A, tPos, a1, b1, pole, bendHint, minD);
+      }
+    }
     // torso avoidance: if the elbow ends up inside the torso, swing it about the shoulder->wrist axis
     // (both ways, 10 deg steps) to the nearest outside position
     if (o.collision && insideTorso(st.torso, H, W, P, r.mid, o.elbowRadius)) {

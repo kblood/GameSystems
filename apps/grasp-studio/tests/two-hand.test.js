@@ -107,3 +107,13 @@ test('store: a secondary variant passes save validation; a bad role is refused',
   assert.equal(doc.poses.at(-1).role, 'secondary');
   assert.throws(() => applyAction(emptyLibrary(), { action: 'save', poses: [{ ...rec, role: 'third' }] }), /invalid pose/);
 });
+
+test('ladder and mug body: ladder is a studio kind (rung group, two-hand), the mug has a body group; both have procedural default poses', () => {
+  assert.ok(KINDS.includes('ladder') && GRASPS.ladder.join() === 'rung');
+  assert.deepEqual(GRASPS.mug, ['handle', 'top', 'body']);
+  const s = createStudio({});
+  s.setKind('ladder'); assert.equal(s.settings.grasp, 'rung'); s.setRole('secondary'); assert.equal(s.settings.role, 'secondary');
+  s.setKind('mug'); s.setGrasp('body'); assert.equal(s.settings.grasp, 'body'); assert.equal(s.settings.role, 'primary');
+  const body = defaultPose('mug', 'right', 'body'); assert.ok(body && body.angles[0][1] <= 65, 'body thumb pitch inside the joint limit');
+  assert.ok(defaultPose('ladder', 'right', 'rung').axis, 'ladder poses carry their rung axis');
+});
