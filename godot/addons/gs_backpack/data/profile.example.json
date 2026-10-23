@@ -1,0 +1,22 @@
+{
+  "schema": "gamesystems.backpack-profile.v1",
+  "id": "field_pack",
+  "displayName": "Field pack (example, Nightfall-like measurements)",
+  "detachable": true,
+  "lossPolicy": "never",
+  "dominantHand": "right",
+  "handle": { "local": [0.0, 0.10, 0.20], "reachM": 0.16 },
+  "donZone": { "local": [0.0, 0.10, 0.20] },
+  "recall": { "seated": true },
+  "mass": { "emptyKg": 1.2 },
+  "thresholds": {},
+  "pockets": [
+    { "id": "main_tool",   "container": "bag",  "access": "open", "categories": ["tool", "medical"],   "maxSize": [0.30, 0.15, 0.10], "capacity": 2 },
+    { "id": "main_supply", "container": "bag",  "access": "open", "categories": ["supply", "medical"], "maxSize": [0.25, 0.15, 0.12], "capacity": 3 },
+    { "id": "main_case",   "container": "bag",  "access": "open", "categories": ["supply", "medical"], "maxSize": [0.30, 0.20, 0.10], "capacity": 1 },
+    { "id": "side_pouch",  "container": "bag",  "access": "worn", "categories": ["tool", "supply"],    "maxSize": [0.15, 0.10, 0.08], "capacity": 1 },
+    { "id": "left_hip",    "container": "body", "access": "always", "categories": ["tool", "medical", "pistol", "magazine"], "maxSize": [0.30, 0.20, 0.08], "capacity": 1 },
+    { "id": "right_hip",   "container": "body", "access": "always", "categories": ["tool", "medical", "pistol", "magazine"], "maxSize": [0.30, 0.20, 0.08], "capacity": 1 },
+    { "id": "back_long",   "container": "body", "access": "always", "categories": ["tool", "medical", "long_gun"], "maxSize": [1.00, 0.25, 0.10], "capacity": 1 }
+  ]
+}

@@ -14,7 +14,7 @@ const root = fileURLToPath(new URL('../../extensions/', import.meta.url));
 /** Extensions an extension's runtime may import (its public API or a named file). Every extension folder is listed. */
 const DEPS = {
   ai: [],
-  acoustics: ['host'], audio: ['host'], adapters: ['host'], alarms: ['host'], avatar: ['humanoid'], bottles: ['host'], cameras: ['host'],
+  acoustics: ['host'], audio: ['host'], adapters: ['host'], alarms: ['host'], avatar: ['humanoid'], backpack: ['host'], bottles: ['host'], cameras: ['host'],
   'character-cc': ['humanoid'], 'character-vrm': ['humanoid'], checkpoint: ['host', 'supply'], coatings: ['host'],
   electricity: ['host'], flow: ['host'], gore: ['host', 'humanoid'], grasp: [], hitreact: ['humanoid'], host: [], humanoid: [], materials: ['host'], mechanics: ['host'],
   missions: ['host'], 'pool-interest': ['host', 'pools'], pools: ['host', 'thermal'], smoke: ['host'], sprinklers: ['host'],
@@ -23,7 +23,7 @@ const DEPS = {
 /** Packages beyond three (three and three/addons/* are allowed everywhere except PURE). */
 const PACKAGES = { adapters: ['cannon-es'], 'character-vrm': ['@pixiv/three-vrm'] };
 /** Extensions that must stay engine-free: no three.js import at all. */
-const PURE = ['humanoid', 'grasp', 'host', 'ai', 'hitreact', 'audio'];
+const PURE = ['humanoid', 'grasp', 'host', 'ai', 'hitreact', 'audio', 'backpack'];
 
 const extensions = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name).sort();
 

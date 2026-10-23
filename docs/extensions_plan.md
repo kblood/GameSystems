@@ -668,6 +668,12 @@ karakterens hvile-rig, verdensstørrelse = × `restHand().scale`):
   Opt-in: demoen `?audio`; bottles' `audio`-option kan bruge `createBottleAudioAdapter`. Se [audio_system.md](audio_system.md).
 - Åbent: Quest (HRTF, AudioContext-unlock, pris), Contracts-kobling (`interaction/grab.js`) ikke lavet.
 
+### Backpack (`backpack`) — P0/P1 kode færdig (2026-10-24)
+
+- Ny ren extension `extensions/backpack` (profil, tilstandsmaskine, container-ledger, approach/pull-porte, adapter-interfaces, JSON-kontrakt) og additiv Godot-læser i
+  `godot/addons/gs_backpack`. 89 golden-vektorer giver identiske resultater i node og Godot headless. Rygsækken kan aldrig gå tabt. Se [backpack_system_design.md](backpack_system_design.md) afsnit 8.
+- Åbent: Godot-ledger (P2), Nightfall-mounts (P3), gameplay og headset-test.
+
 ## Afklaringer og risici
 
 - **Contracts `AGENTS.md`** siger "standalone game" og "character logic stays in packages/character-plugin". Brugeren har

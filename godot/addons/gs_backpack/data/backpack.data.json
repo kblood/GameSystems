@@ -1,0 +1,58 @@
+{
+  "schema": "gamesystems.backpack-data.v1",
+  "sources": {
+    "APPROACH": "godot/addons/gs_backpack/gs_backpack_approach.gd:7-20 (all values copied verbatim; BOUNDARY_EPSILON too)",
+    "PULL": "godot/addons/gs_backpack/gs_backpack_handle_pull.gd:6-8 (PULL_DEADZONE_M, MAX_PULL_M, FOLLOW_RATE) and NightfallContractsGodot/runtime/backpack_rig.gd:20 (HANDLE_REACH_M, 0.16 m, read only)",
+    "STATE": "docs/backpack_system_design.md 3.2: releaseOffsetM 0.18, releaseHoldS 0.15, trackingGraceS 1.0-1.5 (1.25 chosen = APPROACH_LIFETIME_S), donDwellS 0.5, openAccessFraction 0.95 (backpack_rig.gd:27 COMPARTMENT_OPEN_ACCESS_FRACTION), closeAccessFraction 0.90 (backpack_rig.gd:28). The rest are design estimates, not measured on hardware: releaseSpeedMps, returnDurationS, openDurationS, donEnterM, donExitM, autoReturnDistanceM",
+    "TIERS": "docs/backpack_system_design.md 3.4 tier table; physical items only in 'high' (user decision 3)"
+  },
+  "APPROACH": {
+    "MAX_SAMPLE_DT": 0.15,
+    "MAX_SAMPLE_JUMP_M": 0.30,
+    "APPROACH_LIFETIME_S": 1.25,
+    "ENTRY_SIDE_MIN_M": 0.08,
+    "SIDE_MAX_M": 0.50,
+    "ENTRY_HEIGHT_TOLERANCE_M": 0.02,
+    "ENTRY_FRONT_M": -0.22,
+    "ENTRY_BACK_M": 0.08,
+    "RETRIEVE_BACK_MIN_M": 0.10,
+    "RETRIEVE_BELOW_SHOULDER_M": 0.35,
+    "CENTRE_CROSS_TOLERANCE_M": 0.04,
+    "MIN_PROGRESS_M": 0.08,
+    "PATH_SHOULDER_CLEARANCE_M": 0.05,
+    "BOUNDARY_EPSILON": 0.000001,
+    "ENTRY_ABOVE_SHOULDER_M": 0.35
+  },
+  "PULL": {
+    "PULL_DEADZONE_M": 0.035,
+    "MAX_PULL_M": 0.20,
+    "FOLLOW_RATE": 14.0,
+    "HANDLE_REACH_M": 0.16,
+    "SETTLE_EPSILON_M": 0.001
+  },
+  "STATE": {
+    "releaseOffsetM": 0.18,
+    "releaseHoldS": 0.15,
+    "releaseSpeedMps": 1.0,
+    "trackingGraceS": 1.25,
+    "returnDurationS": 0.6,
+    "openDurationS": 0.5,
+    "openAccessFraction": 0.95,
+    "closeAccessFraction": 0.90,
+    "donDwellS": 0.5,
+    "donEnterM": 0.25,
+    "donExitM": 0.35,
+    "autoReturnDistanceM": 8.0,
+    "maxStepS": 0.5
+  },
+  "TIER_NAMES": ["off", "minimal", "low", "medium", "high"],
+  "TIERS": {
+    "off":     { "enabled": false, "pull": false, "detach": false, "open": false, "twoHand": false, "weightLag": false, "elbowHint": false, "proxyItems": false, "physicalItems": false, "physicalItemsMax": 0 },
+    "minimal": { "enabled": true,  "pull": true,  "detach": false, "open": false, "twoHand": false, "weightLag": false, "elbowHint": false, "proxyItems": false, "physicalItems": false, "physicalItemsMax": 0 },
+    "low":     { "enabled": true,  "pull": true,  "detach": true,  "open": true,  "twoHand": false, "weightLag": false, "elbowHint": false, "proxyItems": false, "physicalItems": false, "physicalItemsMax": 0 },
+    "medium":  { "enabled": true,  "pull": true,  "detach": true,  "open": true,  "twoHand": true,  "weightLag": true,  "elbowHint": true,  "proxyItems": true,  "physicalItems": false, "physicalItemsMax": 0 },
+    "high":    { "enabled": true,  "pull": true,  "detach": true,  "open": true,  "twoHand": true,  "weightLag": true,  "elbowHint": true,  "proxyItems": true,  "physicalItems": true,  "physicalItemsMax": 8 }
+  },
+  "STATES": ["WORN", "DRAWING", "HELD_CLOSED", "HELD_OPEN", "PLACED", "RETURNING"],
+  "REJECT_REASONS": ["FULL", "WRONG_ITEM", "TOO_LARGE", "INVALID_SIZE", "UNKNOWN_ITEM", "UNKNOWN_POCKET", "NOT_OWNED", "NOT_ACCESSIBLE", "PROVIDER_REJECTED", "EMPTY", "NOT_FOUND"]
+}

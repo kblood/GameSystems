@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gamesystems.backpack-profile.v1",
+  "title": "BackpackProfile",
+  "description": "Data contract read by extensions/backpack/profile.js (JS) and godot/addons/gs_backpack/gs_backpack_profile.gd. Frame: the same body-local frame as GSBackpackApproach (+X wearer's right, +Z behind, metres). lossPolicy has exactly one legal value: the pack can never be lost. Mounts (container 'body') stay on the body when the bag is off.",
+  "type": "object",
+  "required": ["schema", "id", "detachable", "lossPolicy", "dominantHand", "handle", "pockets"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "gamesystems.backpack-profile.v1" },
+    "id": { "type": "string", "minLength": 1 },
+    "displayName": { "type": "string" },
+    "detachable": { "type": "boolean" },
+    "lossPolicy": { "enum": ["never"] },
+    "dominantHand": { "enum": ["left", "right"] },
+    "handle": {
+      "type": "object", "required": ["local"], "additionalProperties": false,
+      "properties": { "local": { "$ref": "#/$defs/vec3" }, "reachM": { "type": "number", "exclusiveMinimum": 0 } }
+    },
+    "donZone": { "type": "object", "required": ["local"], "additionalProperties": false, "properties": { "local": { "$ref": "#/$defs/vec3" } } },
+    "recall": { "type": "object", "additionalProperties": false, "properties": { "seated": { "type": "boolean" } } },
+    "mass": { "type": "object", "additionalProperties": false, "properties": { "emptyKg": { "type": "number", "minimum": 0 } } },
+    "thresholds": {
+      "type": "object",
+      "description": "Optional overrides of data.STATE keys (backpack.data.json). Unknown keys are rejected.",
+      "additionalProperties": { "type": "number" }
+    },
+    "tiers": {
+      "type": "object",
+      "description": "Optional per-tier flag overrides (keys of data.TIERS). physicalItems may only be true on 'high'.",
+      "propertyNames": { "enum": ["off", "minimal", "low", "medium", "high"] },
+      "additionalProperties": { "type": "object" }
+    },
+    "pockets": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "required": ["id", "container", "access", "categories", "maxSize", "capacity"], "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "container": { "enum": ["bag", "body"] },
+          "access": { "enum": ["always", "worn", "open"], "description": "always: reachable in every state (body mounts). worn: reachable while the bag is WORN, or open. open: only while the bag is HELD_OPEN or an open PLACED bag." },
+          "categories": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+          "maxSize": { "$ref": "#/$defs/vec3pos" },
+          "capacity": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "vec3": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number" } },
+    "vec3pos": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number", "exclusiveMinimum": 0 } }
+  }
+}
