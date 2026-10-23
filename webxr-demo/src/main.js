@@ -134,12 +134,19 @@ async function reset() {
   await populate(token);
 }
 
-let audioAdapter = null;
+let audioAdapter = null, footsteps = null;
+const floorRay = new THREE.Raycaster(), floorFrom = new THREE.Vector3(), floorDown = new THREE.Vector3(0, -1, 0), headPos = new THREE.Vector3();
+/** Floor material under (x, z) from the level boxes' surface tag (the demo floor is concrete, the bar and shelves wood); concrete when unknown. */
+function floorSurface(x, z) {
+  floorFrom.set(x, 2.5, z); floorRay.set(floorFrom, floorDown); floorRay.far = 3;
+  return floorRay.intersectObjects(physics.surfaces, false)[0]?.object.userData.surface ?? 'concrete';
+}
 /** Contact sound for every bottle impact the physics reports (strength from the impact speed, material from the bottle and the surface hit). */
 function hookContactSounds(audio) {
   const previous = factory.onImpact; // the breakage system's handler; it runs first and marks a shattered bottle broken
   factory.onImpact = (b, impact) => {
-    previous?.(b, impact);
+    // the breakage system's own audio.play calls (clink, shatter, ...) carry no position: they sit on this bottle
+    if (audioAdapter) audioAdapter.withFocus(b, () => previous?.(b, impact)); else previous?.(b, impact);
     if (b.broken) return;
     audio.contact({ material1: b.isPlastic ? 'plastic' : b.profile?.material === 'ceramic' ? 'ceramic' : 'glass', material2: impact.surface,
       speed: impact.speed, normal: impact.normal, position: impact.point, sourceId: b.id });
@@ -172,7 +179,11 @@ async function init() {
       try {
         const audioModule = await import('./vendor/extensions/audio/index.js');
         audio = await host.load(audioModule.default, { assetURL: assetUrl });
-        if (audio) { audioAdapter = audioModule.createBottleAudioAdapter(audio); window.__audio = audio; }
+        if (audio) {
+          audioAdapter = audioModule.createBottleAudioAdapter(audio); audioAdapter.bind(host); window.__audio = audio;
+          // footsteps: every ~0.7 m the head walks, material from the floor under it, low gain (frame loop below)
+          footsteps = audioModule.createFootstepTracker(audio, { stride: 0.7, gain: 0.4, surfaceAt: floorSurface });
+        }
       } catch (error) { console.error('audio', error); }
     }
     // Viscosity-dependent hole outflow (beer/spirits drain a little slower; liquid_props.js): off by default, on with ?testpanel, ?viscosity=on|off decides.
@@ -203,7 +214,7 @@ async function init() {
       actions: { reset, pause: setPause, quality: setQuality }, hud: toast });
     host.on('broken', ({ bottle }) => interaction.dropBottle(bottle)); // before the avatar's listener: hands let go first
     game.interaction = interaction;
-    window.__demo = { interaction, factory, breakage, pour, bottles, physics, camera, rig, renderer, scene, host, materials: materialSystem, fire, pistol };
+    window.__demo = { footsteps, audioAdapter, interaction, factory, breakage, pour, bottles, physics, camera, rig, renderer, scene, host, materials: materialSystem, fire, pistol };
     // Headset test panel (tools/headset-lab): frame time, grab cost, hand-profile and grasp-quality buttons; only with ?testpanel.
     if (new URLSearchParams(location.search).has('testpanel')) {
       import('./testpanel.js').then(m => { window.__testpanel = m.installTestPanel({ host, interaction, scene, hud: toast }); })
@@ -250,6 +261,7 @@ renderer.setAnimationLoop(() => {
   if (!paused && interaction) {
     interaction.step(dt);
     host.update(dt);
+    if (footsteps) { camera.getWorldPosition(headPos); footsteps.update(headPos, dt); }
     fire?.update(dt);
     physics.step(dt); // then the bottles extension (liquid, pouring, breakage) from physics.onStep
   }

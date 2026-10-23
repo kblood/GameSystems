@@ -12,7 +12,7 @@ const gameSystems = fileURLToPath(new URL('../../', import.meta.url));
 const files = dir => readdirSync(dir, { withFileTypes: true }).filter(e => e.isFile() && e.name !== 'SYNCED.json').map(e => e.name).sort();
 const skip = name => !existsSync(resolve(contracts, 'src/extensions', name)) && 'Contracts (with this extension) not next to GameSystems';
 
-for (const name of ['host', 'bottles']) {
+for (const name of ['host', 'bottles', 'audio']) {
   test(`${name}: the Contracts game uses the GameSystems files`, { skip: skip(name) }, () => {
     const ours = resolve(gameSystems, 'extensions', name), theirs = resolve(contracts, 'src/extensions', name);
     assert.deepEqual(files(theirs), files(ours), `${name}: same file set (run npm run sync:extensions in Contracts)`);
@@ -29,4 +29,22 @@ test('the bottle assets Contracts ships are the GameSystems assets', { skip: !ex
     if (f === 'catalog.json') continue;
     assert.ok(readFileSync(resolve(dir, f)).equals(readFileSync(resolve(gameSystems, f))), `${f} differs (run npm run sync:extensions in Contracts)`);
   }
+});
+
+test('the audio extension and its sounds (?audio in Contracts) are synced: every variant of the shipped groups is there and identical', { skip: !existsSync(resolve(contracts, 'assets/gamesystems/SYNCED.json')) && 'Contracts assets not synced' }, () => {
+  const dir = resolve(contracts, 'assets/gamesystems'), synced = JSON.parse(readFileSync(resolve(dir, 'SYNCED.json'), 'utf8'));
+  const data = JSON.parse(readFileSync(resolve(gameSystems, 'extensions/audio/sound_materials.json'), 'utf8'));
+  const groups = ['contacts', 'hand', 'footsteps', 'creaks', 'bottles']; // AUDIO_GROUPS in Contracts' tools/sync_extensions.mjs
+  let count = 0;
+  for (const g of groups) for (const name of data.groups[g]) for (let i = 1; i <= data.sounds[name].variants; i++) {
+    const f = `audio/ogg/${name}_${String(i).padStart(2, '0')}.ogg`; count++;
+    assert.ok(synced.files[f], `${f} is synced to Contracts (npm run sync:extensions)`);
+    assert.ok(readFileSync(resolve(dir, f)).equals(readFileSync(resolve(gameSystems, f))), `${f} differs`);
+  }
+  assert.ok(count >= 100, `${count} sounds`);
+  const audioDir = resolve(contracts, 'src/extensions/audio');
+  assert.ok(existsSync(resolve(audioDir, 'footsteps.js')) && existsSync(resolve(audioDir, 'creaks.js')) && existsSync(resolve(audioDir, 'sound_materials.json')));
+  const gameAudio = readFileSync(resolve(contracts, 'src/game/audio.js'), 'utf8');
+  assert.match(gameAudio, /sharedContext: getContext/, 'Contracts borrows the game AudioContext');
+  assert.match(readFileSync(resolve(contracts, 'src/main.js'), 'utf8'), /params\.has\('audio'\)/, 'opt-in via ?audio');
 });

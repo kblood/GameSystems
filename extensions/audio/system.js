@@ -21,12 +21,19 @@ const STEAL_FADE = 0.012; // s: a stolen voice fades out this long before the ne
 
 const px = p => (p ? (p.x ?? p[0]) : NaN), py = p => (p ? (p.y ?? p[1]) : NaN), pz = p => (p ? (p.z ?? p[2]) : NaN);
 
-export function createAudioSystem({ context = null, createContext = null, emit = () => {}, quality = 'high', data = DEFAULT_DATA,
-  assetURL = path => path, fetchBuffer = null, acoustics = null, seed = 1, masterGain = 1 } = {}) {
+/**
+ * Options: context | createContext (ours, closed on dispose) | sharedContext (() => AudioContext|null: the game's own context,
+ * borrowed and never closed or created here), delayBySpeed (default false: sounds arrive after distance / speedOfSound,
+ * at most maxDelay s; only sounds with a position), speedOfSound (343 m/s), maxDelay (0.25 s).
+ */
+export function createAudioSystem({ context = null, createContext = null, sharedContext = null, emit = () => {}, quality = 'high', data = DEFAULT_DATA,
+  assetURL = path => path, fetchBuffer = null, acoustics = null, seed = 1, masterGain = 1,
+  delayBySpeed = false, speedOfSound = 343, maxDelay = 0.25 } = {}) {
   if (!AUDIO_TIERS.includes(quality)) throw new RangeError(`Unknown quality: ${quality}`);
   let tier = quality, cfg = AUDIO_QUALITY[tier], disposed = false, ctx = context, ownsContext = false, master = null, limiter = null;
-  let rngState = (seed >>> 0) || 1, stolen = false, listenerRoom = null, volume = masterGain;
-  const stats = { played: 0, contacts: 0, stolen: 0, rateLimited: 0, culled: 0, suspended: 0, silent: 0, unknown: 0, below: 0, unloaded: 0, loadErrors: 0, decoded: 0 };
+  let rngState = (seed >>> 0) || 1, stolen = false, listenerRoom = null, volume = masterGain, delayOn = !!delayBySpeed, loopCheckAt = 0;
+  const loops = new Set(); // live loop handles (their room muffling follows the listener's room)
+  const stats = { played: 0, delayed: 0, loopRefreshes: 0, contacts: 0, stolen: 0, rateLimited: 0, culled: 0, suspended: 0, silent: 0, unknown: 0, below: 0, unloaded: 0, loadErrors: 0, decoded: 0 };
   const voices = [], lastKey = new Map(), lastSource = new Map(), roomCache = new Map(), buffers = new Map(), pending = new Map(), failed = new Set();
   const L = { x: 0, y: 0, z: 0, fx: 0, fy: 0, fz: -1, ux: 0, uy: 1, uz: 0, rx: 1, ry: 0, rz: 0, set: false };
   const D = data, S = D.strength, SP = D.spatial, AC = D.acoustics, dflt = D.defaults;
@@ -53,6 +60,7 @@ export function createAudioSystem({ context = null, createContext = null, emit =
 
   function ensureContext() {
     if (ctx || disposed || !cfg.voices) return !!ctx;
+    if (sharedContext) { try { ctx = sharedContext() ?? null; } catch { ctx = null; } return !!ctx; } // borrowed: not ours to create or close
     try {
       if (createContext) ctx = createContext();
       else { const AC_ = globalThis.AudioContext || globalThis.webkitAudioContext; ctx = AC_ ? new AC_() : null; }
@@ -153,6 +161,28 @@ export function createAudioSystem({ context = null, createContext = null, emit =
     return e.loss;
   }
 
+  const lossGain = loss => (loss > 0 ? 10 ** (-loss / 20) : 1);
+  const lossHz = loss => (loss > 0 ? clamp(AC.maxHz * 10 ** (-loss / AC.dbPerDecade), AC.minHz, AC.maxHz) : AC.maxHz);
+  /** Re-apply the room muffling of every running loop (listener changed room, or the acoustics path changed: a door opened). */
+  function refreshLoops(now) {
+    loopCheckAt = now;
+    for (const h of loops) {
+      const v = h.voice;
+      if (v.gen !== h.gen || !v.active) { loops.delete(h); continue; }
+      applyLoopLevel(h, now);
+    }
+    stats.loopRefreshes++;
+  }
+  function applyLoopLevel(h, now) {
+    const v = h.voice;
+    let loss = 0;
+    if (h.room != null) loss = roomLoss(h.room, now);
+    const silent = loss === null || loss > AC.maxLossDb; // no path: the loop keeps running but is inaudible
+    h.loss = silent ? AC.maxLossDb : loss;
+    v.gain.gain.setTargetAtTime(silent ? 0 : h.gain * h.snd.gain * v.dist * lossGain(loss), now, 0.05);
+    if (v.filter) v.filter.frequency.setTargetAtTime(silent ? AC.minHz : lossHz(loss), now, 0.05);
+  }
+
   // ---- loading
   function loadFile(snd, i) {
     const file = snd.files[i];
@@ -216,12 +246,14 @@ export function createAudioSystem({ context = null, createContext = null, emit =
     if (!v) { stats.culled++; return null; }
     const wasActive = v.active, old = v.src;
     if (wasActive && old) { old.onended = null; try { old.stop(now + STEAL_FADE); } catch { /* ended */ } }
-    const vol = gain * snd.gain * (loss > 0 ? 10 ** (-loss / 20) : 1) * place(v, x, y, z);
-    const g = v.gain.gain, when = stolen && wasActive ? now + STEAL_FADE : now;
+    const vol = gain * snd.gain * lossGain(loss) * place(v, x, y, z);
+    let delay = 0;
+    if (delayOn && !loop && x === x && L.set) { delay = Math.min(Math.hypot(x - L.x, y - L.y, z - L.z) / speedOfSound, maxDelay); if (delay > 0.001) stats.delayed++; }
+    const g = v.gain.gain, when = (stolen && wasActive ? now + STEAL_FADE : now) + delay;
     g.cancelScheduledValues(now);
     if (stolen && wasActive) g.setTargetAtTime(0, now, 0.002);
     g.setValueAtTime(vol, when);
-    if (v.filter) v.filter.frequency.value = loss > 0 ? clamp(AC.maxHz * 10 ** (-loss / AC.dbPerDecade), AC.minHz, AC.maxHz) : AC.maxHz;
+    if (v.filter) v.filter.frequency.value = lossHz(loss);
     const src = ctx.createBufferSource();
     src.buffer = buf; src.loop = loop; src.playbackRate.value = rate; src.onended = v.end; src.connect(v.input);
     src.start(when);
@@ -263,6 +295,9 @@ export function createAudioSystem({ context = null, createContext = null, emit =
     get voiceCap() { return cfg.voices; },
     get lastContact() { return last; },
     get listenerRoom() { return listenerRoom; },
+    get delayBySpeed() { return delayOn; },
+    set delayBySpeed(on) { delayOn = !!on; },
+    get loopCount() { let n = 0; for (const h of loops) if (h.voice.gen === h.gen && h.voice.active) n++; return n; },
     stats() { return { ...stats, tier, voiceCap: cfg.voices, voicesCreated: voices.length, active: api.activeVoices, cached: buffers.size }; },
     setQuality(next) {
       if (!AUDIO_TIERS.includes(next)) throw new RangeError(`Unknown quality: ${next}`);
@@ -281,7 +316,8 @@ export function createAudioSystem({ context = null, createContext = null, emit =
     setListener,
     /** Listener from a column-major 4x4 matrix (three.js Matrix4.elements): position, -Z forward, +Y up. */
     listenerFromMatrix(e) { setListener(e[12], e[13], e[14], -e[8], -e[9], -e[10], e[4], e[5], e[6]); },
-    setListenerRoom(room) { listenerRoom = room; },
+    /** Set the listener's room; running loops are re-muffled at once when it changes. */
+    setListenerRoom(room) { const changed = room !== listenerRoom; listenerRoom = room; if (changed) roomCache.clear(); if (changed && ctx && loops.size) refreshLoops(clock()); },
     materialOf: name => materialOf(name).name,
     chooseContact,
     /** play(key, { position, gain, rate, variantSeed, priority, minGap (s), sourceId, room }) -> true when a voice started. */
@@ -311,14 +347,18 @@ export function createAudioSystem({ context = null, createContext = null, emit =
     startLoop(key, o = EMPTY) {
       const snd = lookup(key); if (!snd) { stats.unknown++; return null; }
       const v = start(snd, o.gain ?? 1, o.rate ?? 1, o.variantSeed, o, true);
-      return v ? { voice: v, gen: v.gen, gain: o.gain ?? 1, snd } : null;
+      if (!v) return null;
+      const h = { voice: v, gen: v.gen, gain: o.gain ?? 1, snd, room: o.room ?? null, loss: 0 };
+      loops.add(h);
+      return h;
     },
     updateLoop(h, o = EMPTY) {
       const v = h?.voice; if (!v || v.gen !== h.gen || !v.active || !ctx) return false;
       if (o.gain !== undefined) h.gain = o.gain;
-      if (o.gain !== undefined || o.position) {
+      if (o.room !== undefined) h.room = o.room;
+      if (o.gain !== undefined || o.position || o.room !== undefined) {
         if (o.position) place(v, px(o.position), py(o.position), pz(o.position));
-        v.gain.gain.setTargetAtTime(h.gain * h.snd.gain * v.dist, clock(), 0.03);
+        applyLoopLevel(h, clock());
       }
       if (o.rate !== undefined && v.src) v.src.playbackRate.setTargetAtTime(o.rate, clock(), 0.03);
       return true;
@@ -329,18 +369,18 @@ export function createAudioSystem({ context = null, createContext = null, emit =
       v.gain.gain.cancelScheduledValues(now); v.gain.gain.setTargetAtTime(0, now, fade / 4);
       if (s) { try { s.stop(now + fade); } catch { /* ended */ } } // onended frees the voice
       v.endsAt = now + fade; v.loop = false; v.priority = -1; // also reclaimable by acquire() after the fade
-      v.gen++;
+      v.gen++; loops.delete(h);
       return true;
     },
     stopAll() { for (let i = 0; i < voices.length; i++) { const v = voices[i]; if (v.active) { try { v.src?.stop(); } catch { /* ended */ } endVoice(v); } } },
     /** Housekeeping: reclaim finished voices (normally onended does it). */
-    step() { if (!ctx) return; const now = clock(); for (let i = 0; i < voices.length; i++) { const v = voices[i]; if (v.active && !v.loop && v.endsAt <= now) endVoice(v); } },
+    step() { if (!ctx) return; const now = clock(); if (loops.size && now - loopCheckAt > AC.ttl) refreshLoops(now); for (let i = 0; i < voices.length; i++) { const v = voices[i]; if (v.active && !v.loop && v.endsAt <= now) endVoice(v); } },
     dispose() {
       if (disposed) return;
       api.stopAll(); teardownPool(); disposed = true;
       try { limiter?.disconnect(); master?.disconnect(); } catch { /* ignore */ }
       if (ownsContext) { try { ctx?.close?.(); } catch { /* ignore */ } }
-      buffers.clear(); pending.clear(); lastKey.clear(); lastSource.clear(); roomCache.clear();
+      buffers.clear(); pending.clear(); lastKey.clear(); lastSource.clear(); roomCache.clear(); loops.clear();
       for (const s of sounds.values()) s.buf.fill(null);
       master = limiter = null; ctx = null;
     },
