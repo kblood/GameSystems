@@ -45,6 +45,8 @@ Files: `synth_lib.py` (DSP blocks), `synth_sounds.py` (recipes; edit parameters 
 | bullet_hit_glass | 5 | shatter(small, 0.8 scale) + 2.5 kHz-HP crack (tau 6 ms) + 220->140 Hz thump + ringing glass modes. 1.0-1.3 s |
 | bullet_hit_plastic | 5 | 190-260->120 Hz thud + LP 3.5k noise crack + 2 resonances + 2.5-8 kHz air hiss tau 150-250 ms. 0.55-0.65 s |
 
+Material/hand/footstep/creak sounds for the web audio system (`synth_materials.py`, 160 files; see `docs/audio_system.md`): `contact_<wood|metal|concrete|ceramic|cardboard|plastic|fabric>_<light|medium|hard>` (5 variants each: modal ring + shaped noise burst + click + low thump per material, hard strength adds 1-2 rebounds on rigid materials), `hand_grab`/`hand_release` (5), `cardboard_fold` (4), `slide_loop_hard|wood|soft` (3, 2 s periodic stick-slip noise loops), `footstep_concrete|wood|metal|grass` (6, heel + toe), `door_hinge_creak`/`drawer_creak` (4, harmonic stick-slip tone).
+
 Peak targets (dBFS): clink soft -9, hard -4, thud -3, shatter -2/-1.5, shard -8, splash -4/-3, glug -5, stream -8, fizz -9, pops -3.. -3.5, caps -6/-7, bullets -1.5/-3. Per-kind gain is trimmed again in `bottle_audio.gd` (`KIND_DB`).
 
 ## Godot usage

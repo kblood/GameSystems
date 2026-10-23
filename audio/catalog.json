@@ -256,5 +256,396 @@
    0.633,
    0.547
   ]
+ },
+ "contact_wood_light": {
+  "variants": 5,
+  "loop": false,
+  "doc": "wood contact, light strength (object hits/drops on wood)",
+  "duration_s": [
+   0.192,
+   0.197,
+   0.204,
+   0.184,
+   0.19
+  ]
+ },
+ "contact_wood_medium": {
+  "variants": 5,
+  "loop": false,
+  "doc": "wood contact, medium strength (object hits/drops on wood)",
+  "duration_s": [
+   0.27,
+   0.262,
+   0.265,
+   0.263,
+   0.257
+  ]
+ },
+ "contact_wood_hard": {
+  "variants": 5,
+  "loop": false,
+  "doc": "wood contact, hard strength (object hits/drops on wood)",
+  "duration_s": [
+   0.664,
+   0.653,
+   0.65,
+   0.643,
+   0.651
+  ]
+ },
+ "contact_metal_light": {
+  "variants": 5,
+  "loop": false,
+  "doc": "metal contact, light strength (object hits/drops on metal)",
+  "duration_s": [
+   0.62,
+   0.653,
+   0.682,
+   0.673,
+   0.691
+  ]
+ },
+ "contact_metal_medium": {
+  "variants": 5,
+  "loop": false,
+  "doc": "metal contact, medium strength (object hits/drops on metal)",
+  "duration_s": [
+   0.641,
+   0.692,
+   0.648,
+   0.656,
+   0.64
+  ]
+ },
+ "contact_metal_hard": {
+  "variants": 5,
+  "loop": false,
+  "doc": "metal contact, hard strength (object hits/drops on metal)",
+  "duration_s": [
+   0.919,
+   0.938,
+   0.968,
+   0.95,
+   0.948
+  ]
+ },
+ "contact_concrete_light": {
+  "variants": 5,
+  "loop": false,
+  "doc": "concrete contact, light strength (object hits/drops on concrete)",
+  "duration_s": [
+   0.13,
+   0.134,
+   0.133,
+   0.146,
+   0.137
+  ]
+ },
+ "contact_concrete_medium": {
+  "variants": 5,
+  "loop": false,
+  "doc": "concrete contact, medium strength (object hits/drops on concrete)",
+  "duration_s": [
+   0.156,
+   0.169,
+   0.162,
+   0.167,
+   0.167
+  ]
+ },
+ "contact_concrete_hard": {
+  "variants": 5,
+  "loop": false,
+  "doc": "concrete contact, hard strength (object hits/drops on concrete)",
+  "duration_s": [
+   0.213,
+   0.213,
+   0.209,
+   0.2,
+   0.201
+  ]
+ },
+ "contact_ceramic_light": {
+  "variants": 5,
+  "loop": false,
+  "doc": "ceramic contact, light strength (object hits/drops on ceramic)",
+  "duration_s": [
+   0.396,
+   0.371,
+   0.383,
+   0.379,
+   0.374
+  ]
+ },
+ "contact_ceramic_medium": {
+  "variants": 5,
+  "loop": false,
+  "doc": "ceramic contact, medium strength (object hits/drops on ceramic)",
+  "duration_s": [
+   0.576,
+   0.56,
+   0.539,
+   0.55,
+   0.553
+  ]
+ },
+ "contact_ceramic_hard": {
+  "variants": 5,
+  "loop": false,
+  "doc": "ceramic contact, hard strength (object hits/drops on ceramic)",
+  "duration_s": [
+   0.993,
+   0.919,
+   0.916,
+   0.996,
+   0.97
+  ]
+ },
+ "contact_cardboard_light": {
+  "variants": 5,
+  "loop": false,
+  "doc": "cardboard contact, light strength (object hits/drops on cardboard)",
+  "duration_s": [
+   0.147,
+   0.153,
+   0.16,
+   0.152,
+   0.155
+  ]
+ },
+ "contact_cardboard_medium": {
+  "variants": 5,
+  "loop": false,
+  "doc": "cardboard contact, medium strength (object hits/drops on cardboard)",
+  "duration_s": [
+   0.197,
+   0.192,
+   0.199,
+   0.186,
+   0.205
+  ]
+ },
+ "contact_cardboard_hard": {
+  "variants": 5,
+  "loop": false,
+  "doc": "cardboard contact, hard strength (object hits/drops on cardboard)",
+  "duration_s": [
+   0.255,
+   0.258,
+   0.237,
+   0.24,
+   0.234
+  ]
+ },
+ "contact_plastic_light": {
+  "variants": 5,
+  "loop": false,
+  "doc": "plastic contact, light strength (object hits/drops on plastic)",
+  "duration_s": [
+   0.161,
+   0.166,
+   0.163,
+   0.161,
+   0.155
+  ]
+ },
+ "contact_plastic_medium": {
+  "variants": 5,
+  "loop": false,
+  "doc": "plastic contact, medium strength (object hits/drops on plastic)",
+  "duration_s": [
+   0.19,
+   0.207,
+   0.202,
+   0.196,
+   0.196
+  ]
+ },
+ "contact_plastic_hard": {
+  "variants": 5,
+  "loop": false,
+  "doc": "plastic contact, hard strength (object hits/drops on plastic)",
+  "duration_s": [
+   0.55,
+   0.54,
+   0.55,
+   0.561,
+   0.542
+  ]
+ },
+ "contact_fabric_light": {
+  "variants": 5,
+  "loop": false,
+  "doc": "fabric contact, light strength (object hits/drops on fabric)",
+  "duration_s": [
+   0.186,
+   0.175,
+   0.184,
+   0.177,
+   0.189
+  ]
+ },
+ "contact_fabric_medium": {
+  "variants": 5,
+  "loop": false,
+  "doc": "fabric contact, medium strength (object hits/drops on fabric)",
+  "duration_s": [
+   0.21,
+   0.206,
+   0.203,
+   0.201,
+   0.199
+  ]
+ },
+ "contact_fabric_hard": {
+  "variants": 5,
+  "loop": false,
+  "doc": "fabric contact, hard strength (object hits/drops on fabric)",
+  "duration_s": [
+   0.237,
+   0.233,
+   0.231,
+   0.233,
+   0.231
+  ]
+ },
+ "hand_grab": {
+  "variants": 5,
+  "loop": false,
+  "doc": "hand closes on an object: skin pat + fabric/rubber rustle",
+  "duration_s": [
+   0.185,
+   0.204,
+   0.187,
+   0.233,
+   0.2
+  ]
+ },
+ "hand_release": {
+  "variants": 5,
+  "loop": false,
+  "doc": "fingers open: short light rustle, softer than the grab",
+  "duration_s": [
+   0.131,
+   0.153,
+   0.192,
+   0.181,
+   0.137
+  ]
+ },
+ "cardboard_fold": {
+  "variants": 4,
+  "loop": false,
+  "doc": "cardboard/paper folds and crinkles",
+  "duration_s": [
+   0.45,
+   0.422,
+   0.361,
+   0.36
+  ]
+ },
+ "slide_loop_hard": {
+  "variants": 3,
+  "loop": true,
+  "doc": "metal/stone scrape across a hard surface (loop)",
+  "duration_s": [
+   2.0,
+   2.0,
+   2.0
+  ]
+ },
+ "slide_loop_wood": {
+  "variants": 3,
+  "loop": true,
+  "doc": "wood/crate dragged over a floor (loop)",
+  "duration_s": [
+   2.0,
+   2.0,
+   2.0
+  ]
+ },
+ "slide_loop_soft": {
+  "variants": 3,
+  "loop": true,
+  "doc": "cloth/leather/cardboard drag (loop)",
+  "duration_s": [
+   2.0,
+   2.0,
+   2.0
+  ]
+ },
+ "footstep_concrete": {
+  "variants": 6,
+  "loop": false,
+  "doc": "one footstep (heel + toe) on concrete",
+  "duration_s": [
+   0.396,
+   0.391,
+   0.376,
+   0.396,
+   0.346,
+   0.318
+  ]
+ },
+ "footstep_wood": {
+  "variants": 6,
+  "loop": false,
+  "doc": "one footstep (heel + toe) on wood",
+  "duration_s": [
+   0.321,
+   0.352,
+   0.39,
+   0.364,
+   0.311,
+   0.288
+  ]
+ },
+ "footstep_metal": {
+  "variants": 6,
+  "loop": false,
+  "doc": "one footstep (heel + toe) on metal",
+  "duration_s": [
+   0.346,
+   0.298,
+   0.322,
+   0.367,
+   0.3,
+   0.286
+  ]
+ },
+ "footstep_grass": {
+  "variants": 6,
+  "loop": false,
+  "doc": "one footstep (heel + toe) on grass",
+  "duration_s": [
+   0.378,
+   0.383,
+   0.325,
+   0.335,
+   0.356,
+   0.369
+  ]
+ },
+ "door_hinge_creak": {
+  "variants": 4,
+  "loop": false,
+  "doc": "rusty door hinge creak, 1 s",
+  "duration_s": [
+   0.805,
+   1.278,
+   1.116,
+   0.884
+  ]
+ },
+ "drawer_creak": {
+  "variants": 4,
+  "loop": false,
+  "doc": "wooden drawer slides open with a low creak",
+  "duration_s": [
+   0.778,
+   0.728,
+   0.716,
+   0.795
+  ]
  }
 }

@@ -134,6 +134,19 @@ async function reset() {
   await populate(token);
 }
 
+let audioAdapter = null;
+/** Contact sound for every bottle impact the physics reports (strength from the impact speed, material from the bottle and the surface hit). */
+function hookContactSounds(audio) {
+  const previous = factory.onImpact; // the breakage system's handler; it runs first and marks a shattered bottle broken
+  factory.onImpact = (b, impact) => {
+    previous?.(b, impact);
+    if (b.broken) return;
+    audio.contact({ material1: b.isPlastic ? 'plastic' : b.profile?.material === 'ceramic' ? 'ceramic' : 'glass', material2: impact.surface,
+      speed: impact.speed, normal: impact.normal, position: impact.point, sourceId: b.id });
+  };
+  host.on('pistol', e => { if (e.state === 'dropped') audio.contact({ material1: 'pistol', material2: 'concrete', speed: 2.5 }); });
+}
+
 async function init() {
   try {
     const response = await fetch(assetUrl('catalog.json'));
@@ -152,9 +165,23 @@ async function init() {
     if (!materialSystem) throw new Error('materials extension failed to load');
     for (const [id, mesh] of materialSurfaces) materialSystem.add(id, { material: mesh.userData.surface === 'wood' ? 'wood' : 'concrete' });
     // Bottles are an extension on the physics adapter (GameSystems/extensions/bottles); it steps from physics.step.
-    const bottles = await host.load(bottlesExtension, { catalog, assetURL: assetUrl, surfaces: physics.surfaces });
+    // Optional sound (?audio): spatial voice pool, material contact sounds, grab/release. Without the parameter nothing changes:
+    // the bottles keep their own HTML audio.
+    let audio = null;
+    if (new URLSearchParams(location.search).has('audio')) {
+      try {
+        const audioModule = await import('./vendor/extensions/audio/index.js');
+        audio = await host.load(audioModule.default, { assetURL: assetUrl });
+        if (audio) { audioAdapter = audioModule.createBottleAudioAdapter(audio); window.__audio = audio; }
+      } catch (error) { console.error('audio', error); }
+    }
+    // Viscosity-dependent hole outflow (beer/spirits drain a little slower; liquid_props.js): off by default, on with ?testpanel, ?viscosity=on|off decides.
+    const demoParams = new URLSearchParams(location.search), viscosityParam = demoParams.get('viscosity');
+    const liquidViscosity = viscosityParam === 'on' ? true : viscosityParam === 'off' ? false : demoParams.has('testpanel');
+    const bottles = await host.load(bottlesExtension, { catalog, assetURL: assetUrl, surfaces: physics.surfaces, audio: audioAdapter ?? undefined, liquidViscosity });
     if (!bottles) throw new Error('bottles extension failed to load');
     ({ factory, pour, breakage } = bottles);
+    if (audio) hookContactSounds(audio);
     breakage.createPanes();
     // Spilled diesel and strong alcohol burn (thermal + pools, bar-fire.js); a shot into such a pool lights it.
     fire = await createBarFire({ host, scene, bottles });

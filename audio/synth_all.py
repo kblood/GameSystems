@@ -9,6 +9,7 @@ sys.path.insert(0, HERE)
 import soundfile as sf
 from synth_lib import SR, finalize, to_int16
 from synth_sounds import SOUNDS
+import synth_materials  # noqa: F401  (registers the material/hand/footstep sounds in SOUNDS)
 
 SEED = 20261004
 

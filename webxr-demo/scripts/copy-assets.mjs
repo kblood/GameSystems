@@ -29,6 +29,11 @@ for (const row of [...SHELVES.flatMap(s => s.items), ...BAR_ITEMS]) {
 for (const name of ['glass_shatter_large', 'glass_shatter_small', 'glass_clink_hard', 'plastic_bottle_bounce', 'bullet_hit_glass', 'bullet_hit_plastic', 'liquid_glug', 'liquid_splash_small', 'cork_pop']) {
   files.add(`audio/ogg/${name}_01.ogg`);
 }
+// Sounds of the optional audio extension (?audio): contact, hand and bottle sets, every variant.
+const soundData = JSON.parse(await readFile(resolve(sourceRoot, 'extensions/audio/sound_materials.json'), 'utf8'));
+for (const group of ['contacts', 'hand', 'bottles']) for (const name of soundData.groups[group]) {
+  for (let i = 1; i <= soundData.sounds[name].variants; i++) files.add(`audio/ogg/${name}_${String(i).padStart(2, '0')}.ogg`);
+}
 let count = 0;
 for (const rel of files) {
   const from = resolve(sourceRoot, rel);

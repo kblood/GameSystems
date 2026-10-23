@@ -897,5 +897,1294 @@
   "centroid_hz": 5010,
   "nan": false,
   "clipped": false
+ },
+ "contact_wood_light_01": {
+  "dur": 0.192,
+  "peak_db": -14.0,
+  "rms_db": -35.07,
+  "centroid_hz": 152,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_light_02": {
+  "dur": 0.197,
+  "peak_db": -14.0,
+  "rms_db": -34.99,
+  "centroid_hz": 193,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_light_03": {
+  "dur": 0.204,
+  "peak_db": -14.0,
+  "rms_db": -32.88,
+  "centroid_hz": 148,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_light_04": {
+  "dur": 0.184,
+  "peak_db": -14.0,
+  "rms_db": -33.01,
+  "centroid_hz": 198,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_light_05": {
+  "dur": 0.19,
+  "peak_db": -14.0,
+  "rms_db": -34.63,
+  "centroid_hz": 231,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_medium_01": {
+  "dur": 0.27,
+  "peak_db": -9.0,
+  "rms_db": -28.95,
+  "centroid_hz": 133,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_medium_02": {
+  "dur": 0.262,
+  "peak_db": -9.0,
+  "rms_db": -30.19,
+  "centroid_hz": 102,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_medium_03": {
+  "dur": 0.265,
+  "peak_db": -9.0,
+  "rms_db": -28.62,
+  "centroid_hz": 128,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_medium_04": {
+  "dur": 0.263,
+  "peak_db": -9.0,
+  "rms_db": -31.16,
+  "centroid_hz": 116,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_medium_05": {
+  "dur": 0.257,
+  "peak_db": -9.0,
+  "rms_db": -26.59,
+  "centroid_hz": 140,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_hard_01": {
+  "dur": 0.664,
+  "peak_db": -4.0,
+  "rms_db": -25.47,
+  "centroid_hz": 118,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_hard_02": {
+  "dur": 0.653,
+  "peak_db": -4.0,
+  "rms_db": -26.66,
+  "centroid_hz": 138,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_hard_03": {
+  "dur": 0.65,
+  "peak_db": -4.0,
+  "rms_db": -25.76,
+  "centroid_hz": 132,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_hard_04": {
+  "dur": 0.643,
+  "peak_db": -4.0,
+  "rms_db": -26.11,
+  "centroid_hz": 163,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_wood_hard_05": {
+  "dur": 0.651,
+  "peak_db": -4.0,
+  "rms_db": -24.33,
+  "centroid_hz": 160,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_light_01": {
+  "dur": 0.62,
+  "peak_db": -14.0,
+  "rms_db": -38.26,
+  "centroid_hz": 1862,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_light_02": {
+  "dur": 0.653,
+  "peak_db": -14.0,
+  "rms_db": -36.04,
+  "centroid_hz": 1655,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_light_03": {
+  "dur": 0.682,
+  "peak_db": -14.0,
+  "rms_db": -34.65,
+  "centroid_hz": 2072,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_light_04": {
+  "dur": 0.673,
+  "peak_db": -14.0,
+  "rms_db": -36.88,
+  "centroid_hz": 1701,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_light_05": {
+  "dur": 0.691,
+  "peak_db": -14.0,
+  "rms_db": -36.96,
+  "centroid_hz": 2653,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_medium_01": {
+  "dur": 0.641,
+  "peak_db": -9.0,
+  "rms_db": -28.93,
+  "centroid_hz": 1399,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_medium_02": {
+  "dur": 0.692,
+  "peak_db": -9.0,
+  "rms_db": -34.09,
+  "centroid_hz": 1793,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_medium_03": {
+  "dur": 0.648,
+  "peak_db": -9.0,
+  "rms_db": -29.32,
+  "centroid_hz": 1309,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_medium_04": {
+  "dur": 0.656,
+  "peak_db": -9.0,
+  "rms_db": -31.63,
+  "centroid_hz": 1945,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_medium_05": {
+  "dur": 0.64,
+  "peak_db": -9.0,
+  "rms_db": -32.72,
+  "centroid_hz": 1852,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_hard_01": {
+  "dur": 0.919,
+  "peak_db": -4.0,
+  "rms_db": -27.41,
+  "centroid_hz": 1891,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_hard_02": {
+  "dur": 0.938,
+  "peak_db": -4.0,
+  "rms_db": -28.61,
+  "centroid_hz": 1786,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_hard_03": {
+  "dur": 0.968,
+  "peak_db": -4.0,
+  "rms_db": -26.28,
+  "centroid_hz": 2230,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_hard_04": {
+  "dur": 0.95,
+  "peak_db": -4.0,
+  "rms_db": -27.0,
+  "centroid_hz": 1546,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_metal_hard_05": {
+  "dur": 0.948,
+  "peak_db": -4.0,
+  "rms_db": -26.57,
+  "centroid_hz": 1362,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_light_01": {
+  "dur": 0.13,
+  "peak_db": -14.0,
+  "rms_db": -30.98,
+  "centroid_hz": 290,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_light_02": {
+  "dur": 0.134,
+  "peak_db": -14.0,
+  "rms_db": -31.51,
+  "centroid_hz": 321,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_light_03": {
+  "dur": 0.133,
+  "peak_db": -14.0,
+  "rms_db": -29.45,
+  "centroid_hz": 1084,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_light_04": {
+  "dur": 0.146,
+  "peak_db": -14.0,
+  "rms_db": -31.16,
+  "centroid_hz": 290,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_light_05": {
+  "dur": 0.137,
+  "peak_db": -14.0,
+  "rms_db": -30.6,
+  "centroid_hz": 400,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_medium_01": {
+  "dur": 0.156,
+  "peak_db": -9.0,
+  "rms_db": -26.43,
+  "centroid_hz": 121,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_medium_02": {
+  "dur": 0.169,
+  "peak_db": -9.0,
+  "rms_db": -24.46,
+  "centroid_hz": 134,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_medium_03": {
+  "dur": 0.162,
+  "peak_db": -9.0,
+  "rms_db": -24.44,
+  "centroid_hz": 258,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_medium_04": {
+  "dur": 0.167,
+  "peak_db": -9.0,
+  "rms_db": -25.38,
+  "centroid_hz": 158,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_medium_05": {
+  "dur": 0.167,
+  "peak_db": -9.0,
+  "rms_db": -24.82,
+  "centroid_hz": 150,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_hard_01": {
+  "dur": 0.213,
+  "peak_db": -4.0,
+  "rms_db": -21.59,
+  "centroid_hz": 108,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_hard_02": {
+  "dur": 0.213,
+  "peak_db": -4.0,
+  "rms_db": -18.61,
+  "centroid_hz": 129,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_hard_03": {
+  "dur": 0.209,
+  "peak_db": -4.0,
+  "rms_db": -20.08,
+  "centroid_hz": 98,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_hard_04": {
+  "dur": 0.2,
+  "peak_db": -4.0,
+  "rms_db": -21.19,
+  "centroid_hz": 149,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_concrete_hard_05": {
+  "dur": 0.201,
+  "peak_db": -4.0,
+  "rms_db": -19.77,
+  "centroid_hz": 113,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_light_01": {
+  "dur": 0.396,
+  "peak_db": -14.0,
+  "rms_db": -37.1,
+  "centroid_hz": 1866,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_light_02": {
+  "dur": 0.371,
+  "peak_db": -14.0,
+  "rms_db": -35.68,
+  "centroid_hz": 2099,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_light_03": {
+  "dur": 0.383,
+  "peak_db": -14.0,
+  "rms_db": -35.04,
+  "centroid_hz": 2906,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_light_04": {
+  "dur": 0.379,
+  "peak_db": -14.0,
+  "rms_db": -37.66,
+  "centroid_hz": 2562,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_light_05": {
+  "dur": 0.374,
+  "peak_db": -14.0,
+  "rms_db": -36.17,
+  "centroid_hz": 1922,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_medium_01": {
+  "dur": 0.576,
+  "peak_db": -9.0,
+  "rms_db": -34.47,
+  "centroid_hz": 2024,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_medium_02": {
+  "dur": 0.56,
+  "peak_db": -9.0,
+  "rms_db": -31.48,
+  "centroid_hz": 1285,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_medium_03": {
+  "dur": 0.539,
+  "peak_db": -9.0,
+  "rms_db": -31.98,
+  "centroid_hz": 2507,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_medium_04": {
+  "dur": 0.55,
+  "peak_db": -9.0,
+  "rms_db": -30.17,
+  "centroid_hz": 2074,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_medium_05": {
+  "dur": 0.553,
+  "peak_db": -9.0,
+  "rms_db": -31.51,
+  "centroid_hz": 1903,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_hard_01": {
+  "dur": 0.993,
+  "peak_db": -4.0,
+  "rms_db": -28.15,
+  "centroid_hz": 1534,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_hard_02": {
+  "dur": 0.919,
+  "peak_db": -4.0,
+  "rms_db": -28.06,
+  "centroid_hz": 1405,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_hard_03": {
+  "dur": 0.916,
+  "peak_db": -4.0,
+  "rms_db": -29.82,
+  "centroid_hz": 1853,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_hard_04": {
+  "dur": 0.996,
+  "peak_db": -4.0,
+  "rms_db": -30.66,
+  "centroid_hz": 1609,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_ceramic_hard_05": {
+  "dur": 0.97,
+  "peak_db": -4.0,
+  "rms_db": -29.33,
+  "centroid_hz": 1095,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_light_01": {
+  "dur": 0.147,
+  "peak_db": -14.0,
+  "rms_db": -35.75,
+  "centroid_hz": 2708,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_light_02": {
+  "dur": 0.153,
+  "peak_db": -14.0,
+  "rms_db": -31.39,
+  "centroid_hz": 2298,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_light_03": {
+  "dur": 0.16,
+  "peak_db": -14.0,
+  "rms_db": -35.62,
+  "centroid_hz": 2851,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_light_04": {
+  "dur": 0.152,
+  "peak_db": -14.0,
+  "rms_db": -33.07,
+  "centroid_hz": 2548,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_light_05": {
+  "dur": 0.155,
+  "peak_db": -14.0,
+  "rms_db": -33.01,
+  "centroid_hz": 2151,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_medium_01": {
+  "dur": 0.197,
+  "peak_db": -9.0,
+  "rms_db": -31.17,
+  "centroid_hz": 2114,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_medium_02": {
+  "dur": 0.192,
+  "peak_db": -9.0,
+  "rms_db": -29.71,
+  "centroid_hz": 1807,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_medium_03": {
+  "dur": 0.199,
+  "peak_db": -9.0,
+  "rms_db": -26.66,
+  "centroid_hz": 1833,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_medium_04": {
+  "dur": 0.186,
+  "peak_db": -9.0,
+  "rms_db": -27.76,
+  "centroid_hz": 2245,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_medium_05": {
+  "dur": 0.205,
+  "peak_db": -9.0,
+  "rms_db": -28.29,
+  "centroid_hz": 2287,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_hard_01": {
+  "dur": 0.255,
+  "peak_db": -4.0,
+  "rms_db": -23.38,
+  "centroid_hz": 1327,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_hard_02": {
+  "dur": 0.258,
+  "peak_db": -4.0,
+  "rms_db": -24.13,
+  "centroid_hz": 1422,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_hard_03": {
+  "dur": 0.237,
+  "peak_db": -4.0,
+  "rms_db": -22.76,
+  "centroid_hz": 845,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_hard_04": {
+  "dur": 0.24,
+  "peak_db": -4.0,
+  "rms_db": -25.19,
+  "centroid_hz": 1874,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_cardboard_hard_05": {
+  "dur": 0.234,
+  "peak_db": -4.0,
+  "rms_db": -23.32,
+  "centroid_hz": 825,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_light_01": {
+  "dur": 0.161,
+  "peak_db": -14.0,
+  "rms_db": -36.11,
+  "centroid_hz": 196,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_light_02": {
+  "dur": 0.166,
+  "peak_db": -14.0,
+  "rms_db": -34.53,
+  "centroid_hz": 290,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_light_03": {
+  "dur": 0.163,
+  "peak_db": -14.0,
+  "rms_db": -35.21,
+  "centroid_hz": 292,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_light_04": {
+  "dur": 0.161,
+  "peak_db": -14.0,
+  "rms_db": -36.31,
+  "centroid_hz": 198,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_light_05": {
+  "dur": 0.155,
+  "peak_db": -14.0,
+  "rms_db": -34.98,
+  "centroid_hz": 190,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_medium_01": {
+  "dur": 0.19,
+  "peak_db": -9.0,
+  "rms_db": -30.98,
+  "centroid_hz": 236,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_medium_02": {
+  "dur": 0.207,
+  "peak_db": -9.0,
+  "rms_db": -29.94,
+  "centroid_hz": 189,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_medium_03": {
+  "dur": 0.202,
+  "peak_db": -9.0,
+  "rms_db": -30.27,
+  "centroid_hz": 182,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_medium_04": {
+  "dur": 0.196,
+  "peak_db": -9.0,
+  "rms_db": -29.7,
+  "centroid_hz": 160,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_medium_05": {
+  "dur": 0.196,
+  "peak_db": -9.0,
+  "rms_db": -26.88,
+  "centroid_hz": 209,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_hard_01": {
+  "dur": 0.55,
+  "peak_db": -4.0,
+  "rms_db": -28.4,
+  "centroid_hz": 240,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_hard_02": {
+  "dur": 0.54,
+  "peak_db": -4.0,
+  "rms_db": -29.67,
+  "centroid_hz": 189,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_hard_03": {
+  "dur": 0.55,
+  "peak_db": -4.0,
+  "rms_db": -28.31,
+  "centroid_hz": 358,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_hard_04": {
+  "dur": 0.561,
+  "peak_db": -4.0,
+  "rms_db": -26.29,
+  "centroid_hz": 436,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_plastic_hard_05": {
+  "dur": 0.542,
+  "peak_db": -4.0,
+  "rms_db": -27.97,
+  "centroid_hz": 258,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_light_01": {
+  "dur": 0.186,
+  "peak_db": -14.0,
+  "rms_db": -29.05,
+  "centroid_hz": 291,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_light_02": {
+  "dur": 0.175,
+  "peak_db": -14.0,
+  "rms_db": -29.51,
+  "centroid_hz": 277,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_light_03": {
+  "dur": 0.184,
+  "peak_db": -14.0,
+  "rms_db": -28.07,
+  "centroid_hz": 280,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_light_04": {
+  "dur": 0.177,
+  "peak_db": -14.0,
+  "rms_db": -29.01,
+  "centroid_hz": 267,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_light_05": {
+  "dur": 0.189,
+  "peak_db": -14.0,
+  "rms_db": -30.84,
+  "centroid_hz": 294,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_medium_01": {
+  "dur": 0.21,
+  "peak_db": -9.0,
+  "rms_db": -21.64,
+  "centroid_hz": 113,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_medium_02": {
+  "dur": 0.206,
+  "peak_db": -9.0,
+  "rms_db": -21.67,
+  "centroid_hz": 104,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_medium_03": {
+  "dur": 0.203,
+  "peak_db": -9.0,
+  "rms_db": -21.84,
+  "centroid_hz": 142,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_medium_04": {
+  "dur": 0.201,
+  "peak_db": -9.0,
+  "rms_db": -21.52,
+  "centroid_hz": 122,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_medium_05": {
+  "dur": 0.199,
+  "peak_db": -9.0,
+  "rms_db": -21.38,
+  "centroid_hz": 147,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_hard_01": {
+  "dur": 0.237,
+  "peak_db": -4.0,
+  "rms_db": -16.65,
+  "centroid_hz": 122,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_hard_02": {
+  "dur": 0.233,
+  "peak_db": -4.0,
+  "rms_db": -17.63,
+  "centroid_hz": 87,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_hard_03": {
+  "dur": 0.231,
+  "peak_db": -4.0,
+  "rms_db": -15.35,
+  "centroid_hz": 80,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_hard_04": {
+  "dur": 0.233,
+  "peak_db": -4.0,
+  "rms_db": -18.31,
+  "centroid_hz": 120,
+  "nan": false,
+  "clipped": false
+ },
+ "contact_fabric_hard_05": {
+  "dur": 0.231,
+  "peak_db": -4.0,
+  "rms_db": -16.04,
+  "centroid_hz": 79,
+  "nan": false,
+  "clipped": false
+ },
+ "hand_grab_01": {
+  "dur": 0.185,
+  "peak_db": -10.0,
+  "rms_db": -23.87,
+  "centroid_hz": 389,
+  "nan": false,
+  "clipped": false
+ },
+ "hand_grab_02": {
+  "dur": 0.204,
+  "peak_db": -10.0,
+  "rms_db": -26.71,
+  "centroid_hz": 206,
+  "nan": false,
+  "clipped": false
+ },
+ "hand_grab_03": {
+  "dur": 0.187,
+  "peak_db": -10.0,
+  "rms_db": -25.95,
+  "centroid_hz": 357,
+  "nan": false,
+  "clipped": false
+ },
+ "hand_grab_04": {
+  "dur": 0.233,
+  "peak_db": -10.0,
+  "rms_db": -28.13,
+  "centroid_hz": 531,
+  "nan": false,
+  "clipped": false
+ },
+ "hand_grab_05": {
+  "dur": 0.2,
+  "peak_db": -10.0,
+  "rms_db": -24.7,
+  "centroid_hz": 360,
+  "nan": false,
+  "clipped": false
+ },
+ "hand_release_01": {
+  "dur": 0.131,
+  "peak_db": -14.0,
+  "rms_db": -32.05,
+  "centroid_hz": 4143,
+  "nan": false,
+  "clipped": false
+ },
+ "hand_release_02": {
+  "dur": 0.153,
+  "peak_db": -14.0,
+  "rms_db": -32.59,
+  "centroid_hz": 4194,
+  "nan": false,
+  "clipped": false
+ },
+ "hand_release_03": {
+  "dur": 0.192,
+  "peak_db": -14.0,
+  "rms_db": -32.3,
+  "centroid_hz": 4266,
+  "nan": false,
+  "clipped": false
+ },
+ "hand_release_04": {
+  "dur": 0.181,
+  "peak_db": -14.0,
+  "rms_db": -31.99,
+  "centroid_hz": 4207,
+  "nan": false,
+  "clipped": false
+ },
+ "hand_release_05": {
+  "dur": 0.137,
+  "peak_db": -14.0,
+  "rms_db": -30.58,
+  "centroid_hz": 4202,
+  "nan": false,
+  "clipped": false
+ },
+ "cardboard_fold_01": {
+  "dur": 0.45,
+  "peak_db": -8.0,
+  "rms_db": -28.05,
+  "centroid_hz": 5177,
+  "nan": false,
+  "clipped": false
+ },
+ "cardboard_fold_02": {
+  "dur": 0.422,
+  "peak_db": -8.0,
+  "rms_db": -27.69,
+  "centroid_hz": 4892,
+  "nan": false,
+  "clipped": false
+ },
+ "cardboard_fold_03": {
+  "dur": 0.361,
+  "peak_db": -8.0,
+  "rms_db": -27.47,
+  "centroid_hz": 4981,
+  "nan": false,
+  "clipped": false
+ },
+ "cardboard_fold_04": {
+  "dur": 0.36,
+  "peak_db": -8.0,
+  "rms_db": -28.46,
+  "centroid_hz": 5057,
+  "nan": false,
+  "clipped": false
+ },
+ "slide_loop_hard_01": {
+  "dur": 2.0,
+  "peak_db": -9.0,
+  "rms_db": -23.64,
+  "centroid_hz": 3916,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.34
+ },
+ "slide_loop_hard_02": {
+  "dur": 2.0,
+  "peak_db": -9.0,
+  "rms_db": -24.59,
+  "centroid_hz": 4177,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.06
+ },
+ "slide_loop_hard_03": {
+  "dur": 2.0,
+  "peak_db": -9.0,
+  "rms_db": -23.36,
+  "centroid_hz": 4350,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.01
+ },
+ "slide_loop_wood_01": {
+  "dur": 2.0,
+  "peak_db": -10.0,
+  "rms_db": -25.23,
+  "centroid_hz": 1501,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.2
+ },
+ "slide_loop_wood_02": {
+  "dur": 2.0,
+  "peak_db": -10.0,
+  "rms_db": -25.55,
+  "centroid_hz": 1413,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.49
+ },
+ "slide_loop_wood_03": {
+  "dur": 2.0,
+  "peak_db": -10.0,
+  "rms_db": -25.16,
+  "centroid_hz": 1442,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.44
+ },
+ "slide_loop_soft_01": {
+  "dur": 2.0,
+  "peak_db": -14.0,
+  "rms_db": -30.26,
+  "centroid_hz": 999,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.4
+ },
+ "slide_loop_soft_02": {
+  "dur": 2.0,
+  "peak_db": -14.0,
+  "rms_db": -27.83,
+  "centroid_hz": 991,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.64
+ },
+ "slide_loop_soft_03": {
+  "dur": 2.0,
+  "peak_db": -14.0,
+  "rms_db": -27.25,
+  "centroid_hz": 989,
+  "nan": false,
+  "clipped": false,
+  "loop_disc": 0.31
+ },
+ "footstep_concrete_01": {
+  "dur": 0.396,
+  "peak_db": -6.0,
+  "rms_db": -25.64,
+  "centroid_hz": 401,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_concrete_02": {
+  "dur": 0.391,
+  "peak_db": -6.0,
+  "rms_db": -25.11,
+  "centroid_hz": 321,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_concrete_03": {
+  "dur": 0.376,
+  "peak_db": -6.0,
+  "rms_db": -25.79,
+  "centroid_hz": 351,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_concrete_04": {
+  "dur": 0.396,
+  "peak_db": -6.0,
+  "rms_db": -25.22,
+  "centroid_hz": 410,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_concrete_05": {
+  "dur": 0.346,
+  "peak_db": -6.0,
+  "rms_db": -25.0,
+  "centroid_hz": 402,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_concrete_06": {
+  "dur": 0.318,
+  "peak_db": -6.0,
+  "rms_db": -24.6,
+  "centroid_hz": 440,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_wood_01": {
+  "dur": 0.321,
+  "peak_db": -6.0,
+  "rms_db": -25.63,
+  "centroid_hz": 208,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_wood_02": {
+  "dur": 0.352,
+  "peak_db": -6.0,
+  "rms_db": -24.38,
+  "centroid_hz": 191,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_wood_03": {
+  "dur": 0.39,
+  "peak_db": -6.0,
+  "rms_db": -25.38,
+  "centroid_hz": 169,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_wood_04": {
+  "dur": 0.364,
+  "peak_db": -6.0,
+  "rms_db": -23.07,
+  "centroid_hz": 147,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_wood_05": {
+  "dur": 0.311,
+  "peak_db": -6.0,
+  "rms_db": -22.0,
+  "centroid_hz": 168,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_wood_06": {
+  "dur": 0.288,
+  "peak_db": -6.0,
+  "rms_db": -22.6,
+  "centroid_hz": 171,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_metal_01": {
+  "dur": 0.346,
+  "peak_db": -7.0,
+  "rms_db": -25.9,
+  "centroid_hz": 1011,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_metal_02": {
+  "dur": 0.298,
+  "peak_db": -7.0,
+  "rms_db": -24.05,
+  "centroid_hz": 952,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_metal_03": {
+  "dur": 0.322,
+  "peak_db": -7.0,
+  "rms_db": -26.95,
+  "centroid_hz": 999,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_metal_04": {
+  "dur": 0.367,
+  "peak_db": -7.0,
+  "rms_db": -26.1,
+  "centroid_hz": 848,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_metal_05": {
+  "dur": 0.3,
+  "peak_db": -7.0,
+  "rms_db": -25.57,
+  "centroid_hz": 966,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_metal_06": {
+  "dur": 0.286,
+  "peak_db": -7.0,
+  "rms_db": -25.76,
+  "centroid_hz": 937,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_grass_01": {
+  "dur": 0.378,
+  "peak_db": -9.0,
+  "rms_db": -25.3,
+  "centroid_hz": 456,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_grass_02": {
+  "dur": 0.383,
+  "peak_db": -9.0,
+  "rms_db": -25.32,
+  "centroid_hz": 603,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_grass_03": {
+  "dur": 0.325,
+  "peak_db": -9.0,
+  "rms_db": -24.78,
+  "centroid_hz": 563,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_grass_04": {
+  "dur": 0.335,
+  "peak_db": -9.0,
+  "rms_db": -24.4,
+  "centroid_hz": 362,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_grass_05": {
+  "dur": 0.356,
+  "peak_db": -9.0,
+  "rms_db": -24.96,
+  "centroid_hz": 330,
+  "nan": false,
+  "clipped": false
+ },
+ "footstep_grass_06": {
+  "dur": 0.369,
+  "peak_db": -9.0,
+  "rms_db": -26.29,
+  "centroid_hz": 470,
+  "nan": false,
+  "clipped": false
+ },
+ "door_hinge_creak_01": {
+  "dur": 0.805,
+  "peak_db": -9.0,
+  "rms_db": -26.74,
+  "centroid_hz": 1235,
+  "nan": false,
+  "clipped": false
+ },
+ "door_hinge_creak_02": {
+  "dur": 1.278,
+  "peak_db": -9.0,
+  "rms_db": -26.64,
+  "centroid_hz": 1401,
+  "nan": false,
+  "clipped": false
+ },
+ "door_hinge_creak_03": {
+  "dur": 1.116,
+  "peak_db": -9.0,
+  "rms_db": -27.24,
+  "centroid_hz": 1226,
+  "nan": false,
+  "clipped": false
+ },
+ "door_hinge_creak_04": {
+  "dur": 0.884,
+  "peak_db": -9.0,
+  "rms_db": -26.38,
+  "centroid_hz": 993,
+  "nan": false,
+  "clipped": false
+ },
+ "drawer_creak_01": {
+  "dur": 0.778,
+  "peak_db": -10.0,
+  "rms_db": -29.16,
+  "centroid_hz": 470,
+  "nan": false,
+  "clipped": false
+ },
+ "drawer_creak_02": {
+  "dur": 0.728,
+  "peak_db": -10.0,
+  "rms_db": -27.99,
+  "centroid_hz": 472,
+  "nan": false,
+  "clipped": false
+ },
+ "drawer_creak_03": {
+  "dur": 0.716,
+  "peak_db": -10.0,
+  "rms_db": -27.9,
+  "centroid_hz": 483,
+  "nan": false,
+  "clipped": false
+ },
+ "drawer_creak_04": {
+  "dur": 0.795,
+  "peak_db": -10.0,
+  "rms_db": -29.02,
+  "centroid_hz": 518,
+  "nan": false,
+  "clipped": false
  }
 }

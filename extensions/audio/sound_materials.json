@@ -1,0 +1,482 @@
+{
+ "version": 1,
+ "doc": "Lydmaterialer, kontaktregler og navne til extensions/audio. Rediger her, ikke i koden. Lydene findes i audio/catalog.json (variants skal passe, testes).",
+ "defaults": {
+  "gap": 0.05,
+  "priority": 1,
+  "gain": 1
+ },
+ "spatial": {
+  "refDistance": 1,
+  "rolloff": 1,
+  "maxDistance": 40
+ },
+ "strength": {
+  "minSpeed": 0.25,
+  "lightMax": 1.2,
+  "mediumMax": 3.5,
+  "hardRef": 8,
+  "gainRange": [
+   0.55,
+   1
+  ],
+  "pitchRange": [
+   1.1,
+   0.9
+  ],
+  "pitchJitter": 0.04,
+  "layerGain": 0.45
+ },
+ "acoustics": {
+  "maxHz": 18000,
+  "minHz": 350,
+  "dbPerDecade": 25,
+  "maxLossDb": 60,
+  "ttl": 0.25
+ },
+ "defaultMaterial": "concrete",
+ "materials": {
+  "metal": {
+   "rank": 9,
+   "damp": 0,
+   "contact": "contact_metal"
+  },
+  "glass": {
+   "rank": 8,
+   "damp": 0,
+   "contact": {
+    "light": "glass_clink_soft",
+    "medium": "glass_clink_hard",
+    "hard": "glass_impact_thud"
+   }
+  },
+  "ceramic": {
+   "rank": 7,
+   "damp": 0,
+   "contact": "contact_ceramic"
+  },
+  "plastic": {
+   "rank": 5,
+   "damp": 0,
+   "contact": "contact_plastic"
+  },
+  "wood": {
+   "rank": 4,
+   "damp": 0,
+   "contact": "contact_wood"
+  },
+  "concrete": {
+   "rank": 3,
+   "damp": 0,
+   "contact": "contact_concrete"
+  },
+  "cardboard": {
+   "rank": 2,
+   "damp": 1,
+   "contact": "contact_cardboard"
+  },
+  "fabric": {
+   "rank": 1,
+   "damp": 2,
+   "contact": "contact_fabric"
+  }
+ },
+ "things": {
+  "bottle": "glass",
+  "glass_bottle": "glass",
+  "glass": "glass",
+  "jar": "glass",
+  "pane": "glass",
+  "window": "glass",
+  "plastic_bottle": "plastic",
+  "plastic": "plastic",
+  "toy": "plastic",
+  "tupperware": "plastic",
+  "bucket": "plastic",
+  "mug": "ceramic",
+  "cup": "ceramic",
+  "ceramic": "ceramic",
+  "porcelain": "ceramic",
+  "plate": "ceramic",
+  "bowl": "ceramic",
+  "tile": "ceramic",
+  "wood": "wood",
+  "crate": "wood",
+  "barrel": "wood",
+  "table": "wood",
+  "chair": "wood",
+  "plank": "wood",
+  "door": "wood",
+  "drawer": "wood",
+  "bar": "wood",
+  "shelf": "wood",
+  "bat": "wood",
+  "metal": "metal",
+  "steel": "metal",
+  "iron": "metal",
+  "can": "metal",
+  "tin": "metal",
+  "pipe": "metal",
+  "pistol": "metal",
+  "gun": "metal",
+  "cap": "metal",
+  "tool": "metal",
+  "key": "metal",
+  "safe": "metal",
+  "concrete": "concrete",
+  "stone": "concrete",
+  "brick": "concrete",
+  "floor": "concrete",
+  "wall": "concrete",
+  "ground": "concrete",
+  "solid": "concrete",
+  "asphalt": "concrete",
+  "rock": "concrete",
+  "cardboard": "cardboard",
+  "box": "cardboard",
+  "carton": "cardboard",
+  "paper": "cardboard",
+  "book": "cardboard",
+  "fabric": "fabric",
+  "cloth": "fabric",
+  "leather": "fabric",
+  "carpet": "fabric",
+  "rug": "fabric",
+  "sofa": "fabric",
+  "bag": "fabric",
+  "clothes": "fabric",
+  "hand": "fabric",
+  "grass": "fabric",
+  "dirt": "fabric"
+ },
+ "footsteps": {
+  "concrete": "footstep_concrete",
+  "wood": "footstep_wood",
+  "metal": "footstep_metal",
+  "grass": "footstep_grass",
+  "dirt": "footstep_grass",
+  "fabric": "footstep_grass",
+  "glass": "footstep_concrete",
+  "ceramic": "footstep_concrete",
+  "plastic": "footstep_concrete",
+  "cardboard": "footstep_wood",
+  "stone": "footstep_concrete"
+ },
+ "events": {
+  "grab": "hand_grab",
+  "release": "hand_release"
+ },
+ "aliases": {
+  "shatter": "glass_shatter_large",
+  "smallShatter": "glass_shatter_small",
+  "clink": "glass_clink_hard",
+  "plastic": "plastic_bottle_bounce",
+  "glassHit": "bullet_hit_glass",
+  "plasticHit": "bullet_hit_plastic",
+  "cap": "cork_pop",
+  "pour": "liquid_glug",
+  "splash": "liquid_splash_small"
+ },
+ "groups": {
+  "contacts": [
+   "contact_wood_light",
+   "contact_wood_medium",
+   "contact_wood_hard",
+   "contact_metal_light",
+   "contact_metal_medium",
+   "contact_metal_hard",
+   "contact_concrete_light",
+   "contact_concrete_medium",
+   "contact_concrete_hard",
+   "contact_ceramic_light",
+   "contact_ceramic_medium",
+   "contact_ceramic_hard",
+   "contact_cardboard_light",
+   "contact_cardboard_medium",
+   "contact_cardboard_hard",
+   "contact_plastic_light",
+   "contact_plastic_medium",
+   "contact_plastic_hard",
+   "contact_fabric_light",
+   "contact_fabric_medium",
+   "contact_fabric_hard"
+  ],
+  "hand": [
+   "hand_grab",
+   "hand_release",
+   "cardboard_fold"
+  ],
+  "footsteps": [
+   "footstep_concrete",
+   "footstep_wood",
+   "footstep_metal",
+   "footstep_grass"
+  ],
+  "loops": [
+   "slide_loop_hard",
+   "slide_loop_wood",
+   "slide_loop_soft"
+  ],
+  "creaks": [
+   "door_hinge_creak",
+   "drawer_creak"
+  ],
+  "bottles": [
+   "glass_clink_soft",
+   "glass_clink_hard",
+   "glass_impact_thud",
+   "plastic_bottle_bounce",
+   "glass_shatter_small",
+   "glass_shatter_large",
+   "shard_settle",
+   "bullet_hit_glass",
+   "bullet_hit_plastic",
+   "cork_pop",
+   "cap_clink",
+   "liquid_glug",
+   "liquid_splash_small",
+   "liquid_splash_large"
+  ]
+ },
+ "sounds": {
+  "glass_clink_soft": {
+   "variants": 6,
+   "priority": 0.5
+  },
+  "glass_clink_hard": {
+   "variants": 6,
+   "priority": 0.5
+  },
+  "glass_impact_thud": {
+   "variants": 6,
+   "priority": 0.5
+  },
+  "plastic_bottle_bounce": {
+   "variants": 6,
+   "priority": 0.5
+  },
+  "plastic_bottle_dent": {
+   "variants": 4
+  },
+  "glass_shatter_small": {
+   "variants": 6,
+   "priority": 1.0
+  },
+  "glass_shatter_large": {
+   "variants": 6,
+   "priority": 1.0
+  },
+  "shard_settle": {
+   "variants": 8,
+   "priority": 0.5
+  },
+  "liquid_splash_small": {
+   "variants": 5
+  },
+  "liquid_splash_large": {
+   "variants": 5
+  },
+  "liquid_glug": {
+   "variants": 6,
+   "priority": 0.3
+  },
+  "liquid_stream_loop": {
+   "variants": 3,
+   "priority": 0.3
+  },
+  "liquid_slosh": {
+   "variants": 5,
+   "priority": 0.3
+  },
+  "fizz_loop": {
+   "variants": 2,
+   "priority": 0.3
+  },
+  "bubble_pop": {
+   "variants": 8,
+   "priority": 0.3
+  },
+  "cork_pop": {
+   "variants": 5,
+   "priority": 0.7
+  },
+  "crown_cap_pop": {
+   "variants": 5,
+   "priority": 0.7
+  },
+  "screw_cap_twist": {
+   "variants": 4
+  },
+  "cap_clink": {
+   "variants": 5,
+   "priority": 0.5
+  },
+  "bullet_hit_glass": {
+   "variants": 5,
+   "priority": 1.0
+  },
+  "bullet_hit_plastic": {
+   "variants": 5,
+   "priority": 1.0
+  },
+  "contact_wood_light": {
+   "variants": 5,
+   "priority": 0.3,
+   "gap": 0.04
+  },
+  "contact_wood_medium": {
+   "variants": 5,
+   "priority": 0.5,
+   "gap": 0.04
+  },
+  "contact_wood_hard": {
+   "variants": 5,
+   "priority": 0.8,
+   "gap": 0.04
+  },
+  "contact_metal_light": {
+   "variants": 5,
+   "priority": 0.3,
+   "gap": 0.04
+  },
+  "contact_metal_medium": {
+   "variants": 5,
+   "priority": 0.5,
+   "gap": 0.04
+  },
+  "contact_metal_hard": {
+   "variants": 5,
+   "priority": 0.8,
+   "gap": 0.04
+  },
+  "contact_concrete_light": {
+   "variants": 5,
+   "priority": 0.3,
+   "gap": 0.04
+  },
+  "contact_concrete_medium": {
+   "variants": 5,
+   "priority": 0.5,
+   "gap": 0.04
+  },
+  "contact_concrete_hard": {
+   "variants": 5,
+   "priority": 0.8,
+   "gap": 0.04
+  },
+  "contact_ceramic_light": {
+   "variants": 5,
+   "priority": 0.3,
+   "gap": 0.04
+  },
+  "contact_ceramic_medium": {
+   "variants": 5,
+   "priority": 0.5,
+   "gap": 0.04
+  },
+  "contact_ceramic_hard": {
+   "variants": 5,
+   "priority": 0.8,
+   "gap": 0.04
+  },
+  "contact_cardboard_light": {
+   "variants": 5,
+   "priority": 0.3,
+   "gap": 0.04
+  },
+  "contact_cardboard_medium": {
+   "variants": 5,
+   "priority": 0.5,
+   "gap": 0.04
+  },
+  "contact_cardboard_hard": {
+   "variants": 5,
+   "priority": 0.8,
+   "gap": 0.04
+  },
+  "contact_plastic_light": {
+   "variants": 5,
+   "priority": 0.3,
+   "gap": 0.04
+  },
+  "contact_plastic_medium": {
+   "variants": 5,
+   "priority": 0.5,
+   "gap": 0.04
+  },
+  "contact_plastic_hard": {
+   "variants": 5,
+   "priority": 0.8,
+   "gap": 0.04
+  },
+  "contact_fabric_light": {
+   "variants": 5,
+   "priority": 0.3,
+   "gap": 0.04
+  },
+  "contact_fabric_medium": {
+   "variants": 5,
+   "priority": 0.5,
+   "gap": 0.04
+  },
+  "contact_fabric_hard": {
+   "variants": 5,
+   "priority": 0.8,
+   "gap": 0.04
+  },
+  "hand_grab": {
+   "variants": 5,
+   "priority": 0.6,
+   "gap": 0.1
+  },
+  "hand_release": {
+   "variants": 5,
+   "priority": 0.6,
+   "gap": 0.1
+  },
+  "cardboard_fold": {
+   "variants": 4,
+   "priority": 0.5
+  },
+  "slide_loop_hard": {
+   "variants": 3,
+   "priority": 0.35
+  },
+  "slide_loop_wood": {
+   "variants": 3,
+   "priority": 0.35
+  },
+  "slide_loop_soft": {
+   "variants": 3,
+   "priority": 0.35
+  },
+  "footstep_concrete": {
+   "variants": 6,
+   "priority": 0.4,
+   "gap": 0.2
+  },
+  "footstep_wood": {
+   "variants": 6,
+   "priority": 0.4,
+   "gap": 0.2
+  },
+  "footstep_metal": {
+   "variants": 6,
+   "priority": 0.4,
+   "gap": 0.2
+  },
+  "footstep_grass": {
+   "variants": 6,
+   "priority": 0.4,
+   "gap": 0.2
+  },
+  "door_hinge_creak": {
+   "variants": 4,
+   "priority": 0.5
+  },
+  "drawer_creak": {
+   "variants": 4,
+   "priority": 0.5
+  }
+ }
+}
