@@ -695,3 +695,12 @@ karakterens hvile-rig, verdensstørrelse = × `restHand().scale`):
 Alle afventende Quest 3-tests (trin 4, 6, 7, 9 og 10) køres fra én side: bogmærket https://dionysus.dk/webxr/GameSystems/
 → LAN-hubben `https://<pc-ip>:8443/` (`tools/headset-lab`, start med skrivebordsgenvejen "GameSystems testlab"; ingen adb).
 Svar gemmes i `docs/headset_results.jsonl`. Se [headset_testlab.md](headset_testlab.md).
+
+
+### Backpack P3 (2026-10-24)
+
+Afmonterbar rygsæk som opt-in lag (`enable_detachable_backpack`, `--detachable-backpack`; standard slået fra): BodyMounts + `BodyAnchorProvider`, scene-adapter med atomisk rollback, åbn i luften, placering og auto-retur, valgfri checkpoint-nøgle. Eksisterende gear-inventory og dets checkpoint er uændrede. Headless: 93 nye checks, alle eksisterende suiter uændrede med og uden flag. Ikke afprøvet i headset. Se [backpack_system_design.md](backpack_system_design.md) afsnit 10.
+
+### Furniture G1 (2026-10-24)
+
+Ny opt-in extension `extensions/furniture/` (12 møbeltyper som data, kerne uden three + `mesh.js`, kræver mechanics; bruger audio, backpack og grasp). Eneste ændring i en eksisterende extension: valgfri `maxForce` på `mechanics.moveHand` (standard uændret). Sync-listerne i `scripts/sync_lib.mjs` og `webxr-demo/scripts/sync-helpers.mjs` har fået backpack og furniture. Demo: `webxr-demo/furniture.html`; hub-test `demo-moebler`. Ikke tilføjet til Contracts (se [furniture_system.md](furniture_system.md)). Detaljer, API, mangler og Godot-port: `furniture_system.md`.

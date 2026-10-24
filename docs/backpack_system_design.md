@@ -543,3 +543,30 @@ P2 er Godot-porten af container-ledgeren plus designrettelserne. Backpack-laget 
 **Hvad P3 kræver.** (1) `BodyMounts` i Nightfall: hofte-, bryst- og ryg-mounts som ledger-slots uden taske-container, forankret til IKVR/VRIK-avatarens joints (`vrik.joints` via en `BodyAnchorProvider`), så våben og magasiner bliver på kroppen når tasken er af; Nightfalls ni backpack-suiter som gate. (2) Scene-adapter der flytter containeren som nodegruppe med atomisk rollback oven på den eksisterende adapter, og som sætter proxyer fra `view()` på celleankre (loft og sider), samt collision-exception. (3) Værter der bruger `bagMount`, `returnDelayS` og `snapMode` på selve tasken. (4) Opt-in-flag (`enable_detachable_backpack`), hub-tests og hardware-accept på Quest. Ikke afprøvet i headset.
 
 **Licens og præcedens.** MIT-kilderne (UltimateXR, Godot XR Tools, VRE, GLoot) må portes med notits; resten, herunder Hurricane og Gothic Unity VR (GPL-3.0), er kun idéer og ingen kode er taget. `NightfallGearInventory` beholdes som ledger; GLoot er kun inspiration til constraints. På three.js-siden kan ingen eksisterende npm-, three.js-, A-Frame- eller Babylon-pakke genbruges: kernen er JS-ledgeren plus en `BodyAnchorProvider` oven på `vrik.joints`, med UltimateXR's anker-API som forbillede for kontrakten. Siddende kald til hånden er valgfri overalt og kan som standard være slået til siddende; Godot kan bruge `RETURNING`-animationen baglæns.
+
+
+## 10. Status: P3 leveret (2026-10-24)
+
+P3 er den afmonterbare rygsæk som opt-in lag (`enable_detachable_backpack`, standard slået fra; kommandolinje `--detachable-backpack`). Tilføjelse, ikke erstatning: `NightfallGearInventory`, `gs_gear_inventory` og dets checkpoint er uændrede, og ingen eksisterende `gs_backpack`-script er ændret (kun nye filer; Nightfalls rig har små additive hooks).
+
+**Nye filer (`godot/addons/gs_backpack/`).** `gs_backpack_body_anchor.gd` (`GSBackpackBodyAnchorProvider`, tomt interface: `is_valid`, `pack_frame`, `mount_frame(kind)`, `shoulder_height`, `head_position`, `posture`, `handedness`; en IKVR/VRIK-joint-provider overstyrer de syv metoder), `gs_backpack_body_anchor_static.gd` (indstillelig provider til tests og skrivebord), `gs_backpack_body_mounts.gd` (hofte/bryst/ryg-mounts uden taske, følger kroppen mens tasken er af, `zone_may_snap`), `gs_backpack_slot_alias.gd` (container-celler som alias på eksisterende ledger-slots, ingen nye slots), `gs_backpack_scene_adapter.gd` (WORN, DRAWING, HELD_OPEN, PLACED, RETURNING som nodegruppe med atomisk rollback, proxyer fra `container.view()` på celleankre, enkelt refresh-flow, collision-exception, summon, vægt, lagets checkpoint). Nightfall: `runtime/backpack_detach.gd`, `backpack_body_anchor.gd`, `backpack_field_pack.profile.json`, `detachable_backpack_config.gd`.
+
+**Opførsel.** Tag af: greb i håndtaget og et træk ud over det gamle 0,20 m-loft (0,26 m i kropsrammen), eller kald til hånden (valgfrit, også siddende). Hold i hånd(er), åbn i luften (to hænder fra medium, en hånd på low), læg på gulv/bord kun med gyldig pose, sæt på igen inden for rækkevidde. Auto-retur ved tracking-tab, uden underlag eller mere end 8 m væk; aldrig tabt. Våben- og magasinmounts forbliver på kroppen. Checkpoint: valgfri nøgle `backpack_layer` (container v2); kun WORN/PLACED gemmes; manglende nøgle giver WORN.
+
+**Tal (headless, kopi af Nightfall).** Nye `test_review_backpack_detachable.gd`: 93 checks, 0 fejl, med og uden `--detachable-backpack`. De eksisterende suiter har samme antal checks uden og med flaget som før ændringen (approach 15, body_follow 27, compartment_collision 30, feedback 17, input 21, live 41, pull 49, release 39, weapons 133, backpack_rig 87, visual_asset 21, gear_inventory 52, scene_adapter 73, access 24, gs_host 47). GameSystems: container 65, parity 253, gs_backpack_tests 34, interaction 10, uændret.
+
+**Afvigelser.**
+(a) Adapteren ligger i det delte addon som ny, additiv fil og ændrer ikke `GSGearInventorySceneAdapter`. Den bruger kun dens offentlige API; ejerskab gennemgår `rig.adapter`.
+(b) Trækket over 0,20 m er gated via `pathClear` (0,26 m), fordi `releaseOffsetM` højst må være 0,20 ifølge profilvalideringen.
+(c) Brystmounts findes kun generisk (`build_mount`); Nightfalls standard har ingen, fordi ekstra ledger-slots ville ændre checkpoint-formatet.
+(d) Hofte/ryg-mounts sweepes ikke mod kollision mens tasken er af.
+(e) Rig'en har fået `external_pose`, `detach_hook`, `body_frame_fn`, `extra_excludes`, `set_external_pose` og `_body_local`, alle inerte uden laget.
+(f) Skrivebordstilstand (ikke XR) har ingen afmontering.
+(g) Kald til hånden bruger zonen over hovedet ved siden af det; stående kald er assisteret og kan slås fra.
+(h) Et lag, der er uenigt med den levende ledger, ignoreres (WORN) frem for at flytte genstande.
+(i) Ingen ny lyd; kun `cue`-hooks til eksisterende grasp-feedback.
+(j) Headset-lab-hubben har ingen web-del til rygsækken, så hub-tests er ikke tilføjet; Quest/Frame-trin står i Nightfalls `docs/vr_backpack_weapon_system.md`.
+
+**Ikke afprøvet i headset.** Rækkevidde, vægtfølelse, åbning med to hænder, siddende kald, placering på bord, komfort og ydeevne på Quest/Steam Frame.
+
+**Hvad næste fase kræver.** P7-P8 (three.js-port): JS-modstykke til scene-adapteren og en `BodyAnchorProvider` oven på `vrik.joints`, samme profil og checkpoint v2, samt golden-vektorer for lagets tilstand (`pathClear`-gaten, `bagDistanceM`). IKVR-joint-provider: overstyr de syv provider-metoder; Nightfall-hosten ændres ikke.
