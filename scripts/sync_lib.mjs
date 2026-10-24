@@ -57,7 +57,7 @@ export const topLevelFiles = async dir => (await readdir(dir, { withFileTypes: t
 /** Extensions whose subfolders are generated per game (never copied from GameSystems, never removed by syncExtensions). */
 export const GENERATED_DIRS = { 'character-cc': ['vendor', 'assets'] };
 /** Source subfolders that are part of a shared extension's public data (offline tooling stays private). */
-export const SYNC_SUBDIRS = { grasp: ['data'], gore: ['data'] };
+export const SYNC_SUBDIRS = { grasp: ['data'], gore: ['data'], backpack: ['data'], furniture: ['data'] };
 
 /**
  * Mirror GameSystems extensions into `vendorDir/extensions/<name>`, top-level modules plus explicitly listed data

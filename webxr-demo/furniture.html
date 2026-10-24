@@ -1,0 +1,14 @@
+<!doctype html><html lang="da"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GameSystems · Møbler</title><link rel="icon" href="data:,">
+<style>body{margin:0;background:#1d2428;color:#edf4f2;font:14px system-ui}canvas{display:block}aside{position:absolute;top:20px;left:20px;width:290px;padding:20px;border:1px solid #526874;border-radius:12px;background:#14242deb;max-height:calc(100vh - 84px);overflow:auto}h1{font-size:23px;margin:6px 0}h2{font-size:15px;margin:16px 0 4px}p{line-height:1.5;color:#bdcdd5}label{display:block;margin:12px 0 6px}select,button,input{font:inherit;color:inherit;background:#344955;border:1px solid #6d8794;border-radius:6px;padding:8px;cursor:pointer}select,input{width:100%;box-sizing:border-box}.row{display:flex;gap:8px;margin:8px 0}.row>*{flex:1}#status,#log{white-space:pre-line;font:12px/1.7 ui-monospace,monospace}#log{color:#d6c79d;min-height:6em}a{color:#a9d6d7}.tag{color:#d6b67d;font-size:11px;letter-spacing:2px}</style></head><body>
+<aside><span class="tag">GAMESYSTEMS / MØBLER</span><h1>Møbler og skabe</h1>
+<p>Træk i håndtag med musen: skuffer og døre følger hånden og stopper ved grænsen. Hold Shift nede, når du tager fat i en tung dør (pengeskab): så bruges to hænder. Klik på en flaske i en åben skuffe for at tage den, og klik på en åben skuffe for at lægge den tilbage.</p>
+<div class="row"><button id="slam">Smæk køleskab</button><button id="slam2">Smæk skabsdør</button></div>
+<h2>Låse</h2>
+<div class="row"><button id="key-locker">Nøgle: skab</button><button id="key-chest">Nøgle: kiste</button></div>
+<div class="row"><button id="key-wrong">Forkert nøgle</button><button id="power">Strøm til dørlås</button></div>
+<label for="code">Kode til pengeskabet (tastatur i rummet virker også)</label><div class="row"><input id="code" inputmode="numeric" maxlength="8" placeholder="2580"><button id="enter">Indtast</button></div>
+<label for="quality">Kvalitet</label><select id="quality"><option value="0">Minimal · kun tilstand</option><option value="1">Lav · mekanik</option><option value="2">Mellem · lyd og indhold</option><option value="3" selected>Høj · rigtige flasker i skuffer</option></select>
+<div class="row"><button id="save">Gem</button><button id="restore">Indlæs</button><button id="reset">Nulstil</button></div>
+<h2>Status</h2><p id="status">Indlæser…</p><h2>Hændelser</h2><p id="log"></p>
+<p><a href="./security.html">Kameraer</a> · <a href="./fire.html">Brandstation</a> · <a href="./systems.html">Værksted</a> · Tilføj <code>?audio</code> for lyd.</p></aside>
+<script type="module" src="/src/furniture-lab.js"></script></body></html>

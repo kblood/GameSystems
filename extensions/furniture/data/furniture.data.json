@@ -1,0 +1,60 @@
+{
+  "schema": "gamesystems.furniture-data.v1",
+  "note": "Konstanter for extensions/furniture. Rediger her, ikke i koden. Tal markeret 'estimat' er designvalg, ikke maalt i headset.",
+  "SPEC_SCHEMA": "gamesystems.furniture.v1",
+  "STATE_SCHEMA": "gamesystems.furniture-state.v1",
+  "TIER_NAMES": ["minimal", "low", "mid", "high"],
+  "TIERS": {
+    "minimal": { "physics": false, "audio": false, "contents": "list",  "proxies": false, "seal": false },
+    "low":     { "physics": true,  "audio": false, "contents": "list",  "proxies": false, "seal": true },
+    "mid":     { "physics": true,  "audio": true,  "contents": "slots", "proxies": false, "seal": true },
+    "high":    { "physics": true,  "audio": true,  "contents": "slots", "proxies": true,  "seal": true }
+  },
+  "BACKPACK_TIER": { "minimal": "minimal", "low": "low", "mid": "medium", "high": "high" },
+  "PART_KINDS": ["body", "door", "drawer", "lid", "slide_door", "shelf"],
+  "MOVING_KINDS": ["door", "drawer", "lid", "slide_door"],
+  "BODY_STYLES": ["carcass", "solid", "frame", "table", "tray"],
+  "HANDLE_STYLES": ["bar", "knob", "lever", "wheel", "recessed"],
+  "MECHANISM_TYPES": ["hinge", "slider"],
+  "HINGE_SIDES": ["left", "right", "back_top"],
+  "SLIDE_DIRECTIONS": ["front", "left", "right"],
+  "LOCK_KINDS": ["key", "code", "power"],
+  "INTERACTIONS": ["grab", "tap", "none"],
+  "REJECT_REASONS": ["LOCKED", "NOT_CLOSED", "BLOCKED", "WRONG_KEY", "WRONG_CODE", "LOCKED_OUT", "NOT_KEYED", "NO_INVENTORY", "UNKNOWN_PART", "UNKNOWN_LOCK", "NOT_A_CONTAINER", "TOO_FEW_HANDS", "POWERED", "NO_POWER"],
+  "EVENTS": ["opened", "closed", "locked", "unlocked", "itemStored", "itemRemoved", "rejected", "clunk", "blocked", "grabbed", "released"],
+  "DEFAULT_CATEGORIES": ["bottle", "tool", "supply", "medical", "document", "valuable"],
+  "HAND": {
+    "forceN": 60,
+    "saturationHinge": 0.2,
+    "saturationSlider": 0.05,
+    "note": "forceN: hvad én hånd kan trække med (estimat; under grasp MAX_HOLD_FORCE 120 N). To hænder: summen, begrænset af grasp holdForce(2). Drejemoment pr. hånd = kraft x haandtagets arm."
+  },
+  "THRESHOLDS": {
+    "openFraction": 0.04,
+    "closedFraction": 0.012,
+    "closedEpsRad": 0.006,
+    "closedEpsM": 0.002,
+    "latchSpeed": 0.6,
+    "contentsClose": 0.6,
+    "reachM": 0.28
+  },
+  "DEFAULTS": {
+    "hinge": { "resistance": 0.15, "damping": 1.5, "selfClosingSpring": 1.6, "inertiaMin": 0.02 },
+    "slider": { "resistance": 1.0, "damping": 3.0, "selfClosingSpring": 12, "inertiaMin": 0.3 },
+    "densityKgM3": 220,
+    "openFraction": 0.85,
+    "wall": 0.018,
+    "handleOffset": 0.025
+  },
+  "AUDIO": {
+    "clunkMinSpeed": 0.15,
+    "clunkMaxSpeed": 4,
+    "latchSpeed": 0.35,
+    "rattleSpeed": 0.9,
+    "rattleGap": 0.35,
+    "stopMaterial": "wood"
+  },
+  "PROXIES": { "budget": 12, "default": 8 },
+  "TAP": { "forceFraction": 0.7, "seconds": 0.55 },
+  "CODE": { "minDigits": 3, "maxDigits": 8 }
+}

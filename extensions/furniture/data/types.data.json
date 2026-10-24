@@ -1,0 +1,1536 @@
+{
+ "schema": "gamesystems.furniture-types.v1",
+ "note": "Indbyggede møbeltyper og byggeklodser (data). Hver type er en FurnitureSpec uden \"schema\"; parseSpec (spec.js) validerer og normaliserer. Koordinater i furniture-rammen (meter, Y op, front mod +Z). Håndredigér frit: spec-valideringen fanger fejl.",
+ "blocks": {
+  "door": {
+   "kind": "door",
+   "size": [
+    0.45,
+    1,
+    0.02
+   ],
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "mechanism": {
+    "type": "hinge",
+    "hinge": "left",
+    "min": 0,
+    "max": 1.9,
+    "resistance": 0.25,
+    "damping": 1.5
+   },
+   "handle": {
+    "style": "bar"
+   }
+  },
+  "drawer": {
+   "kind": "drawer",
+   "size": [
+    0.5,
+    0.15,
+    0.45
+   ],
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "mechanism": {
+    "type": "slider",
+    "slide": "front",
+    "min": 0,
+    "max": 0.32,
+    "resistance": 1.5,
+    "damping": 3
+   },
+   "handle": {
+    "style": "bar"
+   },
+   "contents": {
+    "pockets": [
+     {
+      "id": "main",
+      "capacity": 4,
+      "maxSize": [
+       0.3,
+       0.1,
+       0.1
+      ]
+     }
+    ],
+    "openAt": 0.3
+   }
+  }
+ },
+ "types": [
+  {
+   "id": "cabinet",
+   "name": "Skab med to døre",
+   "category": "storage",
+   "size": [
+    0.9,
+    1.8,
+    0.45
+   ],
+   "mass": 38,
+   "material": "wood",
+   "color": "#a67c52",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "carcass",
+     "size": [
+      0.9,
+      1.8,
+      0.45
+     ],
+     "position": [
+      0,
+      0.9,
+      0
+     ],
+     "wall": 0.018
+    },
+    {
+     "id": "shelf1",
+     "kind": "shelf",
+     "size": [
+      0.86,
+      0.02,
+      0.4
+     ],
+     "position": [
+      0,
+      0.55,
+      -0.01
+     ],
+     "contents": {
+      "pockets": [
+       {
+        "id": "goods",
+        "capacity": 6,
+        "maxSize": [
+         0.32,
+         0.12,
+         0.12
+        ]
+       }
+      ],
+      "behind": [
+       "doorL",
+       "doorR"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "id": "shelf2",
+     "kind": "shelf",
+     "size": [
+      0.86,
+      0.02,
+      0.4
+     ],
+     "position": [
+      0,
+      1.15,
+      -0.01
+     ],
+     "contents": {
+      "pockets": [
+       {
+        "id": "goods",
+        "capacity": 6,
+        "maxSize": [
+         0.32,
+         0.12,
+         0.12
+        ]
+       }
+      ],
+      "behind": [
+       "doorL",
+       "doorR"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "use": "door",
+     "id": "doorL",
+     "size": [
+      0.443,
+      1.76,
+      0.02
+     ],
+     "position": [
+      -0.2245,
+      0.9,
+      0.235
+     ],
+     "mechanism": {
+      "hinge": "left",
+      "max": 1.95
+     }
+    },
+    {
+     "use": "door",
+     "id": "doorR",
+     "size": [
+      0.443,
+      1.76,
+      0.02
+     ],
+     "position": [
+      0.2245,
+      0.9,
+      0.235
+     ],
+     "mechanism": {
+      "hinge": "right",
+      "max": 1.95
+     }
+    }
+   ]
+  },
+  {
+   "id": "kitchen_cabinet",
+   "name": "Køkkenskab med skuffe og låge",
+   "category": "kitchen",
+   "size": [
+    0.6,
+    0.9,
+    0.58
+   ],
+   "mass": 30,
+   "material": "wood",
+   "color": "#d9d2c3",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "carcass",
+     "size": [
+      0.6,
+      0.9,
+      0.58
+     ],
+     "position": [
+      0,
+      0.45,
+      0
+     ],
+     "wall": 0.018
+    },
+    {
+     "id": "shelf",
+     "kind": "shelf",
+     "size": [
+      0.56,
+      0.02,
+      0.53
+     ],
+     "position": [
+      0,
+      0.38,
+      -0.01
+     ],
+     "contents": {
+      "pockets": [
+       {
+        "id": "goods",
+        "capacity": 4,
+        "maxSize": [
+         0.32,
+         0.12,
+         0.12
+        ]
+       }
+      ],
+      "behind": [
+       "door"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "use": "drawer",
+     "id": "drawer",
+     "size": [
+      0.56,
+      0.14,
+      0.52
+     ],
+     "position": [
+      0,
+      0.8,
+      0.04
+     ],
+     "mechanism": {
+      "max": 0.4
+     },
+     "handle": {
+      "style": "bar",
+      "length": 0.2
+     },
+     "contents": {
+      "pockets": [
+       {
+        "id": "cutlery",
+        "capacity": 4,
+        "maxSize": [
+         0.3,
+         0.1,
+         0.1
+        ],
+        "categories": [
+         "tool",
+         "supply",
+         "document"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "use": "door",
+     "id": "door",
+     "size": [
+      0.588,
+      0.62,
+      0.02
+     ],
+     "position": [
+      0,
+      0.37,
+      0.3
+     ],
+     "mechanism": {
+      "hinge": "right",
+      "max": 1.95
+     },
+     "handle": {
+      "style": "knob"
+     }
+    }
+   ]
+  },
+  {
+   "id": "dresser",
+   "name": "Kommode med fire skuffer",
+   "category": "bedroom",
+   "size": [
+    0.9,
+    1,
+    0.5
+   ],
+   "mass": 45,
+   "material": "wood",
+   "color": "#8c6a4a",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "carcass",
+     "size": [
+      0.9,
+      1,
+      0.5
+     ],
+     "position": [
+      0,
+      0.5,
+      0
+     ],
+     "wall": 0.018
+    },
+    {
+     "use": "drawer",
+     "id": "drawer1",
+     "size": [
+      0.86,
+      0.22,
+      0.46
+     ],
+     "position": [
+      0,
+      0.13,
+      0.03
+     ],
+     "mechanism": {
+      "max": 0.38,
+      "resistance": 1.8
+     },
+     "contents": {
+      "pockets": [
+       {
+        "id": "main",
+        "capacity": 4,
+        "maxSize": [
+         0.34,
+         0.14,
+         0.14
+        ]
+       }
+      ]
+     },
+     "handle": {
+      "style": "knob",
+      "length": 0.25
+     }
+    },
+    {
+     "use": "drawer",
+     "id": "drawer2",
+     "size": [
+      0.86,
+      0.22,
+      0.46
+     ],
+     "position": [
+      0,
+      0.37,
+      0.03
+     ],
+     "mechanism": {
+      "max": 0.38,
+      "resistance": 1.8
+     },
+     "contents": {
+      "pockets": [
+       {
+        "id": "main",
+        "capacity": 4,
+        "maxSize": [
+         0.34,
+         0.14,
+         0.14
+        ]
+       }
+      ]
+     },
+     "handle": {
+      "style": "bar",
+      "length": 0.25
+     }
+    },
+    {
+     "use": "drawer",
+     "id": "drawer3",
+     "size": [
+      0.86,
+      0.22,
+      0.46
+     ],
+     "position": [
+      0,
+      0.61,
+      0.03
+     ],
+     "mechanism": {
+      "max": 0.38,
+      "resistance": 1.8
+     },
+     "contents": {
+      "pockets": [
+       {
+        "id": "main",
+        "capacity": 4,
+        "maxSize": [
+         0.34,
+         0.14,
+         0.14
+        ]
+       }
+      ]
+     },
+     "handle": {
+      "style": "knob",
+      "length": 0.25
+     }
+    },
+    {
+     "use": "drawer",
+     "id": "drawer4",
+     "size": [
+      0.86,
+      0.22,
+      0.46
+     ],
+     "position": [
+      0,
+      0.85,
+      0.03
+     ],
+     "mechanism": {
+      "max": 0.38,
+      "resistance": 1.8
+     },
+     "contents": {
+      "pockets": [
+       {
+        "id": "main",
+        "capacity": 6,
+        "maxSize": [
+         0.34,
+         0.14,
+         0.14
+        ]
+       }
+      ]
+     },
+     "handle": {
+      "style": "bar",
+      "length": 0.25
+     }
+    }
+   ]
+  },
+  {
+   "id": "wardrobe",
+   "name": "Garderobe med store døre",
+   "category": "bedroom",
+   "size": [
+    1.2,
+    2,
+    0.6
+   ],
+   "mass": 70,
+   "material": "wood",
+   "color": "#b99870",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "carcass",
+     "size": [
+      1.2,
+      2,
+      0.6
+     ],
+     "position": [
+      0,
+      1,
+      0
+     ],
+     "wall": 0.02
+    },
+    {
+     "id": "shelfTop",
+     "kind": "shelf",
+     "size": [
+      1.15,
+      0.02,
+      0.55
+     ],
+     "position": [
+      0,
+      1.7,
+      -0.01
+     ],
+     "contents": {
+      "pockets": [
+       {
+        "id": "goods",
+        "capacity": 8,
+        "maxSize": [
+         0.32,
+         0.12,
+         0.12
+        ]
+       }
+      ],
+      "behind": [
+       "doorL",
+       "doorR"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "id": "shelfLow",
+     "kind": "shelf",
+     "size": [
+      1.15,
+      0.02,
+      0.55
+     ],
+     "position": [
+      0,
+      0.3,
+      -0.01
+     ],
+     "contents": {
+      "pockets": [
+       {
+        "id": "goods",
+        "capacity": 6,
+        "maxSize": [
+         0.32,
+         0.12,
+         0.12
+        ]
+       }
+      ],
+      "behind": [
+       "doorL",
+       "doorR"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "use": "door",
+     "id": "doorL",
+     "size": [
+      0.593,
+      1.96,
+      0.025
+     ],
+     "mass": 16,
+     "position": [
+      -0.2995,
+      1,
+      0.31
+     ],
+     "mechanism": {
+      "hinge": "left",
+      "max": 2,
+      "resistance": 0.6,
+      "damping": 1.2
+     },
+     "handle": {
+      "style": "bar",
+      "length": 0.5,
+      "twoHand": true
+     }
+    },
+    {
+     "use": "door",
+     "id": "doorR",
+     "size": [
+      0.593,
+      1.96,
+      0.025
+     ],
+     "mass": 16,
+     "position": [
+      0.2995,
+      1,
+      0.31
+     ],
+     "mechanism": {
+      "hinge": "right",
+      "max": 2,
+      "resistance": 0.6,
+      "damping": 1.2
+     },
+     "handle": {
+      "style": "bar",
+      "length": 0.5,
+      "twoHand": true
+     }
+    }
+   ]
+  },
+  {
+   "id": "desk",
+   "name": "Skrivebord med skuffer",
+   "category": "office",
+   "size": [
+    1.4,
+    0.75,
+    0.7
+   ],
+   "mass": 35,
+   "material": "wood",
+   "color": "#9c7b55",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "table",
+     "size": [
+      1.4,
+      0.75,
+      0.7
+     ],
+     "position": [
+      0,
+      0.375,
+      0
+     ]
+    },
+    {
+     "id": "pedL",
+     "kind": "shelf",
+     "size": [
+      0.018,
+      0.71,
+      0.64
+     ],
+     "position": [
+      0.231,
+      0.355,
+      0
+     ]
+    },
+    {
+     "id": "pedR",
+     "kind": "shelf",
+     "size": [
+      0.018,
+      0.71,
+      0.64
+     ],
+     "position": [
+      0.669,
+      0.355,
+      0
+     ]
+    },
+    {
+     "id": "pedBack",
+     "kind": "shelf",
+     "size": [
+      0.42,
+      0.71,
+      0.018
+     ],
+     "position": [
+      0.45,
+      0.355,
+      -0.32
+     ]
+    },
+    {
+     "use": "drawer",
+     "id": "drawer1",
+     "size": [
+      0.4,
+      0.19,
+      0.6
+     ],
+     "position": [
+      0.45,
+      0.12,
+      0.025
+     ],
+     "mechanism": {
+      "max": 0.36
+     },
+     "contents": {
+      "pockets": [
+       {
+        "id": "main",
+        "capacity": 4,
+        "maxSize": [
+         0.3,
+         0.12,
+         0.12
+        ]
+       }
+      ]
+     },
+     "handle": {
+      "style": "bar",
+      "length": 0.2
+     }
+    },
+    {
+     "use": "drawer",
+     "id": "drawer2",
+     "size": [
+      0.4,
+      0.19,
+      0.6
+     ],
+     "position": [
+      0.45,
+      0.33,
+      0.025
+     ],
+     "mechanism": {
+      "max": 0.36
+     },
+     "contents": {
+      "pockets": [
+       {
+        "id": "main",
+        "capacity": 4,
+        "maxSize": [
+         0.3,
+         0.12,
+         0.12
+        ]
+       }
+      ]
+     },
+     "handle": {
+      "style": "bar",
+      "length": 0.2
+     }
+    },
+    {
+     "use": "drawer",
+     "id": "drawer3",
+     "size": [
+      0.4,
+      0.19,
+      0.6
+     ],
+     "position": [
+      0.45,
+      0.54,
+      0.025
+     ],
+     "mechanism": {
+      "max": 0.36
+     },
+     "contents": {
+      "pockets": [
+       {
+        "id": "main",
+        "capacity": 4,
+        "maxSize": [
+         0.3,
+         0.12,
+         0.12
+        ]
+       }
+      ]
+     },
+     "handle": {
+      "style": "bar",
+      "length": 0.2
+     }
+    },
+    {
+     "use": "drawer",
+     "id": "slim",
+     "size": [
+      0.6,
+      0.07,
+      0.6
+     ],
+     "position": [
+      -0.2,
+      0.665,
+      0.025
+     ],
+     "mechanism": {
+      "max": 0.3
+     },
+     "contents": {
+      "pockets": [
+       {
+        "id": "main",
+        "capacity": 3,
+        "maxSize": [
+         0.3,
+         0.05,
+         0.05
+        ],
+        "categories": [
+         "tool",
+         "document",
+         "valuable"
+        ]
+       }
+      ]
+     },
+     "handle": {
+      "style": "recessed"
+     }
+    }
+   ]
+  },
+  {
+   "id": "fridge",
+   "name": "Kølskab med selvlukkende dør",
+   "category": "kitchen",
+   "size": [
+    0.6,
+    1.7,
+    0.65
+   ],
+   "mass": 60,
+   "material": "metal",
+   "color": "#e6e8ea",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "carcass",
+     "size": [
+      0.6,
+      1.7,
+      0.65
+     ],
+     "position": [
+      0,
+      0.85,
+      0
+     ],
+     "wall": 0.04,
+     "material": "metal",
+     "color": "#e6e8ea"
+    },
+    {
+     "id": "shelf1",
+     "kind": "shelf",
+     "size": [
+      0.5,
+      0.012,
+      0.53
+     ],
+     "position": [
+      0,
+      0.4,
+      0
+     ],
+     "material": "glass",
+     "color": "#cfe3e8",
+     "contents": {
+      "pockets": [
+       {
+        "id": "goods",
+        "capacity": 4,
+        "maxSize": [
+         0.32,
+         0.12,
+         0.12
+        ]
+       }
+      ],
+      "behind": [
+       "door"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "id": "shelf2",
+     "kind": "shelf",
+     "size": [
+      0.5,
+      0.012,
+      0.53
+     ],
+     "position": [
+      0,
+      0.8,
+      0
+     ],
+     "material": "glass",
+     "color": "#cfe3e8",
+     "contents": {
+      "pockets": [
+       {
+        "id": "goods",
+        "capacity": 4,
+        "maxSize": [
+         0.32,
+         0.12,
+         0.12
+        ]
+       }
+      ],
+      "behind": [
+       "door"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "id": "shelf3",
+     "kind": "shelf",
+     "size": [
+      0.5,
+      0.012,
+      0.53
+     ],
+     "position": [
+      0,
+      1.2,
+      0
+     ],
+     "material": "glass",
+     "color": "#cfe3e8",
+     "contents": {
+      "pockets": [
+       {
+        "id": "goods",
+        "capacity": 4,
+        "maxSize": [
+         0.32,
+         0.12,
+         0.12
+        ]
+       }
+      ],
+      "behind": [
+       "door"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "use": "door",
+     "id": "door",
+     "size": [
+      0.6,
+      1.68,
+      0.06
+     ],
+     "mass": 12,
+     "position": [
+      0,
+      0.85,
+      0.355
+     ],
+     "material": "metal",
+     "color": "#e6e8ea",
+     "mechanism": {
+      "hinge": "left",
+      "max": 2.05,
+      "resistance": 0.3,
+      "damping": 1.4,
+      "selfClosing": {
+       "spring": 3,
+       "latch": 0.12
+      }
+     },
+     "seal": {
+      "torque": 2.5,
+      "angle": 0.25
+     },
+     "handle": {
+      "style": "bar",
+      "orientation": "vertical",
+      "length": 0.5,
+      "at": [
+       0.24,
+       0.2,
+       0.06
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "safe",
+   "name": "Pengeskab med kodelås",
+   "category": "security",
+   "size": [
+    0.55,
+    0.65,
+    0.5
+   ],
+   "mass": 120,
+   "material": "metal",
+   "color": "#4a4f55",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "carcass",
+     "size": [
+      0.55,
+      0.65,
+      0.5
+     ],
+     "position": [
+      0,
+      0.325,
+      0
+     ],
+     "wall": 0.05,
+     "contents": {
+      "pockets": [
+       {
+        "id": "valuables",
+        "capacity": 6,
+        "maxSize": [
+         0.3,
+         0.2,
+         0.2
+        ],
+        "categories": [
+         "valuable",
+         "document",
+         "bottle",
+         "supply"
+        ]
+       }
+      ],
+      "behind": [
+       "door"
+      ],
+      "proxyMax": 6
+     }
+    },
+    {
+     "id": "door",
+     "kind": "door",
+     "size": [
+      0.53,
+      0.63,
+      0.08
+     ],
+     "mass": 45,
+     "position": [
+      0,
+      0.325,
+      0.29
+     ],
+     "material": "metal",
+     "color": "#5b6168",
+     "minHands": 2,
+     "mechanism": {
+      "type": "hinge",
+      "hinge": "left",
+      "min": 0,
+      "max": 1.8,
+      "resistance": 22,
+      "damping": 2.5
+     },
+     "handles": [
+      {
+       "style": "wheel",
+       "at": [
+        0.06,
+        0.02,
+        0.06
+       ],
+       "length": 0.22
+      }
+     ]
+    }
+   ],
+   "locks": [
+    {
+     "id": "combo",
+     "kind": "code",
+     "code": "2580",
+     "parts": [
+      "door"
+     ],
+     "locked": true,
+     "maxAttempts": 5,
+     "lockoutS": 30
+    }
+   ]
+  },
+  {
+   "id": "locker",
+   "name": "Metalskab med nøglelås",
+   "category": "security",
+   "size": [
+    0.4,
+    1.8,
+    0.5
+   ],
+   "mass": 28,
+   "material": "metal",
+   "color": "#6f8794",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "carcass",
+     "size": [
+      0.4,
+      1.8,
+      0.5
+     ],
+     "position": [
+      0,
+      0.9,
+      0
+     ],
+     "wall": 0.012,
+     "material": "metal",
+     "contents": {
+      "pockets": [
+       {
+        "id": "floor",
+        "capacity": 4,
+        "maxSize": [
+         0.34,
+         0.25,
+         0.25
+        ]
+       }
+      ],
+      "behind": [
+       "door"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "id": "shelf",
+     "kind": "shelf",
+     "size": [
+      0.37,
+      0.012,
+      0.46
+     ],
+     "position": [
+      0,
+      1.45,
+      0
+     ],
+     "material": "metal",
+     "contents": {
+      "pockets": [
+       {
+        "id": "top",
+        "capacity": 4,
+        "maxSize": [
+         0.32,
+         0.12,
+         0.12
+        ]
+       }
+      ],
+      "behind": [
+       "door"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "use": "door",
+     "id": "door",
+     "size": [
+      0.39,
+      1.77,
+      0.015
+     ],
+     "position": [
+      0,
+      0.9,
+      0.26
+     ],
+     "material": "metal",
+     "color": "#7d97a5",
+     "mechanism": {
+      "hinge": "right",
+      "max": 1.9,
+      "resistance": 0.35
+     },
+     "handle": {
+      "style": "lever",
+      "at": [
+       -0.1,
+       -0.05,
+       0.03
+      ]
+     }
+    }
+   ],
+   "locks": [
+    {
+     "id": "lock",
+     "kind": "key",
+     "keyId": "key_locker",
+     "parts": [
+      "door"
+     ],
+     "locked": true
+    }
+   ]
+  },
+  {
+   "id": "chest",
+   "name": "Kiste med hængslet låg",
+   "category": "storage",
+   "size": [
+    0.9,
+    0.5,
+    0.5
+   ],
+   "mass": 20,
+   "material": "wood",
+   "color": "#7a5636",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "tray",
+     "size": [
+      0.9,
+      0.38,
+      0.5
+     ],
+     "position": [
+      0,
+      0.19,
+      0
+     ],
+     "wall": 0.025,
+     "contents": {
+      "pockets": [
+       {
+        "id": "hold",
+        "capacity": 8,
+        "maxSize": [
+         0.4,
+         0.22,
+         0.22
+        ]
+       }
+      ],
+      "behind": [
+       "lid"
+      ],
+      "proxyMax": 8
+     }
+    },
+    {
+     "id": "lid",
+     "kind": "lid",
+     "size": [
+      0.9,
+      0.12,
+      0.5
+     ],
+     "mass": 6,
+     "position": [
+      0,
+      0.44,
+      0
+     ],
+     "material": "wood",
+     "color": "#8a6240",
+     "mechanism": {
+      "type": "hinge",
+      "hinge": "back_top",
+      "min": 0,
+      "max": 1.85,
+      "resistance": 0.8,
+      "damping": 2
+     },
+     "handle": {
+      "style": "bar",
+      "length": 0.18,
+      "standoff": 0.03
+     }
+    }
+   ],
+   "locks": [
+    {
+     "id": "lock",
+     "kind": "key",
+     "keyId": "key_chest",
+     "parts": [
+      "lid"
+     ],
+     "locked": false
+    }
+   ]
+  },
+  {
+   "id": "door",
+   "name": "Dør med klinke",
+   "category": "architecture",
+   "size": [
+    0.92,
+    2.1,
+    0.1
+   ],
+   "mass": 25,
+   "material": "wood",
+   "color": "#c9c4bb",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "frame",
+     "size": [
+      0.92,
+      2.1,
+      0.1
+     ],
+     "position": [
+      0,
+      1.05,
+      0
+     ],
+     "wall": 0.04
+    },
+    {
+     "use": "door",
+     "id": "door",
+     "size": [
+      0.82,
+      2.05,
+      0.04
+     ],
+     "mass": 22,
+     "position": [
+      0,
+      1.025,
+      0
+     ],
+     "color": "#d8d3ca",
+     "mechanism": {
+      "hinge": "left",
+      "max": 1.75,
+      "resistance": 0.2,
+      "damping": 1.8
+     },
+     "handles": [
+      {
+       "style": "lever",
+       "at": [
+        0.34,
+        -0.05,
+        0.035
+       ],
+       "orientation": "horizontal"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sliding_door",
+   "name": "Skydedør",
+   "category": "architecture",
+   "size": [
+    1.8,
+    2.2,
+    0.14
+   ],
+   "mass": 30,
+   "material": "wood",
+   "color": "#b7b2a8",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "frame",
+     "size": [
+      1.8,
+      2.2,
+      0.14
+     ],
+     "position": [
+      0,
+      1.1,
+      0
+     ],
+     "wall": 0.06
+    },
+    {
+     "id": "panel",
+     "kind": "slide_door",
+     "size": [
+      0.9,
+      2.12,
+      0.035
+     ],
+     "mass": 28,
+     "position": [
+      -0.45,
+      1.06,
+      -0.015
+     ],
+     "material": "wood",
+     "color": "#d3cec4",
+     "mechanism": {
+      "type": "slider",
+      "slide": "right",
+      "min": 0,
+      "max": 0.82,
+      "resistance": 1.2,
+      "damping": 3
+     },
+     "handles": [
+      {
+       "style": "recessed",
+       "at": [
+        0.37,
+        0,
+        0
+       ],
+       "orientation": "vertical",
+       "length": 0.18
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "drawer",
+   "name": "Skuffe (natbord)",
+   "category": "bedroom",
+   "size": [
+    0.45,
+    0.27,
+    0.4
+   ],
+   "mass": 8,
+   "material": "wood",
+   "color": "#9a7a58",
+   "parts": [
+    {
+     "id": "body",
+     "kind": "body",
+     "style": "carcass",
+     "size": [
+      0.45,
+      0.27,
+      0.4
+     ],
+     "position": [
+      0,
+      0.535,
+      0
+     ],
+     "wall": 0.016
+    },
+    {
+     "use": "drawer",
+     "id": "drawer",
+     "size": [
+      0.416,
+      0.19,
+      0.36
+     ],
+     "position": [
+      0,
+      0.535,
+      0.03
+     ],
+     "mechanism": {
+      "max": 0.3
+     },
+     "contents": {
+      "pockets": [
+       {
+        "id": "main",
+        "capacity": 4,
+        "maxSize": [
+         0.3,
+         0.12,
+         0.12
+        ]
+       }
+      ]
+     },
+     "handle": {
+      "style": "knob"
+     }
+    }
+   ]
+  }
+ ]
+}

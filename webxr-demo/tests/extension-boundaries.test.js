@@ -16,7 +16,7 @@ const DEPS = {
   ai: [],
   acoustics: ['host'], audio: ['host'], adapters: ['host'], alarms: ['host'], avatar: ['humanoid'], backpack: ['host'], bottles: ['host'], cameras: ['host'],
   'character-cc': ['humanoid'], 'character-vrm': ['humanoid'], checkpoint: ['host', 'supply'], coatings: ['host'],
-  electricity: ['host'], flow: ['host'], gore: ['host', 'humanoid'], grasp: [], hitreact: ['humanoid'], host: [], humanoid: [], materials: ['host'], mechanics: ['host'],
+  electricity: ['host'], flow: ['host'], furniture: ['host', 'mechanics', 'audio', 'backpack', 'grasp'], gore: ['host', 'humanoid'], grasp: [], hitreact: ['humanoid'], host: [], humanoid: [], materials: ['host'], mechanics: ['host'],
   missions: ['host'], 'pool-interest': ['host', 'pools'], pools: ['host', 'thermal'], smoke: ['host'], sprinklers: ['host'],
   supply: ['host'], thermal: ['host'], tools: ['host'], vehicle: ['host'], workshop: [],
 };
@@ -80,4 +80,13 @@ test('avatar and grasp never import a character system; character systems never 
     ['character-cc', ['avatar', 'grasp', 'character-vrm']], ['character-vrm', ['avatar', 'grasp', 'character-cc']]]) {
     for (const b of banned) assert.ok(!DEPS[from].includes(b), `${from} must not depend on ${b}`);
   }
+});
+
+test('furniture kernel stays engine-free: only mesh.js imports three', () => {
+  const dir = join(root, 'furniture'), offenders = [];
+  for (const p of runtimeFiles(dir)) {
+    if (p.endsWith(`${sep}mesh.js`)) continue;
+    if (specifiers(readFileSync(p, 'utf8')).some(s => s === 'three' || s.startsWith('three/'))) offenders.push(relative(dir, p));
+  }
+  assert.deepEqual(offenders, []);
 });

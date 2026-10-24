@@ -38,9 +38,10 @@ export function createMechanicsSystem({ emit = () => {}, quality = 'high', apply
     drive(id, owner, force) { const m = store.get(id); if (!owner) throw new Error('drive needs owner'); m.forces.set(owner, finite(force)); },
     release(id, owner) { store.get(id).forces.delete(owner); holds.delete(holdKey(id, owner)); },
     grab(id, owner, point) { const m = store.get(id); holds.set(holdKey(id, owner), { id, point: vector(point), value: m.value }); },
-    moveHand(id, owner, point, stiffness = 80) {
+    // maxForce (optional, added for extensions/furniture): caps the hand's force (N / Nm) so one hand cannot move an arbitrarily heavy part; default unlimited = unchanged.
+    moveHand(id, owner, point, stiffness = 80, maxForce = Infinity) {
       const m = store.get(id), h = holds.get(holdKey(id, owner)); if (!h) return false;
-      point = vector(point); positive(stiffness);
+      point = vector(point); positive(stiffness); if (maxForce !== Infinity) positive(maxForce, 'maxForce');
       let target;
       if (m.kind === 'slider') target = h.value + dot(point.map((v, i) => v - h.point[i]), m.axis);
       else {
@@ -50,7 +51,7 @@ export function createMechanicsSystem({ emit = () => {}, quality = 'high', apply
         const cross = [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
         target = h.value + Math.atan2(dot(m.axis, cross), dot(a, b));
       }
-      api.drive(id, owner, (clamp(target, m.min, m.max) - m.value) * stiffness); return true;
+      api.drive(id, owner, clamp((clamp(target, m.min, m.max) - m.value) * stiffness, -maxForce, maxForce)); return true;
     },
     step(dt) {
       positive(dt, 'dt', true); if (!dt) return;

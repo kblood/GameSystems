@@ -228,6 +228,22 @@ export const GROUPS = [
           'Med ?audio og testpanelet: aflæs frame-tiden med og uden lyd og skriv den i noten.',
         ],
       },
+      {
+        id: 'demo-moebler', title: 'Møbler: skuffer, døre, låse og indhold (furniture-lab)',
+        links: [['Møbellab', '/demo/furniture.html'], ['Møbellab med lyd', '/demo/furniture.html?audio']],
+        check: [
+          'Tryk Enter VR (lyd starter ved første brugerhandling, hvis ?audio er med). Rummet viser skabe, kommode, garderobe, skrivebord, køleskab, pengeskab, skab med lås, kiste, natbord, dør og skydedør.',
+          'Åbn en skuffe: grib knoppen på kommoden (trigger eller grip) og træk mod dig. Skuffen følger hånden, stopper ved grænsen med et dunk og knirker undervejs. Slip: den bliver stående åben.',
+          'Tag en flaske: i den åbne skuffe ligger flasker. Ret strålen mod en flaske og tryk trigger, så sidder den i hånden. Ret mod en åben skuffe og tryk igen, så lægges den tilbage. Tilbage i en LUKKET skuffe skal ikke gå.',
+          'Smæk en dør: åbn køleskabet, slip, og se at den lukker selv (fjeder + magnetlist, dunk ved lukning). Tryk «Smæk køleskab» eller skub kraftigt: hårdere dunk end ved blød lukning.',
+          'Lås og oplås: ret strålen mod den grønne nøgle på skrivebordet tæt på skabet med lås (locker): det låses op. Prøv den grå nøgle: afvist (WRONG_KEY i loggen). Gå tæt på kisten og brug den gyldne nøgle.',
+          'Låst dør: forsøg at åbne skabet, mens det er låst. Døren rokker ikke, og loggen siger LOCKED. Luk døren og lås igen med nøglen.',
+          'Tungt pengeskab: åbn først koden (kodepanelet på stolpen i rummet: 2580 efterfulgt af OK; fem forkerte koder giver 30 s lockout). Prøv derefter at åbne døren med EN hånd: den rokker næsten ikke (TOO_FEW_HANDS i loggen). Tag fat med BEGGE hænder på hjulet og træk: den åbner tungt.',
+          'Skrivebordets skuffer, køkkenskabets skuffe og låge, natbordet, skydedøren og kisten virker. Døren med strømlås låses, når strømmen er til (kun desktop-knappen «Strøm til dørlås»; i VR noter at den mangler).',
+          'Kvalitet (desktop-panelet; i VR er der intet panel, så test niveauerne på skærmen først): Minimal (grib = skift tilstand), Lav (mekanik), Mellem (lyd og indhold), Høj (rigtige flasker). Notér frame-tid på Høj med flere åbne skuffer.',
+          'Gem, flyt rundt på skuffer og døre, Indlæs (desktop-panelet): alt står, som da du gemte (positioner, låse, flasker).',
+        ],
+      },
     ],
   },
   {
