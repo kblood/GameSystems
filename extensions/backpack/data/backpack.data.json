@@ -4,7 +4,9 @@
     "APPROACH": "godot/addons/gs_backpack/gs_backpack_approach.gd:7-20 (all values copied verbatim; BOUNDARY_EPSILON too)",
     "PULL": "godot/addons/gs_backpack/gs_backpack_handle_pull.gd:6-8 (PULL_DEADZONE_M, MAX_PULL_M, FOLLOW_RATE) and NightfallContractsGodot/runtime/backpack_rig.gd:20 (HANDLE_REACH_M, 0.16 m, read only)",
     "STATE": "docs/backpack_system_design.md 3.2: releaseOffsetM 0.18, releaseHoldS 0.15, trackingGraceS 1.0-1.5 (1.25 chosen = APPROACH_LIFETIME_S), donDwellS 0.5, openAccessFraction 0.95 (backpack_rig.gd:27 COMPARTMENT_OPEN_ACCESS_FRACTION), closeAccessFraction 0.90 (backpack_rig.gd:28). The rest are design estimates, not measured on hardware: releaseSpeedMps, returnDurationS, openDurationS, donEnterM, donExitM, autoReturnDistanceM",
-    "TIERS": "docs/backpack_system_design.md 3.4 tier table; physical items only in 'high' (user decision 3)"
+    "TIERS": "docs/backpack_system_design.md 3.4 tier table; physical items only in 'high' (user decision 3)",
+    "VIEW": "docs/backpack_framework_research.md 1.11/section 4: Gothic Unity VR materialises at most 9 physical sockets per page; our cap is 8-12 (design estimate, not measured on hardware)",
+    "MOUNT": "docs/backpack_framework_research.md 1.1/section 4: UltimateXR anchor API (compatibleTags, Placing/Placed/Removing/Removed), Godot XR Tools snap modes and return delay (ideas only, no code copied)"
   },
   "APPROACH": {
     "MAX_SAMPLE_DT": 0.15,
@@ -45,6 +47,19 @@
     "autoReturnDistanceM": 8.0,
     "maxStepS": 0.5
   },
+  "VIEW": {
+    "MAX_PHYSICAL_PROXIES": 12,
+    "DEFAULT_PHYSICAL_PROXIES": 8,
+    "ALL_TAB": "*",
+    "MAX_REFRESH_PASSES": 8
+  },
+  "MOUNT": {
+    "SNAP_MODES": ["none", "range", "dropped"],
+    "DEFAULT_SNAP_MODE": "range",
+    "MAX_RETURN_DELAY_S": 60,
+    "EVENTS": ["placing", "placed", "removing", "removed"]
+  },
+  "PROFILE_KINDS": ["pack", "stash"],
   "TIER_NAMES": ["off", "minimal", "low", "medium", "high"],
   "TIERS": {
     "off":     { "enabled": false, "pull": false, "detach": false, "open": false, "twoHand": false, "weightLag": false, "elbowHint": false, "proxyItems": false, "physicalItems": false, "physicalItemsMax": 0 },
@@ -54,5 +69,5 @@
     "high":    { "enabled": true,  "pull": true,  "detach": true,  "open": true,  "twoHand": true,  "weightLag": true,  "elbowHint": true,  "proxyItems": true,  "physicalItems": true,  "physicalItemsMax": 8 }
   },
   "STATES": ["WORN", "DRAWING", "HELD_CLOSED", "HELD_OPEN", "PLACED", "RETURNING"],
-  "REJECT_REASONS": ["FULL", "WRONG_ITEM", "TOO_LARGE", "INVALID_SIZE", "UNKNOWN_ITEM", "UNKNOWN_POCKET", "NOT_OWNED", "NOT_ACCESSIBLE", "PROVIDER_REJECTED", "EMPTY", "NOT_FOUND"]
+  "REJECT_REASONS": ["FULL", "WRONG_ITEM", "TOO_LARGE", "INVALID_SIZE", "UNKNOWN_ITEM", "UNKNOWN_POCKET", "NOT_OWNED", "NOT_ACCESSIBLE", "PROVIDER_REJECTED", "EMPTY", "NOT_FOUND", "NOT_ACCEPTED", "VETOED", "SNAP_DISABLED", "NOT_RELEASED"]
 }

@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runApproach, runPull, runState, runProfile, firstDiff } from './golden_runner.mjs';
+import { runApproach, runPull, runState, runProfile, runLedger, firstDiff } from './golden_runner.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../../..');
@@ -19,10 +19,11 @@ const GODOT = arg('--godot') ?? process.env.GODOT ?? resolve(ROOT, '../Nightfall
 export async function jsObservations() {
   const golden = JSON.parse(await readFile(resolve(ROOT, 'extensions/backpack/data/backpack.golden.json'), 'utf8'));
   const files = { profiles: golden.profiles };
-  const out = { approach: {}, pull: {}, state: {}, profileCases: {} };
+  const out = { approach: {}, pull: {}, state: {}, profileCases: {}, ledger: {} };
   for (const v of golden.approach) out.approach[v.name] = runApproach(v);
   for (const v of golden.pull) out.pull[v.name] = runPull(v);
   for (const v of golden.state) out.state[v.name] = runState(v, files);
+  for (const v of golden.ledger) out.ledger[v.name] = runLedger(v, files);
   for (const v of golden.profileCases) out.profileCases[v.name] = runProfile(v);
   return { golden, out };
 }
@@ -43,7 +44,7 @@ export async function compareParity(exe = GODOT) {
   const js = await jsObservations(), gd = await godotObservations(exe);
   if (!gd.dump) throw new Error(`Godot produced no dump:\n${gd.log}`);
   let vectors = 0, ops = 0; const problems = [];
-  for (const group of ['approach', 'pull', 'state', 'profileCases']) {
+  for (const group of ['approach', 'pull', 'state', 'ledger', 'profileCases']) {
     for (const [name, expected] of Object.entries(js.out[group])) {
       vectors++; ops += Array.isArray(expected) ? expected.length : 1;
       const diff = firstDiff(gd.dump[group]?.[name], expected, `${group}/${name}`);

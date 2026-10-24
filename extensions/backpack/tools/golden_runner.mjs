@@ -5,6 +5,9 @@ import { createApproach } from '../approach.js';
 import { createPull } from '../pull.js';
 import { createBackpackState } from '../state.js';
 import { parseProfile } from '../profile.js';
+import { createContainerLedger, createMemoryInventory } from '../ledger.js';
+import { createStash } from '../stash.js';
+import { captureCheckpoint, prepareCheckpoint } from '../checkpoint.js';
 
 export const GOLDEN_SCHEMA = 'gamesystems.backpack-golden.v1';
 export const EPS = 1e-7;
@@ -97,12 +100,99 @@ export function runProfile(vec) {
   try { parseProfile(vec.profile); return { valid: true }; } catch { return { valid: false }; }
 }
 
+// ---- container ledger (P2). One observation per op: { result, events, where, refresh, extra }; the Godot twin builds the same.
+const fmtLedgerEvent = (type, d) => {
+  const t = type.replace(/^backpack:/, '');
+  if (t === 'moved') return `moved:${d.itemId}:${d.from}>${d.to}`;
+  if (t === 'mount_return') return `mount_return:${d.itemId}:${d.pocketId}:${d.ok}`;
+  if (d.itemId !== undefined) return `${t}:${d.itemId}:${d.pocketId}@${d.cell ?? ''}`;
+  return t;
+};
+const normResult = r => ({ ok: !!r.ok, reason: r.reason ?? '', cell: r.cell ?? '', itemId: r.itemId ?? '', failedItem: r.failedItem ?? '', cells: (r.cells ?? []).join(',') });
+const viewObs = v => ({ mode: v.mode, tab: v.tab, tabs: v.tabs.join(','), page: v.page, pages: v.pages, pageSize: v.pageSize, total: v.total, truncated: v.truncated,
+  items: v.items.map(i => `${i.itemId}@${i.cell}`).join(',') });
+
+export function runLedger(vec, files) {
+  const profile = JSON.parse(JSON.stringify(files.profiles[vec.profile ?? 'example']));
+  const mem = createMemoryInventory(), override = new Map(), ids = [];
+  let events = [], access = 'all';
+  const fault = { store: { skip: 0, fail: 0 }, retrieve: { skip: 0, fail: 0 } };
+  const pass = f => { if (f.skip > 0) { f.skip--; return true; } if (f.fail > 0) { f.fail--; return false; } return true; };
+  const inventory = {
+    addSlot: (...a) => mem.addSlot(...a), itemInfo: id => override.get(id) ?? mem.itemInfo(id), itemInSlot: s => mem.itemInSlot(s), slotOf: id => mem.slotOf(id),
+    store: (id, o, s) => (pass(fault.store) ? mem.store(id, o, s) : false), retrieve: (s, o) => (pass(fault.retrieve) ? mem.retrieve(s, o) : ''),
+  };
+  const emit = (type, data) => events.push(fmtLedgerEvent(type, data));
+  const tier = vec.tier ?? 'high';
+  const stash = profile.kind === 'stash' ? createStash({ profile, inventory, emit, tier }) : null;
+  const ledger = stash ? stash.ledger : createContainerLedger({ profile, inventory, canAccess: id => access === 'all' || access.includes(id), emit, tier });
+  const removers = [];
+  const out = [];
+  for (const raw of vec.ops) {
+    const op = dec(raw);
+    let r = { ok: true, reason: '' }, extra = {};
+    switch (op.op) {
+      case 'registerItem': {
+        const ok = mem.registerItem(op.id, op.category, op.size, op.owner ?? 'world', op.tags);
+        if (!ok && op.force) override.set(op.id, { category: op.category, size: [...op.size], owner: op.owner ?? 'world' });
+        if (ok || op.force) ids.push(op.id);
+        r = { ok, reason: '' }; break;
+      }
+      case 'setAccess': access = op.pockets; break;
+      case 'open': r = stash.open(); break;
+      case 'close': r = stash.close(); break;
+      case 'check': r = ledger.check(op.item, op.pocket, { expectedOwner: op.owner ?? 'world' }); break;
+      case 'store': r = ledger.store(op.item, op.pocket, { expectedOwner: op.owner ?? 'world' }); break;
+      case 'retrieve': r = ledger.retrieve(op.pocket, { itemId: op.item, newOwner: op.newOwner ?? 'world' }); break;
+      case 'move': r = ledger.move(op.item, op.pocket); break;
+      case 'storeAll': r = ledger.storeAll(op.items, op.pocket, { expectedOwner: op.owner ?? 'world' }); break;
+      case 'hand': r = { ok: mem.transfer(op.item, op.from, op.to), reason: '' }; break;
+      case 'fault': fault[op.method] = { skip: op.skip, fail: op.fail }; break;
+      case 'validator': {
+        const on = op.on, items = op.items, pockets = op.pockets;
+        removers.push(ledger.addValidator(e => !(on.includes(e.kind) && (!items || items.includes(e.itemId)) && (!pockets || pockets.includes(e.pocketId)))));
+        break;
+      }
+      case 'clearValidators': while (removers.length) removers.pop()(); break;
+      case 'offer': r = ledger.offer(op.item, op.pocket, { released: op.released === true }); break;
+      case 'scheduleReturn': r = ledger.scheduleReturn(op.item, op.pocket); extra = { pending: ledger.pendingReturns().join(',') }; break;
+      case 'tick': { const res = ledger.tick(op.dt); extra = { returns: res.map(x => `${x.itemId}:${x.ok}:${x.reason}`).join(','), pending: ledger.pendingReturns().join(',') }; break; }
+      case 'hold': r = ledger.hold(op.item, op.side); break;
+      case 'unhold': r = ledger.unhold(op.item); break;
+      case 'selectView': extra = { view: viewObs(ledger.selectView({ tab: op.tab, page: op.page })) }; break;
+      case 'view': extra = { view: viewObs(ledger.view({ tab: op.tab, page: op.page, exclude: op.exclude })) }; break;
+      case 'setTier': ledger.setTier(op.tier); break;
+      case 'listener': {
+        let done = false;
+        ledger.onRefresh(() => { if (op.mode === 'store_once' && done) return; done = true; ledger.store(op.item, op.pocket); });
+        break;
+      }
+      case 'capture': extra = { capture: (stash ?? ledger).capture() }; break;
+      case 'captureV2': extra = { capture: captureCheckpoint({ ledger }) }; break;
+      case 'restore': {
+        try { const plan = (stash ?? ledger).prepareRestore(op.data); plan.commit(); plan.notify(); } catch { r = { ok: false, reason: 'invalid' }; }
+        break;
+      }
+      case 'restoreV2': {
+        try { const plan = prepareCheckpoint({ ledger }, op.absent ? undefined : op.data); plan.commit(); plan.notify(); extra = { absent: plan.absent, version: plan.version }; } catch { r = { ok: false, reason: 'invalid' }; }
+        break;
+      }
+      default: throw new Error(`Unknown ledger op ${op.op}`);
+    }
+    out.push({ result: normResult(r), events, where: [...ids].sort().map(id => { const i = mem.itemInfo(id); return `${id}:${i ? i.owner : '?'}@${i ? mem.slotOf(id) : ''}`; }).join('|'),
+      refresh: ledger.refreshStats(), extra });
+    events = [];
+  }
+  return out;
+}
+
 export function runAll(files) {
   return {
     profileCases: files.golden.profileCases.map(v => ({ name: v.name, results: runProfile(v) })),
     approach: files.golden.approach.map(v => ({ name: v.name, results: runApproach(v) })),
     pull: files.golden.pull.map(v => ({ name: v.name, results: runPull(v) })),
     state: files.golden.state.map(v => ({ name: v.name, results: runState(v, files) })),
+    ledger: (files.golden.ledger ?? []).map(v => ({ name: v.name, results: runLedger(v, files) })),
   };
 }
 

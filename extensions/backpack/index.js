@@ -5,14 +5,17 @@
 import { extension } from '../host/system.js';
 import { jsonState } from '../host/state.js';
 import { parseProfile, tierFlags, BACKPACK_TIERS } from './profile.js';
+import { captureCheckpoint, prepareCheckpoint } from './checkpoint.js';
 import { createBackpackState } from './state.js';
 import { createContainerLedger } from './ledger.js';
 import { createApproach } from './approach.js';
 import { assertAdapter, nullAudio, audioNameFor } from './adapters.js';
 
-export { BACKPACK_DATA, BACKPACK_TIERS, BACKPACK_STATES, PROFILE_SCHEMA, LOSS_POLICIES, parseProfile, tierFlags, thresholdsOf, canonicalSize, sizeFits } from './profile.js';
+export { BACKPACK_DATA, BACKPACK_TIERS, BACKPACK_STATES, PROFILE_SCHEMA, LOSS_POLICIES, PROFILE_KINDS, SNAP_MODES, parseProfile, tierFlags, thresholdsOf, materialLimit, canonicalSize, sizeFits } from './profile.js';
 export { createBackpackState, STATE_SCHEMA, TRANSITIONS, canTransition, isHeld, OWNER_OF } from './state.js';
 export { createContainerLedger, createMemoryInventory, LEDGER_SCHEMA } from './ledger.js';
+export { createStash, STASH_SCHEMA } from './stash.js';
+export { captureCheckpoint, prepareCheckpoint, restoreCheckpoint, CHECKPOINT_SCHEMA } from './checkpoint.js';
 export { createApproach, APPROACH } from './approach.js';
 export { createPull, PULL } from './pull.js';
 export { ADAPTER_METHODS, REQUIRED_ADAPTERS, assertAdapter, nullAudio, createRecordingAudio, audioNameFor } from './adapters.js';
@@ -31,7 +34,7 @@ export function createBackpackSystem({ profile, inventory, audio = nullAudio, qu
     if (name) audio.event(name, { side: data.side, state: data.to, itemId: data.itemId, pocketId: data.pocketId });
   };
   const bag = createBackpackState({ profile: prof, tier: tierName(quality), emit: out });
-  const ledger = createContainerLedger({ profile: prof, inventory, canAccess: id => bag.canAccess(id), emit: out });
+  const ledger = createContainerLedger({ profile: prof, inventory, canAccess: id => bag.canAccess(id), emit: out, tier: () => bag.tier });
   const approach = createApproach();
   const api = {
     profile: prof, bag, ledger, approach,
@@ -56,6 +59,10 @@ export function createBackpackSystem({ profile, inventory, audio = nullAudio, qu
       return { commit() { l.commit(); b.commit(); approach.reset(); }, notify() { l.notify(); b.notify(); } };
     },
     restore(raw) { const plan = api.prepareRestore(raw); plan.commit(); plan.notify(); },
+    /** Checkpoint v2 (the backpack layer's own state; see checkpoint.js). restoreCheckpoint(undefined) is a no-op for old checkpoints without it. */
+    captureCheckpoint() { return captureCheckpoint({ ledger, bag }); },
+    prepareCheckpoint(raw) { const plan = prepareCheckpoint({ ledger, bag }, raw); return { ...plan, commit() { plan.commit(); if (!plan.absent) approach.reset(); } }; },
+    restoreCheckpoint(raw) { const plan = api.prepareCheckpoint(raw); plan.commit(); plan.notify(); return plan; },
     dispose() { approach.reset(); },
   };
   return api;

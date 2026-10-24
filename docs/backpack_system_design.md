@@ -235,7 +235,7 @@ Eneste fundne eksempel på "kommer til hånden og åbnes i luften".
 
 ### 2.3 Vurdering [S]
 - **Slotbaseret kerne + valgfri fysisk visning** giver det spillere roser (hurtig, forudsigelig adgang) uden det de klager over (overlappende rod, upræcis targeting).
-- **Ingen læst kilde viser en fuld tag-af/hold/åbn/sæt-på-rygsæk i et udgivet spil.** Det er en differentiator, men en *ukendt* i komfort og indlæring. Brug Till Dawns "kald til hånd" og Into the Radius' "returnerer automatisk" som sikkerhedsnet.
+- **Ingen framework/plugin/toolkit har en fuld tag-af/hold/åbn/sæt-på-rygsæk som komponent** (UltimateXR, VRIF, Auto Hand, Hurricane, XRI, ISDK, Godot XR Tools, VRE, Immersive VR Inventory). Præcedensen findes kun i spilkode: **Gothic Unity VR** (GPL-3.0, bygget på Hurricane; kun idéer, ingen kode) har `VRBackpack`: unsocket fra skulder, i hånden, 9 fysiske sockets pr. side, socket tilbage. Den er pagineret og har fejl #319 (to opdateringsveje giver ude-af-sync visning). **Hurricane** er nærmeste framework-præcedens (rygsæk som gribbart objekt i skulder-socket), Till Dawn er summon-præcedens. Komfort og indlæring er stadig en *ukendt*. Brug Till Dawns "kald til hånd" og Into the Radius' "returnerer automatisk" som sikkerhedsnet.
 - **Modtræk mod klagerne:** tilgivende zoner med hysterese, tydelig feedback, auto-retur/"tab ikke noget"-regel, justerbar placering, venstre/højre-spejling, og slots der følger **hofte/ryg-løsning** og ikke kun headset-yaw.
 
 ---
@@ -284,6 +284,8 @@ Eneste fundne eksempel på "kommer til hånden og åbnes i luften".
 | `PhysicsHook` | `holdBag`, `releaseBag(vel)`, `spawnContents`, `sweepVolume` | JS: `host/physics.js`-adapter; Godot: `PhysicsDirectSpaceState3D` |
 | `CheckpointProvider` | `capture()/prepareRestore()` | JS: `createCheckpointSystem`; Godot: udvid checkpoint i `player.gd` |
 
+**BackpackMount (begreb, P2).** En mount er en socket med et filter og en snap-regel (idé efter UltimateXR `UxrGrabbableObjectAnchor`, MIT; ingen kode taget). WORN betyder "tasken er snappet i ryg-mounten", DRAWING og HELD betyder "ude af mount", don-zonen er snap til mount med dwell og hysterese, RETURNING er timeout-retur mod mount. Det forklarer pose-ejer-reglen (kun mount, hånd eller verden skriver posen) og passer til Hurricane-mønstret. Tilstandsmaskinens tilstande og alle eksisterende golden-resultater er uændrede; begrebet er data. Profilens `pockets[].mount` og det valgfrie topniveau `bagMount` har felterne `acceptOnly` (item-id'er eller tags; en genstand uden tags tæller som sin kategori), `snapMode` (`none` | `range` | `dropped`, standard `range`) og `returnDelayS` (0 til 60 s). Ledgeren udsender før/efter-events `placing`/`placed` og `removing`/`removed` (pre-event i rækkefølgen placing, stored, placed), og validatorer kan nedlægge veto (`VETOED`). `offer()` håndterer snap, `scheduleReturn()` og `tick()` håndterer timeout-retur. `bagMount` og `returnDelayS` for selve tasken bruges først af værterne i P3; tilstandsmaskinen kender dem ikke.
+
 ### 3.2 Tilstandsmaskine [S]
 
 ```
@@ -322,6 +324,8 @@ Hofte-/back-mounts hænger i dag på rigen (`backpack_rig.gd:42-52`). Når taske
 Våben/magasiner på hoften forsvinder så ikke når tasken er af; `back` (langt våben) er konfigurerbar (taske eller krop), standard i Nightfall = **krop**, så sling/våbenflows ikke brydes.
 Kræver ingen ledger-ændring, kun flytning af ankerknudepunkter (`register_slot` tager vilkårligt anker).
 
+**Stash/kiste (P2).** Samme ledger, anden profil: `kind: "stash"` er et stationært lager (skab, kiste, garderobe) uden bæretilstande. Det har kun åben/lukket (`createStash`, `GSBackpackStash`); lommer med access `always` er altid tilgængelige, `open` og `worn` kun mens lageret er åbent. Et stash afviser `handle`, `dominantHand`, `donZone`, `recall`, `bagMount`, bære-flag i tiers og `detachable: true`. Eksempel: `data/profile.stash.example.json` (wall_locker).
+
 ### 3.4 "Åbn i luften", indhold, vægt, lyd, tiers [S]
 
 **To hænder og åbning.** Tasken har `carry_handle` (primær) og `side_grip`/`bottom_support` (sekundær). Genbrug `two_hand.js`/`two_hand.data.json` (`pickSecondary`, `solveTwoHand`, `secondaryHeld`, `releasedTogether`) og Godot-ækvivalenten via `gs_grasp`. Åbning: sekundær hånd trækker klap/lynlås (JS: `mechanics` `hinge`/`slider`; Godot: lille tilstand) eller "tryk-og-træk"; åbningsfraktion er taskens tilstand.
@@ -330,6 +334,8 @@ Kræver ingen ledger-ændring, kun flytning af ankerknudepunkter (`register_slot
 **Vægt** (`weight_lag.js`, `held_drive.js`): masse = tom + sum(indhold) (kosmetisk skala). `high/mid`: `maxOffset/lagTarget` giver håndlag, `elbowHintOf` styrer albuer, to hænder halverer lag (`holdForce(2)`). `low/minimal`: intet lag, kun valgfri haptik.
 
 **Lyd** (`audio.grab/release/contact`): `bag_strap_grab`, `bag_unzip`, `bag_clasp`, `bag_set_down` (materialeafhængig via `contact`), `item_rustle`. `sound_materials.json` genbruges til stof/læder.
+
+**Materialiseringsloft og én opdateringsvej (P2, Gothic #319).** Åbning materialiserer højst N fysiske proxyer fra ledgeren, N = `tiers.high.physicalItemsMax` (heltal, højst 12, `BACKPACK_DATA.VIEW.MAX_PHYSICAL_PROXIES`; eksempel-rygsækken har 8). Resten vises som side/fane: `view({tab, page})` giver `{mode, tab, tabs, page, pages, pageSize, total, items, truncated}`, hvor fane er `*` (alle taske-lommer) eller et lomme-id, og sider afgrænses til gyldigt interval. På tiers uden `physicalItems` er visningen en slot-visning uden loft (hver celle, også tomme). Genstande i en hånd (`hold`/`unhold`, eller ejer `hand:*`) udelades, så noget aldrig vises to steder. Alle ændringer (store, retrieve, move, storeAll, hold, setTier, selectView, restore) når lyttere gennem **én** vej, `refresh()`. Den har en re-entrancy-guard: en ændring, en lytter foretager under en refresh, udføres med det samme, men dens refresh samles til ét ekstra gennemløb, begrænset til `VIEW.MAX_REFRESH_PASSES` (8). `refreshStats()` giver `{refreshes, deferred}`. **Collision-exception (Godot XR Tools #521):** på `high` ignorerer containeren sine egne indre rigids, og en zone snapper aldrig sin egen forfader; `low` og `mid` dækkes af `freeze`/`collision_layer=0`. Dette er scene-arbejde og hører til P3.
 
 | Tier | Taske | Åbn | Indhold | Fysik |
 |---|---|---|---|---|
@@ -385,7 +391,8 @@ Kræver ingen ledger-ændring, kun flytning af ankerknudepunkter (`register_slot
 | Armtræthed ved at holde taske frem | komfortklager | Hvile mod bryst/mave, let PLACED, evt. let vægtlag |
 | Tracking-tab i HELD | uventet drop | Grace + RETURNING; aldrig fysisk drop i `low/mid` |
 | Quest-ydelse i `high` | frame drops | Rigids kun åben+nær, N-loft, sleeping; mål på hub |
-| Ukendt mønster, ingen præcedens fundet | indlæringskurve | Tutorial-prompt, "kald til hånd", auto-retur |
+| Ukendt mønster i udgivne spil (kun Gothic Unity VR som spilkode-præcedens) | indlæringskurve | Tutorial-prompt, "kald til hånd", auto-retur |
+| To opdateringsveje giver ude-af-sync visning (Gothic #319) | tom eller dobbelt visning, uendelig refresh | Én `refresh()`-vej med re-entrancy-guard og pass-loft; held-liste; golden-vektor `refresh_has_one_path_and_guards_reentrancy` |
 | Lighed med andre spils assets | juridisk | Kun mekanik-mønstre, egne assets (BlenderShared) |
 
 ---
@@ -511,3 +518,28 @@ navngivne provider-slots `<profil>/<lomme>/<i>`, ikke en ny ejertype i inventory
 
 **Hvad P2 kræver.** Godot-port af container-ledgeren oven på `NightfallGearInventory` (additivt wrapper-lag, checkpoint v2 der accepterer v1) med rollback-tests mod golden-ledgervektorer (ledger-vektorer findes endnu ikke i golden, kun i node-tests);
 scene-adapter der flytter containeren som nodegruppe med atomisk rollback; derefter P3 (BodyMounts i Nightfall) før gameplay-faserne. Ikke afprøvet i headset.
+
+---
+
+## 9. Status: P2 leveret (2026-10-24)
+
+P2 er Godot-porten af container-ledgeren plus designrettelserne. Backpack-laget er stadig et nyt lag oven på inventory: `NightfallGearInventory`, `gs_gear_inventory` og dets checkpoint-format er uændrede, og ingen eksisterende `gs_backpack`-script er ændret (kun nye filer).
+
+**Godot (nye filer i `godot/addons/gs_backpack/`):** `gs_backpack_container.gd` (GSBackpackContainer: lommer som provider-slots `<profil>/<lomme>/<i>`, samme regler og afvisningsrækkefølge som `ledger.js`, atomisk store/retrieve/move/storeAll med rollback, mount-filter, validatorer, pre/post-events, offer/scheduleReturn/tick, view med loft og én refresh-vej, hold/unhold, JSON-sikkert checkpoint v2 der kun dækker backpack-lagets egen tilstand og accepterer manglende backpack-state), `gs_backpack_profile_ext.gd` (kind, mount, bagMount, materialiseringsloft; delegerer til den uændrede `GSBackpackProfile.parse`), `gs_backpack_stash.gd` (stationær kiste), `tests/gs_backpack_container_tests.gd` (65 checks mod den rigtige `NightfallGearInventory`). Ny golden-fil: `data/profile.stash.example.json`.
+
+**JS-kerne:** `ledger.js` (mount, validatorer, events, view, refresh, hold, tier), `profile.js` (`kind`, `bagMount`, `pockets[].mount`, `physicalItemsMax` heltal og højst 12), nye `checkpoint.js` (`gamesystems.backpack-checkpoint.v2` = `{schema, profileId, ledger, bag|null}`; gamle `backpack-system.v1` og bart `backpack-ledger.v1` accepteres) og `stash.js`. `profile.schema.json` er bagudkompatibel: alle nye felter er valgfrie, `handle`/`dominantHand` kræves kun af pack-grenen (`allOf`).
+
+**Golden og paritet.** `tools/ledger_vectors.mjs` (nye vektorer, 16 ledger-vektorer og 20 nye profilcases) og `tools/golden_runner.mjs` `runLedger`. De gamle approach-, pull- og state-resultater og de første 41 profilcases er identiske med før. `node extensions/backpack/tools/parity.mjs`: **125 vektorer, 1976 trin, 0 forskelle** (før: 89 vektorer, 1573 trin). Vektorerne er approach 15, pull 9, state 24, profil 61 og ledger 16. Alle afvisningsgrunde og alle nye events er dækket (testet i node).
+
+**Tal.** `backpack.test.js` 26 til 33 tests; `webxr-demo npm test` 859 til 866, alle grønne; grasp-studio 27/27; headset-lab 7/7. Godot headless (på kopi af `godot/`): gs_backpack_tests 34, interaction 10, parity 253 checks (før 183), container 65 (ny), gear_inventory 59, scene_adapter 82, weapon_loadout 30, alle uden fejl.
+
+**Afvigelser.**
+(a) **Scene-adapter er udskudt til P3.** De eksisterende reparent- og rollback-primitiver er ikke genbrugbare uden at røre den uændrede `GSGearInventorySceneAdapter` (`_can_reparent_to` er privat, og `register_slot` kræver et ankerknudepunkt pr. celle); en tynd facade ville være en kopi, ikke et lag. Containeren virker derfor på ren data mod enhver provider med `add_slot`, `register_item`, `store`, `retrieve`, `item_in_slot`, `slot_of` og `owner_of`.
+(b) **`returnDelayS` og `bagMount` er kun profildata.** Godots `gs_backpack_state.gd` må ikke ændres, så tilstandsmaskinen (JS og Godot) kender dem ikke; ledgerens `scheduleReturn`/`tick` bruger lommens `returnDelayS`, og værterne bruger `bagMount` i P3.
+(c) **NightfallGearInventory har ingen offentlig kategori/størrelse pr. genstand**, så Godot-containeren holder et lille register over det, `register_item()` har ladet passere, eller spørger en valgfri `info_provider`-Callable.
+(d) Godot-tests bruger `3.0` og ikke `3` for tal i profil-dictionaries, fordi den eksisterende `GSBackpackProfile` kun accepterer floats; JSON giver altid floats.
+(e) Collision-exception for `high` er beskrevet men ikke implementeret (scene-arbejde, P3).
+
+**Hvad P3 kræver.** (1) `BodyMounts` i Nightfall: hofte-, bryst- og ryg-mounts som ledger-slots uden taske-container, forankret til IKVR/VRIK-avatarens joints (`vrik.joints` via en `BodyAnchorProvider`), så våben og magasiner bliver på kroppen når tasken er af; Nightfalls ni backpack-suiter som gate. (2) Scene-adapter der flytter containeren som nodegruppe med atomisk rollback oven på den eksisterende adapter, og som sætter proxyer fra `view()` på celleankre (loft og sider), samt collision-exception. (3) Værter der bruger `bagMount`, `returnDelayS` og `snapMode` på selve tasken. (4) Opt-in-flag (`enable_detachable_backpack`), hub-tests og hardware-accept på Quest. Ikke afprøvet i headset.
+
+**Licens og præcedens.** MIT-kilderne (UltimateXR, Godot XR Tools, VRE, GLoot) må portes med notits; resten, herunder Hurricane og Gothic Unity VR (GPL-3.0), er kun idéer og ingen kode er taget. `NightfallGearInventory` beholdes som ledger; GLoot er kun inspiration til constraints. På three.js-siden kan ingen eksisterende npm-, three.js-, A-Frame- eller Babylon-pakke genbruges: kernen er JS-ledgeren plus en `BodyAnchorProvider` oven på `vrik.joints`, med UltimateXR's anker-API som forbillede for kontrakten. Siddende kald til hånden er valgfri overalt og kan som standard være slået til siddende; Godot kan bruge `RETURNING`-animationen baglæns.

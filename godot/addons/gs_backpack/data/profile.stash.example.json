@@ -1,0 +1,15 @@
+{
+  "schema": "gamesystems.backpack-profile.v1",
+  "id": "wall_locker",
+  "kind": "stash",
+  "displayName": "Wall locker (example stash: stationary container, same ledger as the backpack)",
+  "detachable": false,
+  "lossPolicy": "never",
+  "mass": { "emptyKg": 20 },
+  "tiers": { "high": { "physicalItemsMax": 4 } },
+  "pockets": [
+    { "id": "drawer",   "container": "bag", "access": "always", "categories": ["tool", "supply", "medical"], "maxSize": [0.30, 0.20, 0.12], "capacity": 2 },
+    { "id": "shelf",    "container": "bag", "access": "open",   "categories": ["tool", "supply", "medical"], "maxSize": [0.40, 0.30, 0.20], "capacity": 4 },
+    { "id": "gun_rack", "container": "bag", "access": "open",   "categories": ["long_gun", "pistol"],        "maxSize": [1.00, 0.25, 0.10], "capacity": 2 }
+  ]
+}

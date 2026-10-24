@@ -8,11 +8,13 @@ import { createHost } from '../../extensions/host/index.js';
 import backpackExtension, {
   BACKPACK_DATA, BACKPACK_TIERS, BACKPACK_STATES, TRANSITIONS, OWNER_OF, canTransition, isHeld, parseProfile, tierFlags, thresholdsOf,
   createBackpackState, createBackpackSystem, createContainerLedger, createMemoryInventory, createApproach, createPull, createRecordingAudio,
+  createStash, captureCheckpoint, prepareCheckpoint, restoreCheckpoint, CHECKPOINT_SCHEMA, PROFILE_KINDS, SNAP_MODES, materialLimit,
   ADAPTER_METHODS, assertAdapter, sizeFits, canonicalSize, APPROACH, PULL,
 } from '../../extensions/backpack/index.js';
 import { buildGolden, goldenText, DATA_DIR, GODOT_DATA_DIR, COPIED } from '../../extensions/backpack/tools/gen_golden.mjs';
-import { runApproach, runPull, runState, runProfile, firstDiff } from '../../extensions/backpack/tools/golden_runner.mjs';
+import { runApproach, runPull, runState, runProfile, runLedger, firstDiff } from '../../extensions/backpack/tools/golden_runner.mjs';
 import { profileCases } from '../../extensions/backpack/tools/vectors.mjs';
+import { profileCasesAll, ledgerVectors } from '../../extensions/backpack/tools/ledger_vectors.mjs';
 import { compareParity } from '../../extensions/backpack/tools/parity.mjs';
 
 const read = name => readFileSync(`${DATA_DIR}/${name}`, 'utf8');
@@ -62,10 +64,11 @@ test('profile: example validates; schema file and validator agree; invalid profi
   const p = parseProfile(EXAMPLE);
   assert.equal(p.lossPolicy, 'never'); assert.equal(p.handle.reachM, 0.16);
   const schema = JSON.parse(read('profile.schema.json'));
-  assert.deepEqual(schema.required.sort(), ['schema', 'id', 'detachable', 'lossPolicy', 'dominantHand', 'handle', 'pockets'].sort());
+  assert.deepEqual(schema.required.sort(), ['schema', 'id', 'detachable', 'lossPolicy', 'pockets'].sort(), 'handle/dominantHand are required by the pack branch only (allOf)');
   assert.deepEqual(schema.properties.lossPolicy.enum, ['never']);
-  assert.deepEqual(Object.keys(schema.properties).sort(), Object.keys(parseProfile(EXAMPLE)).filter(k => k !== 'thresholds' || true).concat(['displayName']).filter((v, i, a) => a.indexOf(v) === i && ['schema','id','displayName','detachable','lossPolicy','dominantHand','handle','donZone','recall','mass','thresholds','tiers','pockets'].includes(v)).concat(['donZone']).filter((v, i, a) => a.indexOf(v) === i).sort());
+  assert.deepEqual(Object.keys(schema.properties).sort(), ['schema', 'kind', 'id', 'displayName', 'detachable', 'lossPolicy', 'dominantHand', 'handle', 'donZone', 'recall', 'bagMount', 'mass', 'thresholds', 'tiers', 'pockets'].sort());
   for (const c of profileCases(EXAMPLE)) assert.equal(runProfile(c).valid, ['example_is_valid', 'overrides_are_valid', 'left_handed_minimal_profile'].includes(c.name), c.name);
+  assert.deepEqual(PROFILE_KINDS, ['pack', 'stash']); assert.deepEqual(SNAP_MODES, ['none', 'range', 'dropped']);
   for (const bad of ['on_death_drop', 'on_death_lose', 'sometimes', '', null]) assert.throws(() => parseProfile({ ...EXAMPLE, lossPolicy: bad }), /lossPolicy/);
   assert.throws(() => parseProfile({ ...EXAMPLE, tiers: { medium: { physicalItems: true, physicalItemsMax: 3 } } }), /physical items are only allowed/);
   assert.deepEqual(parseProfile(JSON.parse(JSON.stringify(EXAMPLE))), p, 'parse is idempotent on its own output');
@@ -412,6 +415,118 @@ test('host extension: loads with five tiers, follows the global level, off is in
   host.dispose();
 });
 
+// ---------------------------------------------------------------- P2: mounts, materialisation limit, one refresh path, checkpoint v2, stash
+const SZ = [0.1, 0.05, 0.03];
+const withProfile = (fn, base = EXAMPLE) => { const p = JSON.parse(JSON.stringify(base)); fn(p); return p; };
+const STASH = JSON.parse(read('profile.stash.example.json'));
+const mkLedger = (profile = EXAMPLE, extra = {}) => { const inventory = createMemoryInventory(); const events = []; const ledger = createContainerLedger({ profile, inventory, emit: (t, d) => events.push(t.replace('backpack:', '') + ':' + (d.itemId ?? '')), ...extra }); return { inventory, ledger, events }; };
+
+test('P2 profile: kind, BackpackMount and the materialisation limit are optional and backward compatible', () => {
+  assert.deepEqual(parseProfile(EXAMPLE).kind, 'pack', 'a profile without kind is a pack');
+  const m = parseProfile(withProfile(p => { p.pockets[4].mount = { acceptOnly: ['pistol_a'] }; p.bagMount = {}; }));
+  assert.deepEqual(m.pockets[4].mount, { acceptOnly: ['pistol_a'], snapMode: 'range', returnDelayS: 0 }, 'mount defaults are filled in');
+  assert.deepEqual(m.bagMount, { snapMode: 'range', returnDelayS: 0 });
+  const bad = fn => assert.throws(() => parseProfile(withProfile(fn)));
+  bad(p => { p.pockets[0].mount = { acceptOnly: [] }; }); bad(p => { p.pockets[0].mount = { snapMode: 'magnet' }; }); bad(p => { p.pockets[0].mount = { returnDelayS: -1 }; });
+  bad(p => { p.pockets[0].mount = { colour: 1 }; }); bad(p => { p.kind = 'crate'; }); bad(p => { p.tiers = { high: { physicalItemsMax: 13 } }; }); bad(p => { p.tiers = { high: { physicalItemsMax: 7.5 } }; });
+  assert.equal(parseProfile(withProfile(p => { p.tiers = { high: { physicalItemsMax: 12 } }; })).tiers.high.physicalItemsMax, 12);
+  assert.equal(materialLimit(parseProfile(withProfile(p => { p.tiers = { high: { physicalItemsMax: 5 } }; })), 'high'), 5);
+  assert.equal(materialLimit(parseProfile(EXAMPLE), 'low'), 0, 'low tiers use the slot view');
+  assert.ok(BACKPACK_DATA.VIEW.MAX_PHYSICAL_PROXIES <= 12 && BACKPACK_DATA.VIEW.MAX_PHYSICAL_PROXIES >= 8);
+  const schema = JSON.parse(read('profile.schema.json'));
+  assert.ok(schema.properties.kind && schema.properties.bagMount && schema.properties.pockets.items.properties.mount && schema.$defs.mount, 'schema documents the new optional fields');
+  assert.ok(!schema.required.includes('kind') && !schema.required.includes('handle'), 'schema stays backward compatible');
+  const cases = profileCasesAll(EXAMPLE); assert.ok(cases.length >= 60 && new Set(cases.map(c => c.name)).size === cases.length);
+});
+
+test('P2 existing results are unchanged: the P0/P1 golden vectors still reproduce exactly (no existing state or result changed)', () => {
+  const golden = JSON.parse(read('backpack.golden.json')); const files = { profiles: golden.profiles };
+  const first = profileCases(EXAMPLE).map(c => c.name);
+  assert.deepEqual(golden.profileCases.slice(0, first.length).map(v => v.name), first, 'old profile cases come first and keep their order');
+  assert.equal(golden.state.length >= 24, true);
+  for (const v of golden.state) assert.equal(firstDiff(runState(v, files), v.expected), '', v.name);
+});
+
+test('P2 mount: acceptOnly (id or tag), snap modes, returnDelayS timeout and pre/post events in order', () => {
+  const profile = withProfile(p => { p.pockets[4].mount = { acceptOnly: ['sidearm', 'pistol_a'], snapMode: 'dropped', returnDelayS: 0.5 }; });
+  const { inventory, ledger, events } = mkLedger(profile);
+  inventory.registerItem('pa', 'pistol', SZ, 'world', ['pistol_a']); inventory.registerItem('pb', 'pistol', SZ); inventory.registerItem('pc', 'pistol', SZ, 'world', ['sidearm', 'x']);
+  const hip = profile.pockets[4].id;
+  assert.equal(ledger.store('pb', hip).reason, 'NOT_ACCEPTED'); assert.equal(ledger.check('pb', hip).reason, 'NOT_ACCEPTED');
+  assert.equal(ledger.offer('pa', hip).reason, 'NOT_RELEASED'); assert.equal(ledger.offer('pa', hip, { released: true }).ok, true);
+  assert.deepEqual(events, ['placing:pa', 'stored:pa', 'placed:pa']);
+  assert.equal(ledger.retrieve(hip).ok, true); assert.deepEqual(events.slice(3), ['removing:pa', 'retrieved:pa', 'removed:pa']);
+  assert.deepEqual(ledger.mountOf(hip), { acceptOnly: ['sidearm', 'pistol_a'], snapMode: 'dropped', returnDelayS: 0.5 });
+  ledger.scheduleReturn('pc', hip); assert.deepEqual(ledger.tick(0.3), []); assert.equal(ledger.tick(0.3)[0].ok, true); assert.equal(ledger.locate('pc').pocketId, hip);
+  const none = mkLedger(withProfile(p => { p.pockets[4].mount = { snapMode: 'none' }; }));
+  none.inventory.registerItem('a', 'pistol', SZ); assert.equal(none.ledger.offer('a', hip).reason, 'SNAP_DISABLED'); assert.equal(none.ledger.store('a', hip).ok, true, 'snapMode none only turns off snapping, a direct store still works');
+  const v = mkLedger(); v.inventory.registerItem('a', 'supply', SZ); v.ledger.addValidator(e => e.kind !== 'placing');
+  assert.equal(v.ledger.store('a', 'main_supply').reason, 'VETOED'); assert.equal(v.inventory.slotOf('a'), ''); assert.deepEqual(v.events, []);
+});
+
+test('P2 view: at most physicalItemsMax proxies, tab/page choice, held items left out, ONE refresh path with a re-entrancy guard', () => {
+  const profile = withProfile(p => { p.tiers = { high: { physicalItemsMax: 3 } }; });
+  const { inventory, ledger } = mkLedger(profile, { tier: 'high' });
+  for (const id of ['a', 'b', 'c']) inventory.registerItem(id, 'supply', SZ); for (const id of ['t1', 't2']) inventory.registerItem(id, 'tool', SZ);
+  for (const id of ['a', 'b', 'c']) ledger.store(id, 'main_supply'); for (const id of ['t1', 't2']) ledger.store(id, 'main_tool');
+  const v1 = ledger.view(); assert.equal(v1.mode, 'physical'); assert.equal(v1.items.length, 3); assert.equal(v1.total, 5); assert.equal(v1.pages, 2); assert.equal(v1.truncated, true);
+  assert.equal(ledger.view({ page: 1 }).items.length, 2); assert.equal(ledger.view({ page: 99 }).page, 1, 'pages are clamped'); assert.equal(ledger.view({ page: NaN }).page, 0);
+  assert.deepEqual(ledger.view({ tab: 'main_tool' }).items.map(i => i.itemId), ['t1', 't2']); assert.equal(ledger.view({ tab: 'nowhere' }).tab, '*');
+  ledger.hold('a'); assert.ok(!ledger.view({ tab: 'main_supply' }).items.some(i => i.itemId === 'a'), 'an item in a hand is not also a proxy'); ledger.unhold('a');
+  inventory.transfer; ledger.setTier('low'); const slots = ledger.view({ tab: 'main_supply' }); assert.equal(slots.mode, 'slots'); assert.equal(slots.items.length, 3 /* capacity */); assert.equal(ledger.materialLimit, 0);
+  ledger.setTier('high');
+  const big = mkLedger(withProfile(p => { p.tiers = { high: { physicalItemsMax: 12 } }; p.pockets[1].capacity = 20; })); for (let i = 0; i < 20; i++) { big.inventory.registerItem(`s${i}`, 'supply', SZ); big.ledger.store(`s${i}`, 'main_supply'); }
+  assert.ok(big.ledger.view({ tab: 'main_supply' }).items.length <= 12, 'never more than 12 physical proxies');
+  // one refresh path: every change is exactly one refresh; a listener that changes the ledger is coalesced and bounded
+  const r = mkLedger(profile); const seen = []; r.ledger.onRefresh(v => seen.push(v.total));
+  for (const id of ['a', 'b']) r.inventory.registerItem(id, 'supply', SZ);
+  const base = r.ledger.refreshStats().refreshes; r.ledger.store('a', 'main_supply'); assert.equal(r.ledger.refreshStats().refreshes, base + 1); assert.deepEqual(seen, [1]);
+  let first = true; r.ledger.onRefresh(() => { if (first) { first = false; r.ledger.store('b', 'main_supply'); } });
+  r.ledger.hold('a'); assert.equal(r.inventory.slotOf('b') !== '', true); assert.ok(r.ledger.refreshStats().deferred >= 1);
+  const loop = mkLedger(profile); let n = 0; loop.ledger.onRefresh(() => { n++; loop.ledger.refresh(); }); loop.ledger.refresh();
+  assert.ok(n <= BACKPACK_DATA.VIEW.MAX_REFRESH_PASSES, `bounded passes: ${n}`);
+});
+
+test('P2 checkpoint v2: backpack layer only, a missing backpack state is accepted, old shapes still load, bad data changes nothing', () => {
+  const { inventory, ledger } = mkLedger(); inventory.registerItem('a', 'supply', SZ); inventory.registerItem('t', 'tool', SZ); ledger.store('a', 'main_supply'); ledger.store('t', 'main_tool');
+  const bag = createBackpackState({ profile: EXAMPLE, tier: 'high' });
+  const cp = captureCheckpoint({ ledger, bag }); assert.equal(cp.schema, CHECKPOINT_SCHEMA); assert.deepEqual(Object.keys(cp).sort(), ['bag', 'ledger', 'profileId', 'schema']);
+  assert.deepEqual(JSON.parse(JSON.stringify(cp)), cp, 'JSON-safe'); assert.equal(captureCheckpoint({ ledger }).bag, null);
+  assert.ok(!('items' in cp) && !('slots' in cp), 'the provider checkpoint is not part of it');
+  ledger.retrieve('main_supply'); restoreCheckpoint({ ledger, bag }, cp); assert.equal(inventory.slotOf('a'), 'field_pack/main_supply/0');
+  const absent = prepareCheckpoint({ ledger }, undefined); assert.equal(absent.absent, true); absent.commit(); absent.notify(); assert.equal(prepareCheckpoint({ ledger }, null).absent, true);
+  assert.equal(inventory.slotOf('a'), 'field_pack/main_supply/0', 'absent state touches nothing');
+  assert.equal(prepareCheckpoint({ ledger }, ledger.capture()).version, 1); assert.equal(prepareCheckpoint({ ledger }, { schema: 'gamesystems.backpack-system.v1', ledger: ledger.capture(), bag: null }).version, 1);
+  const before = JSON.stringify(ledger.capture());
+  for (const bad of [{ ...cp, profileId: 'other' }, { ...cp, schema: 'gamesystems.backpack-checkpoint.v3' }, { ...cp, bag: 3 }, { ...cp, ledger: undefined }, 'junk', 7, { ...cp, ledger: { ...cp.ledger, cells: { ...cp.ledger.cells, 'field_pack/main_tool/0': 'ghost' } } }])
+    assert.throws(() => prepareCheckpoint({ ledger, bag }, bad), Error);
+  assert.equal(JSON.stringify(ledger.capture()), before, 'bad data changes nothing');
+  const sys = createBackpackSystem({ profile: EXAMPLE, inventory: createMemoryInventory() });
+  assert.equal(typeof sys.captureCheckpoint, 'function'); const c2 = sys.captureCheckpoint(); assert.equal(c2.schema, CHECKPOINT_SCHEMA); sys.restoreCheckpoint(c2); sys.restoreCheckpoint(undefined);
+  sys.restoreCheckpoint(sys.capture());
+});
+
+test('P2 stash: stationary profile kind, same ledger, no carry states, open/close only, checkpoint round-trip', () => {
+  const inventory = createMemoryInventory(); const stash = createStash({ profile: STASH, inventory });
+  assert.equal(stash.profile.kind, 'stash'); assert.equal(stash.profile.detachable, false); assert.equal('state' in stash, false); assert.equal('bag' in stash, false);
+  for (const id of ['t1', 't2']) inventory.registerItem(id, 'tool', SZ);
+  assert.equal(stash.ledger.store('t1', 'drawer').ok, true, 'always pockets are reachable closed'); assert.equal(stash.ledger.store('t2', 'shelf').reason, 'NOT_ACCESSIBLE');
+  stash.open(); assert.equal(stash.ledger.store('t2', 'shelf').ok, true);
+  const cp = JSON.parse(JSON.stringify(stash.capture())); stash.close(); assert.equal(stash.isOpen, false); stash.restore(cp); assert.equal(stash.isOpen, true);
+  assert.throws(() => stash.restore({ ...cp, open: 'yes' })); assert.throws(() => stash.restore({ ...cp, profileId: 'x' }));
+  for (const bad of [{ ...STASH, handle: { local: [0, 0, 0] } }, { ...STASH, detachable: true }, { ...STASH, recall: {} }, { ...STASH, tiers: { low: { detach: true } } }]) assert.throws(() => parseProfile(bad), Error);
+  assert.throws(() => createStash({ profile: EXAMPLE, inventory: createMemoryInventory() }), TypeError);
+  assert.equal(STASH.kind, 'stash'); assert.ok(ledgerVectors.some(v => v.profile === 'stash'));
+});
+
+test('P2 ledger golden vectors cover every rejection reason and the new events', () => {
+  const golden = JSON.parse(read('backpack.golden.json')); const files = { profiles: golden.profiles };
+  const reasons = new Set(), events = new Set();
+  for (const v of golden.ledger) for (const o of runLedger(v, files)) { if (o.result.reason) reasons.add(o.result.reason); for (const e of o.events) events.add(e.split(':')[0]); }
+  for (const r of ['FULL', 'WRONG_ITEM', 'TOO_LARGE', 'INVALID_SIZE', 'NOT_ACCEPTED', 'NOT_ACCESSIBLE', 'UNKNOWN_ITEM', 'UNKNOWN_POCKET', 'NOT_OWNED', 'PROVIDER_REJECTED', 'VETOED', 'SNAP_DISABLED', 'NOT_RELEASED', 'EMPTY', 'NOT_FOUND']) assert.ok(reasons.has(r), `vector for ${r}`);
+  for (const e of ['placing', 'placed', 'removing', 'removed', 'stored', 'retrieved', 'moved', 'mount_return', 'stash_open', 'ledger-restored']) assert.ok(events.has(e), `event ${e}`);
+});
+
 // ---------------------------------------------------------------- golden vectors and Godot parity
 test('golden: the checked-in vectors are exactly what the JS core produces, and the Godot copies are byte-identical', async () => {
   const text = goldenText(await buildGolden());
@@ -421,18 +536,19 @@ test('golden: the checked-in vectors are exactly what the JS core produces, and 
 
 test('golden: every vector (approach, pull, profile, state) reproduces its expected outcome', () => {
   const golden = JSON.parse(read('backpack.golden.json')); const files = { profiles: golden.profiles }; let ops = 0;
-  assert.ok(golden.approach.length >= 14 && golden.pull.length >= 9 && golden.state.length >= 24 && golden.profileCases.length >= 40);
+  assert.ok(golden.approach.length >= 14 && golden.pull.length >= 9 && golden.state.length >= 24 && golden.profileCases.length >= 60 && golden.ledger.length >= 16);
   for (const v of golden.approach) { assert.equal(firstDiff(runApproach(v), v.expected), '', v.name); ops += v.ops.length; }
   for (const v of golden.pull) { assert.equal(firstDiff(runPull(v), v.expected), '', v.name); ops += v.ops.length; }
   for (const v of golden.profileCases) { assert.equal(firstDiff(runProfile(v), v.expected), '', v.name); ops++; }
   for (const v of golden.state) { assert.equal(firstDiff(runState(v, files), v.expected), '', v.name); ops += v.ops.length; }
-  assert.ok(ops > 1500, `${ops} ops`);
+  for (const v of golden.ledger) { assert.equal(firstDiff(runLedger(v, files), v.expected), '', v.name); ops += v.ops.length; }
+  assert.ok(ops > 1900, `${ops} ops`);
 });
 
 const GODOT = process.env.GODOT ?? new URL('../../../NightfallContractsGodot/.tools/godot/editor/Godot_v4.7.2-stable_win64_console.exe', import.meta.url);
 test('parity: Godot headless (GDScript) gives identical results for every golden vector', { skip: existsSync(GODOT) ? false : 'Godot binary not found (set GODOT)' }, async () => {
   const r = await compareParity(typeof GODOT === 'string' ? GODOT : fileURLToPath(GODOT));
   assert.deepEqual(r.problems, []); assert.equal(r.godotStatus, 0, r.godotSummary);
-  assert.ok(r.vectors >= 85 && r.ops > 1500, `${r.vectors} vectors / ${r.ops} ops`);
+  assert.ok(r.vectors >= 125 && r.ops > 1900, `${r.vectors} vectors / ${r.ops} ops`);
   console.log(`# backpack parity: ${r.vectors} vectors, ${r.ops} ops identical (${r.godotSummary})`);
 });
