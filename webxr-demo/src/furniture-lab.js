@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
+import { assetUrl } from './urls.js';
 import { createHost } from './vendor/extensions/host/index.js';
 import mechanicsExtension from './vendor/extensions/mechanics/index.js';
 import { createMemoryInventory } from './vendor/extensions/backpack/index.js';
@@ -30,7 +31,7 @@ const mechanics = await host.load(mechanicsExtension); if (!mechanics) throw new
 const inventory = createMemoryInventory();
 let audio = null;
 if (params.has('audio')) {
-  try { const mod = await import('./vendor/extensions/audio/index.js'); audio = await host.load(mod.default, {}); if (audio) mod.installUnlock?.(audio); } catch (error) { console.error('audio', error); }
+  try { const mod = await import('./vendor/extensions/audio/index.js'); audio = await host.load(mod.default, { assetURL: assetUrl }); if (audio) mod.installUnlock?.(audio); } catch (error) { console.error('audio', error); }
 }
 const powerOn = { value: false };
 const set = await host.load(furnitureExtension({ inventory, powerOf: () => powerOn.value, onReject: r => log(`afvist: ${r.reason}${r.partId ? ` (${r.partId})` : ''}`) }));
