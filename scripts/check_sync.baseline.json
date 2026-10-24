@@ -1,0 +1,15 @@
+{
+  "_comment": "Known, accepted drift as of 2026-10-24 (wave 0). scripts/check_sync.mjs reports these as KNOWN-DRIFT; anything else is UNEXPECTED (exit 1). Remove an entry when the copy is synced. Listed files must match exactly.",
+  "nightfall-godot/gs_bottles": {
+    "files": ["addons/gs_bottles/bottle_pour.gd", "addons/gs_bottles/tests/gs_pour_receiver_tests.gd"],
+    "reason": "GameSystems changed bottle_pour.gd and its test after the copy was synced (c4257c0); Nightfall has not re-synced yet"
+  },
+  "nightfall-godot/gs_backpack": {
+    "files": ["addons/gs_backpack/data/backpack.golden.json", "addons/gs_backpack/data/profile.stash.example.json", "addons/gs_backpack/gs_backpack_stash.gd", "addons/gs_backpack/tests/gs_backpack_container_tests.gd", "addons/gs_backpack/tests/gs_backpack_parity_tests.gd"],
+    "reason": "F19: gs_backpack was hand-copied for the detachable layer; the stash module, golden data and container/parity tests are not in Nightfall yet"
+  },
+  "nightfall-godot/game_systems": {
+    "files": ["addons/game_systems/glass/glass_fracture.gd", "addons/game_systems/glass/glass_pane.gd", "addons/game_systems/glass/glass_system.gd"],
+    "reason": "old-format manifest (commit e6a49d6): glass_fracture.gd and glass_pane.gd are behind GameSystems; glass_system.gd is edited locally (declared: Nightfall glass-pane integration remains local)"
+  }
+}

@@ -11,7 +11,7 @@ Opdateres efter hver runde. Hvert mål har et målbart kriterium. Regler fra bru
 | G3 | Backpack og møbler i three.js (P7–P8) | extension med samme golden-vektorer som Godot (paritet 0 forskelle), demo | afventer G2 |
 | G4 | Port af vægt, to-hånds greb, lyd og farveblanding til Godot | samme tal som JS-testene, paritet hvor muligt | afventer |
 | G5 | Forbedringsrunde på tværs af projekter | prioriteret liste fra `improvement_backlog.md`, `game_system_ideas.md` og kendte fejl, hvert punkt med størrelse og risiko | i gang (audit) |
-| G6 | Kendte fejl og mangler | karton-håndled, Jimmy-kalibrering, kontaktlyd for krus og karton, skrab-udløser, flaky tidstest | afventer G5 |
+| G6 | Kendte fejl og mangler | karton-håndled, Jimmy-kalibrering, kontaktlyd for krus og karton, skrab-udløser, flaky tidstest | afventer G5; bølge 0 (2026-10-24): "flaky tidstest" var to deterministiske test-forældelser efter `a9fe1ee` og `7e3c0dc` plus én ægte realur-flake, alle rettet i testene (F17); samlet Godot-runner (F16) og synk-gate (F20) leveret, se [improvement_proposals.md](improvement_proposals.md) |
 | G7 | Test på hardware | brugerens Quest- og Frame-test via lab-hubben; resultater i `docs/headset_results.jsonl` | venter på bruger |
 
 ## Regler for mig selv
