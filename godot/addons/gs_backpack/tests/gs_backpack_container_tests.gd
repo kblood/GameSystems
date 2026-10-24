@@ -154,6 +154,10 @@ func run() -> void:
 	check(not stash.restore({"schema": "gamesystems.backpack-stash.v1", "profileId": "wall_locker", "open": "yes"}), "bad stash checkpoint refused")
 	check(not ProfileExt.parse(_with(stash_example(), "handle", {"local": [0, 0, 0]})).ok, "a stash has no handle")
 
+	# break the reference cycles (listener lambda bound to its own container, stash <-> container) so nothing leaks at exit
+	for owner in [c, m, v]: owner.dispose()
+	stash.dispose()
+
 	print("GS_BACKPACK_CONTAINER checks=%d failures=%d" % [checks, failures.size()])
 	quit(1 if not failures.is_empty() else 0)
 

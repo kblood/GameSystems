@@ -121,6 +121,18 @@ func add_validator(fn: Callable) -> void: _validators.append(fn)
 func remove_validator(fn: Callable) -> void: _validators.erase(fn)
 func clear_validators() -> void: _validators.clear()
 
+## Releases every Callable/Object reference the ledger holds (validators, refresh listeners, emit/can_access/info/tier callbacks, provider)
+## so RefCounted cycles (a listener or option Callable bound to its own owner, e.g. a GSBackpackStash) cannot outlive the owner. Call it when
+## the container is discarded; afterwards it must be configure()d again before use.
+func dispose() -> void:
+	_validators.clear()
+	_listeners.clear()
+	_can_access = Callable()
+	_emit = Callable()
+	_info_provider = Callable()
+	_tier_fn = Callable()
+	_provider = null
+
 # ---------------------------------------------------------------- checks and transfers
 ## Pure check of a store (no validators, no changes): {ok, reason, cell}.
 func check(item_id: String, pocket_id: String, expected_owner := "world") -> Dictionary:

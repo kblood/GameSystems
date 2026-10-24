@@ -282,7 +282,9 @@ func run_ledger(vec: Dictionary, golden: Dictionary) -> Array:
 		configured = ledger.configure(profile, prov, options)
 	check(configured, "ledger configure " + String(vec.name))
 	var out: Array = []
-	if not configured: return out
+	if not configured:
+		_release(stash, ledger)
+		return out
 	for raw in vec.ops:
 		var op: Dictionary = dec(raw)
 		var r := {"ok": true, "reason": ""}
@@ -355,7 +357,13 @@ func run_ledger(vec: Dictionary, golden: Dictionary) -> Array:
 			where.append("%s:%s@%s" % [id, prov.owner_of(id) if known else "?", prov.slot_of(id) if known else ""])
 		out.append({"result": norm_result(r), "events": events.duplicate(), "where": "|".join(PackedStringArray(where)), "refresh": ledger.refresh_stats(), "extra": extra})
 		events.clear()
+	_release(stash, ledger)
 	return out
+
+## Drops the listener lambdas / the stash <-> container cycle so the ledger frees when the vector ends.
+func _release(stash: BpStash, ledger: BpContainer) -> void:
+	if stash != null: stash.dispose()
+	elif ledger != null: ledger.dispose()
 
 func compare(group: String, vec: Dictionary, actual: Array) -> void:
 	vectors += 1

@@ -29,6 +29,11 @@ func configure(raw_profile: Variant, provider: Object, options: Dictionary = {})
 	is_open = false
 	return true
 
+## Breaks the stash <-> container reference cycle (the container's can_access Callable is bound to this stash). Call when discarding it.
+func dispose() -> void:
+	if container != null: container.dispose()
+	_emit = Callable()
+
 func can_access(pocket_id: String) -> bool:
 	var a: Variant = _access.get(pocket_id)
 	return a == "always" or (a != null and is_open)
