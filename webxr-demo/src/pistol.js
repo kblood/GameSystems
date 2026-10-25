@@ -17,20 +17,17 @@ export const HIP_DROP = 0.62;      // m below the eyes
 export const HOLSTER_FOLLOW = 4;   // 1/s: how fast the holster turns after the head
 export const LASER_RANGE = 30;
 /**
- * Held in XR, the pistol is pitched about GUN_PIVOT so its handle lies in the Touch controller's handle and its trigger
- * sits on the controller trigger. Why: WebXR gripSpace has the controller handle along grip Z (-Z toward the thumb), as the
- * xr-input-profiles oculus-touch-v2/v3, meta-quest-touch-plus/pro GLBs draw it (handle elevation +1.2..+4.3 deg above -Z,
- * mean +1.7; trigger pad at y -0.031, z -0.025), while this pistol's handle runs along its +Y. With the gun frame equal to
- * gripSpace the handle sat ~83 deg off the controller handle and the trigger ~5 cm from the controller trigger. The handle
- * here (outline below, top edge to bottom edge) is at +84.6 deg elevation, so the exact rotation about grip X is
- * 1.7 - 84.6 = -82.9 deg, rounded to -82 (the per-profile spread is +-3.5 deg, hence one constant). GUN_PIVOT is the point
- * in grip space solving: trigger centre (y .024, z -.034) lands on the mean controller trigger pad, handle centre on the
- * controller handle axis (residual 0.3 mm). The muzzle (-Z) follows: the barrel then points ~35 deg below the Quest aim ray
- * (the Chromium/IWER grip is the aim ray turned 45 deg about X). Override: ?gunpitch=<deg> (0 = the old pose).
- * Desktop and the holster pose are unchanged. Same derivation as NightfallContracts weapons/interaction.js (GUN_PITCH_DEG -80
- * for its Kestrel model, whose handle is raked slightly differently).
+ * Held-gun pitch about the XR grip X axis (degrees; negative swings the nose down). The DEFAULT IS 0: the old pose (pistol
+ * frame == gripSpace, identity). A user on a real Quest reported that pose as "tilted maybe 15 degrees"; the sign is unknown,
+ * so no non-zero default is justified. Tune it in a headset with ?gunpitch=<deg>.
+ * Reference only, NOT confirmed on hardware and contradicting that report: the xr-input-profiles Touch GLBs draw the
+ * controller handle along grip Z (+1.7 deg above -Z), this handle is at +84.6 deg elevation in gun space, so aligning them
+ * would take GUN_PITCH_GLB_DEG (-82.9 rounded; muzzle ~35 deg below the Quest aim ray). Try ?gunpitch=-82 to see it.
+ * GUN_PIVOT is the swing point (grip space) that puts the trigger on the controller trigger at GUN_PITCH_GLB_DEG.
+ * Desktop and the holster pose are unaffected. Same scheme as NightfallContracts weapons/interaction.js.
  */
-export const GUN_PITCH_DEG = -82;
+export const GUN_PITCH_DEG = 0;
+export const GUN_PITCH_GLB_DEG = -82;
 export const GUN_PIVOT = Object.freeze([0, 0.0015, 0.0019]);
 /** Parse a ?gunpitch value: finite degrees within +-180, else null (use the default). */
 export function parseGunPitch(value) {

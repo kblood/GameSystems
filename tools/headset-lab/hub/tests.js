@@ -10,7 +10,7 @@
 //   Recorded variants in games:   ?graspvariant=recorded|<id> (grasp setGraspVariants), ?handvariant=recorded|<id>
 //                                 (avatar setHandVariants): demo src/avatar.js, Contracts src/main.js.
 //   Contracts (src/main.js):      ?quality=0..3|minimal|low|mid|high, ?bottles=minimal|low|mid|high, ?handposes=low|mid|high.
-//   Held-gun pitch (both):        ?gunpitch=<deg> (Contracts src/weapons/interaction.js GUN_PITCH_DEG -80, demo src/pistol.js -82; 0 = old).
+//   Held-gun pitch (both):        ?gunpitch=<deg> (default 0 = old; the GLB-aligned values are -80 (Contracts) and -82 (demo), unconfirmed).
 // Links are paths on the lab's own origin (serve.mjs mounts /demo/, /studio/ and /contracts/). User-facing text is Danish.
 // Pure data: imported by node (serve.mjs, the lab test) and by the browser (hub.js).
 
@@ -149,11 +149,11 @@ export const GROUPS = [
       },
       {
         id: 'gun-pitch', title: 'Pistolens hældning i hånden',
-        links: [['Contracts (ny hældning)', '/contracts/'], ['Contracts, gammel (?gunpitch=0)', '/contracts/?gunpitch=0'], ['Demo (ny hældning)', '/demo/'], ['Demo, gammel (?gunpitch=0)', '/demo/?gunpitch=0']],
+        links: [['Contracts (som før, ?gunpitch=0)', '/contracts/?gunpitch=0'], ['Contracts -15°', '/contracts/?gunpitch=-15'], ['Contracts -10°', '/contracts/?gunpitch=-10'], ['Contracts 10°', '/contracts/?gunpitch=10'], ['Contracts 15°', '/contracts/?gunpitch=15'], ['Contracts -80°', '/contracts/?gunpitch=-80'], ['Demo (som før)', '/demo/?gunpitch=0'], ['Demo -15°', '/demo/?gunpitch=-15'], ['Demo -10°', '/demo/?gunpitch=-10'], ['Demo 10°', '/demo/?gunpitch=10'], ['Demo 15°', '/demo/?gunpitch=15'], ['Demo -80°', '/demo/?gunpitch=-80']],
         check: [
           'Pistolens hældning: ligger pistolgrebet i håndtaget, og sidder aftrækkeren på controllerens trigger? Prøv ?gunpitch=0 for den gamle',
-          'Peger løbet og laseren (demoen) dér hvor du sigter med pistolen, ikke op eller ned i forhold til hånden?',
-          'Hvis hældningen ikke er helt rigtig: prøv ?gunpitch=-70 og ?gunpitch=-90, og skriv i noten hvilken værdi der føles rigtigst.',
+          'Standarden er uændret (0°), fordi vi ikke ved om din «15° skæv» er op eller ned. Prøv -15 og -10 (næsen ned), 10 og 15 (næsen op) og -80 (grebet lagt i controllerens håndtag efter 3D-modellen). Skriv i noten hvilken værdi der føles rigtigst og med hvilket fortegn.',
+          'Følger løbet og laseren (demoen) pistolen, så de peger dér du sigter? Sidder pegefingeren på aftrækkeren?',
         ],
       },
     ],

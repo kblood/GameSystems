@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { createPistol, GUN_PITCH_DEG, GUN_PIVOT, heldGunLocal, parseGunPitch, LASER_RANGE, RETURN_SECONDS, HIP_DROP, HOLSTER_OFFSET } from '../src/pistol.js';
+import { createPistol, GUN_PITCH_DEG, GUN_PITCH_GLB_DEG, GUN_PIVOT, heldGunLocal, parseGunPitch, LASER_RANGE, RETURN_SECONDS, HIP_DROP, HOLSTER_OFFSET } from '../src/pistol.js';
 import { Interaction } from '../src/interaction.js';
 import { createHost } from '../src/vendor/extensions/host/index.js';
 import { createBodyHeight } from '../src/vendor/extensions/avatar/body_height.js';
@@ -53,18 +53,20 @@ test('drawn into a grip with gunpitch 0, the muzzle points along the grip -Z; ho
   assert.ok(pistol.gripPoint().distanceTo(pistol.holsterPoint()) < 1e-6);
 });
 
-test('held in XR the barrel is pitched down about grip X by GUN_PITCH_DEG and the handle lies along the controller handle', () => {
-  const { scene, pistol } = setup(), grip = new THREE.Group(); scene.add(grip);
-  grip.position.set(0, 1.2, 0); grip.updateMatrixWorld(true);
-  pistol.take(0, grip);
-  const t = GUN_PITCH_DEG * Math.PI / 180, { direction } = pistol.ray();
-  close(direction.y, Math.sin(t), 1e-9); close(direction.z, -Math.cos(t), 1e-9);
-  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(pistol.root.quaternion); // gun +Y (handle up) in grip space
-  assert.ok(up.z < -0.97 && Math.abs(up.y) < 0.2, `handle up ${up.toArray()} runs along grip -Z (the controller handle)`);
-  // the pivot is a fixed point of the swing; the trigger centre lands on the controller trigger pad (y -.031, z -.025) within 4 mm
-  const trig = new THREE.Vector3(0, 0.024, -0.034).applyMatrix4(new THREE.Matrix4().compose(pistol.root.position, pistol.root.quaternion, new THREE.Vector3(1, 1, 1)));
-  assert.ok(Math.hypot(trig.y + 0.031, trig.z + 0.0254) < 0.004, `trigger at ${trig.toArray()}`);
-  assert.ok(Math.hypot(0.024 + 0.031, -0.034 + 0.0254) > 0.05 && GUN_PIVOT.length === 3, 'legacy trigger is ~5 cm off the controller trigger');
+test('default pitch is 0 (legacy, identity to the grip); an override pitches the barrel about grip X and the whole gun with it', () => {
+  assert.equal(GUN_PITCH_DEG, 0);
+  const grip = new THREE.Group(), a = setup(); a.scene.add(grip); grip.position.set(0, 1.2, 0); grip.updateMatrixWorld(true);
+  a.pistol.take(0, grip);
+  assert.deepEqual(a.pistol.root.position.toArray(), [0, 0, 0]); assert.deepEqual(a.pistol.root.quaternion.toArray(), [0, 0, 0, 1]);
+  for (const p of [-82, -15, 15]) {
+    const { scene, pistol } = setup({ gunPitchDeg: p }), g = new THREE.Group(); scene.add(g); g.position.set(0, 1.2, 0); g.updateMatrixWorld(true);
+    pistol.take(0, g);
+    const t = p * Math.PI / 180, { direction } = pistol.ray();
+    close(direction.y, Math.sin(t), 1e-9); close(direction.z, -Math.cos(t), 1e-9);
+    const trig = new THREE.Vector3(0, 0.024, -0.034).applyMatrix4(new THREE.Matrix4().compose(pistol.root.position, pistol.root.quaternion, new THREE.Vector3(1, 1, 1)));
+    if (p === GUN_PITCH_GLB_DEG) assert.ok(Math.hypot(trig.y + 0.031, trig.z + 0.0254) < 0.004, 'documented GLB-aligned pose puts the trigger on the controller trigger');
+  }
+  assert.ok(GUN_PIVOT.length === 3);
 });
 
 test('gunpitch parses finite degrees within 180 and 0 is the identity pose', () => {
