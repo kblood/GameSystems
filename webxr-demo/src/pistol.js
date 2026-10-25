@@ -1,7 +1,7 @@
 // A simple pistol with a laser sight for the bottle demo. It rides in a holster on the right hip (following the head's
 // yaw); a hand draws it, letting go at the hip holsters it, letting go anywhere else drops it to the floor and it is back
 // in the holster after RETURN_SECONDS (it can be picked up again before that). In XR it sits in the
-// controller's grip space (local -Z is the muzzle, the grip origin is the fist, as the Nightfall pistol). On desktop it is
+// controller's grip space, pitched so its handle lies in the controller handle (GUN_PITCH_DEG; local -Z is the muzzle). On desktop it is
 // held at the right of the view and converges on the crosshair. The laser runs from the module under the barrel to
 // whatever the ray meets (room, bottles, panes); a shot flashes, kicks and bangs (synthesised, there is no gunshot ogg).
 // Room hits leave a bullet hole; bottles and panes are broken by the demo's own breakage.shoot.
@@ -16,6 +16,34 @@ export const HOLSTER_OFFSET = Object.freeze([0.22, 0, 0.02]); // m from the eyes
 export const HIP_DROP = 0.62;      // m below the eyes
 export const HOLSTER_FOLLOW = 4;   // 1/s: how fast the holster turns after the head
 export const LASER_RANGE = 30;
+/**
+ * Held in XR, the pistol is pitched about GUN_PIVOT so its handle lies in the Touch controller's handle and its trigger
+ * sits on the controller trigger. Why: WebXR gripSpace has the controller handle along grip Z (-Z toward the thumb), as the
+ * xr-input-profiles oculus-touch-v2/v3, meta-quest-touch-plus/pro GLBs draw it (handle elevation +1.2..+4.3 deg above -Z,
+ * mean +1.7; trigger pad at y -0.031, z -0.025), while this pistol's handle runs along its +Y. With the gun frame equal to
+ * gripSpace the handle sat ~83 deg off the controller handle and the trigger ~5 cm from the controller trigger. The handle
+ * here (outline below, top edge to bottom edge) is at +84.6 deg elevation, so the exact rotation about grip X is
+ * 1.7 - 84.6 = -82.9 deg, rounded to -82 (the per-profile spread is +-3.5 deg, hence one constant). GUN_PIVOT is the point
+ * in grip space solving: trigger centre (y .024, z -.034) lands on the mean controller trigger pad, handle centre on the
+ * controller handle axis (residual 0.3 mm). The muzzle (-Z) follows: the barrel then points ~35 deg below the Quest aim ray
+ * (the Chromium/IWER grip is the aim ray turned 45 deg about X). Override: ?gunpitch=<deg> (0 = the old pose).
+ * Desktop and the holster pose are unchanged. Same derivation as NightfallContracts weapons/interaction.js (GUN_PITCH_DEG -80
+ * for its Kestrel model, whose handle is raked slightly differently).
+ */
+export const GUN_PITCH_DEG = -82;
+export const GUN_PIVOT = Object.freeze([0, 0.0015, 0.0019]);
+/** Parse a ?gunpitch value: finite degrees within +-180, else null (use the default). */
+export function parseGunPitch(value) {
+  if (value == null || String(value).trim() === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) && Math.abs(n) <= 180 ? n : null;
+}
+/** The pistol's local pose in the XR grip frame for a pitch: { position: [x,y,z], quaternion: [x,y,z,w] }. 0 = identity. */
+export function heldGunLocal(pitchDeg = GUN_PITCH_DEG, pivot = GUN_PIVOT) {
+  if (!pitchDeg) return { position: [0, 0, 0], quaternion: [0, 0, 0, 1] };
+  const t = pitchDeg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t), [, py, pz] = pivot;
+  return { position: [0, py - (py * c - pz * s), pz - (py * s + pz * c)], quaternion: [Math.sin(t / 2), 0, 0, Math.cos(t / 2)] };
+}
 const MAX_HOLES = 40, FLASH_SECONDS = 0.06, TRIGGER_POSE_SECONDS = 0.15, UP = new THREE.Vector3(0, 1, 0);
 // Holstered: muzzle down with a slight rearward cant, so the handle sits up and back where the hand finds it.
 const HOLSTERED = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 - 0.3, 0, 0));
@@ -112,7 +140,7 @@ function buildHolster() {
  * goes back into the holster by itself. state: 'holstered' | 'held' | 'falling' | 'dropped'; owner: XR controller index
  * or 'desktop' while held.
  */
-export function createPistol({ scene, head, targets = () => [], surfaces = targets, sound = createBang(), onReturn = () => {}, returnSeconds = RETURN_SECONDS }) {
+export function createPistol({ scene, head, targets = () => [], surfaces = targets, sound = createBang(), onReturn = () => {}, returnSeconds = RETURN_SECONDS, gunPitchDeg = GUN_PITCH_DEG }) {
   const model = buildModel(), { root, recoil, muzzle, laser, flash } = model;
   const raycaster = new THREE.Raycaster();
   const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.0016, 0.0016, 1, 6, 1, true).rotateX(Math.PI / 2).translate(0, 0, -0.5),
@@ -186,8 +214,8 @@ export function createPistol({ scene, head, targets = () => [], surfaces = targe
     /** Takes the pistol: parent is the XR grip (owner = index) or the camera ('desktop'). */
     take(owner, parent) {
       api.owner = owner; state = 'held'; lostFor = 0; velocity.set(0, 0, 0); parent.add(root);
-      if (owner === 'desktop') root.position.fromArray(DESKTOP_OFFSET); else root.position.set(0, 0, 0);
-      root.quaternion.identity();
+      if (owner === 'desktop') { root.position.fromArray(DESKTOP_OFFSET); root.quaternion.identity(); return; }
+      const local = heldGunLocal(gunPitchDeg); root.position.fromArray(local.position); root.quaternion.fromArray(local.quaternion);
     },
     /** Into the holster (let go at the hip, desktop Q, a reset, the session ending). */
     holster() { api.owner = null; state = 'holstered'; lostFor = 0; quiet(); scene.add(root); followHolster(0); },

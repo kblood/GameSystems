@@ -10,6 +10,7 @@
 //   Recorded variants in games:   ?graspvariant=recorded|<id> (grasp setGraspVariants), ?handvariant=recorded|<id>
 //                                 (avatar setHandVariants): demo src/avatar.js, Contracts src/main.js.
 //   Contracts (src/main.js):      ?quality=0..3|minimal|low|mid|high, ?bottles=minimal|low|mid|high, ?handposes=low|mid|high.
+//   Held-gun pitch (both):        ?gunpitch=<deg> (Contracts src/weapons/interaction.js GUN_PITCH_DEG -80, demo src/pistol.js -82; 0 = old).
 // Links are paths on the lab's own origin (serve.mjs mounts /demo/, /studio/ and /contracts/). User-facing text is Danish.
 // Pure data: imported by node (serve.mjs, the lab test) and by the browser (hub.js).
 
@@ -144,6 +145,15 @@ export const GROUPS = [
           'Pistolhånden: pistol-pose, går til trigger-pose når du trykker af.',
           'Støttehånden på pistolen og hånden om magasinet ser rigtige ud.',
           'Ingen hop i fingrene ved skift mellem poserne.',
+        ],
+      },
+      {
+        id: 'gun-pitch', title: 'Pistolens hældning i hånden',
+        links: [['Contracts (ny hældning)', '/contracts/'], ['Contracts, gammel (?gunpitch=0)', '/contracts/?gunpitch=0'], ['Demo (ny hældning)', '/demo/'], ['Demo, gammel (?gunpitch=0)', '/demo/?gunpitch=0']],
+        check: [
+          'Pistolens hældning: ligger pistolgrebet i håndtaget, og sidder aftrækkeren på controllerens trigger? Prøv ?gunpitch=0 for den gamle',
+          'Peger løbet og laseren (demoen) dér hvor du sigter med pistolen, ikke op eller ned i forhold til hånden?',
+          'Hvis hældningen ikke er helt rigtig: prøv ?gunpitch=-70 og ?gunpitch=-90, og skriv i noten hvilken værdi der føles rigtigst.',
         ],
       },
     ],

@@ -8,7 +8,7 @@ import { createHost } from './vendor/extensions/host/index.js';
 import bottlesExtension from './vendor/extensions/bottles/index.js';
 import materialsExtension from './vendor/extensions/materials/index.js';
 import { createBarFire, liquidKindOf } from './bar-fire.js';
-import { createPistol } from './pistol.js';
+import { createPistol, parseGunPitch } from './pistol.js';
 
 const status = document.getElementById('status');
 const toastNode = document.getElementById('toast');
@@ -209,6 +209,7 @@ async function init() {
         return meshes;
       },
       surfaces: () => physics.surfaces,
+      gunPitchDeg: parseGunPitch(new URLSearchParams(location.search).get('gunpitch')) ?? undefined,
       onReturn: () => toast('Pistolen er tilbage i hylsteret') });
     interaction = new Interaction({ renderer, scene, camera, rig, factory, physics, breakage, host, pistol,
       actions: { reset, pause: setPause, quality: setQuality }, hud: toast });

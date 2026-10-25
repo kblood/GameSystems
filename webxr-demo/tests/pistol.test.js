@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { createPistol, LASER_RANGE, RETURN_SECONDS, HIP_DROP, HOLSTER_OFFSET } from '../src/pistol.js';
+import { createPistol, GUN_PITCH_DEG, GUN_PIVOT, heldGunLocal, parseGunPitch, LASER_RANGE, RETURN_SECONDS, HIP_DROP, HOLSTER_OFFSET } from '../src/pistol.js';
 import { Interaction } from '../src/interaction.js';
 import { createHost } from '../src/vendor/extensions/host/index.js';
 import { createBodyHeight } from '../src/vendor/extensions/avatar/body_height.js';
@@ -15,10 +15,10 @@ function wall(z = -3) { // a room surface facing +Z
 function floor() { // y = 0, facing up
   const m = new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial()); m.updateMatrixWorld(true); return m;
 }
-function setup({ targets = [wall()], surfaces = [floor()] } = {}) {
+function setup({ targets = [wall()], surfaces = [floor()], gunPitchDeg } = {}) {
   const scene = new THREE.Scene(), head = new THREE.PerspectiveCamera(), returned = [];
   head.position.set(0, 1.62, 0); scene.add(head); head.updateMatrixWorld(true);
-  const pistol = createPistol({ scene, head, targets: () => targets, surfaces: () => surfaces, sound: () => {}, onReturn: () => returned.push(true) });
+  const pistol = createPistol({ scene, head, targets: () => targets, surfaces: () => surfaces, sound: () => {}, onReturn: () => returned.push(true), gunPitchDeg });
   return { scene, pistol, head, returned };
 }
 const run = (pistol, seconds, dt = 1 / 60) => { for (let t = 0; t < seconds - 1e-9; t += dt) pistol.update(dt); };
@@ -38,8 +38,8 @@ test('the pistol starts holstered on the right hip and the holster follows the h
   assert.ok(pistol.gripPoint().distanceTo(turned) < 1e-6);
 });
 
-test('drawn into a grip, the muzzle points along the grip -Z; holster() puts it back', () => {
-  const { scene, pistol } = setup(), grip = new THREE.Group();
+test('drawn into a grip with gunpitch 0, the muzzle points along the grip -Z; holster() puts it back', () => {
+  const { scene, pistol } = setup({ gunPitchDeg: 0 }), grip = new THREE.Group();
   scene.add(grip);
   grip.position.set(0, 1.2, 0); grip.rotation.y = Math.PI / 2; grip.updateMatrixWorld(true);
   pistol.take(1, grip);
@@ -53,8 +53,28 @@ test('drawn into a grip, the muzzle points along the grip -Z; holster() puts it 
   assert.ok(pistol.gripPoint().distanceTo(pistol.holsterPoint()) < 1e-6);
 });
 
+test('held in XR the barrel is pitched down about grip X by GUN_PITCH_DEG and the handle lies along the controller handle', () => {
+  const { scene, pistol } = setup(), grip = new THREE.Group(); scene.add(grip);
+  grip.position.set(0, 1.2, 0); grip.updateMatrixWorld(true);
+  pistol.take(0, grip);
+  const t = GUN_PITCH_DEG * Math.PI / 180, { direction } = pistol.ray();
+  close(direction.y, Math.sin(t), 1e-9); close(direction.z, -Math.cos(t), 1e-9);
+  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(pistol.root.quaternion); // gun +Y (handle up) in grip space
+  assert.ok(up.z < -0.97 && Math.abs(up.y) < 0.2, `handle up ${up.toArray()} runs along grip -Z (the controller handle)`);
+  // the pivot is a fixed point of the swing; the trigger centre lands on the controller trigger pad (y -.031, z -.025) within 4 mm
+  const trig = new THREE.Vector3(0, 0.024, -0.034).applyMatrix4(new THREE.Matrix4().compose(pistol.root.position, pistol.root.quaternion, new THREE.Vector3(1, 1, 1)));
+  assert.ok(Math.hypot(trig.y + 0.031, trig.z + 0.0254) < 0.004, `trigger at ${trig.toArray()}`);
+  assert.ok(Math.hypot(0.024 + 0.031, -0.034 + 0.0254) > 0.05 && GUN_PIVOT.length === 3, 'legacy trigger is ~5 cm off the controller trigger');
+});
+
+test('gunpitch parses finite degrees within 180 and 0 is the identity pose', () => {
+  assert.equal(parseGunPitch('0'), 0); assert.equal(parseGunPitch('-30'), -30); assert.equal(parseGunPitch(''), null);
+  assert.equal(parseGunPitch('x'), null); assert.equal(parseGunPitch('999'), null); assert.equal(parseGunPitch(null), null);
+  assert.deepEqual(heldGunLocal(0), { position: [0, 0, 0], quaternion: [0, 0, 0, 1] });
+});
+
 test('the laser ends in a dot on the first surface along the barrel, and is off in the holster', () => {
-  const { scene, pistol } = setup({ targets: [wall(-3)] }), grip = new THREE.Group(); scene.add(grip);
+  const { scene, pistol } = setup({ targets: [wall(-3)], gunPitchDeg: 0 }), grip = new THREE.Group(); scene.add(grip);
   grip.position.set(0, 1.2, 0); grip.updateMatrixWorld(true);
   pistol.take(0, grip); pistol.update(1 / 60);
   const beam = scene.getObjectByName('pistol-laser'), dot = scene.getObjectByName('pistol-laser-dot');
@@ -68,7 +88,7 @@ test('the laser ends in a dot on the first surface along the barrel, and is off 
 });
 
 test('a miss leaves a bullet hole on the room; a hit handled by breakage does not', () => {
-  const { scene, pistol } = setup({ targets: [wall(-3)] }), grip = new THREE.Group(); scene.add(grip);
+  const { scene, pistol } = setup({ targets: [wall(-3)], gunPitchDeg: 0 }), grip = new THREE.Group(); scene.add(grip);
   grip.position.set(0, 1.2, 0); grip.updateMatrixWorld(true); pistol.take(0, grip);
   const { origin, direction } = pistol.ray();
   assert.ok(pistol.fire(origin, direction, false));
