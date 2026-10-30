@@ -25,7 +25,7 @@ for (const old of ['bottle_liquid.js', 'liquid_lut_v2.js', 'bottle_design.js']) 
 // Extensions: source of truth is GameSystems/extensions. Generated copies, do not edit them in src/vendor/extensions.
 // mirror() owns each target folder, so every extension gets its own.
 const EXTENSIONS = ['host', 'adapters', 'bottles', 'grasp', 'humanoid', 'avatar', 'character-cc', 'character-vrm',
-  'mechanics', 'electricity', 'materials', 'thermal', 'tools', 'acoustics', 'audio', 'workshop', 'pools', 'smoke', 'checkpoint', 'supply', 'sprinklers', 'vehicle', 'cameras', 'pool-interest', 'flow', 'coatings', 'alarms', 'missions', 'gore', 'ai', 'hitreact', 'backpack', 'furniture'];
+  'mechanics', 'electricity', 'materials', 'thermal', 'tools', 'acoustics', 'audio', 'workshop', 'pools', 'smoke', 'checkpoint', 'supply', 'sprinklers', 'vehicle', 'cameras', 'pool-interest', 'flow', 'coatings', 'alarms', 'missions', 'gore', 'ai', 'hitreact', 'backpack', 'furniture', 'flamethrower', 'fire-fx'];
 const ext = await syncExtensions(src, vendor, EXTENSIONS);
 console.log(`Synced GameSystems extensions (${EXTENSIONS.join(', ')})${ext ? `: ${ext} file(s) changed` : ''}`);
 

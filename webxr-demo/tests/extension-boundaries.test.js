@@ -16,14 +16,15 @@ const DEPS = {
   ai: [],
   acoustics: ['host'], audio: ['host'], adapters: ['host'], alarms: ['host'], avatar: ['humanoid'], backpack: ['host'], bottles: ['host'], cameras: ['host'],
   'character-cc': ['humanoid'], 'character-vrm': ['humanoid'], checkpoint: ['host', 'supply'], coatings: ['host'],
-  electricity: ['host'], flow: ['host'], furniture: ['host', 'mechanics', 'audio', 'backpack', 'grasp'], gore: ['host', 'humanoid'], grasp: [], hitreact: ['humanoid'], host: [], humanoid: [], materials: ['host'], mechanics: ['host'],
+  electricity: ['host'], 'fire-fx': [], flamethrower: [], flow: ['host'], furniture: ['host', 'mechanics', 'audio', 'backpack', 'grasp'], gore: ['host', 'humanoid'], grasp: [], hitreact: ['humanoid'], host: [], humanoid: [], materials: ['host'], mechanics: ['host'],
   missions: ['host'], 'pool-interest': ['host', 'pools'], pools: ['host', 'thermal'], smoke: ['host'], sprinklers: ['host'],
   supply: ['host'], thermal: ['host'], tools: ['host'], vehicle: ['host'], workshop: [],
 };
 /** Packages beyond three (three and three/addons/* are allowed everywhere except PURE). */
 const PACKAGES = { adapters: ['cannon-es'], 'character-vrm': ['@pixiv/three-vrm'] };
 /** Extensions that must stay engine-free: no three.js import at all. */
-const PURE = ['humanoid', 'grasp', 'host', 'ai', 'hitreact', 'audio', 'backpack'];
+// fire-fx and flamethrower take THREE as a parameter, so they never import it.
+const PURE = ['humanoid', 'grasp', 'host', 'ai', 'hitreact', 'audio', 'backpack', 'fire-fx', 'flamethrower'];
 
 const extensions = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name).sort();
 
