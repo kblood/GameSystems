@@ -4,6 +4,9 @@ Shoot-apart zombies in the spirit of House of the Dead for any character that im
 contract (`extensions/humanoid/contract.js`). Built and tested on MakeHuman / CharacterCreator characters
 (`character-cc`). Demo: `webxr-demo/zombie.html` (Zombielab).
 
+Zombiespillet bruger også gore, men ligger nu i sit eget projekt, `ZombieGame`, med en synket kopi af extensionen; se
+[../../ZombieGame/docs/zombie_game.md](../../ZombieGame/docs/zombie_game.md).
+
 The mesh splitting happens **offline**. `tools/bake_gibs.mjs` splits the body, garments and hair of a topology along
 authored seams into region pieces with closed, skinned stump caps, and writes one compact data file pair. At runtime,
 severing a region only changes draw ranges (geometry groups), shows the stump cap and spawns the pre-made gib with a
