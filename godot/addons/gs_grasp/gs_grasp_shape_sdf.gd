@@ -5,7 +5,14 @@ extends RefCounted
 const CatalogData = preload("res://addons/gs_grasp_data/gs_grasp_catalog_data.gd")
 
 static func signed_distance(shape: Dictionary, point: Array) -> Variant:
-	if not CatalogData.validate_shape(shape) or not _finite_vector(point):
+	if not CatalogData.validate_shape(shape):
+		return null
+	return _signed_distance_validated(shape, point)
+
+## Internal batch path: caller validates the unchanged shape in this synchronous call.
+## Point validation remains per sample. Never use with unvalidated external geometry.
+static func _signed_distance_validated(shape: Dictionary, point: Array) -> Variant:
+	if not _finite_vector(point):
 		return null
 	return _shape_distance(shape, point)
 
@@ -44,8 +51,20 @@ static func _primitive_distance(shape: Dictionary, point: Array) -> float:
 			var outside := _hypot3(maxf(q[0], 0.0), maxf(q[1], 0.0), maxf(q[2], 0.0))
 			return outside + minf(maxf(q[0], maxf(q[1], q[2])), 0.0)
 		"cylinder":
-			var radial := _hypot2(x, z) - float(shape.radius)
-			var axial := absf(y) - float(shape.half)
+			# Match JS catalog.signedDistance: move the selected local axis into Y.
+			# Translation above applies before permutation, also for union parts.
+			var u := x
+			var v := y
+			var w := z
+			match shape.get("axis", "y"):
+				"x":
+					u = y
+					v = x
+				"z":
+					v = z
+					w = y
+			var radial := _hypot2(u, w) - float(shape.radius)
+			var axial := absf(v) - float(shape.half)
 			return minf(maxf(radial, axial), 0.0) + _hypot2(maxf(radial, 0.0), maxf(axial, 0.0))
 		"lathe":
 			var profile: Array = shape.profile

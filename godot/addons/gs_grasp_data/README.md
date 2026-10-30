@@ -30,7 +30,7 @@ the host physics adapter remains responsible for using it.
 grip, shape and optional presentation/breakable fields). Geometry is item-local metres,
 +Y up; mass is kilograms, fill is a fraction in [0, 1], and colors are 24-bit RGB numbers.
 Supported shapes are `box` (three positive full dimensions), `cylinder` (positive
-radius and half-height), `lathe` (at least two `[height, radius]` rows, strictly
+radius and half-height, optional lowercase `axis` of `x`, `y` or `z`, default `y`), `lathe` (at least two `[height, radius]` rows, strictly
 increasing finite heights and nonnegative radii with some nonzero radius), and `parts`
 (a nonempty flat union of primitives). Primitive `at` offsets are finite three-vectors;
 nested unions and union-level offsets are rejected because the JS SDF does not handle

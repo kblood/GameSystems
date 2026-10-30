@@ -4,8 +4,8 @@
   "probe": "godot/tools/grasp_closure_golden.mjs",
   "probe_sha256": "8fad6dd7004ad17835654218844ae98bb091fa9a8b5976f86eddc05541668158",
   "sources_sha256": {
-    "extensions/grasp/closure.js": "36f7db257179e244163422eb39487060b8d1cfce776c3facad303310d4fdc2f0",
-    "extensions/grasp/record.js": "addf91980a7403cd4b930562614aa96e04fb9d99b8955f9d683d6da4ff8b2e84",
+    "extensions/grasp/closure.js": "6651ff8d97133c77b84e94ed92e6da72495dfe4946e3d6ba5e26148012392dbc",
+    "extensions/grasp/record.js": "aecdd16b14114ffe0ccc45c22c7bd026ff944933d0a54a58c1fa3663b520937e",
     "extensions/grasp/data/closure.data.json": "f605e05e7eafa04828541ceeb8bcf660626a22705d52acf6f21e0f18d37c7f3a",
     "extensions/grasp/reference_hand.json": "94bbd44fc445f105bbac261506609c1fc701aa6a3700387f64d732837cc973ab"
   },

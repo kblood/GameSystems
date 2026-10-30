@@ -533,6 +533,8 @@ func fire_bullet(from: Vector3, direction: Vector3, energy_joules: float, calibe
 		var seg := v * step_dt + 0.5 * Vector3(0, -9.81, 0) * step_dt * step_dt if speed > 0.0 else v.normalized() * (max_range - travelled)
 		var q := PhysicsRayQueryParameters3D.create(pos, pos + seg, mask, ex)
 		q.hit_back_faces = true
+		# Hosts may match their ordinary ray policy for a muzzle already inside a collider.
+		q.hit_from_inside = bool(params.get("hit_from_inside", false))
 		var h := space.intersect_ray(q)
 		if h.is_empty():
 			travelled += seg.length()

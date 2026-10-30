@@ -671,16 +671,17 @@ static func _palm_anchor(pose: Dictionary, side: String, reference: Dictionary) 
 	return _add(pose.wrist, _rotate_by_quaternion(_scale(center, factor), pose.quat))
 
 static func _palm_gaps(hand: Dictionary, wrist: Array, quat: Array, shape: Dictionary, thumb_row: Variant) -> Dictionary:
+	var shape_valid := ShapeSdf.CatalogData.validate_shape(shape)
 	var palm := INF
 	for sample: Array in hand.palm.samples:
-		var distance: Variant = ShapeSdf.signed_distance(shape, _to_item_space(sample, wrist, quat, float(hand.scale)))
+		var distance: Variant = ShapeSdf._signed_distance_validated(shape, _to_item_space(sample, wrist, quat, float(hand.scale))) if shape_valid else null
 		if _finite_number(distance):
 			palm = minf(palm, float(distance))
 	var thenar := INF
 	var points: Array = hand.thenar.points
 	if not points.is_empty():
 		for point: Array in _thenar_points(hand, thumb_row):
-			var distance: Variant = ShapeSdf.signed_distance(shape, _to_item_space(point, wrist, quat, float(hand.scale)))
+			var distance: Variant = ShapeSdf._signed_distance_validated(shape, _to_item_space(point, wrist, quat, float(hand.scale))) if shape_valid else null
 			if _finite_number(distance):
 				thenar = minf(thenar, float(distance))
 	else:
@@ -688,7 +689,7 @@ static func _palm_gaps(hand: Dictionary, wrist: Array, quat: Array, shape: Dicti
 		var b: Array = hand.thenar.b
 		for fraction: float in [0.0, 0.5, 1.0]:
 			var sample := _add(a, _scale(_sub(b, a), fraction))
-			var distance: Variant = ShapeSdf.signed_distance(shape, _to_item_space(sample, wrist, quat, float(hand.scale)))
+			var distance: Variant = ShapeSdf._signed_distance_validated(shape, _to_item_space(sample, wrist, quat, float(hand.scale))) if shape_valid else null
 			if _finite_number(distance):
 				thenar = minf(thenar, float(distance) - float(hand.thenar.radius) * float(hand.scale))
 	return {"palm": palm, "thenar": thenar}
@@ -748,13 +749,14 @@ static func finger_chain(finger: Dictionary, row: Array) -> Array:
 ## Samples the bone midpoint and distal joint, matching closure.segmentGaps. Earlier segments stay INF when `from` is nonzero.
 static func segment_gaps(chain: Array, finger: Dictionary, shape: Dictionary, wrist: Array, quat: Array,
 		scale: float = 1.0, from: int = 0) -> Array:
+	var shape_valid := ShapeSdf.CatalogData.validate_shape(shape)
 	var gaps: Array = [INF, INF, INF]
 	for segment: int in range(clampi(from, 0, 3), 3):
 		var a: Array = chain[segment]
 		var b: Array = chain[segment + 1]
 		var midpoint := _scale(_add(a, b), 0.5)
-		var middle_distance: Variant = ShapeSdf.signed_distance(shape, _to_item_space(midpoint, wrist, quat, scale))
-		var end_distance: Variant = ShapeSdf.signed_distance(shape, _to_item_space(b, wrist, quat, scale))
+		var middle_distance: Variant = ShapeSdf._signed_distance_validated(shape, _to_item_space(midpoint, wrist, quat, scale)) if shape_valid else null
+		var end_distance: Variant = ShapeSdf._signed_distance_validated(shape, _to_item_space(b, wrist, quat, scale)) if shape_valid else null
 		if not _finite_number(middle_distance) or not _finite_number(end_distance):
 			continue
 		var radius: Array = finger.radius

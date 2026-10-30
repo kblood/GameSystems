@@ -399,3 +399,20 @@ bounded placement search offline/preload-only until it can be optimized or resum
 budgeted work slices and measured on target hardware. Even fixed-wrist closure is not
 assumed safe per frame; any runtime candidate must still pass native rendered-skin and
 contact proof.
+
+
+## Cylinder-axis compatibility scope
+
+`GSGraspShapeSdf` supports optional cylinder `axis: "x" | "y" | "z"`;
+omission preserves Y. Primitive offsets are subtracted before axis permutation,
+including flat union parts. Public validation rejects invalid axis values; the JS
+catalog helper is permissive for unrecognized values, so malformed-input behavior
+is deliberately stricter in native code.
+
+This source change does not promote the eight-kind catalog or update generated
+game addons. Shape distance/normal support is separate from grasp-pose grip-axis
+support: native opposition scoring still uses the item's Y axis, whereas current
+JS closure can use `pose.axis`. The native recorded-pose reader also rejects
+that additional pose field, and native capture does not emit it. Ladder fitting, collision hulls and mass/inertia
+agreement are not qualified by SDF parity. Catalog/SDF promotion must be reviewed
+before variants, with an explicit promotion scope across data and algorithm addons.

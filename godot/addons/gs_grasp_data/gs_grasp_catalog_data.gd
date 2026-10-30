@@ -56,7 +56,10 @@ static func _shape(shape: Variant, allow_parts: bool) -> bool:
 				return false
 			return shape.size[0] > 0 and shape.size[1] > 0 and shape.size[2] > 0
 		"cylinder":
-			return _only_keys(shape, ["type", "radius", "half", "at"]) and _positive(shape.get("radius")) and _positive(shape.get("half"))
+			# Optional item-local cylinder axis; omission preserves the original +Y convention.
+			if shape.has("axis") and (not shape.axis is String or shape.axis not in ["x", "y", "z"]):
+				return false
+			return _only_keys(shape, ["type", "radius", "half", "at", "axis"]) and _positive(shape.get("radius")) and _positive(shape.get("half"))
 		"lathe":
 			if not _only_keys(shape, ["type", "profile", "at"]):
 				return false

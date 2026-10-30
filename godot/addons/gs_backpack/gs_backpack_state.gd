@@ -129,10 +129,13 @@ func grab(side: String, kind := "grip", handle_distance_m: Variant = null) -> Di
 		_to_held(side, "grab_placed")
 	return _done(true)
 
-func open() -> Dictionary:
+## A scene host may supply current eligibility without advancing simulation.
+## Omitted/null keeps the pure state's most recently stepped secondary flag.
+func open(secondary_now: Variant = null) -> Dictionary:
 	if not is_held(state) and state != "PLACED": return _done(false, "invalid_state")
 	if not bool(flags.open): return _done(false, "tier_no_open")
-	if is_held(state) and bool(flags.twoHand) and not secondary: return _done(false, "needs_two_hands")
+	var supported: bool = bool(secondary_now) if secondary_now is bool else secondary
+	if is_held(state) and bool(flags.twoHand) and not supported: return _done(false, "needs_two_hands")
 	_open_target = 1.0
 	return _done(true)
 

@@ -2,9 +2,11 @@
 // The Godot tests compare their ports against these files, so a change on either side shows up as a test failure.
 //   node godot/tools/gen_golden.mjs          (re)write the golden files
 //   node godot/tools/gen_golden.mjs --check  exit 1 when a golden file is missing or out of date (writes nothing)
+//   node godot/tools/gen_golden.mjs --classify  report provenance, formatting or semantic drift (writes nothing)
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { deepStrictEqual } from 'node:assert';
+import { isDeepStrictEqual } from 'node:util';
 import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { nearestGraspCases } from './nearest_grasp_golden.mjs';
@@ -432,16 +434,32 @@ async function graspClampGolden() {
   } };
 }
 
-async function graspSdfGolden() {
+async function graspSdfGolden(nativeOnly = false) {
   const names = ['catalog.js', 'data/catalog.data.json'];
   const sources_sha256 = Object.fromEntries(await Promise.all(names.map(async name => {
     const path = resolve(ROOT, 'extensions/grasp', name);
     return [rel(path), await sha256(path)];
   })));
   const probe = resolve(ROOT, 'godot/tools/grasp_sdf_golden.mjs');
+  let cases = graspSdfCases();
+  if (nativeOnly) {
+    const nativePath = resolve(ROOT, 'godot/addons/gs_grasp_data/data/catalog.data.json');
+    sources_sha256[rel(nativePath)] = await sha256(nativePath);
+    const native = JSON.parse(await readFile(nativePath, 'utf8')).CATALOG;
+    // A matching kind name is insufficient: the sampled geometry must match too.
+    for (const [kind, entry] of Object.entries(native)) {
+      deepStrictEqual(entry.shape, CATALOG[kind]?.shape, `native shape differs from JS: ${kind}`);
+    }
+    const excluded = cases.filter(row => row.kind && !Object.hasOwn(native, row.kind));
+    const missingKinds = [...new Set(excluded.map(row => row.kind))].sort();
+    deepStrictEqual(missingKinds, ['barrel', 'ladder', 'pole'], 'native SDF coverage changed; review the explicit missing-kind scope');
+    deepStrictEqual(excluded.length, 45, 'native SDF excluded case count changed; review missing-kind coverage');
+    cases = cases.filter(row => !row.kind || Object.hasOwn(native, row.kind));
+    console.log(`native SDF scope: ${cases.length} supported cases; ${excluded.length} excluded cases (${missingKinds.join(', ')}). Missing catalog kinds are NOT qualified.`);
+  }
   return { path: resolve(ROOT, 'godot/addons/gs_grasp/tests/grasp_sdf.golden.json'), pretty: true, data: {
     schema: 'gamesystems.golden.grasp-sdf.v1', generator: 'godot/tools/gen_golden.mjs',
-    probe: rel(probe), probe_sha256: await sha256(probe), sources_sha256, cases: graspSdfCases(),
+    probe: rel(probe), probe_sha256: await sha256(probe), sources_sha256, cases,
   } };
 }
 
@@ -608,18 +626,57 @@ async function graspCloseToContactGolden() {
   } };
 }
 
+if (process.argv.includes('--help')) {
+  console.log('Usage: node godot/tools/gen_golden.mjs [--check | --classify | --native-grasp --check | --native-grasp --classify | --native-grasp --refresh-metadata]');
+  process.exit(0);
+}
+const unknown = process.argv.slice(2).filter(arg => !['--check', '--classify', '--native-grasp', '--refresh-metadata'].includes(arg));
+if (unknown.length) throw new Error(`Unknown option(s): ${unknown.join(', ')}`);
 const check = process.argv.includes('--check');
+const classify = process.argv.includes('--classify');
+const nativeGrasp = process.argv.includes('--native-grasp');
+const refreshMetadata = process.argv.includes('--refresh-metadata');
+if (classify && (check || refreshMetadata)) throw new Error('--classify is read-only and cannot be combined with --check or --refresh-metadata');
+if (refreshMetadata && (!nativeGrasp || check)) throw new Error('--refresh-metadata requires --native-grasp and cannot be combined with --check');
+if (nativeGrasp && !check && !refreshMetadata && !classify) throw new Error('--native-grasp requires --check, --classify or --refresh-metadata; semantic fixture changes require separate review');
+const nativeOutputs = () => Promise.all([graspSdfGolden(true), graspFingerChainGolden(), graspPlaceWristGolden(), graspSegmentGapGolden(), graspProfileGeometryGolden(), graspPlacePalmGolden(), graspCloseFingerGolden(), graspCloseAllGolden(), graspCloseToContactGolden()]);
 let stale = 0;
-for (const output of [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), await graspHeldDriveMathGolden(), await graspThrowReleaseGolden(), await graspValidateRowsGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden(), await graspClampGolden(), await graspSdfGolden(), await graspVariantsGolden(), await graspRecordedPosesGolden(), await graspMirrorGolden(), await graspCaptureGolden(), await graspFingerChainGolden(), await graspPlaceWristGolden(), await graspSegmentGapGolden(), await graspProfileGeometryGolden(), await graspPlacePalmGolden(), await graspCloseFingerGolden(), await graspCloseAllGolden(), await graspCloseToContactGolden()]) {
+const classes = { 'provenance-only': 0, 'semantic-change': 0, 'format-only': 0, missing: 0, 'invalid-json': 0 };
+const outputs = nativeGrasp ? await nativeOutputs() : [await tierForGolden(), ...await humanoidBoneMapsGolden(), ...await graspValidatorGolden(), ...await graspClosureGolden(), ...await graspHeldDriveGolden(), await graspHeldDriveMathGolden(), await graspThrowReleaseGolden(), await graspValidateRowsGolden(), ...await graspCatalogGolden(), ...await graspReferenceHandGolden(), ...await graspRecordedGolden(), ...await graspBakedGolden(), ...await graspQualityGolden(), await nearestGraspGolden(), await graspMergeGolden(), await graspClampGolden(), await graspSdfGolden(), await graspVariantsGolden(), await graspRecordedPosesGolden(), await graspMirrorGolden(), await graspCaptureGolden(), await graspFingerChainGolden(), await graspPlaceWristGolden(), await graspSegmentGapGolden(), await graspProfileGeometryGolden(), await graspPlacePalmGolden(), await graspCloseFingerGolden(), await graspCloseAllGolden(), await graspCloseToContactGolden()];
+if (refreshMetadata) {
+  // Preflight every file before any write. Only hash provenance may change.
+  const semantic = value => Object.fromEntries(Object.entries(value).filter(([key]) => !['source_sha256', 'sources_sha256', 'probe_sha256'].includes(key)));
+  for (const {path, data} of outputs) {
+    const old = JSON.parse(await readFile(path, 'utf8'));
+    // Compare the persisted JSON representation (JSON encodes -0 as 0).
+    deepStrictEqual(semantic(old), semantic(JSON.parse(JSON.stringify(data))), `refusing metadata refresh: semantic payload changed in ${rel(path)}`);
+  }
+}
+for (const output of outputs) {
   const { path, data } = output;
   // One case per line: small file, readable diffs.
   const text = output.pretty ? `${JSON.stringify(data, null, 2)}\n` : '{\n' + Object.entries(data).map(([key, value]) => `\t${JSON.stringify(key)}: ` + (Array.isArray(value)
     ? `[\n${value.map(row => `\t\t${JSON.stringify(row)}`).join(',\n')}\n\t]` : JSON.stringify(value))).join(',\n') + '\n}\n';
   const old = await readFile(path, 'utf8').catch(() => null);
+  if (classify) {
+    if (old === null) { classes.missing++; console.log(`missing          ${rel(path)}`); continue; }
+    if (old === text) { console.log(`ok               ${rel(path)}`); continue; }
+    let parsed;
+    try { parsed = JSON.parse(old); } catch { classes['invalid-json']++; console.log(`invalid-json     ${rel(path)}`); continue; }
+    const semantic = value => Object.fromEntries(Object.entries(value).filter(([key]) => !['source_sha256', 'sources_sha256', 'probe_sha256'].includes(key)));
+    // Compare what the generator can persist; JSON encodes -0 as 0.
+    const persisted = JSON.parse(JSON.stringify(data));
+    const type = !isDeepStrictEqual(semantic(parsed), semantic(persisted)) ? 'semantic-change'
+      : !isDeepStrictEqual(parsed, persisted) ? 'provenance-only' : 'format-only';
+    classes[type]++;
+    console.log(`${type.padEnd(16)} ${rel(path)}`);
+    continue;
+  }
   if (old === text) { console.log(`ok       ${rel(path)}`); continue; }
   if (check) { stale++; console.log(`STALE    ${rel(path)}`); continue; }
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, text);
   console.log(`written  ${rel(path)}${data.cases ? ` (${data.cases.length} cases)` : ''}`);
 }
-if (stale) { console.error(`${stale} golden file(s) out of date: run node godot/tools/gen_golden.mjs`); process.exit(1); }
+if (classify) console.log(`Summary: ${Object.values(classes).reduce((a, b) => a + b, 0)} stale (${Object.entries(classes).map(([name, count]) => `${count} ${name}`).join(', ')})`);
+if (stale) { console.error(`${stale} golden file(s) out of date: ${nativeGrasp ? 'review semantic differences; metadata-only reconciliation uses --native-grasp --refresh-metadata' : 'run node godot/tools/gen_golden.mjs'}`); process.exit(1); }

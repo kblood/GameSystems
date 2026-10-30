@@ -4,14 +4,14 @@
   "probe": "godot/tools/grasp_closure_golden.mjs",
   "probe_sha256": "8fad6dd7004ad17835654218844ae98bb091fa9a8b5976f86eddc05541668158",
   "sources_sha256": {
-    "extensions/grasp/closure.js": "36f7db257179e244163422eb39487060b8d1cfce776c3facad303310d4fdc2f0",
-    "extensions/grasp/record.js": "addf91980a7403cd4b930562614aa96e04fb9d99b8955f9d683d6da4ff8b2e84",
+    "extensions/grasp/closure.js": "6651ff8d97133c77b84e94ed92e6da72495dfe4946e3d6ba5e26148012392dbc",
+    "extensions/grasp/record.js": "aecdd16b14114ffe0ccc45c22c7bd026ff944933d0a54a58c1fa3663b520937e",
     "extensions/grasp/data/closure.data.json": "f605e05e7eafa04828541ceeb8bcf660626a22705d52acf6f21e0f18d37c7f3a",
     "extensions/grasp/reference_hand.json": "94bbd44fc445f105bbac261506609c1fc701aa6a3700387f64d732837cc973ab",
-    "extensions/grasp/baked_grasps.js": "06f8f653b3ad5f2289613f9449b9a373a9409eb7be0905cfa42d077d9cd9ecaf",
+    "extensions/grasp/baked_grasps.js": "42392521f6abd63cdd2729bf1f68bbf5021a3f1f467f844de2a725622276648a",
     "extensions/grasp/baked_grasps.data.json": "6e253435445e2bcfe3117ad8714e2c93ad585a46e26da4822fefb64bd88d88af",
-    "extensions/grasp/catalog.js": "7bf601f573289a38352360cb6939acd9bedac97c9d2c499e0f9eb09a0d6cd6df",
-    "extensions/grasp/data/catalog.data.json": "5f302e56c96883714562f34711487e2f178ad63b4ea1a2fa51f7ca3b788aee9e"
+    "extensions/grasp/catalog.js": "d304ce7db5eabab491a72c8a46e98841395a604ed9ffebab77bf0d9ebaece1fc",
+    "extensions/grasp/data/catalog.data.json": "c793973c6953d69d5cf5cea2c58eb225e2518eb50bfc845642fc6f4aed34f4b5"
   },
   "cases": [
     {

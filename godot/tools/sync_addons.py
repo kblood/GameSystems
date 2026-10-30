@@ -14,6 +14,8 @@ hash != SOURCE.json), and when a golden file is stale (node godot/tools/gen_gold
 with CRLF -> LF so core.autocrlf checkouts on Windows do not count as edits; files are written with LF. Godot's own
 *.uid / *.import files next to the copies belong to the game and are ignored. Files are only written when they change
 and SOURCE.json only when the file list or a hash changes (its commit is the one the copies were last synced from).
+For an explicitly selected gs_grasp only, --golden-scope native-grasp checks nine supported native fixtures,
+including a preflight before writes. This does not qualify missing JS catalog kinds or other addons.
 """
 from __future__ import annotations
 
@@ -147,11 +149,14 @@ def check(game: Path, name: str) -> list[str]:
     return problems
 
 
-def golden_check() -> list[str]:
+def golden_check(scope: str = 'all') -> list[str]:
     node = shutil.which('node')
     if not node:
         return ['node not found: golden files not checked']
-    proc = subprocess.run([node, str(GAMESYSTEMS / 'godot/tools/gen_golden.mjs'), '--check'], capture_output=True, text=True)
+    command = [node, str(GAMESYSTEMS / 'godot/tools/gen_golden.mjs'), '--check']
+    if scope == 'native-grasp':
+        command.append('--native-grasp')
+    proc = subprocess.run(command, capture_output=True, text=True)
     return [] if proc.returncode == 0 else [line for line in (proc.stdout + proc.stderr).splitlines() if 'STALE' in line or 'run' in line] or ['golden check failed']
 
 
@@ -160,6 +165,8 @@ def main() -> int:
     parser.add_argument('game', type=Path, help='Godot game directory (contains project.godot)')
     parser.add_argument('addons', nargs='*', help='addon names (default: every gs_* in godot/addons)')
     parser.add_argument('--check', action='store_true', help='report drift and exit 1; write nothing')
+    parser.add_argument('--golden-scope', choices=['all', 'native-grasp'], default='all',
+                        help='native-grasp permits only explicit gs_grasp, checks its nine supported fixtures before sync/check; all keeps the broad check')
     options = parser.parse_args()
     game = options.game.resolve()
     if not (game / 'project.godot').is_file():
@@ -168,12 +175,21 @@ def main() -> int:
     unknown = [n for n in names if not (ADDONS / n).is_dir()]
     if unknown:
         parser.error(f'unknown addon(s): {", ".join(unknown)}')
+    if options.golden_scope == 'native-grasp' and names != ['gs_grasp']:
+        parser.error('--golden-scope native-grasp requires exactly one explicit addon: gs_grasp')
     if options.check:
-        problems = [p for name in names for p in check(game, name)] + golden_check()
+        problems = [p for name in names for p in check(game, name)] + golden_check(options.golden_scope)
         for problem in problems:
             print('DRIFT ', problem)
         print(f'{"FAIL" if problems else "OK"}: {", ".join(names)} in {game}')
         return 1 if problems else 0
+    if options.golden_scope == 'native-grasp':
+        problems = golden_check(options.golden_scope)
+        if problems:
+            for problem in problems:
+                print('REJECTED ', problem)
+            return 1
+        print('Scoped native-grasp gate passed; missing JS catalog kinds and other addons are not qualified.')
     total = 0
     for name in names:
         print(f'{name} -> {game / "addons" / name}')

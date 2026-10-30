@@ -34,6 +34,8 @@ const MAX_STEP_S := 0.05
 signal state_changed(from: String, to: String, reason: String)
 ## kind: grab | detach | place | return | snap | open | close | summon | handoff | reject. Empty by default: hosts map it to haptics/audio.
 signal cue(kind: String, side: String)
+## Discrete state rejection; cue("reject", side) remains the haptic channel.
+signal draw_blocked(side: String, reason: String)
 signal view_refreshed(view: Dictionary)
 signal rolled_back(reason: String)
 
@@ -56,10 +58,12 @@ var fail_next_move := false
 var _profile: Dictionary = {}
 var _hand_input: Callable
 var _hand_free: Callable
+var _secondary_grip_access: Callable
 var _weapon_busy: Callable
 var _surface_probe: Callable
 var _path_clear: Callable
 var _move_pack_fn: Callable
+var _constrain_carry_fn: Callable
 var _release_fn: Callable
 var _flap_fn: Callable
 var _cell_anchor: Callable
@@ -80,7 +84,10 @@ var _placed_xf := Transform3D.IDENTITY
 var _surface_xf := Transform3D.IDENTITY
 var _last_frame := Transform3D.IDENTITY
 var _last_hand := Transform3D.IDENTITY
+var _carry_handle_offset := Vector3.ZERO
 var _prev_grip := {"left": false, "right": false}
+## Acquisition requires observed neutral; held-pack tracking recovery is independent.
+var _summon_armed := {"left": false, "right": false}
 var _hands: Dictionary = {}
 var _syncing := false
 var _flap_open := false
@@ -99,9 +106,11 @@ var _steps := 0
 ##            item_info: Callable(item_id) -> {category,size,owner,tags}, item_node: Callable(item_id) -> Node3D,
 ##            cell_anchor: Callable(cell_id) -> Node3D, cell_layout: Callable(index:int, count:int, cell:String) -> Transform3D (open frame),
 ##            handle: Node3D, hand_input: Callable(side) -> {tracked, grip, world:Transform3D}, hand_free: Callable(side) -> bool,
+##            secondary_grip_access: Callable(side, hand_world:Transform3D) -> bool (optional cover check after reach/free qualification),
 ##            weapon_busy: Callable(side) -> bool, path_clear: Callable(side) -> bool,
 ##            surface_probe: Callable(pack_world:Transform3D, hand_world:Transform3D) -> {stable, position:[x,y,z], rotation:[x,y,z,w]},
 ##            move_pack: Callable(world:Transform3D) -> bool (default writes pack.global_transform; the host takes the pose while detached),
+##            constrain_carry_pose: Callable(desired:Transform3D) -> Transform3D (optional safe held pose; invalid result freezes pose),
 ##            release_pack: Callable(world:Transform3D) (the host takes the pose back at the worn frame; default writes pack.global_transform),
 ##            flap: Callable(open:bool) (host animates its flap), mass: Callable() -> float (kg), exclusion_sink: Callable(Array[RID]),
 ##            mounts: GSBackpackBodyMounts, return_delay_s: float (tracking-loss grace), detach_pull_m, summon (bool), summon_standing (bool)
@@ -122,15 +131,19 @@ func configure(opts: Dictionary) -> bool:
 	tier = String(opts.get("tier", "high"))
 	state = BpState.new()
 	if not state.configure(_state_profile(_profile), tier): return false
+	_prev_grip = {"left": false, "right": false}
+	_summon_armed = {"left": false, "right": false}
 	detach_pull_m = float(opts.get("detach_pull_m", detach_pull_m))
 	summon_enabled = bool(opts.get("summon", summon_enabled))
 	summon_standing = bool(opts.get("summon_standing", summon_standing))
 	_hand_input = opts.get("hand_input", Callable())
 	_hand_free = opts.get("hand_free", Callable())
+	_secondary_grip_access = opts.get("secondary_grip_access", Callable())
 	_weapon_busy = opts.get("weapon_busy", Callable())
 	_path_clear = opts.get("path_clear", Callable())
 	_surface_probe = opts.get("surface_probe", Callable())
 	_move_pack_fn = opts.get("move_pack", Callable())
+	_constrain_carry_fn = opts.get("constrain_carry_pose", Callable())
 	_release_fn = opts.get("release_pack", Callable())
 	_flap_fn = opts.get("flap", Callable())
 	_cell_anchor = opts.get("cell_anchor", Callable())
@@ -172,8 +185,34 @@ func set_tier(name: String) -> bool:
 
 func is_detached() -> bool: return _external
 func current_state() -> String: return state.state if state != null else "WORN"
+## During move_pack, false means this PLACED target is the final blend pose;
+## the callback can still refuse it before publication.
+func placement_in_progress() -> bool:
+	return state != null and state.state == "PLACED" and _blend_t < 1.0
 func holder_side() -> String: return state.holder if state != null else ""
 func profile() -> Dictionary: return _profile
+
+## Host-authorized rigid origin motion. Call once for each applied delta, before
+## the next step; the pack's parent may already have moved. Carries only a held
+## pack: placed/returning bags remain world anchored.
+## The host owns clearance policy through move_pack. No state, grip edges or
+## body-local pull history changes; physical hand motion remains in the next sample.
+func transport_carried_pose(delta: Transform3D) -> bool:
+	if state == null or not BpState.is_held(state.state) or not _external: return true
+	if not delta.is_finite() or not delta.basis.is_equal_approx(delta.basis.orthonormalized()) or delta.basis.determinant() < 0.999: return false
+	if not is_instance_valid(pack): return false
+	# _pose is adapter-owned world history; the node may already have inherited
+	# its parent's translation. Reading it here would apply that translation twice.
+	var moved := delta * _pose
+	# Publish first: refusal must leave every history in the original space.
+	if not _move_pack(moved): return false
+	_pose = moved
+	_from_pose = delta * _from_pose
+	_lag_pos = delta * _lag_pos
+	_lag_vel = delta.basis * _lag_vel
+	_last_hand = delta * _last_hand
+	_last_frame = delta * _last_frame
+	return true
 
 func _physics_process(dt: float) -> void:
 	if auto_step: step(dt)
@@ -193,6 +232,11 @@ func step(dt: float) -> void:
 	for side in SIDES:
 		var h: Dictionary = _hands[side]
 		hands_in[side] = {"tracked": h.tracked, "grip": h.grip, "local": _arr(inv * (h.world as Transform3D).origin) if h.tracked else null}
+	if BpState.is_held(st) and bool(state.flags.twoHand):
+		# State inputs describe a usable secondary hold, not an arbitrary
+		# squeeze elsewhere. Keep raw samples/neutral arming untouched.
+		var other := "right" if state.holder == "left" else "left"
+		hands_in[other].grip = _secondary_hold_usable()
 	var input := {"hands": hands_in, "posture": String(provider.posture())}
 	if st == "DRAWING":
 		var side: String = state._draw_side
@@ -214,6 +258,11 @@ func step(dt: float) -> void:
 		input["bagDistanceM"] = pack.global_position.distance_to(frame.origin)
 	var result: Dictionary = state.step(dt, input)
 	_process_events(result.events)
+	# Handoff may have changed holder in this step. Presentation must use the
+	# receiving hand immediately, rather than one frame of the released hand.
+	if BpState.is_held(state.state):
+		var current_hand: Dictionary = _hands[String(state.holder)]
+		if current_hand.tracked: _last_hand = current_hand.world
 	_update_pose(dt, frame)
 	for side in SIDES: _prev_grip[side] = _hands[side].grip
 
@@ -251,7 +300,13 @@ func notify_flap(opened: bool) -> void:
 	if state == null or _syncing: return
 	var st: String = state.state
 	if not (BpState.is_held(st) or st == "PLACED"): return
-	var r: Dictionary = state.open() if opened else state.close()
+	var secondary_now: Variant = null
+	if opened and BpState.is_held(st) and bool(state.flags.twoHand):
+		# The host toggle can precede our physics step. Refresh eligibility only;
+		# do not synthesize a state step/release/handoff to update a cached flag.
+		_read_hands()
+		secondary_now = _secondary_hold_usable(true)
+	var r: Dictionary = state.open(secondary_now) if opened else state.close()
 	_process_events(r.events)
 	if opened and not bool(r.ok):
 		_set_flap(false)
@@ -271,7 +326,12 @@ func _process_events(events: Array) -> void:
 			"state": _transition(String(e.from), String(e.to), String(e.reason))
 			"detached": cue.emit("detach", String(e.side))
 			"handoff": cue.emit("handoff", String(e.side))
-			"release_blocked": cue.emit("reject", String(state.holder))
+			"release_blocked":
+				# DRAWING has no holder yet. Capture the initiating hand before
+				# synchronous host callbacks can change state.
+				var side := String(state._draw_side)
+				cue.emit("reject", side)
+				draw_blocked.emit(side, String(e.reason))
 
 func _transition(from: String, to: String, reason: String) -> void:
 	var ok := true
@@ -296,6 +356,8 @@ func _transition(from: String, to: String, reason: String) -> void:
 
 func _begin_hold(from: String, reason: String) -> bool:
 	_from_pose = pack.global_transform
+	_pose = _from_pose
+	_carry_handle_offset = handle_local()
 	_lag_pos = _from_pose.origin
 	_lag_vel = Vector3.ZERO
 	_blend_t = 0.0
@@ -347,11 +409,33 @@ func _update_pose(dt: float, frame: Transform3D) -> void:
 	var target := _pose
 	match st:
 		"HELD_CLOSED", "HELD_OPEN":
+			# The state machine's unknown-tracking grace retains ownership and
+			# freezes the last pose. A stale hand plus a changed body frame must
+			# not drive the bag (or advance blend/lag) during that grace.
+			if not bool(_hands.get(String(state.holder), {}).get("tracked", false)): return
 			target = _carry_target(frame)
+			var attachment := handle_local()
+			var attachment_delta := attachment - _carry_handle_offset
+			# Internal compartment animation is not hand acceleration. Rebase
+			# blend/lag anchors only; the actual pose still passes host clearance.
+			_from_pose.origin -= _from_pose.basis * attachment_delta
+			_lag_pos -= target.basis * attachment_delta
+			_carry_handle_offset = attachment
 			if _blend_t < 1.0:
 				_blend_t = minf(1.0, _blend_t + (dt / maxf(_blend_s, 0.001)))
 				target = _from_pose.interpolate_with(target, _smooth(_blend_t))
 			target = _weighted(target, dt)
+			if _constrain_carry_fn.is_valid():
+				var safe: Variant = _constrain_carry_fn.call(target)
+				var constrained := _pose
+				if safe is Transform3D and safe.is_finite() and safe.basis.determinant() > 0.001:
+					constrained = safe
+				if not constrained.is_equal_approx(target):
+					# Keep contact from storing spring velocity that would launch
+					# the bag when the real hand moves back into clear space.
+					_lag_pos = constrained.origin
+					_lag_vel = Vector3.ZERO
+				target = constrained
 		"PLACED":
 			if _blend_t < 1.0:
 				_blend_t = minf(1.0, _blend_t + (dt / maxf(place_blend_s, 0.001)))
@@ -370,8 +454,7 @@ func _carry_target(frame: Transform3D) -> Transform3D:
 	var fwd := -frame.basis.z
 	var yaw := atan2(-fwd.x, -fwd.z)
 	var basis := Basis(Vector3.UP, yaw)
-	var handle_local := _vec(_profile.handle.local)
-	return Transform3D(basis, _last_hand.origin - basis * handle_local)
+	return Transform3D(basis, _last_hand.origin - basis * handle_local())
 
 func _weighted(target: Transform3D, dt: float) -> Transform3D:
 	if not bool(state.flags.get("weightLag", false)) or _drive == null or dt <= 0.0:
@@ -397,7 +480,8 @@ func _poll_summon(frame: Transform3D) -> void:
 	if st != "WORN" and st != "PLACED": return
 	for side in SIDES:
 		var h: Dictionary = _hands[side]
-		if not h.tracked or not h.grip or _prev_grip[side]: continue
+		if not h.tracked or not h.grip or _prev_grip[side] or not _summon_armed[side]: continue
+		_summon_armed[side] = false
 		if _hand_free.is_valid() and not bool(_hand_free.call(side)): continue
 		if not _in_summon_zone((h.world as Transform3D).origin): continue
 		var real_posture := String(provider.posture())
@@ -537,11 +621,22 @@ func _push_exclusions() -> void:
 	if _exclusion_sink.is_valid(): _exclusion_sink.call(collision_exclusions())
 
 # ------------------------------------------------------------------------------------------------ checkpoint of the layer
-## The layer's own checkpoint (container v2: ledger cells + bag state). WORN or PLACED only; mid-states are stored as WORN.
+## The layer's own checkpoint (container v2: ledger cells + bag state). WORN or
+## settled PLACED only; mid-states, including the placement blend, store WORN.
 ## {} when there is no container.
 func capture_layer() -> Dictionary:
 	if container == null or state == null: return {}
-	return container.capture_checkpoint(state)
+	var captured: Dictionary = container.capture_checkpoint(state)
+	if state.state == "PLACED" and _blend_t < 1.0:
+		# State already owns the destination, but presentation has not completed
+		# its route. Do not restore directly to an uncompleted placement target.
+		# This edits only the newly allocated snapshot, never live state or cells.
+		var bag: Dictionary = captured.bag
+		bag.state = "WORN"
+		bag.owner = "worn"
+		bag.openFraction = 0.0
+		bag.placedPose = null
+	return captured
 
 ## PURE shape check, safe BEFORE the host restores its own inventory: schema, profile id, the exact cell set, string cells without
 ## duplicates, and the state block. Returns {ok, absent, reason}. null = an old checkpoint without the layer (absent, ok).
@@ -612,13 +707,26 @@ func _force_worn() -> void:
 	_blend_t = 1.0
 
 # ------------------------------------------------------------------------------------------------ helpers
+func _secondary_hold_usable(require_holder_grip := false) -> bool:
+	if state == null or not BpState.is_held(state.state) or not bool(state.flags.twoHand): return false
+	var primary: Dictionary = _hands.get(String(state.holder), {})
+	if not bool(primary.get("tracked", false)) or (require_holder_grip and not bool(primary.get("grip", false))): return false
+	var other := "right" if state.holder == "left" else "left"
+	var secondary: Dictionary = _hands.get(other, {})
+	if not bool(secondary.get("tracked", false)) or not bool(secondary.get("grip", false)): return false
+	if (secondary.world as Transform3D).origin.distance_to(handle_world()) > float(_profile.handle.reachM): return false
+	if _hand_free.is_valid() and not bool(_hand_free.call(other)): return false
+	return not _secondary_grip_access.is_valid() or bool(_secondary_grip_access.call(other, secondary.world))
+
 func _read_hands() -> void:
 	for side in SIDES:
 		var h := {"tracked": false, "grip": false, "world": Transform3D.IDENTITY}
 		if _hand_input.is_valid():
 			var r: Variant = _hand_input.call(side)
-			if r is Dictionary and bool(r.get("tracked", false)) and r.get("world") is Transform3D and (r.world as Transform3D).is_finite():
+			if r is Dictionary and bool(r.get("tracked", false)) and r.get("grip") is bool and r.get("world") is Transform3D and (r.world as Transform3D).is_finite():
 				h = {"tracked": true, "grip": bool(r.get("grip", false)), "world": r.world}
+		if not h.tracked: _summon_armed[side] = false
+		elif not h.grip: _summon_armed[side] = true
 		_hands[side] = h
 
 func _body_frame() -> Transform3D:
@@ -627,9 +735,18 @@ func _body_frame() -> Transform3D:
 		if f.is_finite(): _last_frame = f
 	return _last_frame
 
+## The authored handle may move with compartment animation. Use its current
+## pack-local attachment consistently for carry, reach and candidate placement.
+func handle_local() -> Vector3:
+	if is_instance_valid(pack) and is_instance_valid(_handle_node) and _handle_node.is_inside_tree():
+		var frame := pack.global_transform
+		if frame.is_finite() and absf(frame.basis.determinant()) > 0.001:
+			var local := frame.affine_inverse() * _handle_node.global_position
+			if local.is_finite(): return local
+	return _vec(_profile.handle.local)
+
 func handle_world() -> Vector3:
-	if is_instance_valid(_handle_node) and _handle_node.is_inside_tree(): return _handle_node.global_position
-	return pack.global_transform * _vec(_profile.handle.local)
+	return pack.global_transform * handle_local()
 
 func _probe_surface(hand_world: Transform3D) -> Dictionary:
 	if not _surface_probe.is_valid(): return {"stable": false}

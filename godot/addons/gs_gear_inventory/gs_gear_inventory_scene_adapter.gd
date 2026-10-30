@@ -20,7 +20,7 @@ var _initial_body_state: Dictionary = {}
 var _busy := false
 
 func set_owner_root(owner: String, root: Node3D) -> bool:
-	if _busy or not owner in Inventory.OWNERS or not is_instance_valid(root) or not root.is_inside_tree(): return false
+	if _busy or not owner in Inventory.OWNERS or not _transfer_node_live(root): return false
 	var current_root: Variant = _owner_roots.get(owner)
 	if is_instance_valid(current_root) and current_root == root: return true
 	# A root change must not strand cargo whose ledger owner still points at it.
@@ -34,7 +34,7 @@ func set_owner_root(owner: String, root: Node3D) -> bool:
 	return true
 
 func register_slot(slot_id: String, anchor: Node3D, allowed_categories: Array[String], max_size: Vector3, access_hands: Array[String] = ["hand:left", "hand:right"]) -> bool:
-	if _busy or not is_instance_valid(anchor) or not anchor.is_inside_tree() or _slots.has(slot_id): return false
+	if _busy or not _transfer_node_live(anchor) or _slots.has(slot_id): return false
 	if access_hands.is_empty(): return false
 	var validated_hands: Array[String] = []
 	for hand in access_hands:
@@ -55,7 +55,7 @@ func register_slot(slot_id: String, anchor: Node3D, allowed_categories: Array[St
 ## player's body/colliders from the caller to avoid self-occlusion.
 func check_slot_access(requesting_hand: String, hand_tracked: bool, hand_world: Transform3D, slot_id: String, reach_m: float, exclude: Array[RID] = [], collision_mask: int = 0xFFFFFFFF) -> Dictionary:
 	var anchor := _slot_node(slot_id)
-	if anchor == null or not anchor.is_inside_tree() or not _valid_transform(anchor.global_transform): return _access_result(false, "invalid_slot")
+	if not _transfer_node_live(anchor) or not _valid_transform(anchor.global_transform): return _access_result(false, "invalid_slot")
 	if not requesting_hand in ["hand:left", "hand:right"]: return _access_result(false, "invalid_hand")
 	if requesting_hand not in _slots[slot_id].access_hands: return _access_result(false, "wrong_hand")
 	if not hand_tracked: return _access_result(false, "hand_tracking_lost")
@@ -103,7 +103,7 @@ func request_retrieve(slot_id: String, requesting_hand: String, hand_tracked: bo
 ## Register an item where it currently lives. Its initial pose relative to the
 ## owner root is kept for reset so moving hand roots preserve natural grip fit.
 func register_item(item_id: String, node: Node3D, category: String, size: Vector3, initial_owner := "world") -> bool:
-	if _busy or not is_instance_valid(node) or not node.is_inside_tree() or _items.has(item_id): return false
+	if _busy or not _transfer_node_live(node) or _items.has(item_id): return false
 	for existing_id in _items:
 		var existing_node := _item_node(existing_id)
 		if existing_node == node or _is_under(node, existing_node) or _is_under(existing_node, node): return false
@@ -111,7 +111,7 @@ func register_item(item_id: String, node: Node3D, category: String, size: Vector
 		var anchor := _slot_node(anchor_id)
 		if anchor == node or _is_under(anchor, node): return false
 	for root in _owner_roots.values():
-		if not is_instance_valid(root) or not root is Node3D or not root.is_inside_tree(): return false
+		if not _transfer_node_live(root): return false
 		if root == node or _is_under(root, node): return false
 	if not _owner_roots.has(initial_owner) or not is_instance_valid(_owner_roots[initial_owner]): return false
 	if not _is_under(node, _owner_roots[initial_owner]): return false
@@ -163,13 +163,13 @@ func _reconcile_item_after_tree_exit(item_id: String) -> void:
 	var slot_id := inventory.slot_of(item_id)
 	# tree_exiting also fires for ordinary reparenting. Let that operation finish
 	# before deciding whether it still belongs to the owner recorded in the ledger.
-	if node != null and node.is_inside_tree() and _item_is_at_owner(node, from_owner, slot_id): return
+	if _transfer_node_live(node) and _item_is_at_owner(node, from_owner, slot_id): return
 	if from_owner.is_empty() or not inventory.unregister_item(item_id, from_owner): return
 	if node != null: _disconnect_item_lifecycle(item_id, node)
 	_items.erase(item_id)
 	_body_state.erase(item_id)
 	_initial_body_state.erase(item_id)
-	_emit_ownership_changed(item_id, from_owner, "disposed" if node == null or not node.is_inside_tree() else "detached", slot_id)
+	_emit_ownership_changed(item_id, from_owner, "disposed" if not _transfer_node_live(node) else "detached", slot_id)
 
 func _item_is_at_owner(node: Node3D, owner: String, slot_id: String) -> bool:
 	if owner == "slot":
@@ -193,21 +193,27 @@ func store(item_id: String, expected_owner: String, slot_id: String) -> bool:
 	_busy = true
 	var old_parent := node.get_parent()
 	var old_global := node.global_transform
-	var old_body: Dictionary = _body_state.get(item_id, _capture_body_state(node))
+	# The cached state belongs to eventual world release. A hand-carried body
+	# currently has different freeze/collision settings; rollback restores those.
+	var attempt_body := _capture_body_state(node)
+	var attempt_linear := (node as RigidBody3D).linear_velocity if node is RigidBody3D else Vector3.ZERO
+	var attempt_angular := (node as RigidBody3D).angular_velocity if node is RigidBody3D else Vector3.ZERO
+	var old_body: Dictionary = _body_state.get(item_id, attempt_body)
 	if node.get_parent() != anchor:
 		node.reparent(anchor, false)
+	if not _staged_item_valid(node, anchor):
+		_rollback_staged_item(item_id, node, old_parent, old_global, attempt_body, attempt_linear, attempt_angular)
+		return false
 	node.transform = Transform3D.IDENTITY
 	_freeze_in_slot(node)
-	if not inventory.store(item_id, expected_owner, slot_id):
-		if is_instance_valid(old_parent): node.reparent(old_parent, false)
-		node.global_transform = old_global
-		_restore_body_state(node, old_body)
-		_busy = false
+	if not _staged_item_valid(node, anchor) or not inventory.store(item_id, expected_owner, slot_id):
+		_rollback_staged_item(item_id, node, old_parent, old_global, attempt_body, attempt_linear, attempt_angular)
 		return false
+	if not _committed_item_valid(item_id, "slot", slot_id): return false
 	_body_state[item_id] = old_body
 	_busy = false
 	_emit_ownership_changed(item_id, expected_owner, "slot", slot_id)
-	return true
+	return _committed_item_valid(item_id, "slot", slot_id)
 
 func retrieve(slot_id: String, new_owner: String) -> String:
 	if _busy or not _registered_nodes_valid() or not _owner_roots.has(new_owner): return ""
@@ -217,22 +223,34 @@ func retrieve(slot_id: String, new_owner: String) -> String:
 	var root: Node3D = _owner_roots.get(new_owner)
 	if node == null or anchor == null or not is_instance_valid(root) or not root.is_inside_tree() or not _is_under(node, anchor) or not _can_reparent_to(node, root): return ""
 	var at := node.global_transform
+	var old_parent := node.get_parent()
+	var attempt_body := _capture_body_state(node)
+	var attempt_linear := (node as RigidBody3D).linear_velocity if node is RigidBody3D else Vector3.ZERO
+	var attempt_angular := (node as RigidBody3D).angular_velocity if node is RigidBody3D else Vector3.ZERO
 	_busy = true
-	var moved := inventory.retrieve(slot_id, new_owner)
-	if moved.is_empty():
-		_busy = false
-		return ""
 	node.reparent(root, true)
+	if not _staged_item_valid(node, root):
+		_rollback_staged_item(item_id, node, old_parent, at, attempt_body, attempt_linear, attempt_angular)
+		return ""
 	node.global_transform = at
 	var body_state: Dictionary = _body_state.get(item_id, {})
 	if new_owner.begins_with("hand:"):
 		_freeze_in_slot(node)
 	else:
 		_restore_body_state(node, body_state)
+	if not _staged_item_valid(node, root) or inventory.item_in_slot(slot_id) != item_id:
+		_rollback_staged_item(item_id, node, old_parent, at, attempt_body, attempt_linear, attempt_angular)
+		return ""
+	var moved := inventory.retrieve(slot_id, new_owner)
+	if moved.is_empty():
+		_rollback_staged_item(item_id, node, old_parent, at, attempt_body, attempt_linear, attempt_angular)
+		return ""
+	if not _committed_item_valid(item_id, new_owner, ""): return ""
+	if not new_owner.begins_with("hand:"):
 		_body_state.erase(item_id)
 	_busy = false
 	_emit_ownership_changed(item_id, "slot", new_owner, slot_id)
-	return item_id
+	return item_id if _committed_item_valid(item_id, new_owner, "") else ""
 
 ## Deliberate hand-to-world release. Velocities are world-space body velocities;
 ## callers convert any hand/contact offset before this bounded transfer. No slot
@@ -255,6 +273,9 @@ func release_to_world(item_id: String, expected_hand: String, linear: Vector3, a
 	var held_linear := (node as RigidBody3D).linear_velocity if node is RigidBody3D else Vector3.ZERO
 	var held_angular := (node as RigidBody3D).angular_velocity if node is RigidBody3D else Vector3.ZERO
 	node.reparent(world_root, true)
+	if not _staged_item_valid(node, world_root):
+		_rollback_staged_item(item_id, node, old_parent, old_global, held_body, held_linear, held_angular)
+		return false
 	node.global_transform = old_global
 	_restore_body_state(node, _body_state.get(item_id, {}))
 	if node is RigidBody3D:
@@ -262,19 +283,14 @@ func release_to_world(item_id: String, expected_hand: String, linear: Vector3, a
 		body.linear_velocity = linear.limit_length(MAX_RELEASE_SPEED_MPS) if not body.freeze else Vector3.ZERO
 		body.angular_velocity = angular.limit_length(MAX_RELEASE_SPIN_RAD_S) if not body.freeze else Vector3.ZERO
 		if not body.freeze: body.sleeping = false
-	if not inventory.transfer(item_id, expected_hand, "world"):
-		node.reparent(old_parent, false)
-		node.global_transform = old_global
-		_restore_body_state(node, held_body)
-		if node is RigidBody3D:
-			node.linear_velocity = held_linear
-			node.angular_velocity = held_angular
-		_busy = false
+	if not _staged_item_valid(node, world_root) or not inventory.transfer(item_id, expected_hand, "world"):
+		_rollback_staged_item(item_id, node, old_parent, old_global, held_body, held_linear, held_angular)
 		return false
+	if not _committed_item_valid(item_id, "world", ""): return false
 	_body_state.erase(item_id)
 	_busy = false
 	_emit_ownership_changed(item_id, expected_hand, "world", "")
-	return true
+	return _committed_item_valid(item_id, "world", "")
 
 ## Reset ledger and scene together. Every item returns to its registered owner
 ## root and captured spawn pose. Rejects before mutating when a node/root is gone.
@@ -359,7 +375,7 @@ func _prepared_scene_valid(prepared: Dictionary) -> bool:
 	for item_id in rows:
 		var row: Dictionary = rows[item_id]
 		var target: Node3D = _slot_node(row.slot) if row.owner == "slot" else _owner_roots.get(row.owner)
-		if target == null or not is_instance_valid(target) or not target.is_inside_tree() or not _can_reparent_to(_item_node(item_id), target): return false
+		if not _transfer_node_live(target) or not _can_reparent_to(_item_node(item_id), target): return false
 	return true
 
 func _initial_owner(item_id: String) -> String:
@@ -369,10 +385,10 @@ func _initial_owner(item_id: String) -> String:
 
 func _registered_nodes_valid() -> bool:
 	for root in _owner_roots.values():
-		if not is_instance_valid(root) or not root is Node3D or not root.is_inside_tree(): return false
+		if not _transfer_node_live(root): return false
 	for item_id in _items:
 		var node := _item_node(item_id)
-		if node == null or not node.is_inside_tree(): return false
+		if not _transfer_node_live(node): return false
 	for item_ids in _items.keys():
 		var outer := _item_node(item_ids)
 		for other_id in _items.keys():
@@ -381,7 +397,7 @@ func _registered_nodes_valid() -> bool:
 			if _is_under(outer, other): return false
 	for slot_id in _slots:
 		var anchor := _slot_node(slot_id)
-		if anchor == null or not anchor.is_inside_tree(): return false
+		if not _transfer_node_live(anchor): return false
 		for item_id in _items:
 			var item := _item_node(item_id)
 			if anchor == item or _is_under(anchor, item): return false
@@ -408,7 +424,18 @@ func _access_result(allowed: bool, reason: String, distance_m := -1.0) -> Dictio
 	return {"allowed":allowed,"accepted":false,"reason":reason,"distance_m":distance_m}
 
 func _valid_owner_root(owner: String) -> bool:
-	return _owner_roots.has(owner) and is_instance_valid(_owner_roots[owner])
+	return _owner_roots.has(owner) and _transfer_node_live(_owner_roots[owner])
+
+## queue_free leaves nodes valid/in-tree until deferred deletion. An ancestor's
+## queued deletion also invalidates its descendants as transfer destinations.
+## Keep raw lookup helpers separate so lifecycle/unregister cleanup still works.
+func _transfer_node_live(node: Variant) -> bool:
+	if not is_instance_valid(node) or not node is Node3D or not node.is_inside_tree(): return false
+	var cursor: Node = node
+	while cursor != null:
+		if cursor.is_queued_for_deletion(): return false
+		cursor = cursor.get_parent()
+	return true
 
 func _is_under(node: Node, ancestor: Variant) -> bool:
 	if not is_instance_valid(ancestor) or not ancestor is Node: return false
@@ -437,7 +464,40 @@ func _item_collision_rids(item_id: String) -> Array[RID]:
 ## Godot forbids parenting a node beneath itself or one of its descendants.
 ## Check before the ledger changes so a failed scene move cannot split ownership.
 func _can_reparent_to(node: Node3D, target: Node3D) -> bool:
-	return is_instance_valid(node) and is_instance_valid(target) and node != target and not _is_under(target, node)
+	return _transfer_node_live(node) and _transfer_node_live(target) and node != target and not _is_under(target, node)
+
+## Reparent emits synchronous tree callbacks. Validate the staged scene before
+## committing its ledger transition, including deletion requested by callbacks.
+func _committed_item_valid(item_id: String, owner: String, slot_id: String) -> bool:
+	var node := _item_node(item_id)
+	if inventory.owner_of(item_id) == owner and inventory.slot_of(item_id) == slot_id and _transfer_node_live(node) and _item_is_at_owner(node, owner, slot_id):
+		return true
+	# Observers already saw the commit. Do not invent a silent rollback;
+	# reconcile callback destruction/detach and return failure. Before adapter
+	# notification this suppresses success; afterward terminal cleanup supersedes it.
+	_busy = false
+	_reconcile_item_after_tree_exit(item_id)
+	return false
+
+func _staged_item_valid(node: Variant, target: Variant) -> bool:
+	return _registered_nodes_valid() and _transfer_node_live(node) and _transfer_node_live(target) and _is_under(node, target)
+
+func _rollback_staged_item(item_id: String, node: Variant, old_parent: Variant, old_global: Transform3D, body: Dictionary, linear: Vector3, angular: Vector3) -> void:
+	# Original nodes may themselves be queued: restore their original ownership
+	# until destruction, without pretending deletion can be undone. A callback
+	# may also have freed/reparented them, so guard both sides and recheck afterward.
+	if is_instance_valid(node) and is_instance_valid(old_parent) and old_parent.is_inside_tree() and node != old_parent and not _is_under(old_parent, node):
+		if node.get_parent() != old_parent: node.reparent(old_parent, false)
+		if is_instance_valid(node) and node.is_inside_tree() and node.get_parent() == old_parent:
+			node.global_transform = old_global
+			_restore_body_state(node, body)
+			if node is RigidBody3D:
+				node.linear_velocity = linear
+				node.angular_velocity = angular
+	_busy = false
+	# If restoration was impossible, retire the inconsistent claim using the
+	# existing destruction/detach policy only after transaction guards are clear.
+	_reconcile_item_after_tree_exit(item_id)
 
 func _capture_body_state(node: Node3D) -> Dictionary:
 	if not node is RigidBody3D: return {}

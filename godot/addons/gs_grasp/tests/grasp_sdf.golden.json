@@ -4,8 +4,9 @@
   "probe": "godot/tools/grasp_sdf_golden.mjs",
   "probe_sha256": "1e67135ad6360a5edc041eff27f762075d5f26bdac6335561d797d5124be6632",
   "sources_sha256": {
-    "extensions/grasp/catalog.js": "7bf601f573289a38352360cb6939acd9bedac97c9d2c499e0f9eb09a0d6cd6df",
-    "extensions/grasp/data/catalog.data.json": "5f302e56c96883714562f34711487e2f178ad63b4ea1a2fa51f7ca3b788aee9e"
+    "extensions/grasp/catalog.js": "d304ce7db5eabab491a72c8a46e98841395a604ed9ffebab77bf0d9ebaece1fc",
+    "extensions/grasp/data/catalog.data.json": "c793973c6953d69d5cf5cea2c58eb225e2518eb50bfc845642fc6f4aed34f4b5",
+    "godot/addons/gs_grasp_data/data/catalog.data.json": "5f302e56c96883714562f34711487e2f178ad63b4ea1a2fa51f7ca3b788aee9e"
   },
   "cases": [
     {
