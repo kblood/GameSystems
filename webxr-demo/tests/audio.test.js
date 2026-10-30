@@ -321,7 +321,7 @@ test('bottle adapter: BottleAudio keys play through the pool with the same volum
   tick(ctx);
   bottles.play('clink', 90);
   assert.equal(bottles.play('clink', 90), false, 'minGapMs');
-  assert.ok(new BottleAudio().play('clink') === undefined, 'BottleAudio stays silent without HTMLAudio');
+  assert.ok(new BottleAudio().play('clink') === false, 'BottleAudio stays silent without HTMLAudio (reports not admitted)');
 });
 
 test('extension: loads in the host, listens to grab/release/audio events, follows the camera, tiers via the host', async () => {

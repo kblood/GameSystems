@@ -2,11 +2,11 @@
 // keys (shatter, clink, pour, ...; BOTTLE_SOUNDS) into the audio system: voice pool, rate limit, a random variant of each
 // sound, and spatial sound.
 //
-// Position: bottles calls play(key, minGapMs) WITHOUT a position (breakage.js, pour.js, factory.js are not touched). The
-// adapter therefore finds one itself, in this order: a position passed as third argument (a future bottles version may do
-// that), the current `focus` (set around a call that is known to concern one bottle, e.g. the demo wraps factory.onImpact),
-// the `position(key)` option, and the bottle that is held (`bind(host)` follows the host's grab/release events; pouring and
-// capping only happen with a bottle in hand). Without any of them the sound sits on the listener, as before.
+// Position: bottle break and pour/leak cues supply their world event point as a third argument; other calls may omit it. The
+// adapter chooses, in this order: that explicit position, the current `focus`
+// (set around a call that is known to concern one bottle, e.g. the demo wraps factory.onImpact),
+// the `position(key)` option, and the bottle that is held (`bind(host)` follows the host's grab/release events).
+// Free bottles can also pour/leak, so those cues must supply their own point. Without a position the sound sits on the listener.
 // BottleAudio itself is untouched and still works without this.
 const pos = b => b?.root?.position ?? b?.position ?? null;
 

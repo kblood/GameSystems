@@ -84,6 +84,9 @@ export function createBodyHeight({ defaultEye = DEFAULT_EYE_HEIGHT, seatedBelow 
     /** cb({ reason, posture, referenceEye, seatedEye }) on every posture/reference change. Returns an unsubscribe. */
     onChange(cb) { listeners.add(cb); return () => listeners.delete(cb); },
 
+    /** Host tracking/focus/time break: discard evidence, not applied body state. */
+    interruptObservation() { estimator.reset(); st.standTime = 0; },
+
     /** Right stick each XR frame, before the turn code: stick = { x, y } (gamepad axes; y < 0 = pushed up). */
     update(stick, dt) {
       st.claimed = false;
@@ -115,13 +118,16 @@ export function createBodyHeight({ defaultEye = DEFAULT_EYE_HEIGHT, seatedBelow 
      * gaze = { pitch, roll } (rad) feeds the automatic calibration; without it no automatic choice is made.
      */
     observe(eye, dt, gaze = null) {
-      if (!Number.isFinite(eye)) return;
-      dt = finiteDt(dt);
+      if (!Number.isFinite(eye) || !Number.isFinite(dt) || dt <= 0 || dt > 0.1) {
+        api.interruptObservation(); return;
+      }
       st.trackedEye = eye;
-      if (!st.decided && gaze && Number.isFinite(gaze.pitch)) {
-        estimator.push(eye, gaze.pitch, dt, { roll: gaze.roll ?? 0 });
-        const estimate = estimator.result();
-        if (estimate?.confidence >= 0.75) decide(estimate.eye);
+      if (!st.decided) {
+        if (gaze && Number.isFinite(gaze.pitch) && Number.isFinite(gaze.roll ?? 0)) {
+          estimator.push(eye, gaze.pitch, dt, { roll: gaze.roll ?? 0 });
+          const estimate = estimator.result();
+          if (estimate?.confidence >= 0.75) decide(estimate.eye);
+        } else estimator.reset();
       }
       if (st.posture === 'seated' && st.decided && forced !== 'seated' && Number.isFinite(st.seatedEye)) {
         st.standTime = eye > st.seatedEye + STAND_UP_RISE ? st.standTime + dt : 0;
@@ -137,10 +143,10 @@ export function createBodyHeight({ defaultEye = DEFAULT_EYE_HEIGHT, seatedBelow 
     originOffset() { return st.seatedOffset - st.virtualCrouch; },
     effectiveEye() { return Number.isFinite(st.trackedEye) ? st.trackedEye + api.originOffset() : NaN; },
 
-    /** Set the posture by hand ('standing' | 'seated'); the next calibration window re-measures that posture. */
+    /** Select 'standing', 'seated' or 'auto'; remeasure without discarding applied height. */
     setPosture(next) {
-      if (!POSTURES.includes(next)) return st.posture;
-      forced = next; api.recalibrate(next);
+      if (next !== 'auto' && !POSTURES.includes(next)) return st.posture;
+      forced = next === 'auto' ? null : next; api.recalibrate(forced);
       return st.posture;
     },
     /** Measure again (automatic choice, or the given posture). Keeps the stored standing eye as the seated reference. */
@@ -150,7 +156,7 @@ export function createBodyHeight({ defaultEye = DEFAULT_EYE_HEIGHT, seatedBelow 
       if (st.posture === 'standing') st.seatedEye = NaN;
     },
     /** The runtime moved the tracking space: the stick must pass through its deadzone before crouching again. */
-    onRecentered() { st.armed = false; st.claimed = false; },
+    onRecentered() { st.armed = false; st.claimed = false; api.interruptObservation(); },
     /** New XR session: crouch cleared, posture measured again (a forced posture stays). */
     reset() { st.virtualCrouch = 0; st.seatedOffset = 0; st.trackedEye = NaN; st.hint = ''; api.onRecentered(); api.recalibrate(forced); },
     telemetry() {

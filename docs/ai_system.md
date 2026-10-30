@@ -225,6 +225,10 @@ the AI, a death and restart flow (`#death`, `#restart`; the VR trigger also rest
 exposes `window.__lab` (`ai`, `navmesh`, `zombies`, `player`, `shootRegion`, `aiStats`, `restart`, `toggleDebug`) for
 the smoke test.
 
+Zombiespillet (gården med bølger, flammekaster og molotover) er ikke en del af GameSystems længere. Det er sit eget
+projekt, `ZombieGame`, som kopierer `ai` ind med sin egen sync og bruger zombiehjernen på et nav-gitter; se
+[../../ZombieGame/docs/zombie_game.md](../../ZombieGame/docs/zombie_game.md).
+
 ## Nightfall: guard brain behind `?ai=squad`
 
 The Nightfall WebXR game keeps `enemy_logic.js` as the default. `?ai=squad` swaps in the squad brain:

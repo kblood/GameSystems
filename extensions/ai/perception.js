@@ -46,6 +46,7 @@ export function createPerceptionState() {
     suspicion: 0, alert: false, seen: false, seenIndex: 1, seenRate: 1, seenAge: Infinity, seenPoint: point(),
     lastKnown: point(), memory: 0, quietTime: 100, unseenTime: 100, contact: false,
     heard: point(), heardAge: Infinity, heardLoudness: 0, heardType: '', stimulusClock: -10,
+    directHitClock: -Infinity, // Confirmed damage owns memory briefly over indirect sound.
     sensed: false, rays: 0,
   };
 }
@@ -146,6 +147,7 @@ export function hear(p, cfg, stimulus, ear, raycast, rng, clock) {
   if (raycast && d > 0.5) { sample.x = pos.x; sample.y = pos.y + 0.3; sample.z = pos.z; blocked = !!raycast(ear, sample); p.rays++; }
   const loudness = (1 - d / radius) * (blocked ? cfg.occludedHearing : 1);
   if (loudness < 0.1) return 0;
+  if (clock - p.directHitClock < cfg.stimulusWindow) return 0;
   if (clock - p.stimulusClock < cfg.stimulusWindow && loudness < p.heardLoudness) return 0;
   p.stimulusClock = clock; p.heardLoudness = loudness; p.heardType = stimulus.type ?? 'noise'; p.heardAge = 0;
   const error = Math.min(cfg.hearingErrorMax, d * cfg.hearingErrorPerM * (blocked ? 2 : 1)) * Math.sqrt(rng.next()), bearing = rng.angle();

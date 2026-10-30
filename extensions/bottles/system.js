@@ -22,6 +22,7 @@ export function createBottleSystem({ scene, physics, catalog = { assets: [] }, a
   tier = 'high', emit = () => {}, sourceKey = 'bottles', liquidViscosity = false } = {}) {
   if(typeof sourceKey!=='string'||!sourceKey)throw new TypeError('Invalid bottle source key');
   assertPhysicsAdapter(physics);
+  const ownsAudio = audio == null;
   audio ??= new BottleAudio(assetURL);
   const bodies = new BottleBodies(physics);
   const factory = new BottleFactory(scene, bodies, audio, catalog, { assetURL, tier: BOTTLE_TIERS.includes(tier) ? tier : 'high' });
@@ -31,7 +32,9 @@ export function createBottleSystem({ scene, physics, catalog = { assets: [] }, a
   const stateOwner=createBottleStateOwner({factory,pour,bodies,physics,scene,breakage,sourceKey});
   breakage.onBroken = bottle => emit('broken', { bottle });
 
+  let generation = 0, disposed = false;
   function step(dt) {
+    if (disposed) return;
     bodies.sync();
     bodies.flushImpacts();
     factory.update(dt);
@@ -48,24 +51,38 @@ export function createBottleSystem({ scene, physics, catalog = { assets: [] }, a
 
   /** Spawn a catalog bottle or design and count its liquid in the volume ledger. extra: more adopt() options (body, color, breakInfo). */
   async function spawn(id, design = '', fill = 0.5, position = null, open = false, extra = {}) {
-    const bottle = await factory.spawn(id, design, fill, position, open, extra);
+    const mine = generation;
+    const current = () => !disposed && mine === generation;
+    if (!current()) { const error = new Error('Bottle system disposed'); error.name = 'AbortError'; throw error; }
+    const bottle = await factory.spawn(id, design, fill, position, open, extra, current);
+    if (!current() || !factory.bottles.has(bottle)) {
+      factory.discardSpawn(bottle);
+      const error = new Error('Bottle spawn cancelled'); error.name = 'AbortError'; throw error;
+    }
     pour.register(bottle);
     return bottle;
   }
   /** Adopt a model the game built (see BottleFactory.adopt) and count its liquid. */
   function adopt(options) {
-    const bottle = factory.adopt(options);
+    const mine = generation;
+    const bottle = factory.adopt(options, () => !disposed && mine === generation);
     pour.register(bottle);
     return bottle;
   }
   /** Remove every bottle, drop, puddle and piece of debris; panes are restored. */
   function reset() {
+    generation++;
+    if (ownsAudio) audio.reset();
+    factory.invalidatePending(disposed);
     breakage.reset();
     pour.clear();
     for (const b of [...factory.bottles]) factory.remove(b);
     emit('bottles:reset', {});
   }
   function dispose() {
+    if (disposed) return;
+    disposed = true;
+    if (ownsAudio) audio.dispose();
     stateOwner.dispose();
     offStep?.(); offStep = null;
     reset();

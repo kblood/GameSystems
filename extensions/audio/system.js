@@ -32,6 +32,7 @@ export function createAudioSystem({ context = null, createContext = null, shared
   if (!AUDIO_TIERS.includes(quality)) throw new RangeError(`Unknown quality: ${quality}`);
   let tier = quality, cfg = AUDIO_QUALITY[tier], disposed = false, ctx = context, ownsContext = false, master = null, limiter = null;
   let rngState = (seed >>> 0) || 1, stolen = false, listenerRoom = null, volume = masterGain, delayOn = !!delayBySpeed, loopCheckAt = 0;
+  let retryPromise = null;
   const loops = new Set(); // live loop handles (their room muffling follows the listener's room)
   const stats = { played: 0, delayed: 0, loopRefreshes: 0, contacts: 0, stolen: 0, rateLimited: 0, culled: 0, suspended: 0, silent: 0, unknown: 0, below: 0, unloaded: 0, loadErrors: 0, decoded: 0 };
   const voices = [], lastKey = new Map(), lastSource = new Map(), roomCache = new Map(), buffers = new Map(), pending = new Map(), failed = new Set();
@@ -118,13 +119,15 @@ export function createAudioSystem({ context = null, createContext = null, shared
     voices.push(v);
     return v;
   }
-  function acquire(priority, now) {
+  function acquire(priority, now, protectedVoice = null) {
     stolen = false;
     let worst = null;
     for (let i = 0; i < voices.length; i++) {
       const v = voices[i];
       if (v.active && !v.loop && v.endsAt <= now) endVoice(v); // onended may lag or never come
       if (!v.active) return v;
+      // A contact's optional layer must not steal its own just-started primary.
+      if (v === protectedVoice) continue;
       if (!worst || v.priority < worst.priority || (v.priority === worst.priority && v.start < worst.start)) worst = v;
     }
     if (voices.length < cfg.voices) return makeVoice();
@@ -184,17 +187,29 @@ export function createAudioSystem({ context = null, createContext = null, shared
   }
 
   // ---- loading
-  function loadFile(snd, i) {
+  function loadFile(snd, i, retry = false) {
+    if (disposed) return Promise.resolve(null);
     const file = snd.files[i];
-    if (buffers.has(file) || failed.has(file)) return pending.get(file) || Promise.resolve(buffers.get(file) ?? null);
+    if (buffers.has(file) || (failed.has(file) && !retry)) return pending.get(file) || Promise.resolve(buffers.get(file) ?? null);
     if (pending.has(file) || !ensureContext()) return pending.get(file) ?? Promise.resolve(null);
+    const decodeContext = ctx;
+    const live = () => !disposed && ctx === decodeContext;
     const url = String(assetURL(`audio/ogg/${file}.ogg`));
-    const get = fetchBuffer ? Promise.resolve().then(() => fetchBuffer(url)) : fetch(url).then(r => { if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`); return r.arrayBuffer(); });
-    const p = get.then(bytes => ctx.decodeAudioData(bytes)).then(buf => {
-      if (disposed) return null;
-      buffers.set(file, buf); snd.buf[i] = buf; stats.decoded++; return buf;
-    }).catch(error => { failed.add(file); stats.loadErrors++; emit('audio:error', { error, phase: 'load', file }); return null; })
-      .finally(() => pending.delete(file));
+    if (!live()) return Promise.resolve(null);
+    const get = Promise.resolve().then(() => {
+      if (!live()) return null;
+      return fetchBuffer ? fetchBuffer(url) : fetch(url).then(r => {
+        if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
+        return live() ? r.arrayBuffer() : null;
+      });
+    });
+    const p = get.then(bytes => live() ? decodeContext.decodeAudioData(bytes) : null).then(buf => {
+      if (!live()) return null;
+      buffers.set(file, buf); snd.buf[i] = buf; failed.delete(file); stats.decoded++; return buf;
+    }).catch(error => {
+      if (!live()) return null;
+      failed.add(file); stats.loadErrors++; emit('audio:error', { error, phase: 'load', file }); return null;
+    }).finally(() => { if (pending.get(file) === p) pending.delete(file); });
     pending.set(file, p);
     return p;
   }
@@ -209,7 +224,29 @@ export function createAudioSystem({ context = null, createContext = null, shared
     }
     const jobs = [];
     for (const n of list) { const s = sounds.get(n); if (s) for (let i = 0; i < s.files.length; i++) jobs.push(loadFile(s, i)); }
-    return Promise.all(jobs).then(r => r.filter(Boolean).length);
+    return Promise.all(jobs).then(r => disposed ? 0 : r.filter(Boolean).length);
+  }
+
+  /** Retry only failures observed at invocation; never replace live buffers/voices. */
+  function retryFailedSamples() {
+    if (retryPromise) return retryPromise;
+    const selected = new Set(failed);
+    const result = recovered => ({ attempted: selected.size, recovered, remaining: failed.size, disposed });
+    if (disposed || !selected.size || !cfg.voices || !ensureContext()) return Promise.resolve(result(0));
+    const jobs = [];
+    for (const snd of new Set(sounds.values())) for (let i = 0; i < snd.files.length; i++) {
+      const file = snd.files[i];
+      if (!selected.has(file)) continue;
+      jobs.push(Promise.resolve().then(async () => {
+        // A retry requested by a load-error observer must wait for that load's cleanup.
+        await pending.get(file);
+        return disposed ? null : loadFile(snd, i, true);
+      }));
+    }
+    const run = Promise.allSettled(jobs).then(values => result(disposed ? 0 : values.filter(v => v.status === 'fulfilled' && v.value).length))
+      .finally(() => { if (retryPromise === run) retryPromise = null; });
+    retryPromise = run;
+    return run;
   }
 
   // ---- playing
@@ -224,7 +261,7 @@ export function createAudioSystem({ context = null, createContext = null, shared
     return b;
   }
   /** Core: one sound record on one voice. Returns the voice or null. */
-  function start(snd, gain, rate, seedValue, o, loop, ownSource = true) {
+  function start(snd, gain, rate, seedValue, o, loop, ownSource = true, protectedVoice = null) {
     if (disposed || !cfg.voices) { stats.silent++; return null; }
     if (!ensureContext()) { stats.silent++; return null; }
     ensureMaster();
@@ -242,7 +279,7 @@ export function createAudioSystem({ context = null, createContext = null, shared
     const buf = pickBuffer(snd, seedValue);
     if (!buf) { stats.unloaded++; return null; }
     const priority = o.priority ?? snd.priority;
-    const v = acquire(priority, now);
+    const v = acquire(priority, now, protectedVoice);
     if (!v) { stats.culled++; return null; }
     const wasActive = v.active, old = v.src;
     if (wasActive && old) { old.onended = null; try { old.stop(now + STEAL_FADE); } catch { /* ended */ } }
@@ -257,7 +294,7 @@ export function createAudioSystem({ context = null, createContext = null, shared
     const src = ctx.createBufferSource();
     src.buffer = buf; src.loop = loop; src.playbackRate.value = rate; src.onended = v.end; src.connect(v.input);
     src.start(when);
-    v.src = src; v.active = true; v.loop = loop; v.priority = priority; v.start = now; v.gen++;
+    v.src = src; v.scheduledAt = when; v.active = true; v.loop = loop; v.priority = priority; v.start = now; v.gen++;
     v.endsAt = loop ? Infinity : when + buf.duration / rate;
     if (!loop) { lastKey.set(snd.name, now); if (ownSource && o.sourceId != null) lastSource.set(o.sourceId, now); }
     stats.played++;
@@ -310,9 +347,17 @@ export function createAudioSystem({ context = null, createContext = null, shared
       applyListener();
     },
     /** Resume the AudioContext (browsers/Quest: call from a user gesture or the XR session start). */
-    resume() { if (!ensureContext()) return Promise.resolve(false); ensureMaster(); return Promise.resolve(ctx.state === 'running' ? true : ctx.resume?.()).then(() => ctx.state === 'running', () => false); },
+    resume() {
+      if (disposed || !ensureContext()) return Promise.resolve(false);
+      ensureMaster();
+      const resumeContext = ctx;
+      return Promise.resolve(resumeContext.state === 'running' ? true : resumeContext.resume?.())
+        .then(() => !disposed && ctx === resumeContext && resumeContext.state === 'running', () => false);
+    },
     setMasterGain(v) { volume = clamp(v, 0, 2); if (master) master.gain.value = volume; },
     preload,
+    retryFailedSamples,
+    get failedSampleCount() { return failed.size; },
     setListener,
     /** Listener from a column-major 4x4 matrix (three.js Matrix4.elements): position, -Z forward, +Y up. */
     listenerFromMatrix(e) { setListener(e[12], e[13], e[14], -e[8], -e[9], -e[10], e[4], e[5], e[6]); },
@@ -332,7 +377,7 @@ export function createAudioSystem({ context = null, createContext = null, shared
       const r = chooseContact(c.material1, c.material2, c.speed, last);
       const jitter = 1 + (rand() * 2 - 1) * S.pitchJitter, gain = r.gain * (c.gain ?? 1), rate = r.rate * jitter * (c.rate ?? 1);
       const ok = start(r.primary, gain, rate, c.variantSeed, c, false);
-      if (cfg.layers && r.secondary && ok) start(r.secondary, gain * S.layerGain, rate, c.variantSeed == null ? null : c.variantSeed + 1, c, false, false);
+      if (cfg.layers && r.secondary && ok) start(r.secondary, gain * S.layerGain, rate, c.variantSeed == null ? null : c.variantSeed + 1, c, false, false, ok);
       return !!ok;
     },
     grab(o = EMPTY) { return api.play(D.events.grab, o); },
@@ -372,15 +417,24 @@ export function createAudioSystem({ context = null, createContext = null, shared
       v.gen++; loops.delete(h);
       return true;
     },
+    /** Cancel only not-yet-started sources; leave active tails and the shared graph intact. */
+    cancelPendingStarts() {
+      if (!ctx || disposed) return;
+      const now = clock();
+      for (const v of voices) if (v.active && v.scheduledAt > now) {
+        try { v.src?.stop(now); } catch { /* ended */ }
+        endVoice(v);
+      }
+    },
     stopAll() { for (let i = 0; i < voices.length; i++) { const v = voices[i]; if (v.active) { try { v.src?.stop(); } catch { /* ended */ } endVoice(v); } } },
     /** Housekeeping: reclaim finished voices (normally onended does it). */
     step() { if (!ctx) return; const now = clock(); if (loops.size && now - loopCheckAt > AC.ttl) refreshLoops(now); for (let i = 0; i < voices.length; i++) { const v = voices[i]; if (v.active && !v.loop && v.endsAt <= now) endVoice(v); } },
     dispose() {
       if (disposed) return;
-      api.stopAll(); teardownPool(); disposed = true;
+      disposed = true; api.stopAll(); teardownPool();
       try { limiter?.disconnect(); master?.disconnect(); } catch { /* ignore */ }
       if (ownsContext) { try { ctx?.close?.(); } catch { /* ignore */ } }
-      buffers.clear(); pending.clear(); lastKey.clear(); lastSource.clear(); roomCache.clear(); loops.clear();
+      buffers.clear(); pending.clear(); failed.clear(); lastKey.clear(); lastSource.clear(); roomCache.clear(); loops.clear();
       for (const s of sounds.values()) s.buf.fill(null);
       master = limiter = null; ctx = null;
     },

@@ -8,6 +8,7 @@ import { loadDesign } from './bottle_design.js';
 import { BottleDamageProfile } from './damage.js';
 import { bottleQuality, tierIndex } from './quality.js';
 import { setBottleLiquidColor } from './liquid_color.js';
+import { classifyBottleHTTP, fetchBottleJSON } from './transport.js';
 
 let loader = null; // created on first load, so node tests that adopt() never need a GLTFLoader
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -23,6 +24,8 @@ export class BottleFactory {
     this.assetURL = assetURL;
     this.assets = new Map((catalog?.assets ?? []).map(a => [a.id, a]));
     this.bottles = new Set();
+    this.pendingSpawnResources = new WeakMap();
+    this.generation = 0; this.retired = false;
     this.onImpact = null; // (bottle, impact) => void; the breakage system sets it
     this.tier = tier;
     this.settings = bottleQuality(tier);
@@ -31,24 +34,47 @@ export class BottleFactory {
 
   path(path) { return this.assetURL(path); }
 
+  invalidatePending(retire = false) { this.generation++; this.retired ||= retire; }
+
   /** extra: more adopt() options (body, color, …); extra.breakInfo is merged over the loaded *.break.json. */
-  async spawn(id, design, fill, position, open = false, extra = {}) {
+  async spawn(id, design, fill, position, open = false, extra = {}, isCurrent = () => true) {
+    const generation = this.generation, callerCurrent = isCurrent;
+    isCurrent = () => !this.retired && this.generation === generation && callerCurrent();
     const asset = this.assets.get(id);
     if (!asset) throw new Error(`Unknown bottle: ${id}`);
     const url = this.path(design ? `export/designs/${design}.glb` : asset.file);
     let root, liquid, designHandle;
+    const resources = new Set();
+    let sealed = false, released = false;
+    const collect = () => root?.traverse(node => {
+      if (node.geometry) resources.add(node.geometry);
+      for (const material of [].concat(node.material || [])) {
+        resources.add(material);
+        for (const value of Object.values(material)) if (value?.isTexture) resources.add(value);
+      }
+    });
+    const release = () => {
+      if (released) return;
+      released = true;
+      if (!sealed) collect();
+      root?.removeFromParent();
+      for (const resource of resources) resource.dispose?.();
+      resources.clear();
+    };
+    try {
     if (design) {
-      designHandle = await loadDesign(url, { fill, tier: 'high' });
+      try { designHandle = await loadDesign(url, { fill, tier: 'high' }); }
+      catch (error) { throw classifyBottleHTTP(error, 'design'); }
       root = designHandle.root;
       liquid = designHandle.bottle;
     } else {
-      root = (await (loader ??= new GLTFLoader()).loadAsync(url)).scene;
+      try { root = (await (loader ??= new GLTFLoader()).loadAsync(url)).scene; }
+      catch (error) { throw classifyBottleHTTP(error, 'model'); }
+      collect(); // retain original materials that liquid setup replaces
       let info;
       if (asset.liquid_sidecar) {
         const sidecarUrl = this.path(asset.liquid_sidecar);
-        const response = await fetch(sidecarUrl);
-        if (!response.ok) throw new Error(`Could not load liquid metadata for ${id}: HTTP ${response.status} (${sidecarUrl})`);
-        info = await response.json();
+        info = await fetchBottleJSON(sidecarUrl);
         if (!info || typeof info !== 'object' || Array.isArray(info)) {
           throw new Error(`Invalid liquid metadata for ${id}: ${sidecarUrl}`);
         }
@@ -62,8 +88,29 @@ export class BottleFactory {
       try { const response = await fetch(this.path(asset.break_info)); if (response.ok) breakInfo = await response.json(); }
       catch (error) { console.warn(`No break metadata for ${id}`, error); }
     }
-    return this.adopt({ id, design, asset, root, liquid, designHandle, fill, position, open, ...extra,
-      breakInfo: { ...breakInfo, ...extra.breakInfo } });
+    if (!isCurrent()) { const error = new Error('Bottle spawn cancelled'); error.name = 'AbortError'; throw error; }
+    collect(); sealed = true; // later host overlays may use shared materials we do not own
+    // Optional synchronous host preflight, after all loads but before adoption mutates scene/physics.
+    // Throwing refuses this fresh spawn through the existing owned-resource cleanup.
+    const { beforeAdopt, ...adoptExtra } = extra;
+    beforeAdopt?.();
+    if (!isCurrent()) { const error = new Error('Bottle spawn cancelled'); error.name = 'AbortError'; throw error; }
+    const bottle = this.adopt({ id, design, asset, root, liquid, designHandle, fill, position, open, ...adoptExtra,
+      breakInfo: { ...breakInfo, ...extra.breakInfo } }, isCurrent);
+    this.pendingSpawnResources.set(bottle, release);
+    return bottle;
+    } catch (error) { release(); throw error; }
+  }
+
+  /** Only for a just-returned spawn cancelled before its caller publishes it. */
+  discardSpawn(bottle) {
+    const release = this.pendingSpawnResources.get(bottle);
+    if (!release) return;
+    this.pendingSpawnResources.delete(bottle);
+    // Avoid designHandle disposal twice; release owns this fresh spawn's resources.
+    bottle.designHandle = null;
+    this.remove(bottle);
+    release();
   }
 
   /**
@@ -76,10 +123,24 @@ export class BottleFactory {
    * absorbance (liquid_color.js), so its drops, streams and puddles and anything it is mixed into carry it.
    */
   adopt({ id, design = '', asset = {}, root, liquid, designHandle = null, breakInfo = {}, fill = 0.5, position = null, open = false,
-    body = null, color = null }) {
+    body = null, color = null }, isCurrent = () => true) {
+    const generation = this.generation, callerCurrent = isCurrent;
+    isCurrent = () => !this.retired && this.generation === generation && callerCurrent();
+    const previousParent = root.parent, previousPosition = root.position.clone();
+    const previousQuaternion = root.quaternion.clone(), previousScale = root.scale.clone();
+    const tags = new Map();
+    let bottle = null, entry = null;
+    const check = () => {
+      if (!isCurrent() || root.parent !== this.scene || (entry !== null && !this.bodies.has(entry))) {
+        const error = new Error('Bottle adoption cancelled'); error.name = 'AbortError'; throw error;
+      }
+    };
+    if (!isCurrent()) { const error = new Error('Bottle adoption cancelled'); error.name = 'AbortError'; throw error; }
+    try {
     if (position) root.position.copy(position);
     root.updateMatrixWorld(true);
     this.scene.add(root);
+    check();
     const info = liquid.info || {};
     const height = asset.height_m || (info.bounds?.max?.[1] || 0.25);
     const bounds = new THREE.Box3().setFromObject(root);
@@ -89,7 +150,7 @@ export class BottleFactory {
     const shatters = !!breakInfo.shatters;
     const profile = new BottleDamageProfile(breakInfo, asset);
     const capacity = info.capacity_ml || asset.capacity_ml || 500;
-    const bottle = {
+    bottle = {
       id, design, asset, root, liquid, designHandle, height, radius, capacity, breakInfo, profile,
       fillMl: capacity * fill, open: open || !!info.open, isPlastic, shatters, broken: false,
       lastImpact: -Infinity, lastPour: 0, entry: null, mass: profile.mass(fill), holes: [], damage: 0, damageStage: 'intact',
@@ -102,17 +163,41 @@ export class BottleFactory {
       this.audio.play('cap', 250);
     };
     if (open) bottle.setOpen(true);
+    check();
     // entry: the physics adapter handle (the game holds and releases it through its own adapter).
     if (color != null) setBottleLiquidColor(bottle, srgbOf(color));
-    bottle.entry = this.bodies.bottle(root, {
+    entry = this.bodies.bottle(root, {
       radius, height, mass: bottle.mass, surface: isPlastic ? 'plastic' : 'bottle',
       onImpact: (speed, impact) => this._impact(bottle, speed, impact), shape: body?.shape ?? null, options: body?.options ?? null,
     });
-    root.userData.bottle = bottle;
-    root.traverse(o => { o.userData.bottle = bottle; });
-    this.bottles.add(bottle);
+    bottle.entry = entry;
+    check();
+    root.traverse(node => {
+      tags.set(node, { owned: Object.hasOwn(node.userData, 'bottle'), value: node.userData.bottle });
+      node.userData.bottle = bottle;
+    });
     this._applyQuality(bottle);
+    check();
+    this.bottles.add(bottle); // publish only after every callback-bearing step succeeds
     return bottle;
+    } catch (error) {
+      if (bottle) this.bottles.delete(bottle);
+      // Keep cleanup independent: an adapter removal callback must not skip scene rollback.
+      try { if (entry !== null) this.bodies.remove(entry); }
+      finally {
+        for (const [node, old] of tags) if (node.userData.bottle === bottle) {
+          if (old.owned) node.userData.bottle = old.value; else delete node.userData.bottle;
+        }
+        if (root.parent === this.scene) {
+          try { root.removeFromParent(); }
+          finally { if (!root.parent) {
+            root.position.copy(previousPosition); root.quaternion.copy(previousQuaternion); root.scale.copy(previousScale);
+            if (previousParent) previousParent.add(root);
+          } }
+        }
+      }
+      throw error;
+    }
   }
 
   _impact(bottle, speed, impact) {
@@ -130,7 +215,16 @@ export class BottleFactory {
     if (!this.bottles.delete(bottle)) return;
     this.bodies.remove(bottle.entry);
     this.scene.remove(bottle.root);
-    bottle.designHandle?.dispose();
+    const releaseSpawn = this.pendingSpawnResources.get(bottle);
+    this.pendingSpawnResources.delete(bottle);
+    if (bottle.designHandle) {
+      bottle.designHandle.dispose();
+      // Designs retain their existing owner; do not release that owner's resources twice.
+    } else {
+      // Catalog-spawn resources are unique to this root. Shards load a separate GLB,
+      // and pour uses its own meshes/materials; host child overlays leave with the root.
+      releaseSpawn?.();
+    }
   }
 
   _applyQuality(b) {

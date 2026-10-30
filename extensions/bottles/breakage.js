@@ -106,8 +106,10 @@ export class BreakageSystem {
     for (const y of [-h / 2, h / 2]) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(w + 0.08, 0.06, 0.07), frame); m.position.y = y; group.add(m);
     }
+    const resources = new Set();
+    group.traverse(node => { if (node.geometry) resources.add(node.geometry); if (node.material) resources.add(node.material); });
     this.scene.add(group);
-    const pane = { name, group, sheet, w, h, tempered, broken: false, damage: 0, holes: [], cracks: [] };
+    const pane = { name, group, sheet, resources, w, h, tempered, broken: false, damage: 0, holes: [], cracks: [] };
     sheet.userData.pane = pane;
     this.panes.push(pane);
     return pane;
@@ -121,6 +123,7 @@ export class BreakageSystem {
 
   breakPane(pane, point, energy = 1, projectile = false) {
     if (pane.broken) return;
+    const generation = this.generation;
     const local = pane.group.worldToLocal(point.clone());
     const edgeDistance = Math.min(pane.w / 2 - Math.abs(local.x), pane.h / 2 - Math.abs(local.y));
     const result = assessPane(pane.tempered ? 'tempered' : 'annealed', { energy, projectile, edgeDistance,
@@ -135,9 +138,14 @@ export class BreakageSystem {
     if (result.outcome !== 'shattered') return result;
     pane.broken = true; pane.sheet.visible = false;
     this.audio.play(pane.tempered ? 'smallShatter' : 'shatter');
+    if (generation !== this.generation) return result;
     const count = pane.tempered ? 48 : 32, stride = this.settings.shardStride;
     const material = new THREE.MeshPhysicalMaterial({ color: 0xb9e3e8, transparent: true, opacity: 0.5, metalness: 0.05, roughness: 0.12, side: THREE.DoubleSide });
+    let materialReferences = 1; // construction pin plus one per committed pane shard
+    const releaseMaterial = () => { if (materialReferences > 0 && --materialReferences === 0) material.dispose(); };
+    try {
     for (let i = 0; i < count; i += stride) {
+      if (generation !== this.generation) break;
       const angle = i * Math.PI * (3 - Math.sqrt(5));
       const radius = Math.sqrt((i + 0.5) / count);
       const x = local.x + Math.cos(angle) * radius * pane.w * 0.55;
@@ -145,18 +153,31 @@ export class BreakageSystem {
       const nextAngle = angle + 2.2, nx = local.x + Math.cos(nextAngle) * (radius + 0.12) * pane.w * 0.55;
       const ny = local.y + Math.sin(nextAngle) * (radius + 0.12) * pane.h * 0.55;
       const geometry = new THREE.BufferGeometry();
+      let mesh = null, entry = null, committed = false;
+      try {
       const cx = (2 * x + nx) / 3, cy = (2 * y + ny) / 3;
       geometry.setAttribute('position', new THREE.Float32BufferAttribute([x - cx, y - cy, 0, nx - cx, y - cy, 0, x - cx, ny - cy, 0], 3));
       geometry.computeVertexNormals();
-      const mesh = new THREE.Mesh(geometry, material);
+      mesh = new THREE.Mesh(geometry, material);
       mesh.position.copy(pane.group.localToWorld(new THREE.Vector3(cx, cy, 0)));
       mesh.quaternion.copy(pane.group.quaternion); this.scene.add(mesh);
+      if (generation !== this.generation || mesh.parent !== this.scene) break;
       const away = mesh.position.clone().sub(point).normalize();
       const velocity = away.multiplyScalar(0.5 + Math.sqrt(Math.max(0, energy)) * 0.35 + Math.random()).add(new THREE.Vector3(0, 0.7, 0));
       const angularVelocity = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(18);
-      const entry = this.bodies.shard(mesh, { size: new THREE.Vector3(0.08, 0.08, 0.002), mass: 0.015, velocity, angularVelocity });
-      this.debris.push({ mesh, entry, life: 5 });
+      entry = this.bodies.shard(mesh, { size: new THREE.Vector3(0.08, 0.08, 0.002), mass: 0.015, velocity, angularVelocity });
+      if (generation !== this.generation || mesh.parent !== this.scene || this.bodies.has?.(entry) === false) break;
+      materialReferences++;
+      this.debris.push({ mesh, entry, life: 5, releaseOwner: () => {
+        try { geometry.dispose(); } finally { releaseMaterial(); }
+      } });
+      committed = true;
+      } finally { if (!committed) {
+        try { if (entry !== null) this.bodies.remove(entry); }
+        finally { try { mesh?.removeFromParent(); } finally { geometry.dispose(); } }
+      } }
     }
+    } finally { releaseMaterial(); }
     this.trimDebris();
     return result;
   }
@@ -233,6 +254,7 @@ export class BreakageSystem {
   }
 
   async breakBottle(b, speed = 6, impact = {}) {
+    const generation = this.generation;
     if (b.broken) return;
     if (!b.shatters && b.profile.material !== 'ceramic') { this.audio.play(b.isPlastic ? 'plastic' : 'clink'); return; }
     b.broken = true;
@@ -253,12 +275,31 @@ export class BreakageSystem {
     }
     this.onBroken?.(b); // the extension sends 'broken': hands let go (the demo's interaction.dropBottle, the avatar)
     this.factory.remove(b);
-    this.audio.play('smallShatter');
-    const generation = this.generation;
+    if (generation !== this.generation) return;
+    // Captured world hit point survives removal/held-owner cleanup. Spatial
+    // adapters accept it; the standalone nonspatial player ignores it.
+    this.audio.play('smallShatter', undefined, hitPoint);
+    if (generation !== this.generation) return;
     const shardPath = b.asset.shards || b.breakInfo.files?.shards;
     if (!shardPath) return;
+    let releaseOwner = null;
     try {
       const root = (await (loader ??= new GLTFLoader()).loadAsync(this.factory.path(shardPath))).scene;
+      const resources = new Set();
+      root.traverse(node => {
+        if (node.geometry) resources.add(node.geometry);
+        for (const material of [].concat(node.material || [])) {
+          resources.add(material);
+          for (const value of Object.values(material)) if (value?.isTexture) resources.add(value);
+        }
+      });
+      let references = 1; // construction pin; remaining references belong to committed debris
+      releaseOwner = () => {
+        if (references <= 0 || --references > 0) return;
+        for (const resource of resources) resource.dispose?.();
+        resources.clear();
+      };
+      const retainOwner = () => { references++; return releaseOwner; };
       if (generation !== this.generation) return;
       root.position.copy(position); root.quaternion.copy(quaternion); root.updateMatrixWorld(true);
       const pieces = [];
@@ -267,6 +308,9 @@ export class BreakageSystem {
       for (let i = 0; i < pieces.length; i += stride) {
         const o = pieces[i];
         const mesh = o.clone();
+        let entry = null, committed = false;
+        try {
+        if (generation !== this.generation) break;
         mesh.geometry = o.geometry; mesh.material = o.material;
         o.updateWorldMatrix(true, false);
         mesh.position.setFromMatrixPosition(o.matrixWorld);
@@ -274,6 +318,7 @@ export class BreakageSystem {
         mesh.scale.setFromMatrixScale(o.matrixWorld);
         mesh.castShadow = true;
         this.scene.add(mesh);
+        if (generation !== this.generation || mesh.parent !== this.scene) break;
         const radial = mesh.position.clone().sub(hitPoint).add(new THREE.Vector3((Math.random() - 0.5) * 0.1, 0.1, (Math.random() - 0.5) * 0.1)).normalize();
         const extras = o.userData.extras ?? o.userData;
         const cls = extras.class || extras.shard_class || 'shard';
@@ -284,11 +329,18 @@ export class BreakageSystem {
         const mass = Math.max(0.0002, extras.mass_kg ?? b.profile.shellMass * (extras.mass_fraction ?? fraction));
         const shardVelocity = inherited.clone().addScaledVector(radial, Math.min(8, speed * (cls === 'chunk' ? 0.18 : 0.35)));
         const shardAngular = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(12);
-        const entry = this.bodies.shard(mesh, { size: dims, center, mass, velocity: shardVelocity, angularVelocity: shardAngular });
-        this.debris.push({ mesh, entry, life: cls === 'sliver' ? 4 : 9 });
+        entry = this.bodies.shard(mesh, { size: dims, center, mass, velocity: shardVelocity, angularVelocity: shardAngular });
+        if (generation !== this.generation || mesh.parent !== this.scene || this.bodies.has?.(entry) === false) break;
+        this.debris.push({ mesh, entry, life: cls === 'sliver' ? 4 : 9, releaseOwner: retainOwner() });
+        committed = true;
+        } finally { if (!committed) {
+          try { if (entry !== null) this.bodies.remove(entry); }
+          finally { mesh.removeFromParent(); }
+        } }
       }
       this.trimDebris();
     } catch (error) { console.warn('Could not load shard asset', shardPath, error); }
+    finally { releaseOwner?.(); }
   }
 
   shoot(origin, direction) {
@@ -323,7 +375,9 @@ export class BreakageSystem {
       processed.add(target); firstHit ??= hit;
       if (pane) {
         const result = this.breakPane(pane, hit.point, remainingEnergy, true);
-        this.audio.play('glassHit');
+        // breakPane owns damage/shatter cues. Keep only the projectile-only
+        // fallback for outcomes that did not already request their own sound.
+        if (!['chip', 'cracked', 'punched', 'shattered'].includes(result?.outcome)) this.audio.play('glassHit');
         if (result?.outcome !== 'punched') break;
         remainingEnergy -= result.absorbed ?? remainingEnergy * 0.55;
       } else {
@@ -382,20 +436,39 @@ export class BreakageSystem {
     for (const [b] of this.previous) if (!this.factory.bottles.has(b)) this.previous.delete(b);
     for (let i = this.debris.length - 1; i >= 0; i--) {
       const d = this.debris[i];
+      if (!d) continue;
       d.life -= dt;
-      if (d.life <= 0) { this.bodies.remove(d.entry); this.scene.remove(d.mesh); this.debris.splice(i, 1); }
+      if (d.life <= 0) { this.debris.splice(i, 1); this.retireDebris(d); }
+    }
+  }
+
+  retireDebris(d) {
+    if (d.retired) return;
+    d.retired = true;
+    try { this.bodies.remove(d.entry); }
+    finally {
+      try { d.mesh.removeFromParent(); }
+      finally { d.releaseOwner?.(); }
     }
   }
 
   trimDebris() {
-    while (this.debris.length > this.settings.maxDebris) { const d = this.debris.shift(); this.bodies.remove(d.entry); this.scene.remove(d.mesh); }
+    while (this.debris.length > this.settings.maxDebris) this.retireDebris(this.debris.shift());
   }
 
   /** Tier settings (quality.js); fewer debris bodies apply at once. */
   setQuality(settings) { this.settings = settings; this.trimDebris(); }
 
   /** Remove the panes from the scene (extension dispose). */
-  disposePanes() { for (const pane of this.panes) this.scene.remove(pane.group); this.panes = []; }
+  disposePanes() {
+    for (const pane of this.panes.splice(0)) {
+      pane.group.removeFromParent();
+      for (const mark of [...pane.cracks, ...pane.holes.map(h => h.mesh)]) disposeMark(mark);
+      pane.cracks = []; pane.holes = [];
+      for (const resource of pane.resources) resource.dispose();
+      pane.resources.clear();
+    }
+  }
 
   reset() {
     this.generation++;
@@ -404,8 +477,7 @@ export class BreakageSystem {
       for (const mark of [...pane.cracks, ...pane.holes.map(h => h.mesh)]) disposeMark(mark);
       pane.cracks = []; pane.holes = [];
     }
-    for (const d of this.debris) { this.bodies.remove(d.entry); this.scene.remove(d.mesh); }
-    this.debris = [];
+    for (const d of this.debris.splice(0)) this.retireDebris(d);
     this.previous.clear();
   }
 }

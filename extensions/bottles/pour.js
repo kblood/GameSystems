@@ -50,6 +50,7 @@ export class PourSystem {
     this.onDeposit = onDeposit;
     this.initialMl = 0; this.puddleMl = 0; this.lostMl = 0; this.burnedMl = 0; this.removedMl = 0;
     this.puddles = []; this.flights = []; this.streams = new Map();
+    this.pourAttempts = new WeakMap(); this.lastPourAttempt = -Infinity;
     this.fading = new Set(); // bottles whose shader colour is still moving towards their mixed colour (tier liquidMix 'full')
     this.material = new THREE.MeshStandardMaterial({ color: 0xb57835, transparent: true, opacity: 0.78, roughness: 0.16, depthWrite: false });
     this.viscosity = null; // explicit liquidViscosity option (setLiquidViscosity); null = follow the tier's settings.liquidViscosity (false)
@@ -85,6 +86,7 @@ export class PourSystem {
     return m;
   }
   clear() {
+    this.pourAttempts = new WeakMap(); this.lastPourAttempt = -Infinity;
     for (const p of this.puddles) { this.scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); }
     for (const f of this.flights) this.scene.remove(f.mesh);
     for (const s of this.streams.values()) { this.scene.remove(s.mesh); s.mesh.geometry.dispose(); }
@@ -303,7 +305,7 @@ export class PourSystem {
     const radius = clamp(Math.sqrt(rateMl * 1e-6 / (Math.PI * Math.max(0.1, velocity.length()))), 0.0006, 0.007);
     s.mesh.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), Math.min(40, points.length * 2), radius, 5, false);
   }
-  _drain(b, dt) {
+  _drain(b, dt, audioCandidates = null) {
     const requests = []; let maxDrain = 0;
     for (const hole of b.holes ?? []) {
       const h = holeHydraulics(b, hole, { viscosity: this.liquidViscosity }); if (h.rateMl <= 0) continue;
@@ -334,17 +336,34 @@ export class PourSystem {
     for (const r of requests) {
       const ml = r.ml * scale; if (ml <= 1e-8) continue;
       b.fillMl = Math.max(0, b.fillMl - ml); this.emit(ml, r.point, r.velocity, b); this._stream(r.key, r.point, r.velocity, ml / dt, dt, liquidAbsorbance(b));
-      if (performance.now() - b.lastPour > 650) { this.audio.play('pour', 300); b.lastPour = performance.now(); }
+      if (audioCandidates && !audioCandidates.has(b)) audioCandidates.set(b, r.point);
     }
     if (total > 0) b.liquid.fill = b.fillMl / b.capacity;
     b.leakFlowing = requests.some(r => r.key !== b && r.ml > 1e-8);
   }
   step(dt) {
+    const audioCandidates = new Map(); // only this step's actual positive outflow
     for (const s of this.streams.values()) s.active = false;
     const steps = Math.max(1, Math.ceil(dt * 60)), subdt = dt / steps;
     for (let j = 0; j < steps; j++) {
-      for (const b of this.factory.bottles) if (!b.broken) this._drain(b, subdt);
+      for (const b of this.factory.bottles) if (!b.broken) this._drain(b, subdt, audioCandidates);
       this._flights(subdt);
+    }
+    const now = performance.now();
+    if (now - this.lastPourAttempt >= 300) {
+      let candidate = null, oldest = Infinity;
+      for (const [b] of audioCandidates) {
+        if (b.broken || !this.factory.bottles.has(b) || now - b.lastPour <= 650) continue;
+        const attempted = this.pourAttempts.get(b) ?? -Infinity;
+        if (candidate === null || attempted < oldest) { candidate = b; oldest = attempted; }
+      }
+      if (candidate) {
+        // Rotate even after culling/loading rejection; a silent source must not
+        // starve other outlets. Bound attempts as well as successful starts.
+        this.lastPourAttempt = now; this.pourAttempts.set(candidate, now);
+        const accepted = this.audio.play('pour', 300, audioCandidates.get(candidate));
+        if (accepted !== false) candidate.lastPour = now; // legacy void mixers
+      }
     }
     for (const [key, s] of this.streams) if (!s.active) { this.scene.remove(s.mesh); s.mesh.geometry.dispose(); this.streams.delete(key); }
     if (this.fading.size) fadeBottleColours(this.fading, dt, this.settings.mixFade);

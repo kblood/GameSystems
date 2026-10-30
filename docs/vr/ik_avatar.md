@@ -1,5 +1,25 @@
 # VR IK and avatar design
 
+## Body-height observation breaks (2026-10-26, static review only)
+
+`setPosture('auto')` now clears the forced posture choice and starts a fresh
+automatic estimate; standing/seated choices retain their existing behavior.
+This adds no storage setting or persistence claim. The advanced Nightfall host
+uses this API for explicit local-session posture selection and remeasurement.
+
+`extensions/avatar/body_height.js` exposes `interruptObservation()` for host tracking,
+focus and raw-time discontinuities. It resets automatic estimator samples/velocity
+history and seated-to-standing dwell, retaining decided posture, standing/seated eye,
+virtual crouch and applied offset. `onRecentered()` also invokes it while retaining
+its original stick disarm. Invalid/nonpositive/over-100-ms `observe` timing or invalid
+eye cancels evidence without applying that observation; unavailable/nonfinite gaze
+resets the pending estimator. Hosts that clamp dt must still report raw gaps, and
+hosts that skip `observe` on tracking/focus loss must call the interruption method.
+The advanced Nightfall host now does so and skips the gap/recenter observation.
+No recalibration event or storage write is emitted by interruption. This is source
+review, not runtime acceptance; interrupted/fresh sample windows, stand-up dwell,
+preserved applied state and ordinary continuous calibration remain untested.
+
 An avatar reconstructs an authored body from sparse measurements. It is an estimate,
 not a second tracker. Treat the tracked headset pose as the camera authority and tracked
 hand/controller poses as authoritative input intent. The visible hands may yield to
@@ -68,3 +88,13 @@ allocating arrays and skinning multiple full-detail avatar copies. Update nonloc
 avatars at reduced rates and quality when they are distant or occluded. Test numerical
 edge cases (zero-length bones, unreachable targets, near-straight elbows), transform
 spaces, scale policy, loss/reacquisition and headset frame cost.
+
+## Lifecycle source review — 2026-10-26
+
+### Late avatar-provider result ownership
+
+The child lifetime previously could dispose while avatar was still null; a later provider result then failed assertAlive, but idempotent child.dispose did not repeat the skipped avatar cleanup. Canonical GameSystems avatar and the baseline facade now register the avatar release hook immediately after acquiring the result. createLifetime.onDispose invokes it immediately for an already closed child. A local release-once flag is set before calling provider disposal, so normal parent/child cleanup, late-result rejection and reentrant disposal issue at most one wrapper-owned release.
+
+Baseline checks lifetime validity before awaiting avatar.ready, so an already retired result is released without waiting for another readiness promise. Canonical code likewise checks before measuring/asserting the character contract. Normal root cleanup order is preserved; no shared cache resources are traversed or disposed here. CharacterCreator's own signal-linked/idempotent resource owner remains unchanged. The selected advanced avatar sync updated only index.js and SYNCED.json.
+
+Static source review and targeted diff check only; no tests or gameplay imports/runtime. The sync tool was executed solely to copy the maintained extension. Provider-internal failure before returning an owned result remains the provider's responsibility.

@@ -185,8 +185,14 @@ export function createCharacterPlugin({ scene, renderer, character: provider, qu
     root.name = kind === 'player' ? 'CharacterPlayer' : 'CharacterNPC';
     const removeParentCleanup = lifetime.onDispose(() => child.dispose());
     let avatar = null, rig = null, unsubscribe = () => {}, offRest = () => {};
+    let avatarReleased = false;
+    const releaseAvatar = () => {
+      if (!avatar || avatarReleased) return;
+      avatarReleased = true; // mark before provider cleanup can re-enter this lifetime
+      avatar.dispose?.();
+    };
     const rigListeners = new Set();
-    child.onDispose(() => { unsubscribe(); offRest(); rigListeners.clear(); avatar?.dispose?.(); root.removeFromParent(); entities.delete(entity); removeParentCleanup(); });
+    child.onDispose(() => { unsubscribe(); offRest(); rigListeners.clear(); releaseAvatar(); root.removeFromParent(); entities.delete(entity); removeParentCleanup(); });
     let scale = Number.isFinite(options.scale) && options.scale > 0 ? options.scale : 1;
     // Hand profile overrides: provider/plugin option, player option, then the runtime setter (setHandProfile).
     const profileOverrides = [handProfile, options.handProfile].filter(Boolean);
@@ -236,8 +242,10 @@ export function createCharacterPlugin({ scene, renderer, character: provider, qu
     };
     try {
       avatar = await provider.create({ kind, options, signal: child.signal, physicsScene: scene });
+      // Closed lifetimes run newly registered cleanup immediately for late results.
+      child.onDispose(releaseAvatar);
+      child.assertAlive(); lifetime.assertAlive();
       assertCharacter(avatar, { label: `character provider ${provider.id ?? '(no id)'}` });
-      child.assertAlive(); lifetime.assertAlive();   // disposed meanwhile: the catch below disposes the character once
       rig = measure(); reprofile();
       for (const warning of rig.skeleton.warnings) console.warn(`[avatar] ${warning}`);
       offRest = avatar.onRestChange?.(() => {

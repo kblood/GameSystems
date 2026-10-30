@@ -87,6 +87,7 @@ export function createGuardBrain(config = {}) {
   let hasCover = false, hasPeek = false, hasFlank = false, flankClock = 0, searchElapsed = 0, dwell = 0, searchIndex = 0, coverRays = 0;
   const coverGoal = point(), coverPeek = point(), coverThreat = point(), flankGoal = point(), searchCenter = point(), searchPoints = [];
   // runtime (guard.gd)
+  let localThreatClock = -Infinity; // Direct near-miss memory uses world time, like perception hearing.
   let clock = 0, stagger = 0, suppression = 0, telegraphClock = 0, telegraphEmitted = false, aimLost = 0, settle = 0, telegraphs = 0;
   let blockedShot = 0, fireDenied = 0, laneClear = false, laneCheckAt = 0, reportClock = 0, routeIndex = 0, patrolPause = 0, shots = 0, paused = false;
   let jitterX = 0, jitterY = 0;
@@ -117,6 +118,7 @@ export function createGuardBrain(config = {}) {
       agent.personalSpace = cfg.personalSpace;
     },
     reset(agent) {
+      localThreatClock = -Infinity;
       state = 'patrol'; health = cfg.health; rounds = cfg.magazine; reserves = cfg.reserves; cooldown = reloadClock = reaction = 0; contactAcquired = false;
       tactic = 'patrol'; engageClock = coverRetry = holdRecheck = peekClock = peeks = coverClock = flankClock = searchElapsed = dwell = searchIndex = 0;
       retreated = hasCover = hasPeek = hasFlank = false; coverPhase = 'move'; searchPoints.length = 0;
@@ -127,19 +129,29 @@ export function createGuardBrain(config = {}) {
     /** A heard stimulus (after perception localised it): investigate unless already fighting or reloading. */
     heard(agent, stimulus, loudness, ctx) {
       if (state === 'dead') return;
+      renewSearch(); // Called only after perception accepted this discrete event.
       if (!['engage', 'reload', 'exhausted'].includes(state)) state = 'investigate';
       if (stimulus.type === 'gunshot' || stimulus.type === 'impact') report(agent, ctx, 'heard_shot', stimulus.position);
     },
     receiveReport(agent, kind, at, ctx) {
       if (state === 'dead') return;
       agent.reportsReceived = (agent.reportsReceived ?? 0) + 1;
-      if (state !== 'engage') hearAt(agent, at);
+      if (state === 'engage') return;
+      const p = agent.perception;
+      if (ctx.player.active && p.seen && p.seenAge <= T.PERCEPTION_HOLD + ctx.tickDt) return;
+      // Reports have no loudness contract. Fresh accepted direct evidence owns
+      // memory over an indirect position; keep receipt telemetry without renewal.
+      if (ctx.clock - p.directHitClock < agent.sense.stimulusWindow || ctx.clock - p.stimulusClock < agent.sense.stimulusWindow || ctx.clock - localThreatClock < agent.sense.stimulusWindow) return;
+      hearAt(agent, at);
     },
     suppress(agent, amount, from, ctx) {
       if (state === 'dead') return;
       suppression = Math.min(1, suppression + amount);
       ctx.emit('suppressed', { agent, amount, from: { x: from.x, y: from.y, z: from.z } });
-      if (!['engage', 'reload', 'exhausted'].includes(state)) hearAt(agent, from);
+      if (!['engage', 'reload', 'exhausted'].includes(state) && ctx.clock - agent.perception.directHitClock >= agent.sense.stimulusWindow) {
+        localThreatClock = ctx.clock;
+        hearAt(agent, from);
+      }
     },
     nearMiss(agent, from, to, ctx) {
       // a player bullet passing the chest (guard_squad.gd _on_shot_fired)
@@ -155,13 +167,21 @@ export function createGuardBrain(config = {}) {
       const zone = guardZone(hit.region), amount = Number.isFinite(hit.damage) ? hit.damage : cfg.zoneDamage[zone];
       health = Math.max(0, health - amount);
       agent.perception.alert = true; agent.perception.quietTime = 0;
-      // bullet travel gives a source estimate (guard.gd _resolve_damage_hit)
-      if (hit.direction && hit.point && hit.bullet !== false) { tmp.x = hit.point.x - hit.direction.x * 3; tmp.y = hit.point.y; tmp.z = hit.point.z - hit.direction.z * 3; hearAt(agent, tmp); }
       if (health <= 0) {
         state = 'dead'; reloadClock = 0; agent.dead = true; release(agent, ctx);
         agent.intent.state = 'dead'; agent.intent.mode = 'dead'; stand(agent);
         ctx.emit('death', { agent, zone });
         return { killed: true, zone, damage: amount };
+      }
+      // Only surviving, attributed bullet damage renews source memory. Keep the
+      // existing reverse-travel estimate; fresh sight is more precise than it.
+      if (hit.direction && hit.point && hit.bullet !== false && amount > 0) {
+        const p = agent.perception;
+        p.directHitClock = ctx.clock;
+        if (!(ctx.player.active && p.seen && p.seenAge <= T.PERCEPTION_HOLD + ctx.tickDt)) {
+          tmp.x = hit.point.x - hit.direction.x * 3; tmp.y = hit.point.y; tmp.z = hit.point.z - hit.direction.z * 3;
+          hearAt(agent, tmp);
+        }
       }
       stagger = Math.max(stagger, zone === 'body' ? T.STAGGER_BODY : T.STAGGER_LIMB);
       suppression = Math.min(1, suppression + T.SUPPRESSION_PER_HIT);
@@ -172,7 +192,12 @@ export function createGuardBrain(config = {}) {
   };
 
   function crouching() { return (tactic === 'cover' || tactic === 'retreat') && coverPhase === 'hold' && hasCover; }
+  function renewSearch() {
+    searchElapsed = 0;
+    holdRecheck = 0; // Recheck allocation; never bypass the squad cap.
+  }
   function hearAt(agent, at) {
+    renewSearch(); // Accepted report / near miss / hit, not a cached perception read.
     const p = agent.perception;
     p.lastKnown.x = at.x; p.lastKnown.y = at.y; p.lastKnown.z = at.z; p.memory = Math.max(p.memory, 7); p.quietTime = 0; p.alert = true;
     if (!['engage', 'reload', 'exhausted', 'dead'].includes(state)) state = 'investigate';
@@ -376,9 +401,10 @@ export function createGuardBrain(config = {}) {
         return p.suspicion >= SUSPICIOUS_AT && p.memory > 0 ? 'suspicious' : 'patrol';
       case 'investigate':
         if ((tactic === 'cover' || tactic === 'retreat') && hasCover && peeks < 3) return tactic;
-        if (tactic === 'search' && flatDistance(p.lastKnown, searchCenter) <= T.SEARCH_RADIUS) return 'search';
         if (tactic === 'hold' && holdRecheck > 0) return 'hold';
         if (!squad.claimInvestigation(agent, p.lastKnown)) { holdRecheck = 1; return 'hold'; }
+        // A displaced searcher must obtain a slot before continuing its path.
+        if (tactic === 'search' && flatDistance(p.lastKnown, searchCenter) <= T.SEARCH_RADIUS) return 'search';
         return 'investigate';
       case 'engage': {
         if (health <= cfg.retreatHealth && !retreated) return 'retreat';

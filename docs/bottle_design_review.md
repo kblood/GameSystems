@@ -171,3 +171,73 @@ The source data is in `tests/out/bv2_build_stats.json`; `tests/bv2_glb_stats.py 
   - The `Glass*` override also matches `GlassCap`.
   - The `Bail`, `Cage` and `Stand` nodes need handling: they fall off or are hidden.
   - Liquid sidecars are identical in format, so `bottle_liquid.gd` works unchanged (verified).
+
+### Pending bottle spawn cancellation — source review 2026-10-26
+
+Canonical bottle-system reset/dispose now invalidates pending spawn generations. Factory spawn checks that generation before adopt publishes scene/physics ownership; stale freshly loaded roots are released with deduplicated geometry/material/texture disposal. Original GLB materials replaced by liquid setup are retained for this cancellation cleanup. System spawn rechecks after its await before pour registration, and advanced addBottle rechecks its layout generation and factory membership before adding outlines/views. Obsolete layout completion no longer syncs old views or logs cancellation as a current load failure.
+
+Only newly returned spawn results use discardSpawn; normal remove/shatter ownership remains unchanged. A design already removed by its existing designHandle owner is not disposed again. Shared catalog data and image-source caches are not closed. System disposal is idempotent and ignores later physics steps. Baseline has no equivalent bottle path. Canonical factory.js/system.js were synced to advanced via the selected bottles workflow, with SYNCED.json updated.
+
+Static source review and targeted diff check only; no tests/gameplay imports/runtime. Sync tooling only was executed. This addresses asynchronous generation crossings; exceptions or reentrant host callbacks during synchronous adopt remain a separate transaction audit, and normal published-bottle material lifetime is not redesigned here.
+
+### Synchronous bottle adoption transaction — source review 2026-10-26
+
+Factory adoption now delays bottles-set publication until scene attach, cap/audio handling, physics registration, tags and quality setup have completed with the same live generation. System reset/dispose invalidates factory generations as well, including direct factory calls. Reentrant retirement or scene/body loss rejects adoption rather than returning success. Rollback removes the newly returned physics handle, restores only this transaction's userData tags, and restores the prior parent/local transform while the root remains under transaction control. A callback that reparents it elsewhere is not overwritten by transform rollback.
+
+Caller-provided adopt geometry/materials remain caller-owned on rejection. Factory spawn now releases its freshly loaded resources after failed transactional adoption; normal published remove/shard material policy is unchanged. A physics adapter that allocates and then throws without returning its handle cannot be reconciled by this interface and must provide its own failed-add cleanup. Rollback still depends on the adapter's remove contract; scene-removal cleanup is attempted independently if physics removal throws. Pour registration follows a successfully committed factory adoption and remains a separate follow-up callback audit.
+
+Canonical factory.js/system.js were synced through the selected advanced bottles workflow. Static source review and targeted diff check only; no tests/gameplay imports/runtime. Sync tooling only was executed. No runtime claim about hostile/reentrant adapters is made.
+
+### Pour registration callback audit — 2026-10-26
+
+Source tracing of PourSystem.register -> liquidAbsorbance -> absorbanceOfColor/absorbanceOfSRGB found no await, event emission, host callback, physics call or scene mutation. Supported bottle drivers expose ordinary fillMl/absorbance fields, plain info/uniform records and THREE.Color components. Registration increments initialMl once and initializes absorbance synchronously; reset/remove/dispose cannot interleave through the implemented path. System spawn already checks generation/factory membership immediately before it, and synchronous system adopt uses the transactional factory guard. Reset clears initialMl and the other liquid accounts together.
+
+No concrete false-success/stale-volume defect was demonstrated in this bounded audit, so no runtime code or generated extension was changed and no sync was necessary. This conclusion is for the actual supplied drivers, not arbitrary Proxy/getter objects or monkey-patched methods. It does not redefine normal bottle removal or promise validation of all malformed external input. Static source review and targeted diff check only; no tests/imports/runtime.
+
+Next bounded resource audit: normal catalog-GLB bottle removal/reset retains a different ownership path from designHandle disposal. Trace geometry/material lifetime through shared shard/debris use before changing that policy, especially repeated contract resets.
+
+### Catalog bottle resource retirement — source review 2026-10-26
+
+Confirmed leak: factory.spawn creates a fresh catalog GLB scene and liquid material, but normal factory.remove previously only detached its root/body; only designHandle bottles had resource disposal. Repeated resets therefore left raw catalog geometry/material/texture GPU allocations unreleased. Catalog spawn's owner now releases its deduplicated resource set on normal removal as well as cancellation. Release is idempotent, and the owner record is deleted before invoking cleanup.
+
+Ownership evidence: breakBottle loads shards from a separate shard GLB rather than cloning the source bottle; pour flights/streams use their own geometry and cached materials plus copied absorbance. Advanced outlines borrow source geometry but remain children of the removed bottle root. The owned resource set is now sealed before adoption, so later host overlay materials (shared hover/held materials) are never swept into cleanup. Original imported materials replaced during liquid setup remain included. Therefore this source-root cleanup needs no delayed shard refcount: no supported remaining renderer uses its resources after the root leaves. Caller-owned procedural adopt resources and the existing designHandle removal policy are unchanged; image-source/shared catalog/character caches are not closed.
+
+The separately loaded shard assets have their own lifetime gap (late generation cancellation and debris retirement), left for the next bounded task. Static source review and targeted diff check only; no tests/gameplay imports/runtime. Selected advanced bottles sync updated factory.js and SYNCED.json. Actual GPU allocation counts and visual shard preservation remain unverified.
+
+### Shard GLB lifetime ownership — source review 2026-10-26
+
+Each freshly loaded shard GLB now has a deduplicated geometry/material/texture owner. A construction reference prevents disposal while the mesh loop is still assembling siblings; each published debris record retains one reference. Expiry, quality trimming and reset all use idempotent retireDebris, removing physics/presentation before releasing that record's reference. Resources are disposed only when construction and the last debris user have finished. Unselected stride pieces are covered by the same owner, with no cache/image-source closing.
+
+A stale load after reset/dispose releases its construction reference without publishing meshes. Generation is captured before the broken callback, so a callback-triggered reset cannot start a replacement-generation shard load. Scene/body creation checks reject a generation crossing and remove a not-yet-published mesh/returned handle; partial-loop failures leave already published debris owned until normal retirement. Reset detaches its debris list before callback-bearing removal, preventing duplicate retirement. Factory bottle assets and pour resources remain independent; existing pane-generated debris keeps its previous resource policy for a separate audit.
+
+Canonical breakage.js was synced via the selected advanced bottles workflow, together with SYNCED.json. Static source review and targeted diff check only; no tests/gameplay imports/runtime. Actual GPU counts and active shard rendering remain unverified. Physics adapters that throw after hidden allocation without returning a handle retain their own cleanup responsibility.
+
+### Procedural glass resource ownership — source review 2026-10-26
+
+Confirmed separate leaks: procedural pane shards allocated one geometry per mesh plus a shared material per shatter, while debris removal only detached them; disposePanes detached authored pane sheet/frame resources without disposing them. Pane shards now attach geometry cleanup to the existing idempotent debris retirement path and reference-count their shared material, with a construction pin preventing early release during sibling creation. Failed/unpublished pieces release their own geometry. Generation checks stop an interrupted shatter from publishing into a reset generation. Normal shard counts, geometry, motion and lifetime are unchanged.
+
+Each pane records its authored sheet/frame geometry and materials before host attachments can be added. disposePanes retires that deduplicated set and damage marks after detaching the group. Reset keeps authored pane resources alive for reuse and only clears damage/debris, preserving visuals/collision policy. Procedural shard material is independent of the pane and of shard-GLB assets; no shared catalog/character cache is touched. The GLB shard path is unchanged in this iteration.
+
+Canonical breakage.js was synced through the selected advanced bottles workflow. Static source review and targeted diff check only; no tests/gameplay imports/runtime. Sync tooling only was executed. Actual GPU resource counts, visual continuity and unusual host callbacks remain unverified.
+
+### Synchronous host pre-adoption clearance — source review 2026-10-26
+
+BottleFactory.spawn accepts optional extra.beforeAdopt(), called synchronously after asset/metadata awaits and before adopt mutates scene or physics. A thrown host refusal uses the same fresh-resource cleanup as load failure; no bottle or liquid ledger entry has been published. The hook is removed from adopt options and the generation/liveness predicate is checked again after it, so a callback reset cannot publish the old spawn. It is a synchronous throwing preflight, not an asynchronous callback or new collision engine. Callers without the option retain their prior behavior.
+
+Advanced Nightfall supplies game-local occupancy checks for late initial/retry slots, using its existing catalogue hulls, world boxes, solver bodies and observed hand/head positions. Canonical factory.js was selected-synced. Static source review/diff check only, no tests/runtime. Exact visual clearance and unusual callback behavior remain unverified.
+
+### Structured bottle transport classification — source review 2026-10-26
+
+New internal transport.js wraps proven transport failures in BottleTransportError with code (BOTTLE_HTTP or BOTTLE_NETWORK), phase, status, retryable and original cause. GLB/design loader failures are classified only when Three FileLoader supplies structured Response.status. Retryable HTTP statuses are 408/429/500/502/503/504; permanent HTTP errors retain structured diagnostics but retryable=false. No message parsing or vendor loader edits.
+
+Required explicit liquid-sidecar loading separates fetch/body reading from JSON.parse. Fetch/body TypeError at a valid HTTP(S) URL receives the network code; malformed/unsupported URLs, AbortError, JSON syntax and metadata validation remain nonretryable ordinary errors. Browser network-policy failures (including opaque CORS failures) cannot be proven temporary; retry means a deliberate safe transport retry is permitted, not that success is promised. Generic GLTFLoader TypeError stays unclassified because it can originate in parsing. Optional break metadata and legacy liquid fallback keep their existing best-effort behavior.
+
+All classification occurs before adoption. Existing resource cleanup, generation cancellation, beforeAdopt clearance and liquid-ledger publication are unchanged. Advanced consumes only recognized codes with retryable=true, plus its separate game-owned occupancy refusals. Selected bottles sync only. Static source review/diff check, no tests/gameplay imports/runtime. A fully typed primary GLB network boundary would require a separate loader integration change and is not implied by this patch.
+
+### Primary GLB transport boundary audit — source review 2026-10-26
+
+Reviewed the shipped upstream Three source in NightfallContractsWebXR-interaction/vendor/three/examples/jsm/loaders/GLTFLoader.js (load, parse) and vendor/three/build/three.module.js (FileLoader, LoadingManager). GLTFLoader constructs FileLoader internally rather than consulting a replaceable manager loader for the primary request. Its _onError receives both FileLoader failures and synchronous/asynchronous parse failures. The manager's itemError receives a URL, not a typed transport cause; URL modifiers/handlers do not expose a fetch-error boundary.
+
+FileLoader owns resolved-URL cache lookup, module-private in-flight request coalescing, Request headers/credentials, streamed progress/body conversion and manager start/end/error accounting. GLTFLoader additionally tracks an item through parse and computes the resource base independently. Replacing loadAsync with fetch+parse would require reproducing these behaviors; wrapping global fetch or patching vendor/prototypes would affect unrelated consumers. A parse-start flag alone cannot identify every pre-parse TypeError as a connection failure (request construction, URL-modifier/manager/progress callbacks also run along that path). No safe narrow public hook was demonstrated.
+
+No runtime/canonical loader change made: structured HTTP errors and explicit-sidecar transport remain eligible, generic GLB TypeError remains unclassified. Static source audit and documentation diff check only; no tests, imports, runtime or new sync. This result is specific to the currently shipped Three implementation, not a claim about all versions.

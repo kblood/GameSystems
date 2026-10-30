@@ -25,6 +25,15 @@ export const SQUAD_DEFAULTS = Object.freeze({
 export function createSquad(config = {}) {
   const cfg = { ...SQUAD_DEFAULTS, ...config };
   const shotTimes = [], shotAgents = [], investigators = [], flankers = [], counted = [];
+  const investigationOrigins = new Map();
+  function pruneInvestigations(members = null) {
+    for (let i = investigators.length - 1; i >= 0; i--) {
+      const agent = investigators[i], origin = investigationOrigins.get(agent);
+      if (agent.dead || (members && !members.includes(agent)) || !origin || dist(origin, agent.memoryPoint) >= cfg.sameStimulusRadius) {
+        investigators.splice(i, 1); investigationOrigins.delete(agent);
+      }
+    }
+  }
   let clock = 0, heavyLeft = cfg.heavyQueriesPerTick, callouts = 0;
   const squad = {
     config: cfg, investigators, flankers,
@@ -32,7 +41,8 @@ export function createSquad(config = {}) {
     get callouts() { return callouts; },
     tick(dt, members) {
       clock += dt; heavyLeft = cfg.heavyQueriesPerTick;
-      for (const list of [investigators, flankers]) for (let i = list.length - 1; i >= 0; i--) if (list[i].dead || !members.includes(list[i])) list.splice(i, 1);
+      pruneInvestigations(members);
+      for (const list of [flankers]) for (let i = list.length - 1; i >= 0; i--) if (list[i].dead || !members.includes(list[i])) list.splice(i, 1);
     },
     /** True when this agent may release a round now (turn-taking). */
     mayFire(agent) {
@@ -54,16 +64,19 @@ export function createSquad(config = {}) {
     },
     /** The nearest investigatorsMax agents investigate one area; a closer agent replaces the farthest claimant. */
     claimInvestigation(agent, at) {
+      pruneInvestigations();
+      // A held claim belongs to its granted area, not a moving memoryPoint.
+      if (investigators.includes(agent) && dist(investigationOrigins.get(agent), at) >= cfg.sameStimulusRadius) squad.releaseInvestigation(agent);
       if (investigators.includes(agent)) return true;
-      const same = investigators.filter(o => dist(o.memoryPoint, at) < cfg.sameStimulusRadius);
-      if (same.length < cfg.investigatorsMax) { investigators.push(agent); return true; }
+      const same = investigators.filter(o => dist(investigationOrigins.get(o), at) < cfg.sameStimulusRadius);
+      if (same.length < cfg.investigatorsMax) { investigators.push(agent); investigationOrigins.set(agent, { ...at }); return true; }
       let farthest = null, far = dist(agent.position, at);
       for (const o of same) { const d = dist(o.position, at); if (d > far + 1) { far = d; farthest = o; } }
       if (!farthest) return false;
-      investigators.splice(investigators.indexOf(farthest), 1); investigators.push(agent);
+      squad.releaseInvestigation(farthest); investigators.push(agent); investigationOrigins.set(agent, { ...at });
       return true;
     },
-    releaseInvestigation(agent) { const i = investigators.indexOf(agent); if (i >= 0) investigators.splice(i, 1); },
+    releaseInvestigation(agent) { const i = investigators.indexOf(agent); if (i >= 0) investigators.splice(i, 1); investigationOrigins.delete(agent); },
     requestFlank(agent, members) {
       if (flankers.includes(agent)) return true;
       if (flankers.length >= cfg.flankersMax) return false;
@@ -74,7 +87,7 @@ export function createSquad(config = {}) {
     releaseFlank(agent) { const i = flankers.indexOf(agent); if (i >= 0) flankers.splice(i, 1); },
     takeHeavyQuery() { if (heavyLeft <= 0) return false; heavyLeft--; return true; },
     noteCallout() { callouts++; },
-    reset() { shotTimes.length = shotAgents.length = investigators.length = flankers.length = 0; clock = 0; callouts = 0; },
+    reset() { investigationOrigins.clear(); shotTimes.length = shotAgents.length = investigators.length = flankers.length = 0; clock = 0; callouts = 0; },
   };
   return squad;
 }
